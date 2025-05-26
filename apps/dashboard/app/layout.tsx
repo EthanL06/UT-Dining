@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import {
+  ColorSchemeScript,
+  MantineProvider,
+  mantineHtmlProps,
+} from "@mantine/core";
 import "./globals.css";
+import theme from "./theme";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,11 +29,46 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable}`}
+      {...mantineHtmlProps}
+    >
+      <head>
+        <ColorSchemeScript />
+      </head>
+      <body className="antialiased">
+        <MantineProvider
+          theme={{
+            ...theme,
+            fontFamily:
+              "var(--font-geist-sans), -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif",
+            fontFamilyMonospace:
+              "var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+            components: {
+              ...theme.components,
+              Text: {
+                defaultProps: {
+                  style: { fontFamily: "var(--font-geist-sans), sans-serif" },
+                },
+              },
+              Button: {
+                defaultProps: {
+                  style: { fontFamily: "var(--font-geist-sans), sans-serif" },
+                  color: "var(--color-UTColors)",
+                  variant: "filled",
+                },
+              },
+              Title: {
+                defaultProps: {
+                  style: { fontFamily: "var(--font-geist-sans), sans-serif" },
+                },
+              },
+            },
+          }}
+        >
+          {children}
+        </MantineProvider>
       </body>
     </html>
   );
