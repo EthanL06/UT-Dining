@@ -2,8 +2,6 @@
 
 A modern dashboard for managing UT Austin dining hall locations, menus, and operational status for the [UT Dining](https://github.com/Longhorn-Developers/UT-Dining) app, built with [Next.js](https://nextjs.org/), [Mantine UI](https://mantine.dev/), and [Supabase](https://supabase.com/).
 
----
-
 ## Features
 
 - **Location Management:**  
@@ -20,8 +18,6 @@ A modern dashboard for managing UT Austin dining hall locations, menus, and oper
   Secure login and session management.
 - **Responsive UI:**  
   Built with Mantine for a modern, accessible experience.
-
----
 
 ## Project Structure
 
@@ -41,8 +37,6 @@ A modern dashboard for managing UT Austin dining hall locations, menus, and oper
 ├── package.json        # Project dependencies and scripts
 └── README.md           # Project documentation
 ```
-
----
 
 ## Getting Started
 
@@ -72,8 +66,6 @@ yarn dev
 
 Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
 
----
-
 ## Supabase Local Development
 
 You can run Supabase locally for development and testing.
@@ -99,8 +91,6 @@ You can run Supabase locally for development and testing.
 
    Use these credentials to log in to the dashboard during development.
 
----
-
 ## Key Files & Directories
 
 - `app/(private)/dashboard/action.ts`  
@@ -114,8 +104,6 @@ You can run Supabase locally for development and testing.
 - `types/`  
   TypeScript types for strong type safety.
 
----
-
 ## Customization
 
 - **Add new features:**  
@@ -124,8 +112,6 @@ You can run Supabase locally for development and testing.
   Edit Mantine theme in `app/theme.ts` or override styles in `app/theme.css`.
 - **Backend logic:**  
   Update server actions in `app/(private)/dashboard/action.ts`.
-
----
 
 ## License
 
