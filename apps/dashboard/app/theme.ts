@@ -17,6 +17,7 @@ const theme = createTheme({
   colors: {
     UTColors,
   },
+  cursorType: "pointer",
 });
 
 export default theme;

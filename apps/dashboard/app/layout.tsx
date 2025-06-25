@@ -5,7 +5,10 @@ import {
   MantineProvider,
   mantineHtmlProps,
 } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
+import { ModalsProvider } from "@mantine/modals";
 import "./globals.css";
+import "@mantine/notifications/styles.css";
 import theme from "./theme";
 
 const geistSans = Geist({
@@ -41,6 +44,7 @@ export default function RootLayout({
         <MantineProvider
           theme={{
             ...theme,
+            primaryColor: "UTColors",
             fontFamily:
               "var(--font-geist-sans), -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif",
             fontFamilyMonospace:
@@ -55,8 +59,6 @@ export default function RootLayout({
               Button: {
                 defaultProps: {
                   style: { fontFamily: "var(--font-geist-sans), sans-serif" },
-                  color: "var(--color-UTColors)",
-                  variant: "filled",
                 },
               },
               Title: {
@@ -67,7 +69,10 @@ export default function RootLayout({
             },
           }}
         >
-          {children}
+          <ModalsProvider>
+            <Notifications />
+            {children}
+          </ModalsProvider>
         </MantineProvider>
       </body>
     </html>

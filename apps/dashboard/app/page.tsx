@@ -1,34 +1,9 @@
-'use client';
-
-import { useDisclosure } from "@mantine/hooks";
-import { AppShell, Burger } from '@mantine/core';
+import { Center, Loader } from "@mantine/core";
 
 export default function Home() {
-const [opened, { toggle }] = useDisclosure();
-
   return (
-    <AppShell
-      header={{ height: 60 }}
-      navbar={{
-        width: 300,
-        breakpoint: 'sm',
-        collapsed: { mobile: !opened },
-      }}
-      padding="md"
-    >
-      <AppShell.Header>
-        <Burger
-          opened={opened}
-          onClick={toggle}
-          hiddenFrom="sm"
-          size="sm"
-        />
-        <div>Logo</div>
-      </AppShell.Header>
-
-      <AppShell.Navbar p="md">Navbar</AppShell.Navbar>
-
-      <AppShell.Main>Main</AppShell.Main>
-    </AppShell>
-  )
+    <Center w="100vw" h="100vh">
+      <Loader color="var(--color-UTColors)" size={"sm"} />
+    </Center>
+  );
 }
