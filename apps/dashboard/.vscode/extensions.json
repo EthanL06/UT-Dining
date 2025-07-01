@@ -1,3 +1,7 @@
 {
-  "recommendations": ["denoland.vscode-deno"]
+  "recommendations": [
+    "denoland.vscode-deno",
+    "vunguyentuan.vscode-css-variables",
+    "bradlc.vscode-tailwindcss"
+  ]
 }
