@@ -8,6 +8,7 @@ import {
   IconNotification,
   IconSettings,
   IconSpeakerphone,
+  IconCode,
 } from "@tabler/icons-react";
 import { Center, Stack, Tooltip, UnstyledButton } from "@mantine/core";
 import Image from "next/image";
@@ -88,6 +89,7 @@ const mockdata = [
 
 export function DashboardNavbar() {
   const pathname = usePathname();
+  const isDevelopment = process.env.NODE_ENV === "development";
 
   const links = mockdata.map((link) => (
     <NavbarLink
@@ -114,6 +116,23 @@ export function DashboardNavbar() {
       </div>
 
       <Stack justify="center" gap={0}>
+        {isDevelopment && (
+          <Tooltip
+            label="Development Mode"
+            position="right"
+            transitionProps={{ duration: 0 }}
+          >
+            <UnstyledButton
+              className="group flex items-center justify-center rounded-md hover:!bg-[var(--mantine-color-blue-7)]"
+              h={50}
+              w={50}
+              bg="blue.6"
+              c="white"
+            >
+              <IconCode size={20} stroke={1.5} />
+            </UnstyledButton>
+          </Tooltip>
+        )}
         <NavbarLink onClick={logout} icon={IconLogout} label="Logout" />
       </Stack>
     </nav>
