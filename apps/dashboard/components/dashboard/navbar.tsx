@@ -13,6 +13,7 @@ import {
 import { Center, Stack, Tooltip, UnstyledButton } from "@mantine/core";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/app/actions/auth";
 
@@ -89,7 +90,11 @@ const mockdata = [
 
 export function DashboardNavbar() {
   const pathname = usePathname();
-  const isDevelopment = process.env.NODE_ENV === "development";
+  const [isDevelopment, setIsDevelopment] = useState(false);
+
+  useEffect(() => {
+    setIsDevelopment(process.env.NODE_ENV === "development");
+  }, []);
 
   const links = mockdata.map((link) => (
     <NavbarLink

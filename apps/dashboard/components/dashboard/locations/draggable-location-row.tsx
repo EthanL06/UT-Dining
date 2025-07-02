@@ -1,9 +1,12 @@
+"use client";
+
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { LocationRow } from "./location-row";
 import { IconGripVertical } from "@tabler/icons-react";
 import type { Location, LocationType } from "@/types/location";
 import { UniqueIdentifier } from "@dnd-kit/core";
+import { useEffect, useState } from "react";
 
 interface DraggableLocationRowProps {
   location: Location;
@@ -14,7 +17,7 @@ interface DraggableLocationRowProps {
   onToggleForceClose?: (locationId: string, forceClose: boolean) => void;
 }
 
-export function DraggableLocationRow(props: DraggableLocationRowProps) {
+function DraggableLocationRowContent(props: DraggableLocationRowProps) {
   const {
     attributes,
     listeners,
@@ -61,4 +64,28 @@ export function DraggableLocationRow(props: DraggableLocationRowProps) {
       dragHandle={dragHandle}
     />
   );
+}
+
+export function DraggableLocationRow(props: DraggableLocationRowProps) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    // Return a non-interactive version for SSR
+    return (
+      <LocationRow
+        {...props}
+        dragHandle={
+          <span className="ml-2 text-gray-500">
+            <IconGripVertical size={18} />
+          </span>
+        }
+      />
+    );
+  }
+
+  return <DraggableLocationRowContent {...props} />;
 }
