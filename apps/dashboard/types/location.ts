@@ -41,6 +41,8 @@ export interface Location {
   image?: string;
   apple_maps_link: string;
   google_maps_link: string;
+  latitude: number;
+  longitude: number;
   regular_service_hours: ServiceHours;
   meal_times?: MealTime[];
   methods_of_payment: PaymentMethod[];

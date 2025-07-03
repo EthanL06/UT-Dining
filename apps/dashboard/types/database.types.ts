@@ -191,6 +191,8 @@ export type Database = {
           has_menus: boolean | null
           id: string
           image: string | null
+          latitude: number | null
+          longitude: number | null
           meal_times: Json[]
           methods_of_payment: Database["public"]["Enums"]["payment_method"][]
           name: string | null
@@ -210,6 +212,8 @@ export type Database = {
           has_menus?: boolean | null
           id?: string
           image?: string | null
+          latitude?: number | null
+          longitude?: number | null
           meal_times?: Json[]
           methods_of_payment?: Database["public"]["Enums"]["payment_method"][]
           name?: string | null
@@ -229,6 +233,8 @@ export type Database = {
           has_menus?: boolean | null
           id?: string
           image?: string | null
+          latitude?: number | null
+          longitude?: number | null
           meal_times?: Json[]
           methods_of_payment?: Database["public"]["Enums"]["payment_method"][]
           name?: string | null

@@ -215,6 +215,8 @@ export function AddLocationModal({
       image: "",
       apple_maps_link: "",
       google_maps_link: "",
+      latitude: 30.2849,
+      longitude: -97.7341,
       regular_service_hours: {
         monday: { timeRanges: [{ open: 700, close: 1000 }], isClosed: false },
         tuesday: { timeRanges: [{ open: 700, close: 1000 }], isClosed: false },
@@ -248,6 +250,23 @@ export function AddLocationModal({
         value && value.length > 0 ? null : "Apple Maps link is required",
       google_maps_link: (value) =>
         value && value.length > 0 ? null : "Google Maps link is required",
+      latitude: (value) => {
+        if (!value || String(value).trim() === "")
+          return "Latitude is required";
+        const num = Number(value);
+        if (isNaN(num)) return "Latitude must be a valid number";
+        if (num < -90 || num > 90) return "Latitude must be between -90 and 90";
+        return null;
+      },
+      longitude: (value) => {
+        if (!value || String(value).trim() === "")
+          return "Longitude is required";
+        const num = Number(value);
+        if (isNaN(num)) return "Longitude must be a valid number";
+        if (num < -180 || num > 180)
+          return "Longitude must be between -180 and 180";
+        return null;
+      },
       type_id: (value) =>
         value && value.length > 0 ? null : "Location type is required",
       regular_service_hours: {
@@ -404,6 +423,8 @@ export function AddLocationModal({
       const formData = {
         ...values,
         colloquial_name: values.colloquial_name?.trim() || undefined,
+        latitude: Number(values.latitude),
+        longitude: Number(values.longitude),
         meal_times: mealTimes,
         methods_of_payment: selectedPaymentMethods,
         id: localEditingLocation?.id, // Include ID for editing
@@ -746,6 +767,28 @@ export function AddLocationModal({
               placeholder="Enter Google Maps URL"
               required
               {...form.getInputProps("google_maps_link")}
+            />
+          </Group>
+
+          <Group grow gap="md">
+            <TextInput
+              label="Latitude"
+              description="Decimal degrees (e.g., 30.2849)"
+              placeholder="Enter latitude"
+              type="number"
+              step="any"
+              required
+              {...form.getInputProps("latitude")}
+            />
+
+            <TextInput
+              label="Longitude"
+              description="Decimal degrees (e.g., -97.7341)"
+              placeholder="Enter longitude"
+              type="number"
+              step="any"
+              required
+              {...form.getInputProps("longitude")}
             />
           </Group>
 
