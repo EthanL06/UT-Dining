@@ -215,8 +215,8 @@ export function AddLocationModal({
       image: "",
       apple_maps_link: "",
       google_maps_link: "",
-      latitude: 30.2849,
-      longitude: -97.7341,
+      latitude: 0,
+      longitude: 0,
       regular_service_hours: {
         monday: { timeRanges: [{ open: 700, close: 1000 }], isClosed: false },
         tuesday: { timeRanges: [{ open: 700, close: 1000 }], isClosed: false },
@@ -232,7 +232,7 @@ export function AddLocationModal({
       meal_times: [],
       methods_of_payment: [],
       status: "open",
-      type_id: locationTypes.length > 0 ? locationTypes[0].id : "",
+      type_id: "",
       force_close: false,
       has_menus: false,
       updated_at: new Date().toISOString(),
@@ -268,7 +268,7 @@ export function AddLocationModal({
         return null;
       },
       type_id: (value) =>
-        value && value.length > 0 ? null : "Location type is required",
+        value.length < 1 ? "Location type is required" : null,
       regular_service_hours: {
         monday: (value) => validateServiceHours(value),
         tuesday: (value) => validateServiceHours(value),

@@ -14,7 +14,7 @@ async function getLocations(): Promise<Location[]> {
       ascending: true,
     });
 
-  console.log("📍 Locations fetched:", data);
+  console.log("📍 Locations fetched");
   if (error) {
     console.error(error.message);
     return [];
@@ -80,7 +80,7 @@ async function getLocationMenuStatus(
     });
   }
 
-  console.log("🍽️ Menu status loaded for all locations:", menuStatus);
+  console.log("🍽️  Menu status loaded for all locations");
   return menuStatus;
 }
 

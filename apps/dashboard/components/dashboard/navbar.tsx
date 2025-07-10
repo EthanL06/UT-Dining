@@ -5,7 +5,7 @@ import {
   IconFlag,
   IconLogout,
   IconMapPin,
-  IconNotification,
+  IconBell,
   IconSettings,
   IconSpeakerphone,
   IconCode,
@@ -75,7 +75,7 @@ const mockdata = [
     href: "/dashboard/configuration",
   },
   {
-    icon: IconNotification,
+    icon: IconBell,
     label: "Push Notifications",
     href: "/dashboard/notifications",
   },

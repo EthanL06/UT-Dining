@@ -23,6 +23,7 @@
     "@tabler/icons-react": "^3.33.0",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
+    "emoji-picker-react": "^4.12.3",
     "next": "15.3.2",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",

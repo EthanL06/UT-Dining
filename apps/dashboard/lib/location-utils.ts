@@ -61,7 +61,6 @@ export const isLocationOpen = (
 ): boolean => {
   // If force_close is true, always return false (closed)
   if (forceClose) {
-    console.log(`🚫 Location force closed`);
     return false;
   }
 
@@ -119,10 +118,6 @@ export const getCurrentMealTime = (
 
   const currentTime = getCurrentMilitaryTime();
 
-  console.log(
-    `🍽️ Checking meal times for ${currentTime} CST`,
-    location.meal_times,
-  );
 
   // Find the meal time that encompasses the current time
   const currentMeal = location.meal_times.find(

@@ -9,6 +9,7 @@ import { Notifications } from "@mantine/notifications";
 import { ModalsProvider } from "@mantine/modals";
 import "./globals.css";
 import "@mantine/notifications/styles.css";
+import "@mantine/dates/styles.css";
 import theme from "./theme";
 
 const geistSans = Geist({
