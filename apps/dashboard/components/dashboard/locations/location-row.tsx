@@ -83,7 +83,7 @@ export function LocationRow({
     switch (typeName.toLowerCase()) {
       case "dining hall":
         return "orange";
-      case "restaurant":
+      case "food & drink":
         return "grape";
       case "convenience store":
         return "teal";
