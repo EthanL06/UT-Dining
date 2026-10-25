@@ -37,7 +37,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="font-bold text-3xl leading-tight md:text-4xl lg:text-5xl"
+              className="font-bold text-3xl leading-tight md:text-4xl md:leading-10 lg:text-5xl lg:leading-none"
             >
               The Ultimate Dining Experience for UT Students
             </motion.h1>

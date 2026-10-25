@@ -65,7 +65,7 @@ const DownloadCard = ({ option }: { option: DownloadOption }) => (
     className={cn(
       'flex items-center gap-4 rounded-lg border p-4 md:p-6',
       'transition-colors hover:bg-secondary',
-      'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+      'focus:outline-hidden focus:ring-2 focus:ring-primary focus:ring-offset-2',
       'active:bg-secondary/80',
     )}
   >
@@ -112,7 +112,9 @@ export default function Downloads() {
             transition={{ duration: 0.5 }}
             className="mx-auto max-w-3xl space-y-4 text-center md:space-y-6"
           >
-            <h1 className="font-bold text-3xl leading-tight md:text-4xl">Download UT Dining</h1>
+            <h1 className="font-bold text-3xl leading-tight md:text-4xl md:leading-10">
+              Download UT Dining
+            </h1>
             <p className="text-lg text-muted-foreground md:text-xl">
               Available for all your devices. Start exploring campus dining options today.
             </p>

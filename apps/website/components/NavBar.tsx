@@ -18,7 +18,8 @@ interface NavItemProps {
 
 const NavItem = ({ href, children, className, onClick }: NavItemProps) => {
   const pathname = usePathname();
-  const isActive = pathname === href;
+  // trailingSlash makes the pathname /faq/ while links use /faq.
+  const isActive = pathname.replace(/\/$/, '') === href;
 
   return (
     <Link

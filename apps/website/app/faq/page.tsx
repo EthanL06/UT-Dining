@@ -101,7 +101,7 @@ export default function Faq() {
             </p>
 
             {/* Search Input */}
-            <div className="relative mx-auto mt-8 max-w-md">
+            <div className="relative mx-auto max-w-md">
               <SearchIcon className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
               <Input
                 type="text"
