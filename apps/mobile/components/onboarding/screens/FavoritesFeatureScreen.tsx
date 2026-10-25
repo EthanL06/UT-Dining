@@ -53,7 +53,7 @@ const FavoritesFeatureScreen = ({ width }: Props) => {
               isDark ? 'text-gray-300' : 'text-gray-600',
             )}
           >
-            Keep track of your favotites and plan your meals ahead of time
+            Keep track of your favorites and plan your meals ahead of time
           </Text>
         </View>
       </View>
