@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Github } from "lucide-react";
-import Link from "next/link";
+import { Github } from 'lucide-react';
+import Link from 'next/link';
 
 interface FooterLinkProps {
   href: string;
@@ -15,14 +15,12 @@ interface FooterColumnProps {
 }
 
 const FooterLink = ({ href, children, external = false }: FooterLinkProps) => {
-  const linkProps = external
-    ? { target: "_blank", rel: "noopener noreferrer" }
-    : {};
+  const linkProps = external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
 
   return (
     <Link
       href={href}
-      className="text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-2"
+      className="inline-flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-primary"
       {...linkProps}
     >
       {children}
@@ -41,26 +39,26 @@ const FooterColumn = ({ title, children }: FooterColumnProps) => {
 
 const footerLinks = {
   product: [
-    { href: "/downloads", label: "Downloads" },
-    { href: "/#features", label: "Features" }, // TODO
-    { href: "/reviews", label: "Reviews" }, // TODO
+    { href: '/downloads', label: 'Downloads' },
+    { href: '/#features', label: 'Features' }, // TODO
+    { href: '/reviews', label: 'Reviews' }, // TODO
   ],
   resources: [
-    { href: "/docs", label: "Documentation" },
-    { href: "/faq", label: "FAQ" },
-    { href: "/about", label: "About" },
+    { href: '/docs', label: 'Documentation' },
+    { href: '/faq', label: 'FAQ' },
+    { href: '/about', label: 'About' },
   ],
 } as const;
 
 export function Footer() {
   return (
     <footer className="border-t">
-      <div className="container py-8 px-4">
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+      <div className="container px-4 py-8">
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-2 md:grid-cols-4 md:gap-12">
           {/* About Column */}
-          <div className="col-span-2 sm:col-span-2 md:col-span-1 space-y-3">
+          <div className="col-span-2 space-y-3 sm:col-span-2 md:col-span-1">
             <h3 className="font-bold text-base">UT Dining</h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Making campus dining better for every Longhorn.
             </p>
           </div>
@@ -86,10 +84,7 @@ export function Footer() {
           {/* Connect Column */}
           <FooterColumn title="Connect">
             <li>
-              <FooterLink
-                href="https://github.com/Longhorn-Developers/ut-dining-website"
-                external
-              >
+              <FooterLink href="https://github.com/Longhorn-Developers/ut-dining-website" external>
                 <Github className="h-4 w-4" />
                 GitHub
               </FooterLink>
@@ -98,10 +93,9 @@ export function Footer() {
         </div>
 
         {/* Copyright Section */}
-        <div className="mt-8 pt-6 border-t text-center text-sm text-muted-foreground">
-          <p className="max-w-lg mx-auto">
-            &copy; {new Date().getFullYear()} UT Dining. A Longhorn Developers
-            Project.
+        <div className="mt-8 border-t pt-6 text-center text-muted-foreground text-sm">
+          <p className="mx-auto max-w-lg">
+            &copy; {new Date().getFullYear()} UT Dining. A Longhorn Developers Project.
           </p>
         </div>
       </div>

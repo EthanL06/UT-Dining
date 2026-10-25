@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import { Navbar } from "@/components/NavBar";
-import { Footer } from "@/components/Footer";
+import { motion } from 'framer-motion';
+import useKC_DABR_WASM from 'kc-dabr-wasm';
+import { SearchIcon } from 'lucide-react';
+import { useState } from 'react';
+import { Footer } from '@/components/Footer';
+import { Navbar } from '@/components/NavBar';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
-import { SearchIcon } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
-import useKC_DABR_WASM from "kc-dabr-wasm";
+} from '@/components/ui/accordion';
+import { Input } from '@/components/ui/input';
 
 interface FAQItem {
   question: string;
@@ -22,40 +22,40 @@ interface FAQItem {
 
 const faqItems = [
   {
-    question: "What is UT Dining?",
+    question: 'What is UT Dining?',
     answer:
-      "UT Dining is a mobile app designed specifically for UT Austin students to explore, rate, and discover campus dining options. It provides real-time information about wait times, menus, and student reviews.",
-    category: "general",
+      'UT Dining is a mobile app designed specifically for UT Austin students to explore, rate, and discover campus dining options. It provides real-time information about wait times, menus, and student reviews.',
+    category: 'general',
   },
   {
-    question: "How do I download the app?",
+    question: 'How do I download the app?',
     answer:
-      "The app is available on both iOS App Store and Google Play Store. You can also access it through our web version. Visit our Downloads page to get started.",
-    category: "technical",
+      'The app is available on both iOS App Store and Google Play Store. You can also access it through our web version. Visit our Downloads page to get started.',
+    category: 'technical',
   },
   {
-    question: "Do I need a UT email to use the app?",
+    question: 'Do I need a UT email to use the app?',
     answer:
-      "Yes, you need a valid utexas.edu email address to create an account. This helps us maintain a community of authentic UT students.",
-    category: "account",
+      'Yes, you need a valid utexas.edu email address to create an account. This helps us maintain a community of authentic UT students.',
+    category: 'account',
   },
   {
-    question: "How accurate are the wait times?",
+    question: 'How accurate are the wait times?',
     answer:
-      "Wait times are updated in real-time based on user check-ins and our automated monitoring system. They typically reflect actual waiting times within a 5-minute margin.",
-    category: "features",
+      'Wait times are updated in real-time based on user check-ins and our automated monitoring system. They typically reflect actual waiting times within a 5-minute margin.',
+    category: 'features',
   },
   {
-    question: "Can I filter for dietary restrictions?",
+    question: 'Can I filter for dietary restrictions?',
     answer:
-      "Yes! You can filter meals by various dietary requirements including vegetarian, vegan, gluten-free, halal, and more.",
-    category: "features",
+      'Yes! You can filter meals by various dietary requirements including vegetarian, vegan, gluten-free, halal, and more.',
+    category: 'features',
   },
   {
-    question: "How can I report an issue?",
+    question: 'How can I report an issue?',
     answer:
       "You can report issues directly through the app's Help section or by emailing support@utdining.com. We typically respond within 24 hours.",
-    category: "support",
+    category: 'support',
   },
 ] as const satisfies FAQItem[];
 
@@ -76,7 +76,7 @@ const itemVariants = {
 
 export default function Faq() {
   useKC_DABR_WASM();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   const filteredFAQs = faqItems.filter(
     (item) =>
@@ -88,27 +88,25 @@ export default function Faq() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <section className="pt-20 md:pt-32 pb-12 md:pb-20 px-4">
-        <div className="container max-w-4xl mx-auto">
+      <section className="px-4 pt-20 pb-12 md:pt-32 md:pb-20">
+        <div className="container mx-auto max-w-4xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8 md:mb-16 space-y-4"
+            className="mb-8 space-y-4 text-center md:mb-16"
           >
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              Frequently Asked Questions
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+            <h1 className="mb-4 font-bold text-3xl md:text-4xl">Frequently Asked Questions</h1>
+            <p className="mx-auto max-w-2xl text-lg text-muted-foreground md:text-xl">
               Find answers to common questions about UT Dining
             </p>
 
             {/* Search Input */}
-            <div className="relative max-w-md mx-auto mt-8">
-              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <div className="relative mx-auto mt-8 max-w-md">
+              <SearchIcon className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search FAQs..."
-                className="pl-10 w-full"
+                className="w-full pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -127,13 +125,13 @@ export default function Faq() {
                   <motion.div
                     key={index}
                     variants={itemVariants}
-                    className="rounded-lg overflow-hidden"
+                    className="overflow-hidden rounded-lg"
                   >
                     <AccordionItem value={`item-${index}`} className="glass">
-                      <AccordionTrigger className="text-base md:text-lg px-4 md:px-6 py-4 hover:no-underline hover:bg-primary/5">
+                      <AccordionTrigger className="px-4 py-4 text-base hover:bg-primary/5 hover:no-underline md:px-6 md:text-lg">
                         {item.question}
                       </AccordionTrigger>
-                      <AccordionContent className="px-4 md:px-6 pb-4 text-muted-foreground text-sm md:text-base">
+                      <AccordionContent className="px-4 pb-4 text-muted-foreground text-sm md:px-6 md:text-base">
                         {item.answer}
                       </AccordionContent>
                     </AccordionItem>
@@ -142,7 +140,7 @@ export default function Faq() {
               ) : (
                 <motion.div
                   variants={itemVariants}
-                  className="text-center py-8 text-muted-foreground"
+                  className="py-8 text-center text-muted-foreground"
                 >
                   No FAQs found matching your search.
                 </motion.div>
