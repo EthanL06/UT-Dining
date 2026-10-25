@@ -26,6 +26,13 @@
       "autoIncrement": true,
       "channel": "preview"
     },
+    "preview-simulator": {
+      "extends": "preview",
+      "autoIncrement": false,
+      "ios": {
+        "simulator": true
+      }
+    },
     "production": {
       "autoIncrement": true,
       "channel": "production"
