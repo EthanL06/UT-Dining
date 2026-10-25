@@ -1,8 +1,8 @@
+import { existsSync, mkdirSync } from 'node:fs';
+import { writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import * as cheerio from 'cheerio';
-import { existsSync, mkdirSync } from 'fs';
-import { writeFile } from 'fs/promises';
 import pLimit from 'p-limit';
-import { join } from 'path';
 import { supabase } from './supabase.ts';
 
 interface AllergenInfo {
