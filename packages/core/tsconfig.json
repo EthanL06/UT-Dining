@@ -1,0 +1,4 @@
+{
+  "extends": "@ut-dining/tsconfig/base.json",
+  "include": ["src"]
+}

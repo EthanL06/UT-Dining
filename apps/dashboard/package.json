@@ -21,6 +21,8 @@
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "catalog:",
     "@tabler/icons-react": "^3.33.0",
+    "@ut-dining/core": "workspace:*",
+    "@ut-dining/supabase": "workspace:*",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
     "emoji-picker-react": "^4.12.3",
@@ -28,16 +30,15 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "tailwind-merge": "^3.3.0",
-    "tailwind-preset-mantine": "^2.1.0",
-    "@ut-dining/supabase": "workspace:*"
+    "tailwind-preset-mantine": "^2.1.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "catalog:",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "@ut-dining/tsconfig": "workspace:*",
     "tailwindcss": "^4",
-    "typescript": "catalog:",
-    "@ut-dining/tsconfig": "workspace:*"
+    "typescript": "catalog:"
   }
 }

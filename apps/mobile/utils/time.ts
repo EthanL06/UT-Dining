@@ -1,28 +1,15 @@
+import {
+  getOpenRanges,
+  isWithinRanges,
+  type ServiceHours,
+  type TimeRange,
+  toLocalTime,
+  toMinutes,
+  type Weekday,
+} from '@ut-dining/core';
 import { format } from 'date-fns';
 
 import type * as schema from '~/services/database/schema';
-
-// Types for service hours structure
-interface TimeRange {
-  open: number;
-  close: number;
-}
-
-interface DaySchedule {
-  isClosed?: boolean;
-  timeRanges?: TimeRange[];
-}
-
-interface ServiceHours {
-  monday?: DaySchedule;
-  tuesday?: DaySchedule;
-  wednesday?: DaySchedule;
-  thursday?: DaySchedule;
-  friday?: DaySchedule;
-  saturday?: DaySchedule;
-  sunday?: DaySchedule;
-  [key: string]: DaySchedule | undefined;
-}
 
 import type { MealTimes } from '~/utils/locations';
 
@@ -61,33 +48,19 @@ export const timeOfDay = (
 export function getTodaySchedule(locationData: schema.Location | null, date: Date = new Date()) {
   if (!locationData || !locationData.regular_service_hours) return null;
 
-  const serviceHours = locationData.regular_service_hours as ServiceHours;
-  const day = weekdayName(date).toLowerCase();
-  const daySchedule = serviceHours[day];
-
-  if (
-    !daySchedule ||
-    daySchedule.isClosed ||
-    !daySchedule.timeRanges ||
-    !Array.isArray(daySchedule.timeRanges)
-  ) {
-    return null;
-  }
+  const ranges = getOpenRanges(
+    locationData.regular_service_hours as Partial<ServiceHours>,
+    toLocalTime(date).day,
+  );
+  if (!ranges) return null;
 
   return {
     days: [weekdayName(date)],
-    intervals: daySchedule.timeRanges.map((timeRange: TimeRange) => ({
+    intervals: ranges.map((timeRange: TimeRange) => ({
       openTime: timeRange.open,
       closeTime: timeRange.close,
     })),
   };
-}
-
-// Helper to convert HHMM number to minutes since midnight.
-function convertToMinutes(time: number): number {
-  const hour = Math.floor(time / 100);
-  const minute = time % 100;
-  return hour * 60 + minute;
 }
 
 // Database-based version of isLocationOpen
@@ -100,15 +73,11 @@ export function isLocationOpen(
     return false;
   }
 
-  const schedule = getTodaySchedule(locationData, currentTime);
-  if (!schedule || schedule.intervals.length === 0) return false;
-
-  const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
-  return schedule.intervals.some((interval: { openTime: number; closeTime: number }) => {
-    const openM = convertToMinutes(interval.openTime);
-    const closeM = convertToMinutes(interval.closeTime);
-    return currentMinutes >= openM && currentMinutes < closeM;
-  });
+  const ranges = getOpenRanges(
+    locationData?.regular_service_hours as Partial<ServiceHours> | null,
+    toLocalTime(currentTime).day,
+  );
+  return isWithinRanges(ranges, toLocalTime(currentTime).time);
 }
 
 // Database-based version of getLocationTimeMessage
@@ -123,8 +92,8 @@ export function getLocationTimeMessage(
 
   // Check if currently open and return closing time
   for (const { openTime, closeTime } of schedule.intervals) {
-    const openM = convertToMinutes(openTime);
-    const closeM = convertToMinutes(closeTime);
+    const openM = toMinutes(openTime);
+    const closeM = toMinutes(closeTime);
     if (currentMinutes >= openM && currentMinutes < closeM) {
       const diffMins = closeM - currentMinutes;
       return diffMins < 60
@@ -135,7 +104,7 @@ export function getLocationTimeMessage(
 
   // Check for next opening time today
   const nextOpening = schedule.intervals
-    .map(({ openTime }: { openTime: number }) => convertToMinutes(openTime))
+    .map(({ openTime }: { openTime: number }) => toMinutes(openTime))
     .filter((openM: number) => openM > currentMinutes)
     .sort((a: number, b: number) => a - b)[0];
 
@@ -183,7 +152,7 @@ export function generateSchedule(
 ): { dayRange: string; time: string }[] {
   if (!locationData || !locationData.regular_service_hours) return [];
 
-  const serviceHours = locationData.regular_service_hours as ServiceHours;
+  const serviceHours = locationData.regular_service_hours as Partial<ServiceHours>;
   const dayOrder: WeekDay[] = [
     'Monday',
     'Tuesday',
@@ -195,34 +164,19 @@ export function generateSchedule(
   ];
 
   // Helper to get intervals or closed status for a day
+  const rangesFor = (weekDay: WeekDay) =>
+    getOpenRanges(serviceHours, weekDay.toLowerCase() as Weekday);
+
   const getDayKey = (weekDay: WeekDay) => {
-    const dayKey = weekDay.toLowerCase();
-    const daySchedule = serviceHours[dayKey];
-    if (
-      daySchedule &&
-      !daySchedule.isClosed &&
-      daySchedule.timeRanges &&
-      Array.isArray(daySchedule.timeRanges) &&
-      daySchedule.timeRanges.length > 0
-    ) {
-      return JSON.stringify(daySchedule.timeRanges);
-    } else {
-      return 'CLOSED';
-    }
+    const ranges = rangesFor(weekDay);
+    return ranges ? JSON.stringify(ranges) : 'CLOSED';
   };
 
   // Helper to format intervals or closed
   const formatTime = (weekDay: WeekDay) => {
-    const dayKey = weekDay.toLowerCase();
-    const daySchedule = serviceHours[dayKey];
-    if (
-      daySchedule &&
-      !daySchedule.isClosed &&
-      daySchedule.timeRanges &&
-      Array.isArray(daySchedule.timeRanges) &&
-      daySchedule.timeRanges.length > 0
-    ) {
-      const intervals = daySchedule.timeRanges.map((interval: TimeRange) => {
+    const ranges = rangesFor(weekDay);
+    if (ranges) {
+      const intervals = ranges.map((interval: TimeRange) => {
         const openStr = formatTimeFromNumber(interval.open, date);
         const closeStr = formatTimeFromNumber(interval.close, date);
         return `${openStr} - ${closeStr}`;

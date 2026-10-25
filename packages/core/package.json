@@ -1,0 +1,19 @@
+{
+  "name": "@ut-dining/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pure UT Dining domain logic shared by the app and the dashboard: service hours, open/closed status, Central-time dates, payment methods",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "node ../../node_modules/tsgo/bin/tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@ut-dining/tsconfig": "workspace:*",
+    "typescript": "catalog:",
+    "vitest": "^5.0.5"
+  }
+}
