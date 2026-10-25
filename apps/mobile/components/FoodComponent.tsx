@@ -12,6 +12,7 @@ import { useRef } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import ReanimatedSwipeable, {
   type SwipeableMethods,
+  SwipeDirection,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { Notifier } from 'react-native-notifier';
 import Reanimated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
@@ -112,7 +113,7 @@ const FoodComponent = ({
         onSwipeableOpen={async (direction) => {
           swipeableRef.current?.close();
 
-          if (direction === 'left' && canMealPlan) {
+          if (direction === SwipeDirection.RIGHT && canMealPlan) {
             toggleMealPlanItem({
               name: food.name as string,
               locationName: location,
@@ -140,7 +141,7 @@ const FoodComponent = ({
               duration: 3000,
               queueMode: 'immediate',
             });
-          } else if (direction === 'right') {
+          } else if (direction === SwipeDirection.LEFT) {
             await onFavorite(food);
           }
         }}
