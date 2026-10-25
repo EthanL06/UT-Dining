@@ -8,8 +8,11 @@ import {
   HeartIcon,
   Wheat,
 } from 'lucide-react-native';
+import { useRef } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
-import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import ReanimatedSwipeable, {
+  type SwipeableMethods,
+} from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { Notifier } from 'react-native-notifier';
 import Reanimated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
@@ -61,6 +64,8 @@ const FoodComponent = ({
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
+  const swipeableRef = useRef<SwipeableMethods>(null);
+
   const handlePressOut = () => {
     scale.value = withSpring(1, { damping: 15, stiffness: 400 });
     opacity.value = withSpring(1, { damping: 15, stiffness: 400 });
@@ -82,13 +87,13 @@ const FoodComponent = ({
   return (
     <Reanimated.View style={animatedStyle}>
       <ReanimatedSwipeable
+        ref={swipeableRef}
         containerStyle={{
           borderRadius: 4,
           overflow: 'hidden',
           marginBottom: 8,
           backgroundColor: COLORS['ut-burnt-orange'],
         }}
-        shouldCancelWhenOutside
         enableTrackpadTwoFingerGesture
         // Add these properties to fix the gliding issue
         friction={1.5} // Higher friction reduces gliding
@@ -104,8 +109,8 @@ const FoodComponent = ({
           // Optional haptic feedback when closing
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }}
-        onSwipeableOpen={async (direction, swipeable) => {
-          swipeable.close();
+        onSwipeableOpen={async (direction) => {
+          swipeableRef.current?.close();
 
           if (direction === 'left' && canMealPlan) {
             toggleMealPlanItem({
@@ -143,7 +148,7 @@ const FoodComponent = ({
         overshootLeft={!canMealPlan}
         leftThreshold={canMealPlan ? 50 : Number.MAX_VALUE} // Higher threshold requires more decisive swipe
         rightThreshold={100} // Higher threshold requires more decisive swipe
-        dragOffsetFromLeftEdge={canMealPlan ? 50 : Number.MAX_VALUE}
+        dragOffsetFromLeft={canMealPlan ? 50 : Number.MAX_VALUE}
         renderRightActions={(progress) =>
           isFavorite ? <RemoveAction progress={progress} /> : <FavoriteAction progress={progress} />
         }

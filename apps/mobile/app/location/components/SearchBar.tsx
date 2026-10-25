@@ -1,4 +1,5 @@
 import { Search, X } from 'lucide-react-native';
+import type React from 'react';
 import { useRef } from 'react';
 import { Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -16,7 +17,7 @@ type Props = {
 
 const SearchBar = ({ query, setQuery, onFocus, onBlur, isSearchFocused }: Props) => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<React.ComponentRef<typeof TextInput>>(null);
 
   const handleCancel = () => {
     Keyboard.dismiss();

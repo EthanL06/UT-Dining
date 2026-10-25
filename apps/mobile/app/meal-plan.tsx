@@ -1,8 +1,10 @@
 import * as Haptics from 'expo-haptics';
 import { BicepsFlexed, Flame, Wheat } from 'lucide-react-native';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { FlatList, Image, Text, TextInput, View } from 'react-native';
-import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import ReanimatedSwipeable, {
+  type SwipeableMethods,
+} from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { Notifier } from 'react-native-notifier';
 
 import Alert from '~/components/Alert';
@@ -37,9 +39,11 @@ const MealPlanComponent = ({
 
   const description = `${categoryName} - ${location} (${selectedMenu})`;
   const allergenData = Object.entries(food.allergens || {});
+  const swipeableRef = useRef<SwipeableMethods>(null);
 
   return (
     <ReanimatedSwipeable
+      ref={swipeableRef}
       containerStyle={{
         borderRadius: 4,
         overflow: 'hidden',
@@ -55,8 +59,8 @@ const MealPlanComponent = ({
       onSwipeableWillClose={() => {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }}
-      onSwipeableOpen={(_direction, swipeable) => {
-        swipeable.close();
+      onSwipeableOpen={() => {
+        swipeableRef.current?.close();
 
         removeMealPlanItem(food.name || '');
 

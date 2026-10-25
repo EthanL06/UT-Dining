@@ -164,7 +164,10 @@ const LABEL_TO_ICON = {
   'Source Code': <Code size={18} color={getColor('ut-burnt-orange', false)} />,
 };
 
-const HelpSupportSection = ({ appInfo, isDarkMode }: HelpSupportSectionProps): JSX.Element => {
+const HelpSupportSection = ({
+  appInfo,
+  isDarkMode,
+}: HelpSupportSectionProps): React.JSX.Element => {
   const supportLinks = appInfo.support_links.sort((a, b) => a.order - b.order);
 
   return (
@@ -198,7 +201,7 @@ interface CreditsSectionProps {
   isDarkMode: boolean;
 }
 
-const CreditsSection = ({ appInfo, isDarkMode }: CreditsSectionProps): JSX.Element => (
+const CreditsSection = ({ appInfo, isDarkMode }: CreditsSectionProps): React.JSX.Element => (
   <View
     className={cn(
       'mt-4 gap-y-2 rounded-lg p-4',
@@ -249,7 +252,11 @@ interface VersionInfoProps {
   appInfo: AppInformation | null;
 }
 
-const NotificationSettingsSection = ({ isDarkMode }: { isDarkMode: boolean }): JSX.Element => {
+const NotificationSettingsSection = ({
+  isDarkMode,
+}: {
+  isDarkMode: boolean;
+}): React.JSX.Element => {
   const { isGranted, isDenied, isUndetermined, requestPermissions } = useNotificationPermissions();
 
   const handleNotificationAction = async () => {
@@ -310,7 +317,7 @@ const NotificationSettingsSection = ({ isDarkMode }: { isDarkMode: boolean }): J
   );
 };
 
-const LocationSettingsSection = ({ isDarkMode }: { isDarkMode: boolean }): JSX.Element => {
+const LocationSettingsSection = ({ isDarkMode }: { isDarkMode: boolean }): React.JSX.Element => {
   const { isGranted, isDenied, isUndetermined, requestPermissions } = useLocationPermissions();
 
   const handleLocationAction = async () => {
@@ -371,7 +378,7 @@ const LocationSettingsSection = ({ isDarkMode }: { isDarkMode: boolean }): JSX.E
   );
 };
 
-const SyncDataSection = ({ isDarkMode }: { isDarkMode: boolean }): JSX.Element => {
+const SyncDataSection = ({ isDarkMode }: { isDarkMode: boolean }): React.JSX.Element => {
   const { getTimeSinceLastSync } = useDataSyncStore();
   const db = useDatabase();
   const queryClient = useQueryClient();
@@ -453,7 +460,7 @@ const SyncDataSection = ({ isDarkMode }: { isDarkMode: boolean }): JSX.Element =
   );
 };
 
-const VersionInfo = ({ isDarkMode }: VersionInfoProps): JSX.Element => {
+const VersionInfo = ({ isDarkMode }: VersionInfoProps): React.JSX.Element => {
   const deviceId = getOrCreateDeviceId();
 
   return (

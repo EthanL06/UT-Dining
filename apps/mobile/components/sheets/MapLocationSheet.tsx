@@ -5,7 +5,7 @@ import { CircleAlert, MapPin } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import type React from 'react';
 import { useEffect } from 'react';
-import { InteractionManager, Platform, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, Text, TouchableOpacity, View } from 'react-native';
 import ActionSheet, {
   type ActionSheetRef,
   ScrollView,
@@ -167,14 +167,14 @@ const MapLocationSheet = ({ payload, sheetId }: MapLocationProps) => {
                 ref.current?.hide();
                 router.replace('/');
 
-                InteractionManager.runAfterInteractions(() => {
+                requestIdleCallback(() => {
                   router.navigate(`/location/${name}`);
                 });
               } else {
                 ref.current?.hide();
                 router.replace('/');
 
-                InteractionManager.runAfterInteractions(() => {
+                requestIdleCallback(() => {
                   router.navigate(`/location_generic/${name}`);
                 });
               }

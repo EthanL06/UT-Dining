@@ -15,7 +15,7 @@ const notificationsStorage = {
   },
 
   clearLastVisited: () => {
-    miscStorage.delete(NOTIFICATIONS_LAST_VISITED_KEY);
+    miscStorage.remove(NOTIFICATIONS_LAST_VISITED_KEY);
   },
 };
 

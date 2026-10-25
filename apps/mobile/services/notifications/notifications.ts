@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import { router } from 'expo-router';
+import { type Href, router } from 'expo-router';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { useDatabase } from '~/hooks/useDatabase';
@@ -127,8 +127,8 @@ export function PushNotificationsInitializer() {
               title: notification.request.content.title ?? 'Notification',
               body: notification.request.content.body ?? '',
               sent_at: new Date().toISOString(),
-              redirect_url: notification.request.content.data?.redirect_url ?? null,
-              type: notification.request.content.data?.type ?? null,
+              redirect_url: notification.request.content.data?.redirect_url as string | undefined,
+              type: notification.request.content.data?.type as string | undefined,
             });
           } catch (error) {
             console.error('❌ Error saving notification to database:', error);
@@ -151,8 +151,10 @@ export function PushNotificationsInitializer() {
               title: notification.request.content.title ?? 'Notification',
               body: notification.request.content.body ?? '',
               sent_at: new Date().toISOString(),
-              redirect_url: response.notification.request.content.data?.redirect_url ?? null,
-              type: response.notification.request.content.data?.type ?? null,
+              redirect_url: response.notification.request.content.data?.redirect_url as
+                | string
+                | undefined,
+              type: response.notification.request.content.data?.type as string | undefined,
             });
           } catch (error) {
             console.error('❌ Error saving notification response to database:', error);
@@ -160,8 +162,9 @@ export function PushNotificationsInitializer() {
         }
 
         // If there is a redirect url, navigate to it. If not, navigate to the notifications screen.
-        if (notification.request.content.data?.redirect_url) {
-          router.push(notification.request.content.data.redirect_url);
+        const redirectUrl = notification.request.content.data?.redirect_url as Href | undefined;
+        if (redirectUrl) {
+          router.push(redirectUrl);
         } else {
           router.push('/notifications');
         }

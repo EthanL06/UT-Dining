@@ -1,8 +1,8 @@
-import type { FlashList } from '@shopify/flash-list';
+import type { FlashListRef } from '@shopify/flash-list';
 import { useCallback, useRef, useState } from 'react';
 import { Animated, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 
-export const useScrollToTop = <T,>(listRef: React.RefObject<FlashList<T>>) => {
+export const useScrollToTop = <T,>(listRef: React.RefObject<FlashListRef<T> | null>) => {
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const scrollButtonAnimation = useRef(new Animated.Value(0)).current;
 
