@@ -1,0 +1,36 @@
+{
+  "name": "ut-dining-scraper",
+  "version": "1.0.0",
+  "description": "High-performance web scraper for University of Texas at Austin dining hall menus with nutrition data and allergen information",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "pnpm run build && node dist/index.js",
+    "dev": "tsc --watch",
+    "performance-test": "pnpm run build && node dist/performance-test.js",
+    "performance-test:script": "./run-performance-test.sh",
+    "clean": "rm -rf dist/",
+    "scrape": "pnpm run start",
+    "quick-start": "pnpm install && pnpm run build && pnpm run start"
+  },
+  "keywords": [
+    "web-scraping",
+    "university-texas",
+    "dining-halls",
+    "nutrition-data",
+    "typescript",
+    "cheerio",
+    "performance-testing"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.48.1",
+    "cheerio": "^1.1.0",
+    "dotenv": "^16.4.7",
+    "p-limit": "^6.2.0"
+  }
+}
