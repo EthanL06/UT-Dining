@@ -105,6 +105,7 @@ const AppContent = () => {
                       name="favorites"
                       options={{
                         headerShown: false,
+                        fullScreenGestureEnabled: false,
                       }}
                     />
 
@@ -112,12 +113,14 @@ const AppContent = () => {
                       name="meal-plan"
                       options={{
                         headerShown: false,
+                        fullScreenGestureEnabled: false,
                       }}
                     />
                     <Stack.Screen
                       name="location/[location]"
                       options={{
                         headerShown: false,
+                        fullScreenGestureEnabled: false,
                       }}
                     />
                   </Stack>

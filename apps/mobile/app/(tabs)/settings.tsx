@@ -525,10 +525,11 @@ const SettingsPage = () => {
   return (
     <SheetProvider context="settings">
       <Container
-        className={cn('m-0', isDarkMode ? 'bg-[#171717]' : 'bg-white')}
+        className={cn('m-0 pb-0', isDarkMode ? 'bg-[#171717]' : 'bg-white')}
         disableBottomPadding
       >
         <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
           showsVerticalScrollIndicator={false}
           style={{ flex: 1, backgroundColor: isDarkMode ? '#171717' : 'white' }}
           contentContainerStyle={{ padding: 24 }}

@@ -16,7 +16,7 @@ import {
   Utensils,
 } from 'lucide-react-native';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Animated, Dimensions, TouchableOpacity, View } from 'react-native';
+import { Alert, Animated, Dimensions, Platform, TouchableOpacity, View } from 'react-native';
 import { SheetManager } from 'react-native-actions-sheet';
 import type { Region } from 'react-native-maps';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
@@ -28,6 +28,9 @@ import { getAllLocationsWithCoordinates } from '~/services/database/database';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
 import { cn } from '~/utils/utils';
+
+// The native iOS tab bar floats over the map, so overlays sit above it.
+const TAB_BAR_CLEARANCE = Platform.OS === 'ios' ? 100 : 0;
 
 // Type for merged location data (dining + microwave locations)
 type MergedLocation = {
@@ -209,7 +212,7 @@ const EdgeIndicator = ({ direction, onPress }: { direction: Direction; onPress: 
         };
       case 'south':
         return {
-          bottom: 80,
+          bottom: 80 + TAB_BAR_CLEARANCE,
           left: width / 2 - indicatorSize / 2,
         };
       case 'east':
@@ -635,8 +638,9 @@ const MapPage = () => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               centerOnUser();
             }}
+            style={{ bottom: 48 + TAB_BAR_CLEARANCE }}
             className={cn(
-              'absolute right-12 bottom-12 rounded-full p-4',
+              'absolute right-12 rounded-full p-4',
               isDarkMode ? 'bg-[#171717]' : 'bg-white',
             )}
           >

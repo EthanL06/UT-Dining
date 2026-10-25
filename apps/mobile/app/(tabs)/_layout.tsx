@@ -1,6 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import { Tabs } from 'expo-router';
-import { Bell, Cog, Home, MapPin } from 'lucide-react-native';
+import { NativeTabs } from 'expo-router/native-tabs';
 
 import { useUnreadNotifications } from '~/hooks/useUnreadNotifications';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -15,78 +14,37 @@ export default function Layout() {
   };
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: isDarkMode ? '#171717' : '#ffffff',
-          borderTopColor: isDarkMode ? '#262626' : '#e5e7eb',
-          borderTopWidth: 1,
-          height: 76,
-          paddingBottom: 20,
-        },
-        tabBarActiveTintColor: COLORS['ut-burnt-orange'],
-        tabBarInactiveTintColor: isDarkMode ? COLORS['ut-grey-dark-mode'] : COLORS['ut-grey'],
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: '500',
-          marginTop: 1,
-        },
-        tabBarIconStyle: {
-          marginTop: 2,
-        },
-      }}
+    <NativeTabs
+      tintColor={COLORS['ut-burnt-orange']}
+      iconColor={isDarkMode ? COLORS['ut-grey-dark-mode'] : COLORS['ut-grey']}
+      badgeBackgroundColor={COLORS['ut-burnt-orange']}
+      screenListeners={{ tabPress: handleTabPress }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => <Home size={size} color={color} strokeWidth={1.2} />,
-          tabBarActiveBackgroundColor: 'rgba(191, 87, 0, 0.05)',
-        }}
-        listeners={{
-          tabPress: handleTabPress,
-        }}
-      />
-      <Tabs.Screen
-        name="map"
-        options={{
-          title: 'Map',
-          tabBarIcon: ({ color, size }) => <MapPin size={size} color={color} strokeWidth={1.2} />,
-          tabBarActiveBackgroundColor: 'rgba(191, 87, 0, 0.05)',
-        }}
-        listeners={{
-          tabPress: handleTabPress,
-        }}
-      />
-      <Tabs.Screen
-        name="notifications"
-        options={{
-          title: 'Notifications',
-          tabBarIcon: ({ color, size }) => <Bell size={size} color={color} strokeWidth={1.2} />,
-          tabBarActiveBackgroundColor: 'rgba(191, 87, 0, 0.05)',
-          tabBarBadge: hasUnread ? unreadCount : undefined,
-          tabBarBadgeStyle: {
-            backgroundColor: COLORS['ut-burnt-orange'],
-            color: 'white',
-          },
-        }}
-        listeners={{
-          tabPress: handleTabPress,
-        }}
-      />
-
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Settings',
-          tabBarIcon: ({ color, size }) => <Cog size={size} color={color} strokeWidth={1.2} />,
-          tabBarActiveBackgroundColor: 'rgba(191, 87, 0, 0.05)',
-        }}
-        listeners={{
-          tabPress: handleTabPress,
-        }}
-      />
-    </Tabs>
+      <NativeTabs.Trigger name="index">
+        <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="map">
+        <NativeTabs.Trigger.Icon sf={{ default: 'map', selected: 'map.fill' }} md="map" />
+        <NativeTabs.Trigger.Label>Map</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="notifications">
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'bell', selected: 'bell.fill' }}
+          md="notifications"
+        />
+        <NativeTabs.Trigger.Label>Notifications</NativeTabs.Trigger.Label>
+        {hasUnread && unreadCount > 0 && (
+          <NativeTabs.Trigger.Badge>{String(unreadCount)}</NativeTabs.Trigger.Badge>
+        )}
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="settings">
+        <NativeTabs.Trigger.Icon
+          sf={{ default: 'gearshape', selected: 'gearshape.fill' }}
+          md="settings"
+        />
+        <NativeTabs.Trigger.Label>Settings</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
 }
