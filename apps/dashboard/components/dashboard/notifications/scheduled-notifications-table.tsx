@@ -18,7 +18,7 @@ import {
 import type { Tables } from "@/types/database.types";
 
 type ScheduledNotification = Tables<"notifications"> & {
-  notification_types: Tables<"notification_types">;
+  notification_types: Pick<Tables<"notification_types">, "name">;
 };
 
 interface ScheduledNotificationsTableProps {

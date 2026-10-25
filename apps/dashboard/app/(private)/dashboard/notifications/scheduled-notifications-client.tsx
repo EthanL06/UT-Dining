@@ -9,7 +9,9 @@ import { Text, Button, Group } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
 import type { Tables } from "@/types/database.types";
 
-type ScheduledNotification = Tables<"notifications">;
+type ScheduledNotification = Tables<"notifications"> & {
+  notification_types: Pick<Tables<"notification_types">, "name">;
+};
 
 interface ScheduledNotificationsClientProps {
   initialNotifications: ScheduledNotification[];
