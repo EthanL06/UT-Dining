@@ -135,6 +135,7 @@ UT-Dining/
 │   ├── website/           # Public website and privacy policy (Next.js static export, GitHub Pages)
 │   └── scraper/           # Daily menu scraper (Node, runs on Render at 07:00 UTC)
 ├── packages/
+│   ├── core/              # @ut-dining/core: shared hours, open/closed status and Central-time logic
 │   ├── supabase/          # @ut-dining/supabase: generated database types shared by all apps
 │   └── tsconfig/          # @ut-dining/tsconfig: shared TypeScript presets
 ├── supabase/              # Supabase config, migrations, seed data and edge functions

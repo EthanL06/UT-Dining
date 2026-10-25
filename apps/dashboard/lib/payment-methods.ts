@@ -1,4 +1,4 @@
-import type { PaymentMethod } from '@/types/location';
+import { PAYMENT_METHOD_ABBREVIATIONS, type PaymentMethod } from '@ut-dining/core';
 
 export interface PaymentMethodOption {
   value: PaymentMethod;
@@ -31,12 +31,7 @@ export const paymentMethodLabels: Record<PaymentMethod, string> = {
   'Dine In Dollars': 'Dine In Dollars',
 };
 
-export const paymentMethodAvatars: Record<PaymentMethod, string> = {
-  'Bevo Pay': 'BP',
-  Cash: 'C',
-  'Credit/Debit': 'C/D',
-  'Dine In Dollars': 'DiD',
-};
+export const paymentMethodAvatars: Record<PaymentMethod, string> = PAYMENT_METHOD_ABBREVIATIONS;
 
 export const paymentMethodColors: Record<PaymentMethod, string> = {
   'Bevo Pay': 'orange',

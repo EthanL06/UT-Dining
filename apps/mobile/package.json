@@ -19,6 +19,7 @@
     "@shopify/flash-list": "2.3.2",
     "@supabase/supabase-js": "catalog:",
     "@tanstack/react-query": "^5.81.2",
+    "@ut-dining/core": "workspace:*",
     "babel-plugin-inline-import": "^3.0.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

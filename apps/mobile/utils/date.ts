@@ -1,3 +1,4 @@
+import { toCentralTime } from '@ut-dining/core';
 import { addDays, format, isSameDay, isToday, startOfDay, subDays } from 'date-fns';
 import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 
@@ -31,8 +32,7 @@ export function getCentralTimeDate(): Date {
 }
 
 export function getTodayInCentralTime(): string {
-  const centralTime = getCentralTimeDate();
-  return formatDateForAPI(centralTime);
+  return toCentralTime().date;
 }
 
 export function formatInCentralTime(date: Date, formatString: string): string {

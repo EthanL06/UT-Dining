@@ -1,25 +1,6 @@
-export type PaymentMethod = 'Bevo Pay' | 'Cash' | 'Credit/Debit' | 'Dine In Dollars';
+import type { MealTime, PaymentMethod, ServiceHours } from '@ut-dining/core';
 
-export interface TimeRange {
-  open: number;
-  close: number;
-}
-
-export interface ServiceHours {
-  monday: { timeRanges: TimeRange[]; isClosed: boolean };
-  tuesday: { timeRanges: TimeRange[]; isClosed: boolean };
-  wednesday: { timeRanges: TimeRange[]; isClosed: boolean };
-  thursday: { timeRanges: TimeRange[]; isClosed: boolean };
-  friday: { timeRanges: TimeRange[]; isClosed: boolean };
-  saturday: { timeRanges: TimeRange[]; isClosed: boolean };
-  sunday: { timeRanges: TimeRange[]; isClosed: boolean };
-}
-
-export interface MealTime {
-  name: string;
-  start_time: number;
-  end_time: number;
-}
+export type { MealTime, PaymentMethod, ServiceHours, TimeRange } from '@ut-dining/core';
 
 export interface LocationType {
   id: string;
