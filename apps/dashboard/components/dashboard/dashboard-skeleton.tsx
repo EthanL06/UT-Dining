@@ -1,3 +1,5 @@
+'use client';
+
 import { Flex, Group, Paper, Skeleton, Stack, Table } from '@mantine/core';
 
 export default function DashboardSkeleton() {

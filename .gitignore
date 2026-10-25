@@ -28,3 +28,6 @@ android
 .metro-health-check*
 .env.development
 .env.production
+
+# Written by `next dev` (Next.js 16 agent notes)
+apps/*/AGENTS.md
