@@ -1,0 +1,62 @@
+name: Deploy website
+
+# The site has to stay at https://longhorn-developers.github.io/ut-dining-website/ because the
+# App Store privacy-policy link points there. That URL belongs to the
+# Longhorn-Developers/ut-dining-website repo, so this workflow builds apps/website here and pushes
+# the static export to that repo's gh-pages branch. That repo is now a publish-only mirror.
+#
+# Setup (once): add a WEBSITE_DEPLOY_KEY secret here holding the private half of a deploy key
+# with write access on Longhorn-Developers/ut-dining-website, then set that repo's Pages source
+# to "Deploy from a branch: gh-pages / (root)". Until the secret exists this workflow only builds.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/website/**
+      - pnpm-lock.yaml
+      - .github/workflows/website-deploy.yml
+  workflow_dispatch:
+
+concurrency:
+  group: website-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      HAS_DEPLOY_KEY: ${{ secrets.WEBSITE_DEPLOY_KEY != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm turbo run build --filter=@ut-dining/website
+
+      - name: Publish to Longhorn-Developers/ut-dining-website gh-pages
+        if: ${{ env.HAS_DEPLOY_KEY == 'true' }}
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          deploy_key: ${{ secrets.WEBSITE_DEPLOY_KEY }}
+          external_repository: Longhorn-Developers/ut-dining-website
+          publish_branch: gh-pages
+          publish_dir: apps/website/out
+          # Keeps the _next/ folder working on Pages (no Jekyll processing).
+          enable_jekyll: false
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          full_commit_message: 'deploy: website from ${{ github.repository }}@${{ github.sha }}'
+
+      - name: Deploy skipped
+        if: ${{ env.HAS_DEPLOY_KEY != 'true' }}
+        run: echo "::notice::WEBSITE_DEPLOY_KEY is not set, so the site was built but not published."

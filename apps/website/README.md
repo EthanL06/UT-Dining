@@ -5,26 +5,17 @@ Discover, rate, and explore dining options across campus. Join thousands of Long
 
 ## Getting Started
 
-First, run the development server:
+The website is part of the UT Dining monorepo. From the repo root:
 
 ```bash
-pnpm dev
+./setup.sh
+./dev.sh website      # http://localhost:3001/ut-dining-website
+pnpm --filter @ut-dining/website build   # static export in apps/website/out
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deployment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`.github/workflows/website-deploy.yml` builds the site on pushes to `main` and publishes `out/` to the `gh-pages` branch of [Longhorn-Developers/ut-dining-website](https://github.com/Longhorn-Developers/ut-dining-website). That keeps the site at https://longhorn-developers.github.io/ut-dining-website/, which the App Store privacy-policy link uses.
 
 ## License
 

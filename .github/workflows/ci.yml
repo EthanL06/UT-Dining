@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
   pull_request:
 
 concurrency:
@@ -37,6 +37,13 @@ jobs:
 
       - name: Typecheck and test
         run: pnpm turbo run typecheck test --cache-dir=.turbo/cache
+
+      - name: Build web apps
+        run: pnpm turbo run build --filter=@ut-dining/dashboard --filter=@ut-dining/website --cache-dir=.turbo/cache
+        env:
+          # The dashboard only needs these to exist at build time; nothing connects to them.
+          NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder
 
   pr-title:
     name: Conventional PR title

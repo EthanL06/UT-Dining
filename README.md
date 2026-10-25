@@ -69,7 +69,7 @@ Every 24 hours, the **Expo** mobile application fetches the latest menu data fro
 
 ## Getting Started
 
-UT Dining is a monorepo: the mobile app, the menu scraper and the shared database types live in this one repository, managed with [pnpm workspaces](https://pnpm.io/workspaces) and [Turborepo](https://turborepo.com).
+UT Dining is a monorepo: the mobile app, the admin dashboard, the website, the menu scraper and the shared database types live in this one repository, managed with [pnpm workspaces](https://pnpm.io/workspaces) and [Turborepo](https://turborepo.com).
 
 ### Prerequisites
 
@@ -85,7 +85,7 @@ pnpm and the Supabase CLI are installed for you.
 git clone https://github.com/<your-username>/UT-Dining.git
 cd UT-Dining
 ./setup.sh   # installs Node deps, writes each app's .env.local, starts local Supabase if Docker is running
-./dev.sh     # pick what to run: mobile app, scraper, local Supabase
+./dev.sh     # pick what to run: mobile app, dashboard, website, scraper, local Supabase
 ```
 
 `setup.sh` points the apps at the hosted dev Supabase project when `SUPABASE_DEV_URL`, `SUPABASE_DEV_ANON_KEY` and `SUPABASE_DEV_SERVICE_KEY` are set, and at a local Supabase otherwise. Run `pnpm env:local` or `pnpm env:dev` to switch later.
@@ -131,6 +131,8 @@ Install the recommended VS Code extensions: [Biome](https://marketplace.visualst
 UT-Dining/
 ├── apps/
 │   ├── mobile/            # Expo app (Expo Router, NativeWind, Drizzle + SQLite, EAS config)
+│   ├── dashboard/         # Admin dashboard (Next.js + Mantine, deployed on Vercel)
+│   ├── website/           # Public website and privacy policy (Next.js static export, GitHub Pages)
 │   └── scraper/           # Daily menu scraper (Node, runs on Render at 07:00 UTC)
 ├── packages/
 │   ├── supabase/          # @ut-dining/supabase: generated database types shared by all apps
@@ -205,12 +207,12 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4. Run `pnpm check`, then push the branch (`git push origin feat-meal-reminders`)
 5. Open a Pull Request
 
-## Related Repositories
+## Deployments
 
-The scraper now lives in [`apps/scraper`](apps/scraper). These are still separate for now and will move into `apps/` as the monorepo migration continues:
-
-1. **[UT Dining Dashboard](https://github.com/EthanL06/ut-dining-dashboard)**: admin web app for locations, notifications and app settings.
-2. **[UT Dining Website](https://github.com/Longhorn-Developers/ut-dining-website)**: the public website and privacy policy.
+- **Mobile app**: EAS builds from `apps/mobile`.
+- **Scraper**: Render cron job running `pnpm --filter @ut-dining/scraper start`.
+- **Dashboard**: Vercel project with root directory `apps/dashboard`.
+- **Website**: `.github/workflows/website-deploy.yml` builds `apps/website` and publishes it to the `gh-pages` branch of [Longhorn-Developers/ut-dining-website](https://github.com/Longhorn-Developers/ut-dining-website), which keeps the existing GitHub Pages URL (the App Store privacy-policy link points there).
 
 ## License
 

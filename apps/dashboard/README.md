@@ -40,56 +40,18 @@ A modern dashboard for managing UT Austin dining hall locations, menus, and oper
 
 ## Getting Started
 
-### 1. Install dependencies
+The dashboard is part of the UT Dining monorepo. From the repo root:
 
 ```bash
-pnpm install
-# or
-npm install
-# or
-yarn install
+./setup.sh            # installs everything and writes apps/dashboard/.env.local
+./dev.sh dashboard    # http://localhost:3000
 ```
 
-### 2. Set up environment variables
+`pnpm env:local` points it at a local Supabase (`pnpm db:start`), and `pnpm env:dev` at the hosted dev project. Database migrations live in the root `supabase/` folder and the generated types come from `@ut-dining/supabase`.
 
-Create a `.env.local` file with your Supabase credentials and any other required environment variables.
+## Deployment
 
-### 3. Run the development server
-
-```bash
-pnpm dev
-# or
-npm run dev
-# or
-yarn dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
-
-## Supabase Local Development
-
-You can run Supabase locally for development and testing.
-
-1. **Install the Supabase CLI:**
-   https://supabase.com/docs/guides/cli
-
-2. **Start Supabase locally:**
-
-   ```bash
-   supabase start
-   ```
-
-   This will start Supabase (Postgres, Auth, Storage, etc.) on your machine.
-
-3. **Connect your app:**
-   Make sure your `.env.local` is configured to use the local Supabase instance (see Supabase docs for connection details).
-
-4. **Default Test User:**
-
-   - **Email:** `test@test.com`
-   - **Password:** `password`
-
-   Use these credentials to log in to the dashboard during development.
+Vercel, with the project's root directory set to `apps/dashboard`.
 
 ## Key Files & Directories
 
