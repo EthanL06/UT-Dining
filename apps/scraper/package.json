@@ -1,17 +1,16 @@
 {
-  "name": "ut-dining-scraper",
+  "name": "@ut-dining/scraper",
   "version": "1.0.0",
+  "private": true,
   "description": "High-performance web scraper for University of Texas at Austin dining hall menus with nutrition data and allergen information",
-  "main": "dist/index.js",
+  "type": "module",
   "scripts": {
-    "build": "tsc",
-    "start": "pnpm run build && node dist/index.js",
-    "dev": "tsc --watch",
-    "performance-test": "pnpm run build && node dist/performance-test.js",
-    "performance-test:script": "./run-performance-test.sh",
-    "clean": "rm -rf dist/",
-    "scrape": "pnpm run start",
-    "quick-start": "pnpm install && pnpm run build && pnpm run start"
+    "start": "node --env-file-if-exists=.env --env-file-if-exists=.env.local src/index.ts",
+    "perf": "node --env-file-if-exists=.env --env-file-if-exists=.env.local src/performance-test.ts",
+    "typecheck": "node ../../node_modules/tsgo/bin/tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=22.18.0"
   },
   "keywords": [
     "web-scraping",
@@ -24,13 +23,15 @@
   ],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "typescript": "^5.7.3"
-  },
   "dependencies": {
-    "@supabase/supabase-js": "^2.48.1",
+    "@supabase/supabase-js": "catalog:",
     "cheerio": "^1.1.0",
-    "dotenv": "^16.4.7",
     "p-limit": "^6.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@ut-dining/supabase": "workspace:*",
+    "@ut-dining/tsconfig": "workspace:*",
+    "typescript": "catalog:"
   }
 }

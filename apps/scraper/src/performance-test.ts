@@ -1,8 +1,8 @@
-import * as cheerio from "cheerio";
-import { writeFile } from "fs/promises";
-import { join } from "path";
-import pLimit from "p-limit";
-import { mkdirSync, existsSync } from "fs";
+import * as cheerio from 'cheerio';
+import { existsSync, mkdirSync } from 'fs';
+import { writeFile } from 'fs/promises';
+import pLimit from 'p-limit';
+import { join } from 'path';
 
 interface AllergenInfo {
   beef: boolean;
@@ -76,13 +76,13 @@ const TEST_CONFIGS = [
 ];
 
 const LINKS = [
-  "https://hf-foodpro.austin.utexas.edu/foodpro/shortmenu.aspx?sName=University+Housing+and+Dining&locationNum=12&locationName=J2+Dining&naFlag=1",
-  "https://hf-foodpro.austin.utexas.edu/foodpro/shortmenu.aspx?sName=University+Housing+and+Dining&locationNum=12(a)&locationName=JCL+Dining&naFlag=1",
-  "https://hf-foodpro.austin.utexas.edu/foodpro/shortmenu.aspx?sName=University+Housing+and+Dining&locationNum=03&locationName=Kins+Dining&naFlag=1",
-  "https://hf-foodpro.austin.utexas.edu/foodpro/shortmenu.aspx?sName=University+Housing+and+Dining&locationNum=05&locationName=Jester+City+Market&naFlag=1",
+  'https://hf-foodpro.austin.utexas.edu/foodpro/shortmenu.aspx?sName=University+Housing+and+Dining&locationNum=12&locationName=J2+Dining&naFlag=1',
+  'https://hf-foodpro.austin.utexas.edu/foodpro/shortmenu.aspx?sName=University+Housing+and+Dining&locationNum=12(a)&locationName=JCL+Dining&naFlag=1',
+  'https://hf-foodpro.austin.utexas.edu/foodpro/shortmenu.aspx?sName=University+Housing+and+Dining&locationNum=03&locationName=Kins+Dining&naFlag=1',
+  'https://hf-foodpro.austin.utexas.edu/foodpro/shortmenu.aspx?sName=University+Housing+and+Dining&locationNum=05&locationName=Jester+City+Market&naFlag=1',
   "https://hf-foodpro.austin.utexas.edu/foodpro/shortmenu.aspx?sName=University+Housing+and+Dining&locationNum=26&locationName=Jesta'+Pizza&naFlag=1",
-  "https://hf-foodpro.austin.utexas.edu/foodpro/shortmenu.aspx?sName=University+Housing+and+Dining&locationNum=19&locationName=Littlefield+Patio+Cafe&naFlag=1",
-  "https://hf-foodpro.austin.utexas.edu/foodpro/shortmenu.aspx?sName=University+Housing+and+Dining&locationNum=08&locationName=Cypress+Bend+Cafe+&naFlag=1",
+  'https://hf-foodpro.austin.utexas.edu/foodpro/shortmenu.aspx?sName=University+Housing+and+Dining&locationNum=19&locationName=Littlefield+Patio+Cafe&naFlag=1',
+  'https://hf-foodpro.austin.utexas.edu/foodpro/shortmenu.aspx?sName=University+Housing+and+Dining&locationNum=08&locationName=Cypress+Bend+Cafe+&naFlag=1',
 ];
 
 // const LINKS = [
@@ -99,7 +99,7 @@ const LINKS = [
 //   "https://hf-foodpro.austin.utexas.edu/foodpro/shortmenu.aspx?sName=University+Housing+and+Dining&locationNum=12&locationName=J2+Dining&naFlag=1&WeeksMenus=This+Week%27s+Menus&myaction=read&dtdate=6%2f30%2f2025",
 // ];
 
-const DATA_DIR = join(__dirname, "..", "performance-test-results");
+const DATA_DIR = join(import.meta.dirname, '..', 'performance-test-results');
 
 if (!existsSync(DATA_DIR)) {
   mkdirSync(DATA_DIR, { recursive: true });
@@ -113,8 +113,8 @@ const fetchHtml = async (url: string, retries = 3): Promise<string | null> => {
     try {
       const response = await fetch(url, {
         headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
         },
         signal: AbortSignal.timeout(15000),
       });
@@ -137,7 +137,7 @@ const fetchHtml = async (url: string, retries = 3): Promise<string | null> => {
 
 const scrapeNutritionInfo = async (
   url: string,
-  nutritionConcurrency: number
+  nutritionConcurrency: number,
 ): Promise<Nutrition | null> => {
   try {
     const html = await fetchHtml(url);
@@ -146,7 +146,7 @@ const scrapeNutritionInfo = async (
     const $ = cheerio.load(html);
 
     const getNutrient = (label: string) => {
-      const elements = $(".nutfactstopnutrient");
+      const elements = $('.nutfactstopnutrient');
       let result = null;
 
       elements.each((_, element) => {
@@ -163,33 +163,31 @@ const scrapeNutritionInfo = async (
       return result;
     };
 
-    const servingSizeElements = $(".nutfactsservsize");
+    const servingSizeElements = $('.nutfactsservsize');
     const servingSize =
-      servingSizeElements.length > 1
-        ? $(servingSizeElements[1]).text().trim()
-        : "";
+      servingSizeElements.length > 1 ? $(servingSizeElements[1]).text().trim() : '';
 
-    const caloriesText = $(".nutfactscaloriesval").text().trim();
+    const caloriesText = $('.nutfactscaloriesval').text().trim();
     const calories = parseFloat(caloriesText) || 0;
 
-    const ingredients = $(".labelingredientsvalue").text().trim() || undefined;
+    const ingredients = $('.labelingredientsvalue').text().trim() || undefined;
 
     return {
       servingSize,
       calories,
-      totalFat: getNutrient("Total Fat") || "0g",
-      saturatedFat: getNutrient("Saturated Fat") || "0g",
-      transFat: getNutrient("Trans Fat") || "0g",
-      cholesterol: getNutrient("Cholesterol") || "0mg",
-      sodium: getNutrient("Sodium") || "0mg",
-      totalCarbohydrates: getNutrient("Total Carbohydrate") || "0g",
-      dietaryFiber: getNutrient("Dietary Fiber") || "0g",
-      totalSugars: getNutrient("Total Sugars") || "0g",
-      protein: getNutrient("Protein") || "0g",
-      vitaminD: getNutrient("Vitamin D") || "0mcg",
-      calcium: getNutrient("Calcium") || "0mg",
-      iron: getNutrient("Iron") || "0mg",
-      potassium: getNutrient("Potassium") || "0mg",
+      totalFat: getNutrient('Total Fat') || '0g',
+      saturatedFat: getNutrient('Saturated Fat') || '0g',
+      transFat: getNutrient('Trans Fat') || '0g',
+      cholesterol: getNutrient('Cholesterol') || '0mg',
+      sodium: getNutrient('Sodium') || '0mg',
+      totalCarbohydrates: getNutrient('Total Carbohydrate') || '0g',
+      dietaryFiber: getNutrient('Dietary Fiber') || '0g',
+      totalSugars: getNutrient('Total Sugars') || '0g',
+      protein: getNutrient('Protein') || '0g',
+      vitaminD: getNutrient('Vitamin D') || '0mcg',
+      calcium: getNutrient('Calcium') || '0mg',
+      iron: getNutrient('Iron') || '0mg',
+      potassium: getNutrient('Potassium') || '0mg',
       ingredients,
     };
   } catch (error) {
@@ -203,16 +201,16 @@ const parseMenuStructure = ($: cheerio.CheerioAPI): Section[] => {
     const sectionMap = new Map<string, Section>();
     let currentSection: Section | null = null;
 
-    $("tbody tr").each((_, row) => {
+    $('tbody tr').each((_, row) => {
       const $row = $(row);
-      const categoryHeader = $row.find(".longmenucolmenucat");
+      const categoryHeader = $row.find('.longmenucolmenucat');
 
       if (categoryHeader.length > 0) {
         const categoryName =
           categoryHeader
             .text()
-            .replace(/^--\s*|[\s-]*$/g, "")
-            .trim() || "Uncategorized";
+            .replace(/^--\s*|[\s-]*$/g, '')
+            .trim() || 'Uncategorized';
 
         currentSection = sectionMap.get(categoryName) || {
           categoryName,
@@ -220,58 +218,56 @@ const parseMenuStructure = ($: cheerio.CheerioAPI): Section[] => {
         };
         sectionMap.set(categoryName, currentSection);
       } else if (currentSection) {
-        const foodLink = $row.find(".longmenucoldispname a");
-        const foodCheckBox = $row.find(
-          '.longmenucoldispname input[type="checkbox"]'
-        );
+        const foodLink = $row.find('.longmenucoldispname a');
+        const foodCheckBox = $row.find('.longmenucoldispname input[type="checkbox"]');
 
         if (foodLink.length > 0 && foodCheckBox.length > 0) {
           const foodName = foodLink.text().trim();
           if (!foodName) return;
 
           const allergenMap = new Map<string, boolean>([
-            ["beef", false],
-            ["egg", false],
-            ["fish", false],
-            ["milk", false],
-            ["peanuts", false],
-            ["pork", false],
-            ["shellfish", false],
-            ["soy", false],
-            ["tree_nuts", false],
-            ["wheat", false],
-            ["sesame_seeds", false],
-            ["vegan", false],
-            ["vegetarian", false],
-            ["halal", false],
+            ['beef', false],
+            ['egg', false],
+            ['fish', false],
+            ['milk', false],
+            ['peanuts', false],
+            ['pork', false],
+            ['shellfish', false],
+            ['soy', false],
+            ['tree_nuts', false],
+            ['wheat', false],
+            ['sesame_seeds', false],
+            ['vegan', false],
+            ['vegetarian', false],
+            ['halal', false],
           ]);
 
-          const allergenIcons = $row.find("img");
+          const allergenIcons = $row.find('img');
           allergenIcons.each((_, img) => {
-            const imgSrc = $(img).attr("src");
+            const imgSrc = $(img).attr('src');
             if (!imgSrc) return;
 
             const filename = imgSrc
-              .substring(imgSrc.lastIndexOf("/") + 1)
-              .replace(".png", "")
+              .substring(imgSrc.lastIndexOf('/') + 1)
+              .replace('.png', '')
               .toLowerCase()
-              .replace(/ /g, "_");
+              .replace(/ /g, '_');
 
             const allergenKeyMap: { [key: string]: keyof AllergenInfo } = {
-              beef: "beef",
-              eggs: "egg",
-              egg: "egg",
-              fish: "fish",
-              milk: "milk",
-              peanuts: "peanuts",
-              pork: "pork",
-              shellfish: "shellfish",
-              soy: "soy",
-              tree_nuts: "tree_nuts",
-              wheat: "wheat",
-              sesame: "sesame_seeds",
-              vegan: "vegan",
-              veggie: "vegetarian",
+              beef: 'beef',
+              eggs: 'egg',
+              egg: 'egg',
+              fish: 'fish',
+              milk: 'milk',
+              peanuts: 'peanuts',
+              pork: 'pork',
+              shellfish: 'shellfish',
+              soy: 'soy',
+              tree_nuts: 'tree_nuts',
+              wheat: 'wheat',
+              sesame: 'sesame_seeds',
+              vegan: 'vegan',
+              veggie: 'vegetarian',
             };
 
             const allergenKey = allergenKeyMap[filename];
@@ -280,17 +276,13 @@ const parseMenuStructure = ($: cheerio.CheerioAPI): Section[] => {
             }
           });
 
-          const allergens = Object.fromEntries(
-            allergenMap
-          ) as unknown as AllergenInfo;
+          const allergens = Object.fromEntries(allergenMap) as unknown as AllergenInfo;
 
-          const existingIndex = currentSection.foods.findIndex(
-            (f) => f.name === foodName
-          );
+          const existingIndex = currentSection.foods.findIndex((f) => f.name === foodName);
 
           if (existingIndex === -1) {
-            const href = foodLink.attr("href");
-            const fullLink = href?.startsWith("http")
+            const href = foodLink.attr('href');
+            const fullLink = href?.startsWith('http')
               ? href
               : `https://hf-foodpro.austin.utexas.edu/foodpro/${href}`;
 
@@ -304,9 +296,7 @@ const parseMenuStructure = ($: cheerio.CheerioAPI): Section[] => {
       }
     });
 
-    return Array.from(sectionMap.values()).filter(
-      (section) => section.foods.length > 0
-    );
+    return Array.from(sectionMap.values()).filter((section) => section.foods.length > 0);
   } catch (error) {
     errorCount++;
     return [];
@@ -316,7 +306,7 @@ const parseMenuStructure = ($: cheerio.CheerioAPI): Section[] => {
 const scrapeMenuData = async (
   url: string,
   nutritionConcurrency: number,
-  menuConcurrency: number
+  menuConcurrency: number,
 ) => {
   try {
     const html = await fetchHtml(url);
@@ -326,9 +316,9 @@ const scrapeMenuData = async (
 
     const menuLinks: string[] = [];
     $('a[href*="longmenu.aspx"]').each((_, element) => {
-      const href = $(element).attr("href");
+      const href = $(element).attr('href');
       if (href) {
-        const fullLink = href.startsWith("http")
+        const fullLink = href.startsWith('http')
           ? href
           : `https://hf-foodpro.austin.utexas.edu/foodpro/${href}`;
         menuLinks.push(fullLink);
@@ -345,11 +335,9 @@ const scrapeMenuData = async (
 
             const menu$ = cheerio.load(menuHtml);
 
-            const categoryElement = menu$("a:has(div.longmenugridheader)");
+            const categoryElement = menu$('a:has(div.longmenugridheader)');
             const categoryText = categoryElement.text();
-            const category =
-              categoryText.split("Menu")[0].replace(/ /g, "").trim() ||
-              "Unknown";
+            const category = categoryText.split('Menu')[0].replace(/ /g, '').trim() || 'Unknown';
 
             const baseMenu = parseMenuStructure(menu$);
 
@@ -364,21 +352,19 @@ const scrapeMenuData = async (
                   if (!food.link) return food;
 
                   const nutrition = await nutritionLimit(() =>
-                    scrapeNutritionInfo(food.link, nutritionConcurrency)
+                    scrapeNutritionInfo(food.link, nutritionConcurrency),
                   );
 
                   return { ...food, nutrition };
-                })
-              )
+                }),
+              ),
             );
 
             const enhancedMenu = baseMenu.map((section) => {
               const seenFoodNames = new Set();
               const uniqueFoods = section.foods
                 .map((food) => {
-                  const foodWithNutrition = foodsWithNutrition.find(
-                    (f) => f.name === food.name
-                  );
+                  const foodWithNutrition = foodsWithNutrition.find((f) => f.name === food.name);
                   return foodWithNutrition || food;
                 })
                 .filter((food) => {
@@ -395,9 +381,7 @@ const scrapeMenuData = async (
               };
             });
 
-            const finalMenu = enhancedMenu.filter(
-              (section) => section.foods.length > 0
-            );
+            const finalMenu = enhancedMenu.filter((section) => section.foods.length > 0);
             if (finalMenu.length === 0) {
               return null;
             }
@@ -407,13 +391,12 @@ const scrapeMenuData = async (
             errorCount++;
             return null;
           }
-        })
-      )
+        }),
+      ),
     );
 
     const urlObj = new URL(url);
-    const locationName =
-      urlObj.searchParams.get("locationName")?.trim() || "Unknown Location";
+    const locationName = urlObj.searchParams.get('locationName')?.trim() || 'Unknown Location';
     const filteredMenus = menus.filter((m) => m !== null);
 
     return {
@@ -428,11 +411,9 @@ const scrapeMenuData = async (
 
 const runPerformanceTest = async (
   nutritionConcurrency: number,
-  menuConcurrency: number
+  menuConcurrency: number,
 ): Promise<TestResult> => {
-  console.log(
-    `\n🧪 Testing: Nutrition=${nutritionConcurrency}, Menu=${menuConcurrency}`
-  );
+  console.log(`\n🧪 Testing: Nutrition=${nutritionConcurrency}, Menu=${menuConcurrency}`);
 
   const startTime = Date.now();
   const startMemory = process.memoryUsage().heapUsed;
@@ -444,10 +425,8 @@ const runPerformanceTest = async (
 
     const rawData = await Promise.all(
       Array.from(menuUrlsSet).map((url) =>
-        scraperLimit(() =>
-          scrapeMenuData(url, nutritionConcurrency, menuConcurrency)
-        )
-      )
+        scraperLimit(() => scrapeMenuData(url, nutritionConcurrency, menuConcurrency)),
+      ),
     );
 
     const endTime = Date.now();
@@ -462,13 +441,10 @@ const runPerformanceTest = async (
         location.menus.reduce(
           (menuSum, menu) =>
             menuSum +
-            menu.menuCategories.reduce(
-              (catSum, category) => catSum + category.foods.length,
-              0
-            ),
-          0
+            menu.menuCategories.reduce((catSum, category) => catSum + category.foods.length, 0),
+          0,
         ),
-      0
+      0,
     );
 
     const itemsWithNutrition = data.reduce(
@@ -478,17 +454,15 @@ const runPerformanceTest = async (
           (menuSum, menu) =>
             menuSum +
             menu.menuCategories.reduce(
-              (catSum, category) =>
-                catSum + category.foods.filter((food) => food.nutrition).length,
-              0
+              (catSum, category) => catSum + category.foods.filter((food) => food.nutrition).length,
+              0,
             ),
-          0
+          0,
         ),
-      0
+      0,
     );
 
-    const successRate =
-      totalItems > 0 ? (itemsWithNutrition / totalItems) * 100 : 0;
+    const successRate = totalItems > 0 ? (itemsWithNutrition / totalItems) * 100 : 0;
     const itemsPerSecond = totalItems / duration;
 
     const result: TestResult = {
@@ -525,11 +499,11 @@ const runPerformanceTest = async (
 };
 
 const main = async () => {
-  console.log("🚀 Starting Performance Test Suite");
+  console.log('🚀 Starting Performance Test Suite');
   console.log(
-    `📍 Testing ${LINKS.length} locations with ${TEST_CONFIGS.length} different configurations`
+    `📍 Testing ${LINKS.length} locations with ${TEST_CONFIGS.length} different configurations`,
   );
-  console.log("⚠️  This will take several minutes to complete...\n");
+  console.log('⚠️  This will take several minutes to complete...\n');
 
   const results: TestResult[] = [];
 
@@ -542,23 +516,17 @@ const main = async () => {
   }
 
   // Analyze results
-  console.log("\n📈 PERFORMANCE TEST RESULTS");
-  console.log("=".repeat(80));
-  console.log(
-    "Nutrition | Menu | Duration | Items/s | Success% | Errors | Score"
-  );
-  console.log("-".repeat(80));
+  console.log('\n📈 PERFORMANCE TEST RESULTS');
+  console.log('='.repeat(80));
+  console.log('Nutrition | Menu | Duration | Items/s | Success% | Errors | Score');
+  console.log('-'.repeat(80));
 
-  const validResults = results.filter(
-    (r) => r.duration > 0 && r.successRate > 90
-  );
+  const validResults = results.filter((r) => r.duration > 0 && r.successRate > 90);
 
   results.forEach((result) => {
     const score =
       result.successRate > 90
-        ? result.itemsPerSecond *
-          (result.successRate / 100) *
-          (1 - result.errors / 100)
+        ? result.itemsPerSecond * (result.successRate / 100) * (1 - result.errors / 100)
         : 0;
 
     console.log(
@@ -568,43 +536,34 @@ const main = async () => {
         `${result.itemsPerSecond.toFixed(1).padStart(7)} | ` +
         `${result.successRate.toFixed(1).padStart(8)} | ` +
         `${result.errors.toString().padStart(6)} | ` +
-        `${score.toFixed(2).padStart(5)}`
+        `${score.toFixed(2).padStart(5)}`,
     );
   });
 
   // Find optimal configuration
   if (validResults.length > 0) {
     const optimal = validResults.reduce((best, current) => {
-      const bestScore =
-        best.itemsPerSecond *
-        (best.successRate / 100) *
-        (1 - best.errors / 100);
+      const bestScore = best.itemsPerSecond * (best.successRate / 100) * (1 - best.errors / 100);
       const currentScore =
-        current.itemsPerSecond *
-        (current.successRate / 100) *
-        (1 - current.errors / 100);
+        current.itemsPerSecond * (current.successRate / 100) * (1 - current.errors / 100);
       return currentScore > bestScore ? current : best;
     });
 
-    console.log("\n🏆 OPTIMAL CONFIGURATION:");
+    console.log('\n🏆 OPTIMAL CONFIGURATION:');
     console.log(`   Nutrition Concurrency: ${optimal.nutritionConcurrency}`);
     console.log(`   Menu Concurrency: ${optimal.menuConcurrency}`);
-    console.log(
-      `   Performance: ${optimal.itemsPerSecond.toFixed(1)} items/second`
-    );
+    console.log(`   Performance: ${optimal.itemsPerSecond.toFixed(1)} items/second`);
     console.log(`   Success Rate: ${optimal.successRate.toFixed(1)}%`);
     console.log(`   Duration: ${optimal.duration.toFixed(2)} seconds`);
   } else {
-    console.log(
-      "\n❌ No valid configurations found (all had <90% success rate)"
-    );
+    console.log('\n❌ No valid configurations found (all had <90% success rate)');
   }
 
   // Save detailed results
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const fileName = `performance_test_${timestamp}.json`;
   const filePath = join(DATA_DIR, fileName);
-  await writeFile(filePath, JSON.stringify(results, null, 2), "utf-8");
+  await writeFile(filePath, JSON.stringify(results, null, 2), 'utf-8');
   console.log(`\n💾 Detailed results saved to ${filePath}`);
 };
 

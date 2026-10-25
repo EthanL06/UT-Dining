@@ -2,6 +2,15 @@
 
 A high-performance web scraper for University of Texas dining hall menus, built with TypeScript, Cheerio, and Supabase integration. This tool scrapes menu data, nutrition information, and allergen details from the UT dining system.
 
+> **Monorepo note:** this package lives in `apps/scraper` of the UT Dining monorepo. Node runs the TypeScript directly (no build step), and environment variables come from `.env` or `.env.local` (written by `./setup.sh` / `pnpm env:local`).
+>
+> ```sh
+> pnpm --filter @ut-dining/scraper start   # or ./dev.sh scrape from the repo root
+> pnpm --filter @ut-dining/scraper perf    # concurrency performance test
+> ```
+>
+> Older instructions below that mention `pnpm build`, `dist/` or `run-performance-test.sh` are superseded by these commands.
+
 ## 🚀 Features
 
 - **Fast Scraping**: Uses Cheerio and fetch for lightweight, efficient scraping

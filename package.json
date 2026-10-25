@@ -1,0 +1,41 @@
+{
+  "name": "ut-dining-monorepo",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "prepare": "lefthook install",
+    "dev": "./dev.sh",
+    "dev:mobile": "pnpm --filter @ut-dining/mobile start",
+    "dev:ios": "pnpm --filter @ut-dining/mobile ios",
+    "dev:android": "pnpm --filter @ut-dining/mobile android",
+    "scrape": "pnpm --filter @ut-dining/scraper start",
+    "lint": "biome check",
+    "fix": "biome check --write",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "build": "turbo run build",
+    "check": "biome check && turbo run typecheck test",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:new": "supabase migration new",
+    "db:types": "supabase gen types typescript --local > packages/supabase/src/database.types.ts && biome format --write packages/supabase/src/database.types.ts",
+    "env:local": "node scripts/env.ts --local",
+    "env:dev": "node scripts/env.ts --dev"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.1.2",
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
+    "@types/node": "catalog:",
+    "lefthook": "^2.2.2",
+    "supabase": "^2.122.0",
+    "tsgo": "npm:typescript@^7.0.2",
+    "turbo": "^2.11.10",
+    "typescript": "catalog:"
+  }
+}

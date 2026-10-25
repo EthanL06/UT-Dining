@@ -1,6 +1,6 @@
 {
-  "name": "ut-dining",
-  "version": "1.2.1",
+  "name": "@ut-dining/mobile",
+  "version": "1.2.4",
   "main": "expo-router/entry",
   "type": "module",
   "scripts": {
@@ -8,16 +8,10 @@
     "ios": "APP_VARIANT=development expo run:ios",
     "start": "APP_VARIANT=development expo start --dev-client",
     "prebuild": "expo prebuild",
-    "lint": "biome check",
-    "lint:fix": "biome check --write",
-    "type-check": "tsc --noEmit",
     "web": "expo start --web",
-    "prepare": "husky"
+    "typecheck": "node ../../node_modules/tsgo/bin/tsc --noEmit"
   },
   "dependencies": {
-    "@commitlint/cli": "^19.8.0",
-    "@commitlint/config-conventional": "^19.8.0",
-    "@commitlint/types": "^19.8.0",
     "@expo/cli": "^0.22.18",
     "@expo/ngrok": "^4.1.0",
     "@expo/server": "^0.5.3",
@@ -25,7 +19,7 @@
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-navigation/native": "^7.0.14",
     "@shopify/flash-list": "1.7.3",
-    "@supabase/supabase-js": "^2.49.1",
+    "@supabase/supabase-js": "catalog:",
     "@tanstack/react-query": "^5.81.2",
     "babel-plugin-inline-import": "^3.0.0",
     "clsx": "^2.1.1",
@@ -56,7 +50,6 @@
     "expo-system-ui": "~4.0.9",
     "expo-updates": "~0.27.4",
     "expo-web-browser": "~14.0.2",
-    "husky": "^9.1.7",
     "lottie-react-native": "7.1.0",
     "lucide-react-native": "^0.474.0",
     "nativewind": "^4.1.23",
@@ -83,17 +76,14 @@
   },
   "devDependencies": {
     "@babel/core": "^7.26.9",
-    "@biomejs/biome": "^2.1.2",
     "@types/deno": "^2.3.0",
     "@types/react": "~18.3.18",
     "@types/uuid": "^10.0.0",
+    "@ut-dining/supabase": "workspace:*",
+    "@ut-dining/tsconfig": "workspace:*",
     "tailwindcss": "^3.4.17",
     "tanstack-query-dev-tools-expo-plugin": "^0.1.1",
-    "typescript": "^5.8.3"
-  },
-  "resolutions": {
-    "@react-navigation/core": "7.11.0",
-    "esbuild": "^0.25.6"
+    "typescript": "catalog:"
   },
   "expo": {
     "doctor": {

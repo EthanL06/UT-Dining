@@ -1,0 +1,17 @@
+{
+  "name": "@ut-dining/supabase",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Generated Supabase database types shared by every UT Dining app",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "node ../../node_modules/tsgo/bin/tsc --noEmit"
+  },
+  "devDependencies": {
+    "@ut-dining/tsconfig": "workspace:*",
+    "typescript": "catalog:"
+  }
+}
