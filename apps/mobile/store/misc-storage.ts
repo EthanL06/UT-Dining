@@ -1,3 +1,3 @@
-import { MMKV, Mode } from 'react-native-mmkv';
+import { createMMKV } from 'react-native-mmkv';
 
-export const miscStorage = new MMKV({ id: 'misc', mode: Mode.MULTI_PROCESS });
+export const miscStorage = createMMKV({ id: 'misc', mode: 'multi-process' });

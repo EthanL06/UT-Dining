@@ -245,7 +245,6 @@ const Notifications = () => {
             </View>
           }
           contentContainerStyle={{ paddingBottom: 24 }}
-          estimatedItemSize={120}
           data={notifications}
           renderItem={({ item }) => (
             <NotificationItem notification={item} onPress={handleNotificationPress} />

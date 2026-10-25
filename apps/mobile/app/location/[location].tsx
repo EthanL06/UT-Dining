@@ -1,4 +1,4 @@
-import { FlashList } from '@shopify/flash-list';
+import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams } from 'expo-router';
@@ -165,7 +165,7 @@ const Location = () => {
   const skeletonItems = useSkeletonItems();
 
   // Scroll to top functionality
-  const listRef = useRef<FlashList<ListItem>>(null);
+  const listRef = useRef<FlashListRef<ListItem>>(null);
   const { showScrollToTop, scrollButtonAnimation, handleScroll, scrollToTop } =
     useScrollToTop(listRef);
 
@@ -297,7 +297,6 @@ const Location = () => {
       <Stack.Screen options={{ title: 'Location' }} />
       <Container className="relative mx-0 w-full flex-1">
         <FlashList
-          estimatedItemSize={60}
           extraData={favorites}
           ref={listRef}
           onScroll={handleScroll}

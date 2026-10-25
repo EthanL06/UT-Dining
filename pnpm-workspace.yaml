@@ -13,6 +13,8 @@ onlyBuiltDependencies:
   - lefthook
 
 overrides:
-  '@react-navigation/core': 7.11.0
   esbuild: ^0.25.6
+  # The TanStack dev tools plugin pins SDK 52 native modules; use the app's versions instead.
+  tanstack-query-dev-tools-expo-plugin>@expo/metro-runtime: ~58.0.15
+  tanstack-query-dev-tools-expo-plugin>expo-device: ~58.0.5
 

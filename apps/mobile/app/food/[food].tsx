@@ -73,7 +73,6 @@ const FoodScreen = () => {
         </View>
         <Container disableInsets className="mx-0 mt-2">
           <FlashList
-            estimatedItemSize={32}
             data={nutritionDataFiltered}
             renderItem={({ item }) => <NutritionRow item={item} isDarkMode={isDarkMode} />}
             ListHeaderComponent={

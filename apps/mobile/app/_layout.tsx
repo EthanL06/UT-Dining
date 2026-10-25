@@ -20,6 +20,7 @@ import type * as schema from '../services/database/schema';
 import '../global.css';
 import * as Device from 'expo-device';
 import { VersionCheckProvider } from '~/components/VersionCheckProvider';
+import { usePostHogScreens } from '~/hooks/usePostHogScreens';
 import { POSTHOG_API_KEY, POSTHOG_CONFIG } from '~/services/analytics/posthog';
 import { PushNotificationsInitializer } from '~/services/notifications/notifications';
 import { ratingService } from '~/services/rating/rating';
@@ -40,6 +41,7 @@ const AppContent = () => {
   const { success, error } = useMigrations(db, migrations);
   const { incrementLaunchCount } = useAppLaunchStore();
   useSyncQueries({ queryClient });
+  usePostHogScreens();
 
   const isTablet = Device.deviceType === Device.DeviceType.TABLET;
 

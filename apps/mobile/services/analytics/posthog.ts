@@ -1,5 +1,6 @@
 import type { PostHog } from 'posthog-react-native';
-import type { PostHogEventProperties } from 'posthog-react-native/lib/posthog-core/src';
+
+type PostHogEventProperties = Parameters<PostHog['capture']>[1];
 
 export const POSTHOG_API_KEY = process.env.EXPO_PUBLIC_POSTHOG_API_KEY;
 const IS_DEV = __DEV__;
@@ -12,15 +13,10 @@ export const POSTHOG_CONFIG = {
     disabled: IS_DEV, // Set to false to enable analytics in development
   },
   autocapture: {
-    captureScreens: true,
+    // Expo Router no longer uses React Navigation, so screens are tracked by usePostHogScreens.
+    captureScreens: false,
     captureTouches: true,
     customLabelProp: 'ph-label',
-    navigation: {
-      routeToName: (name: string, params?: { id?: string }) => {
-        if (params?.id) return `${name}/${params.id}`;
-        return name;
-      },
-    },
   },
   debug: false, // Set true if using PostHog in development
 } as const;
