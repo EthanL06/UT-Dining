@@ -201,8 +201,9 @@ const Notifications = () => {
           headerShown: false,
         }}
       />
-      <Container className="mx-0" disableBottomPadding>
+      <Container className="mx-0 pb-0" disableBottomPadding>
         <FlashList
+          contentInsetAdjustmentBehavior="automatic"
           ListHeaderComponent={
             <View className="mt-6 flex gap-y-5 px-6">
               <View>

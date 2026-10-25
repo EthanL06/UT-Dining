@@ -260,7 +260,7 @@ export default function Home() {
   return (
     <View style={{ flex: 1, backgroundColor: isDarkMode ? '#171717' : '#fff' }}>
       <Stack.Screen options={{ title: 'Home' }} />
-      <Container disableBottomPadding onLayout={onLayoutRootView}>
+      <Container className="pb-0" disableBottomPadding onLayout={onLayoutRootView}>
         <OnboardingScreen isOnboardingComplete={isOnboardingComplete} />
 
         {isLoading ? (
@@ -275,6 +275,7 @@ export default function Home() {
           </View>
         ) : (
           <FlatList
+            contentInsetAdjustmentBehavior="automatic"
             extraData={[currentTime, selectedFilter, refreshKey]}
             data={filteredLocations}
             refreshControl={
