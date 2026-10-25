@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 27 0% 100%;
+    --foreground: 27 0% 10%;
+    --card: 27 0% 100%;
+    --card-foreground: 27 0% 15%;
+    --popover: 27 0% 100%;
+    --popover-foreground: 27 95% 10%;
+    --primary: 27 100% 37.5%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 27 10% 90%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: -11 10% 95%;
+    --muted-foreground: 27 0% 40%;
+    --accent: -11 10% 90%;
+    --accent-foreground: 27 0% 15%;
+    --destructive: 0 50% 50%;
+    --destructive-foreground: 27 0% 100%;
+    --border: 27 20% 82%;
+    --input: 27 20% 50%;
+    --ring: 27 100% 37.5%;
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+  .dark {
+    --background: 27 10% 10%;
+    --foreground: 27 0% 100%;
+    --card: 27 0% 10%;
+    --card-foreground: 27 0% 100%;
+    --popover: 27 10% 5%;
+    --popover-foreground: 27 0% 100%;
+    --primary: 27 100% 37.5%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 27 10% 20%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: -11 10% 25%;
+    --muted-foreground: 27 0% 65%;
+    --accent: -11 10% 25%;
+    --accent-foreground: 27 0% 95%;
+    --destructive: 0 50% 50%;
+    --destructive-foreground: 27 0% 100%;
+    --border: 27 20% 50%;
+    --input: 27 20% 50%;
+    --ring: 27 100% 37.5%;
+    --radius: 0.5rem;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    overflow-y: scroll !important;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    overflow-y: scroll !important;
+  }
+
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(155, 155, 155, 0.5);
+    border-radius: 20px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+
+  .glass {
+    @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl dark:bg-black/10;
+  }
+}
