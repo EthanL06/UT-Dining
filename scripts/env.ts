@@ -83,6 +83,10 @@ try {
     EXPO_PUBLIC_SUPABASE_URL: supabase.url,
     EXPO_PUBLIC_SUPABASE_ANON_KEY: supabase.anonKey,
   });
+  writeEnv('dashboard', {
+    NEXT_PUBLIC_SUPABASE_URL: supabase.url,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: supabase.anonKey,
+  });
   writeEnv('scraper', {
     SUPABASE_URL: supabase.url,
     SUPABASE_KEY: supabase.serviceKey,

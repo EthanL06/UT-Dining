@@ -1,0 +1,43 @@
+{
+  "name": "@ut-dining/dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "next typegen && node ../../node_modules/tsgo/bin/tsc --noEmit"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@mantine/core": "^8.0.1",
+    "@mantine/dates": "^8.0.1",
+    "@mantine/form": "^8.0.1",
+    "@mantine/hooks": "^8.0.1",
+    "@mantine/modals": "^8.1.1",
+    "@mantine/notifications": "^8.1.1",
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "catalog:",
+    "@tabler/icons-react": "^3.33.0",
+    "clsx": "^2.1.1",
+    "dayjs": "^1.11.13",
+    "emoji-picker-react": "^4.12.3",
+    "next": "^16.4.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tailwind-merge": "^3.3.0",
+    "tailwind-preset-mantine": "^2.1.0",
+    "@ut-dining/supabase": "workspace:*"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "catalog:",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tailwindcss": "^4",
+    "typescript": "catalog:",
+    "@ut-dining/tsconfig": "workspace:*"
+  }
+}

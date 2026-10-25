@@ -14,7 +14,8 @@
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "out/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "out/**"],
+      "env": ["NEXT_PUBLIC_*", "WEBSITE_BASE_PATH"]
     },
     "dev": {
       "cache": false,

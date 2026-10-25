@@ -52,6 +52,28 @@
           }
         }
       }
+    },
+    {
+      "includes": ["apps/dashboard/**", "apps/website/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "warn",
+            "noArrayIndexKey": "warn",
+            "noImplicitAnyLet": "warn"
+          },
+          "style": {
+            "noNonNullAssertion": "warn"
+          },
+          "correctness": {
+            "useExhaustiveDependencies": "warn"
+          },
+          "a11y": {
+            "useAriaPropsSupportedByRole": "warn",
+            "noNoninteractiveTabindex": "warn"
+          }
+        }
+      }
     }
   ]
 }
