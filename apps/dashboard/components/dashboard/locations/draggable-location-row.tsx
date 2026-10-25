@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { LocationRow } from "./location-row";
-import { IconGripVertical } from "@tabler/icons-react";
-import type { Location, LocationType } from "@/types/location";
-import { UniqueIdentifier } from "@dnd-kit/core";
-import { useEffect, useState } from "react";
+import type { UniqueIdentifier } from '@dnd-kit/core';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { IconGripVertical } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
+import type { Location, LocationType } from '@/types/location';
+import { LocationRow } from './location-row';
 
 interface DraggableLocationRowProps {
   location: Location;
@@ -37,8 +37,8 @@ function DraggableLocationRowContent(props: DraggableLocationRowProps) {
       {...listeners}
       {...attributes}
       style={{
-        display: "flex",
-        alignItems: "center",
+        display: 'flex',
+        alignItems: 'center',
         opacity: isDragging ? 0.5 : 1,
       }}
       tabIndex={0}

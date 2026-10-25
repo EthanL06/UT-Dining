@@ -1,29 +1,29 @@
 import {
-  Modal,
-  TextInput,
-  Textarea,
-  Button,
-  Stack,
-  Group,
-  Checkbox,
-  Text,
-  Card,
-  Avatar,
-  SimpleGrid,
-  Switch,
-  Paper,
-  Tooltip,
-  Divider,
   ActionIcon,
+  Avatar,
+  Button,
+  Card,
+  Checkbox,
+  Divider,
+  Group,
+  Modal,
+  Paper,
   Select,
-} from "@mantine/core";
-import { notifications } from "@mantine/notifications";
-import { modals } from "@mantine/modals";
-import { IconPlus, IconTrash, IconX, IconCopy } from "@tabler/icons-react";
-import { useForm } from "@mantine/form";
-import { useState, useEffect } from "react";
-import { Location, TimeRange, MealTime, LocationType } from "@/types/location";
-import { paymentMethodOptions } from "@/lib/payment-methods";
+  SimpleGrid,
+  Stack,
+  Switch,
+  Text,
+  Textarea,
+  TextInput,
+  Tooltip,
+} from '@mantine/core';
+import { useForm } from '@mantine/form';
+import { modals } from '@mantine/modals';
+import { notifications } from '@mantine/notifications';
+import { IconCopy, IconPlus, IconTrash, IconX } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
+import { paymentMethodOptions } from '@/lib/payment-methods';
+import type { Location, LocationType, MealTime, TimeRange } from '@/types/location';
 
 interface AddLocationModalProps {
   opened: boolean;
@@ -34,25 +34,22 @@ interface AddLocationModalProps {
 }
 
 const daysOfWeek = [
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-  "sunday",
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
 ] as const;
 
 const mealTimeOptions = [
-  { value: "Breakfast", label: "Breakfast" },
-  { value: "Lunch", label: "Lunch" },
-  { value: "Dinner", label: "Dinner" },
+  { value: 'Breakfast', label: 'Breakfast' },
+  { value: 'Lunch', label: 'Lunch' },
+  { value: 'Dinner', label: 'Dinner' },
 ];
 
-function validateServiceHours(value: {
-  timeRanges: TimeRange[];
-  isClosed: boolean;
-}) {
+function validateServiceHours(value: { timeRanges: TimeRange[]; isClosed: boolean }) {
   // Skip validation if the day is marked as closed
   if (value.isClosed) {
     return null;
@@ -60,7 +57,7 @@ function validateServiceHours(value: {
 
   // Check if at least one time range exists
   if (!value.timeRanges || value.timeRanges.length === 0) {
-    return "At least one time range is required when day is open";
+    return 'At least one time range is required when day is open';
   }
 
   // Validate each time range
@@ -83,12 +80,12 @@ function validateServiceHours(value: {
     const next = sortedRanges[i + 1];
 
     if (current.close > next.open) {
-      return "Time ranges cannot overlap";
+      return 'Time ranges cannot overlap';
     }
 
     // Ensure at least 15 minutes gap between ranges
     if (current.close === next.open) {
-      return "Time ranges must have at least a 15-minute gap between them";
+      return 'Time ranges must have at least a 15-minute gap between them';
     }
   }
 
@@ -99,34 +96,30 @@ function validateServiceHours(value: {
 function militaryToTimeInput(militaryTime: number): string {
   const hours = Math.floor(militaryTime / 100);
   const minutes = militaryTime % 100;
-  return `${hours.toString().padStart(2, "0")}:${minutes
-    .toString()
-    .padStart(2, "0")}`;
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 }
 
 // Convert HH:MM format from time input to military time (0-2359)
 function timeInputToMilitary(timeInput: string): number {
-  const [hours, minutes] = timeInput.split(":").map(Number);
+  const [hours, minutes] = timeInput.split(':').map(Number);
   return hours * 100 + minutes;
 }
 
 // Validate that at least one day has service hours
 function validateServiceHoursRequired(
-  serviceHours: Location["regular_service_hours"],
+  serviceHours: Location['regular_service_hours'],
 ): string | null {
   const allDaysClosed = daysOfWeek.every((day) => serviceHours[day].isClosed);
   if (allDaysClosed) {
-    return "At least one day must have service hours";
+    return 'At least one day must have service hours';
   }
   return null;
 }
 
 // Validate that at least one payment method is selected
-function validatePaymentMethodsRequired(
-  paymentMethods: string[],
-): string | null {
+function validatePaymentMethodsRequired(paymentMethods: string[]): string | null {
   if (paymentMethods.length === 0) {
-    return "At least one payment method is required";
+    return 'At least one payment method is required';
   }
   return null;
 }
@@ -135,7 +128,7 @@ function validatePaymentMethodsRequired(
 function validateMealTimes(mealTimes: MealTime[]): string | null {
   for (let i = 0; i < mealTimes.length; i++) {
     const mealTime = mealTimes[i];
-    if (!mealTime.name || mealTime.name.trim() === "") {
+    if (!mealTime.name || mealTime.name.trim() === '') {
       return `Meal time ${i + 1}: Meal name is required`;
     }
     if (mealTime.end_time <= mealTime.start_time) {
@@ -144,9 +137,7 @@ function validateMealTimes(mealTimes: MealTime[]): string | null {
   }
 
   // Check for overlapping meal times
-  const sortedMealTimes = [...mealTimes].sort(
-    (a, b) => a.start_time - b.start_time,
-  );
+  const sortedMealTimes = [...mealTimes].sort((a, b) => a.start_time - b.start_time);
   for (let i = 0; i < sortedMealTimes.length - 1; i++) {
     const current = sortedMealTimes[i];
     const next = sortedMealTimes[i + 1];
@@ -166,16 +157,10 @@ export function AddLocationModal({
   editingLocation,
   locationTypes,
 }: AddLocationModalProps) {
-  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<
-    string[]
-  >([]);
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>([]);
   const [mealTimes, setMealTimes] = useState<MealTime[]>([]);
-  const [serviceHoursError, setServiceHoursError] = useState<string | null>(
-    null,
-  );
-  const [paymentMethodsError, setPaymentMethodsError] = useState<string | null>(
-    null,
-  );
+  const [serviceHoursError, setServiceHoursError] = useState<string | null>(null);
+  const [paymentMethodsError, setPaymentMethodsError] = useState<string | null>(null);
   const [mealTimesError, setMealTimesError] = useState<string | null>(null);
   const [imageError, setImageError] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -189,8 +174,7 @@ export function AddLocationModal({
   } | null>(null);
 
   // Local state to preserve editing mode during modal close animation
-  const [localEditingLocation, setLocalEditingLocation] =
-    useState<Location | null>(null);
+  const [localEditingLocation, setLocalEditingLocation] = useState<Location | null>(null);
 
   const isEditing = !!localEditingLocation;
 
@@ -198,23 +182,23 @@ export function AddLocationModal({
     if (localEditingLocation) {
       return {
         ...localEditingLocation,
-        colloquial_name: localEditingLocation.colloquial_name || "",
-        image: localEditingLocation.image || "",
-        apple_maps_link: localEditingLocation.apple_maps_link || "",
-        google_maps_link: localEditingLocation.google_maps_link || "",
+        colloquial_name: localEditingLocation.colloquial_name || '',
+        image: localEditingLocation.image || '',
+        apple_maps_link: localEditingLocation.apple_maps_link || '',
+        google_maps_link: localEditingLocation.google_maps_link || '',
         meal_times: localEditingLocation.meal_times || [],
         has_menus: localEditingLocation.has_menus ?? false,
       };
     }
 
     return {
-      name: "",
-      colloquial_name: "",
-      description: "",
-      address: "",
-      image: "",
-      apple_maps_link: "",
-      google_maps_link: "",
+      name: '',
+      colloquial_name: '',
+      description: '',
+      address: '',
+      image: '',
+      apple_maps_link: '',
+      google_maps_link: '',
       latitude: 0,
       longitude: 0,
       regular_service_hours: {
@@ -231,8 +215,8 @@ export function AddLocationModal({
       },
       meal_times: [],
       methods_of_payment: [],
-      status: "open",
-      type_id: "",
+      status: 'open',
+      type_id: '',
       force_close: false,
       has_menus: false,
       updated_at: new Date().toISOString(),
@@ -242,33 +226,28 @@ export function AddLocationModal({
   const form = useForm<Location>({
     initialValues: getInitialValues(),
     validate: {
-      name: (value) => (value.length > 0 ? null : "Name is required"),
-      description: (value) =>
-        value.length > 0 ? null : "Description is required",
-      address: (value) => (value.length > 0 ? null : "Address is required"),
+      name: (value) => (value.length > 0 ? null : 'Name is required'),
+      description: (value) => (value.length > 0 ? null : 'Description is required'),
+      address: (value) => (value.length > 0 ? null : 'Address is required'),
       apple_maps_link: (value) =>
-        value && value.length > 0 ? null : "Apple Maps link is required",
+        value && value.length > 0 ? null : 'Apple Maps link is required',
       google_maps_link: (value) =>
-        value && value.length > 0 ? null : "Google Maps link is required",
+        value && value.length > 0 ? null : 'Google Maps link is required',
       latitude: (value) => {
-        if (!value || String(value).trim() === "")
-          return "Latitude is required";
+        if (!value || String(value).trim() === '') return 'Latitude is required';
         const num = Number(value);
-        if (isNaN(num)) return "Latitude must be a valid number";
-        if (num < -90 || num > 90) return "Latitude must be between -90 and 90";
+        if (isNaN(num)) return 'Latitude must be a valid number';
+        if (num < -90 || num > 90) return 'Latitude must be between -90 and 90';
         return null;
       },
       longitude: (value) => {
-        if (!value || String(value).trim() === "")
-          return "Longitude is required";
+        if (!value || String(value).trim() === '') return 'Longitude is required';
         const num = Number(value);
-        if (isNaN(num)) return "Longitude must be a valid number";
-        if (num < -180 || num > 180)
-          return "Longitude must be between -180 and 180";
+        if (isNaN(num)) return 'Longitude must be a valid number';
+        if (num < -180 || num > 180) return 'Longitude must be between -180 and 180';
         return null;
       },
-      type_id: (value) =>
-        value.length < 1 ? "Location type is required" : null,
+      type_id: (value) => (value.length < 1 ? 'Location type is required' : null),
       regular_service_hours: {
         monday: (value) => validateServiceHours(value),
         tuesday: (value) => validateServiceHours(value),
@@ -307,7 +286,7 @@ export function AddLocationModal({
   // Sync local editing location with prop when modal opens
   useEffect(() => {
     if (opened) {
-      console.log("📝 Debug - editingLocation prop:", editingLocation);
+      console.log('📝 Debug - editingLocation prop:', editingLocation);
       setLocalEditingLocation(editingLocation || null);
     }
   }, [opened, editingLocation]);
@@ -319,9 +298,7 @@ export function AddLocationModal({
       if (localEditingLocation) {
         const initialValues = getInitialValues();
         form.setValues(initialValues);
-        setSelectedPaymentMethods(
-          localEditingLocation.methods_of_payment || [],
-        );
+        setSelectedPaymentMethods(localEditingLocation.methods_of_payment || []);
         setMealTimes(localEditingLocation.meal_times || []);
       } else {
         form.reset();
@@ -345,14 +322,11 @@ export function AddLocationModal({
     if (!initialFormData) return false;
 
     // Check form values changes
-    const formChanged =
-      JSON.stringify(form.values) !==
-      JSON.stringify(initialFormData.formValues);
+    const formChanged = JSON.stringify(form.values) !== JSON.stringify(initialFormData.formValues);
 
     // Check payment methods changes
     const paymentMethodsChanged =
-      JSON.stringify(selectedPaymentMethods) !==
-      JSON.stringify(initialFormData.paymentMethods);
+      JSON.stringify(selectedPaymentMethods) !== JSON.stringify(initialFormData.paymentMethods);
 
     // Check meal times changes
     const mealTimesChanged =
@@ -370,11 +344,11 @@ export function AddLocationModal({
 
     try {
       // Validate image if URL is provided
-      if (values.image && values.image.trim() !== "" && imageError) {
+      if (values.image && values.image.trim() !== '' && imageError) {
         notifications.show({
-          title: "Image Error",
-          message: "Please fix the image URL or remove it before submitting.",
-          color: "red",
+          title: 'Image Error',
+          message: 'Please fix the image URL or remove it before submitting.',
+          color: 'red',
           icon: <IconX size={16} />,
           autoClose: 5000,
         });
@@ -389,9 +363,7 @@ export function AddLocationModal({
       }
 
       // Validate payment methods
-      const paymentMethodsValidationError = validatePaymentMethodsRequired(
-        selectedPaymentMethods,
-      );
+      const paymentMethodsValidationError = validatePaymentMethodsRequired(selectedPaymentMethods);
       if (paymentMethodsValidationError) {
         setPaymentMethodsError(paymentMethodsValidationError);
       }
@@ -411,9 +383,9 @@ export function AddLocationModal({
       ) {
         // Show alert for validation errors
         notifications.show({
-          title: "Validation Error",
-          message: "Please fix the highlighted errors before submitting.",
-          color: "red",
+          title: 'Validation Error',
+          message: 'Please fix the highlighted errors before submitting.',
+          color: 'red',
           icon: <IconX size={16} />,
           autoClose: 5000,
         });
@@ -433,11 +405,11 @@ export function AddLocationModal({
       await onSubmit(formData);
 
       notifications.show({
-        title: isEditing ? "Location Updated" : "Location Added",
+        title: isEditing ? 'Location Updated' : 'Location Added',
         message: isEditing
-          ? "The location has been successfully updated."
-          : "The location has been successfully added.",
-        color: "green",
+          ? 'The location has been successfully updated.'
+          : 'The location has been successfully added.',
+        color: 'green',
         autoClose: 3000,
       });
 
@@ -446,9 +418,9 @@ export function AddLocationModal({
     } catch (error) {
       // Handle unexpected errors
       notifications.show({
-        title: "Submission Error",
-        message: "An unexpected error occurred. Please try again.",
-        color: "red",
+        title: 'Submission Error',
+        message: 'An unexpected error occurred. Please try again.',
+        color: 'red',
         icon: <IconX size={16} />,
         autoClose: 5000,
       });
@@ -461,9 +433,7 @@ export function AddLocationModal({
     if (checked) {
       setSelectedPaymentMethods((prev) => [...prev, value]);
     } else {
-      setSelectedPaymentMethods((prev) =>
-        prev.filter((method) => method !== value),
-      );
+      setSelectedPaymentMethods((prev) => prev.filter((method) => method !== value));
     }
 
     // Clear payment methods error when user makes changes
@@ -482,7 +452,7 @@ export function AddLocationModal({
     }
   }
 
-  function addTimeRange(day: keyof Location["regular_service_hours"]) {
+  function addTimeRange(day: keyof Location['regular_service_hours']) {
     const currentRanges = form.values.regular_service_hours[day].timeRanges;
 
     // Smart default: use the previous range's end time as the new start time
@@ -502,10 +472,7 @@ export function AddLocationModal({
       close: defaultEndTime,
     };
 
-    form.setFieldValue(`regular_service_hours.${day}.timeRanges`, [
-      ...currentRanges,
-      newRange,
-    ]);
+    form.setFieldValue(`regular_service_hours.${day}.timeRanges`, [...currentRanges, newRange]);
 
     // Clear validation errors when adding time ranges
     if (form.errors[`regular_service_hours.${day}`]) {
@@ -516,9 +483,7 @@ export function AddLocationModal({
     }
   }
 
-  function copyTimesToNextDay(
-    currentDay: keyof Location["regular_service_hours"],
-  ) {
+  function copyTimesToNextDay(currentDay: keyof Location['regular_service_hours']) {
     const currentDayIndex = daysOfWeek.indexOf(currentDay);
     if (currentDayIndex === -1 || currentDayIndex >= daysOfWeek.length - 1) {
       return; // Can't copy from the last day or invalid day
@@ -531,10 +496,7 @@ export function AddLocationModal({
     form.setFieldValue(`regular_service_hours.${nextDay}.timeRanges`, [
       ...currentDayData.timeRanges,
     ]);
-    form.setFieldValue(
-      `regular_service_hours.${nextDay}.isClosed`,
-      currentDayData.isClosed,
-    );
+    form.setFieldValue(`regular_service_hours.${nextDay}.isClosed`, currentDayData.isClosed);
 
     // Clear any validation errors for the next day
     if (form.errors[`regular_service_hours.${nextDay}`]) {
@@ -549,12 +511,12 @@ export function AddLocationModal({
   const getCopyTooltipLabel = (dayIndex: number): string => {
     const nextDay = daysOfWeek[dayIndex + 1];
     if (copiedDay === daysOfWeek[dayIndex]) {
-      return "Copied!";
+      return 'Copied!';
     }
     return `Copy times to ${nextDay?.charAt(0).toUpperCase()}${nextDay?.slice(1)}`;
   };
 
-  const handleCopyClick = (day: keyof Location["regular_service_hours"]) => {
+  const handleCopyClick = (day: keyof Location['regular_service_hours']) => {
     copyTimesToNextDay(day);
     setCopiedDay(day);
 
@@ -564,10 +526,7 @@ export function AddLocationModal({
     }, 3000);
   };
 
-  function removeTimeRange(
-    day: keyof Location["regular_service_hours"],
-    index: number,
-  ) {
+  function removeTimeRange(day: keyof Location['regular_service_hours'], index: number) {
     const currentRanges = form.values.regular_service_hours[day].timeRanges;
     const newRanges = currentRanges.filter((_, i) => i !== index);
     form.setFieldValue(`regular_service_hours.${day}.timeRanges`, newRanges);
@@ -582,19 +541,14 @@ export function AddLocationModal({
   }
 
   function updateTimeRange(
-    day: keyof Location["regular_service_hours"],
+    day: keyof Location['regular_service_hours'],
     index: number,
-    field: "open" | "close",
+    field: 'open' | 'close',
     value: number,
   ) {
-    const currentRanges = [
-      ...form.values.regular_service_hours[day].timeRanges,
-    ];
+    const currentRanges = [...form.values.regular_service_hours[day].timeRanges];
     currentRanges[index] = { ...currentRanges[index], [field]: value };
-    form.setFieldValue(
-      `regular_service_hours.${day}.timeRanges`,
-      currentRanges,
-    );
+    form.setFieldValue(`regular_service_hours.${day}.timeRanges`, currentRanges);
 
     // Clear validation errors for this day when user makes changes
     if (form.errors[`regular_service_hours.${day}`]) {
@@ -609,7 +563,7 @@ export function AddLocationModal({
 
   function addMealTime() {
     const newMealTime: MealTime = {
-      name: "",
+      name: '',
       start_time: 700,
       end_time: 900,
     };
@@ -620,11 +574,7 @@ export function AddLocationModal({
     setMealTimes((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function updateMealTime(
-    index: number,
-    field: keyof MealTime,
-    value: string | number,
-  ) {
+  function updateMealTime(index: number, field: keyof MealTime, value: string | number) {
     setMealTimes((prev) => {
       const updated = [...prev];
       updated[index] = { ...updated[index], [field]: value };
@@ -641,15 +591,14 @@ export function AddLocationModal({
     // Only show confirmation if there are actual changes
     if (hasFormChanges()) {
       modals.openConfirmModal({
-        title: "Close form?",
+        title: 'Close form?',
         children: (
           <Text size="sm">
-            Are you sure you want to close this form? Any unsaved changes will
-            be lost.
+            Are you sure you want to close this form? Any unsaved changes will be lost.
           </Text>
         ),
-        labels: { confirm: "Close", cancel: "Continue editing" },
-        confirmProps: { color: "red" },
+        labels: { confirm: 'Close', cancel: 'Continue editing' },
+        confirmProps: { color: 'red' },
         onConfirm: () => {
           onClose();
         },
@@ -680,13 +629,13 @@ export function AddLocationModal({
       title={
         isEditing ? (
           <span>
-            Edit{" "}
+            Edit{' '}
             <Text component="span" fw={700}>
               {localEditingLocation?.name}
             </Text>
           </span>
         ) : (
-          "Add Location"
+          'Add Location'
         )
       }
       centered
@@ -695,11 +644,11 @@ export function AddLocationModal({
       <form
         onSubmit={form.onSubmit(handleSubmit, (errors) => {
           // Handle form validation errors
-          console.warn("Form validation errors:", errors);
+          console.warn('Form validation errors:', errors);
           notifications.show({
-            title: "Form Validation Error",
-            message: "Please correct the highlighted fields and try again.",
-            color: "red",
+            title: 'Form Validation Error',
+            message: 'Please correct the highlighted fields and try again.',
+            color: 'red',
             icon: <IconX size={16} />,
             autoClose: 5000,
           });
@@ -712,7 +661,7 @@ export function AddLocationModal({
               description="Official name of the location"
               placeholder="Enter location name"
               required
-              {...form.getInputProps("name")}
+              {...form.getInputProps('name')}
             />
 
             <TextInput
@@ -720,7 +669,7 @@ export function AddLocationModal({
               description="Nickname for the location (optional)"
               placeholder="Enter colloquial name"
               variant="filled"
-              {...form.getInputProps("colloquial_name")}
+              {...form.getInputProps('colloquial_name')}
             />
           </Group>
 
@@ -734,7 +683,7 @@ export function AddLocationModal({
                 value: type.id,
                 label: type.name,
               }))}
-              {...form.getInputProps("type_id")}
+              {...form.getInputProps('type_id')}
             />
           </Group>
 
@@ -744,14 +693,14 @@ export function AddLocationModal({
             required
             autosize
             minRows={3}
-            {...form.getInputProps("description")}
+            {...form.getInputProps('description')}
           />
 
           <TextInput
             label="Address"
             placeholder="Enter location address"
             required
-            {...form.getInputProps("address")}
+            {...form.getInputProps('address')}
           />
 
           <Group grow gap="md">
@@ -759,14 +708,14 @@ export function AddLocationModal({
               label="Apple Maps Link"
               placeholder="Enter Apple Maps URL"
               required
-              {...form.getInputProps("apple_maps_link")}
+              {...form.getInputProps('apple_maps_link')}
             />
 
             <TextInput
               label="Google Maps Link"
               placeholder="Enter Google Maps URL"
               required
-              {...form.getInputProps("google_maps_link")}
+              {...form.getInputProps('google_maps_link')}
             />
           </Group>
 
@@ -778,7 +727,7 @@ export function AddLocationModal({
               type="number"
               step="any"
               required
-              {...form.getInputProps("latitude")}
+              {...form.getInputProps('latitude')}
             />
 
             <TextInput
@@ -788,7 +737,7 @@ export function AddLocationModal({
               type="number"
               step="any"
               required
-              {...form.getInputProps("longitude")}
+              {...form.getInputProps('longitude')}
             />
           </Group>
 
@@ -798,66 +747,60 @@ export function AddLocationModal({
               description="Image for dining location (optional)"
               placeholder="Enter image URL"
               variant="filled"
-              {...form.getInputProps("image")}
+              {...form.getInputProps('image')}
               onChange={(event) => {
-                form.getInputProps("image").onChange(event);
+                form.getInputProps('image').onChange(event);
                 // Reset image error when user changes the URL
                 if (imageError) {
                   setImageError(false);
                 }
               }}
-              error={
-                imageError
-                  ? "Image failed to load. Please check the URL."
-                  : undefined
-              }
+              error={imageError ? 'Image failed to load. Please check the URL.' : undefined}
             />
 
-            {form.values.image && form.values.image.trim() !== "" && (
+            {form.values.image && form.values.image.trim() !== '' && (
               <Paper
                 p="md"
                 mt="xs"
                 withBorder
                 style={{
-                  backgroundColor: "var(--mantine-color-gray-0)",
-                  borderStyle: "dashed",
-                  borderColor: "var(--mantine-color-gray-4)",
+                  backgroundColor: 'var(--mantine-color-gray-0)',
+                  borderStyle: 'dashed',
+                  borderColor: 'var(--mantine-color-gray-4)',
                 }}
               >
                 <Text size="xs" c="dimmed" mb="xs">
                   Image Preview:
                 </Text>
-                <div style={{ position: "relative" }}>
+                <div style={{ position: 'relative' }}>
                   <img
                     src={form.values.image}
                     alt="Location preview"
                     style={{
-                      maxHeight: "200px",
-                      objectFit: "cover",
-                      borderRadius: "8px",
-                      display: "block",
-                      aspectRatio: "16/9",
+                      maxHeight: '200px',
+                      objectFit: 'cover',
+                      borderRadius: '8px',
+                      display: 'block',
+                      aspectRatio: '16/9',
                     }}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.style.display = "none";
-                      const errorContainer =
-                        target.parentElement?.querySelector(
-                          ".error-message",
-                        ) as HTMLElement;
+                      target.style.display = 'none';
+                      const errorContainer = target.parentElement?.querySelector(
+                        '.error-message',
+                      ) as HTMLElement;
                       if (errorContainer) {
-                        errorContainer.style.display = "flex";
+                        errorContainer.style.display = 'flex';
                       }
                       setImageError(true);
                     }}
                     onLoad={(e) => {
                       const target = e.target as HTMLImageElement;
-                      const errorContainer =
-                        target.parentElement?.querySelector(
-                          ".error-message",
-                        ) as HTMLElement;
+                      const errorContainer = target.parentElement?.querySelector(
+                        '.error-message',
+                      ) as HTMLElement;
                       if (errorContainer) {
-                        errorContainer.style.display = "none";
+                        errorContainer.style.display = 'none';
                       }
                       setImageError(false);
                     }}
@@ -865,16 +808,16 @@ export function AddLocationModal({
                   <div
                     className="error-message"
                     style={{
-                      display: "none",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: "100%",
-                      height: "200px",
-                      backgroundColor: "var(--mantine-color-red-0)",
-                      border: "2px dashed var(--mantine-color-red-3)",
-                      borderRadius: "8px",
-                      flexDirection: "column",
-                      gap: "8px",
+                      display: 'none',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '100%',
+                      height: '200px',
+                      backgroundColor: 'var(--mantine-color-red-0)',
+                      border: '2px dashed var(--mantine-color-red-3)',
+                      borderRadius: '8px',
+                      flexDirection: 'column',
+                      gap: '8px',
                     }}
                   >
                     <IconX size={32} color="var(--mantine-color-red-6)" />
@@ -903,12 +846,12 @@ export function AddLocationModal({
             <Switch
               size="sm"
               color="orange"
-              {...form.getInputProps("has_menus", { type: "checkbox" })}
+              {...form.getInputProps('has_menus', { type: 'checkbox' })}
             />
           </Group>
 
           <div>
-            <Group align="center" mb="xs" gap={"xs"}>
+            <Group align="center" mb="xs" gap={'xs'}>
               <Text size="sm" fw={500}>
                 Regular Service Hours
                 <Text span size="xs" c="red" ml={4}>
@@ -924,82 +867,70 @@ export function AddLocationModal({
             <Stack gap={0}>
               {daysOfWeek.map((day, index) => (
                 <div key={day}>
-                  <Paper p="sm" pr={0} radius={0} style={{ border: "none" }}>
+                  <Paper p="sm" pr={0} radius={0} style={{ border: 'none' }}>
                     <Group justify="space-between" align="flex-start">
                       <Group gap="md" align="flex-start" style={{ flex: 1 }}>
-                        <Text size="sm" fw={500} w={80} tt={"capitalize"}>
+                        <Text size="sm" fw={500} w={80} tt={'capitalize'}>
                           {day}
                         </Text>
 
                         <Stack gap="xs" style={{ flex: 1 }}>
                           {!form.values.regular_service_hours[day].isClosed ? (
                             <>
-                              {form.values.regular_service_hours[
-                                day
-                              ].timeRanges.map((timeRange, rangeIndex) => (
-                                <Group key={rangeIndex} gap="xs" align="center">
-                                  {/* Range number label for accessibility */}
+                              {form.values.regular_service_hours[day].timeRanges.map(
+                                (timeRange, rangeIndex) => (
+                                  <Group key={rangeIndex} gap="xs" align="center">
+                                    {/* Range number label for accessibility */}
 
-                                  <Text size="xs" c="dimmed" w={20}>
-                                    #{rangeIndex + 1}
-                                  </Text>
+                                    <Text size="xs" c="dimmed" w={20}>
+                                      #{rangeIndex + 1}
+                                    </Text>
 
-                                  <TextInput
-                                    type="time"
-                                    size="sm"
-                                    variant="filled"
-                                    w={125}
-                                    aria-label={`${day} range ${rangeIndex + 1} start time`}
-                                    value={militaryToTimeInput(timeRange.open)}
-                                    onChange={(event) => {
-                                      const militaryTime = timeInputToMilitary(
-                                        event.currentTarget.value,
-                                      );
-                                      updateTimeRange(
-                                        day,
-                                        rangeIndex,
-                                        "open",
-                                        militaryTime,
-                                      );
-                                    }}
-                                  />
-                                  <Text size="sm" c="dimmed">
-                                    to
-                                  </Text>
-                                  <TextInput
-                                    type="time"
-                                    size="sm"
-                                    w={125}
-                                    variant="filled"
-                                    aria-label={`${day} range ${rangeIndex + 1} end time`}
-                                    value={militaryToTimeInput(timeRange.close)}
-                                    onChange={(event) => {
-                                      const militaryTime = timeInputToMilitary(
-                                        event.currentTarget.value,
-                                      );
-                                      updateTimeRange(
-                                        day,
-                                        rangeIndex,
-                                        "close",
-                                        militaryTime,
-                                      );
-                                    }}
-                                  />
-                                  {form.values.regular_service_hours[day]
-                                    .timeRanges.length > 1 && (
-                                    <ActionIcon
+                                    <TextInput
+                                      type="time"
                                       size="sm"
-                                      variant="subtle"
-                                      color="red"
-                                      onClick={() =>
-                                        removeTimeRange(day, rangeIndex)
-                                      }
-                                    >
-                                      <IconTrash size={14} />
-                                    </ActionIcon>
-                                  )}
-                                </Group>
-                              ))}
+                                      variant="filled"
+                                      w={125}
+                                      aria-label={`${day} range ${rangeIndex + 1} start time`}
+                                      value={militaryToTimeInput(timeRange.open)}
+                                      onChange={(event) => {
+                                        const militaryTime = timeInputToMilitary(
+                                          event.currentTarget.value,
+                                        );
+                                        updateTimeRange(day, rangeIndex, 'open', militaryTime);
+                                      }}
+                                    />
+                                    <Text size="sm" c="dimmed">
+                                      to
+                                    </Text>
+                                    <TextInput
+                                      type="time"
+                                      size="sm"
+                                      w={125}
+                                      variant="filled"
+                                      aria-label={`${day} range ${rangeIndex + 1} end time`}
+                                      value={militaryToTimeInput(timeRange.close)}
+                                      onChange={(event) => {
+                                        const militaryTime = timeInputToMilitary(
+                                          event.currentTarget.value,
+                                        );
+                                        updateTimeRange(day, rangeIndex, 'close', militaryTime);
+                                      }}
+                                    />
+                                    {form.values.regular_service_hours[day].timeRanges.length >
+                                      1 && (
+                                      <ActionIcon
+                                        size="sm"
+                                        variant="subtle"
+                                        color="red"
+                                        onClick={() => removeTimeRange(day, rangeIndex)}
+                                      >
+                                        <IconTrash size={14} />
+                                      </ActionIcon>
+                                    )}
+                                  </Group>
+                                ),
+                              )}
 
                               <Group gap="xs" mt="xs">
                                 <Button
@@ -1019,9 +950,7 @@ export function AddLocationModal({
                                   position="top"
                                   style={{
                                     visibility:
-                                      index < daysOfWeek.length - 1
-                                        ? "visible"
-                                        : "hidden",
+                                      index < daysOfWeek.length - 1 ? 'visible' : 'hidden',
                                   }}
                                 >
                                   <ActionIcon
@@ -1031,9 +960,7 @@ export function AddLocationModal({
                                     onClick={() => handleCopyClick(day)}
                                     style={{
                                       visibility:
-                                        index < daysOfWeek.length - 1
-                                          ? "visible"
-                                          : "hidden",
+                                        index < daysOfWeek.length - 1 ? 'visible' : 'hidden',
                                     }}
                                   >
                                     <IconCopy size={14} />
@@ -1052,34 +979,27 @@ export function AddLocationModal({
                       <Tooltip
                         label={
                           form.values.regular_service_hours[day].isClosed
-                            ? "Mark as open"
-                            : "Mark as closed"
+                            ? 'Mark as open'
+                            : 'Mark as closed'
                         }
                         position="left"
                       >
                         <Switch
                           size="sm"
                           color="orange"
-                          checked={
-                            !form.values.regular_service_hours[day].isClosed
-                          }
+                          checked={!form.values.regular_service_hours[day].isClosed}
                           onChange={(event) => {
                             const isOpen = event.currentTarget.checked;
-                            form.setFieldValue(
-                              `regular_service_hours.${day}.isClosed`,
-                              !isOpen,
-                            );
+                            form.setFieldValue(`regular_service_hours.${day}.isClosed`, !isOpen);
 
                             // If marking as open and no time ranges exist, add a default one
                             if (
                               isOpen &&
-                              form.values.regular_service_hours[day].timeRanges
-                                .length === 0
+                              form.values.regular_service_hours[day].timeRanges.length === 0
                             ) {
-                              form.setFieldValue(
-                                `regular_service_hours.${day}.timeRanges`,
-                                [{ open: 700, close: 1000 }],
-                              );
+                              form.setFieldValue(`regular_service_hours.${day}.timeRanges`, [
+                                { open: 700, close: 1000 },
+                              ]);
                             }
 
                             // Clear service hours error when user makes changes
@@ -1137,7 +1057,7 @@ export function AddLocationModal({
               <Stack gap={0}>
                 {mealTimes.map((mealTime, index) => (
                   <div key={index}>
-                    <Paper p="sm" radius={0} style={{ border: "none" }}>
+                    <Paper p="sm" radius={0} style={{ border: 'none' }}>
                       <Group gap="sm" align="flex-end">
                         <Select
                           label="Meal Name"
@@ -1148,14 +1068,11 @@ export function AddLocationModal({
                             // Filter out names that are already selected by other meals
                             return !mealTimes.some(
                               (meal, mealIndex) =>
-                                mealIndex !== index &&
-                                meal.name === option.value,
+                                mealIndex !== index && meal.name === option.value,
                             );
                           })}
                           value={mealTime.name}
-                          onChange={(value) =>
-                            updateMealTime(index, "name", value || "")
-                          }
+                          onChange={(value) => updateMealTime(index, 'name', value || '')}
                           style={{ flex: 1 }}
                           searchable
                           clearable
@@ -1165,10 +1082,8 @@ export function AddLocationModal({
                           type="time"
                           value={militaryToTimeInput(mealTime.start_time)}
                           onChange={(event) => {
-                            const militaryTime = timeInputToMilitary(
-                              event.currentTarget.value,
-                            );
-                            updateMealTime(index, "start_time", militaryTime);
+                            const militaryTime = timeInputToMilitary(event.currentTarget.value);
+                            updateMealTime(index, 'start_time', militaryTime);
                           }}
                           w={125}
                           variant="filled"
@@ -1178,10 +1093,8 @@ export function AddLocationModal({
                           type="time"
                           value={militaryToTimeInput(mealTime.end_time)}
                           onChange={(event) => {
-                            const militaryTime = timeInputToMilitary(
-                              event.currentTarget.value,
-                            );
-                            updateMealTime(index, "end_time", militaryTime);
+                            const militaryTime = timeInputToMilitary(event.currentTarget.value);
+                            updateMealTime(index, 'end_time', militaryTime);
                           }}
                           w={125}
                           variant="filled"
@@ -1215,7 +1128,7 @@ export function AddLocationModal({
           </div>
 
           <div>
-            <Group justify="space-between" align="center" mb={"xs"}>
+            <Group justify="space-between" align="center" mb={'xs'}>
               <Group gap="xs" align="center">
                 <Text size="sm" fw={500}>
                   Methods of Payment
@@ -1224,11 +1137,7 @@ export function AddLocationModal({
                   </Text>
                 </Text>
               </Group>
-              <Button
-                variant="subtle"
-                size="xs"
-                onClick={handleChooseAllPaymentMethods}
-              >
+              <Button variant="subtle" size="xs" onClick={handleChooseAllPaymentMethods}>
                 Choose All
               </Button>
             </Group>
@@ -1240,15 +1149,13 @@ export function AddLocationModal({
                   p="sm"
                   radius="md"
                   style={{
-                    cursor: "pointer",
-                    backgroundColor: selectedPaymentMethods.includes(
-                      option.value,
-                    )
-                      ? "var(--mantine-color-UTColors-0)"
-                      : "transparent",
+                    cursor: 'pointer',
+                    backgroundColor: selectedPaymentMethods.includes(option.value)
+                      ? 'var(--mantine-color-UTColors-0)'
+                      : 'transparent',
                     borderColor: selectedPaymentMethods.includes(option.value)
-                      ? "var(--mantine-color-UTColors-4)"
-                      : "var(--mantine-color-gray-3)",
+                      ? 'var(--mantine-color-UTColors-4)'
+                      : 'var(--mantine-color-gray-3)',
                   }}
                   onClick={() =>
                     handlePaymentMethodChange(
@@ -1269,10 +1176,7 @@ export function AddLocationModal({
                     <Checkbox
                       checked={selectedPaymentMethods.includes(option.value)}
                       onChange={(event) =>
-                        handlePaymentMethodChange(
-                          option.value,
-                          event.currentTarget.checked,
-                        )
+                        handlePaymentMethodChange(option.value, event.currentTarget.checked)
                       }
                       onClick={(e) => e.stopPropagation()}
                     />
@@ -1289,15 +1193,11 @@ export function AddLocationModal({
           </div>
 
           <Group justify="flex-end" mt="md">
-            <Button
-              variant="subtle"
-              onClick={handleModalClose}
-              disabled={isSubmitting}
-            >
+            <Button variant="subtle" onClick={handleModalClose} disabled={isSubmitting}>
               Cancel
             </Button>
             <Button type="submit" loading={isSubmitting}>
-              {isEditing ? "Update Location" : "Add Location"}
+              {isEditing ? 'Update Location' : 'Add Location'}
             </Button>
           </Group>
         </Stack>

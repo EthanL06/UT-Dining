@@ -1,21 +1,21 @@
-"use client";
+'use client';
+import { Center, Stack, Tooltip, UnstyledButton } from '@mantine/core';
 import {
+  IconBell,
   IconBug,
-  IconHome2,
+  IconCode,
   IconFlag,
+  type IconHome2,
   IconLogout,
   IconMapPin,
-  IconBell,
   IconSettings,
   IconSpeakerphone,
-  IconCode,
-} from "@tabler/icons-react";
-import { Center, Stack, Tooltip, UnstyledButton } from "@mantine/core";
-import Image from "next/image";
-import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
-import { logout } from "@/app/actions/auth";
+} from '@tabler/icons-react';
+import Image from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { logout } from '@/app/actions/auth';
+import { cn } from '@/lib/utils';
 
 interface NavbarLinkProps {
   icon: typeof IconHome2;
@@ -25,13 +25,7 @@ interface NavbarLinkProps {
   onClick?: () => void;
 }
 
-function NavbarLink({
-  icon: Icon,
-  label,
-  href,
-  active,
-  onClick,
-}: NavbarLinkProps) {
+function NavbarLink({ icon: Icon, label, href, active, onClick }: NavbarLinkProps) {
   const router = useRouter();
 
   const handleClick = () => {
@@ -46,46 +40,42 @@ function NavbarLink({
   return (
     <Tooltip label={label} position="right" transitionProps={{ duration: 0 }}>
       <UnstyledButton
-        component={href ? "a" : "button"}
+        component={href ? 'a' : 'button'}
         onClick={handleClick}
         href={href}
         data-active={active || undefined}
         className={cn(
-          "group flex items-center justify-center rounded-md",
-          active ? "bg-UTColors-50" : "hover:bg-gray-50",
+          'group flex items-center justify-center rounded-md',
+          active ? 'bg-UTColors-50' : 'hover:bg-gray-50',
         )}
         h={50}
         w={50}
       >
-        <Icon
-          className={cn(active && "text-UTColors-filled")}
-          size={20}
-          stroke={1.5}
-        />
+        <Icon className={cn(active && 'text-UTColors-filled')} size={20} stroke={1.5} />
       </UnstyledButton>
     </Tooltip>
   );
 }
 
 const mockdata = [
-  { icon: IconMapPin, label: "Locations", href: "/dashboard" },
+  { icon: IconMapPin, label: 'Locations', href: '/dashboard' },
   {
     icon: IconSettings,
-    label: "App Configuration",
-    href: "/dashboard/configuration",
+    label: 'App Configuration',
+    href: '/dashboard/configuration',
   },
   {
     icon: IconBell,
-    label: "Push Notifications",
-    href: "/dashboard/notifications",
+    label: 'Push Notifications',
+    href: '/dashboard/notifications',
   },
   {
     icon: IconSpeakerphone,
-    label: "Announcements",
-    href: "/dashboard/announcements",
+    label: 'Announcements',
+    href: '/dashboard/announcements',
   },
-  { icon: IconBug, label: "Issue Reporting", href: "/dashboard/issues" },
-  { icon: IconFlag, label: "Feature Flags", href: "/dashboard/feature-flags" },
+  { icon: IconBug, label: 'Issue Reporting', href: '/dashboard/issues' },
+  { icon: IconFlag, label: 'Feature Flags', href: '/dashboard/feature-flags' },
 ];
 
 export function DashboardNavbar() {
@@ -93,7 +83,7 @@ export function DashboardNavbar() {
   const [isDevelopment, setIsDevelopment] = useState(false);
 
   useEffect(() => {
-    setIsDevelopment(process.env.NODE_ENV === "development");
+    setIsDevelopment(process.env.NODE_ENV === 'development');
   }, []);
 
   const links = mockdata.map((link) => (
@@ -101,17 +91,17 @@ export function DashboardNavbar() {
       {...link}
       key={link.label}
       active={
-        link.href === "/dashboard"
-          ? pathname === "/dashboard"
-          : pathname.startsWith(link.href || "")
+        link.href === '/dashboard'
+          ? pathname === '/dashboard'
+          : pathname.startsWith(link.href || '')
       }
     />
   ));
 
   return (
-    <nav className="p-md flex h-[46.875rem] w-[5rem] flex-col border-r-1 border-gray-200 bg-white">
+    <nav className="flex h-[46.875rem] w-[5rem] flex-col border-gray-200 border-r-1 bg-white p-md">
       <Center>
-        <Image src={"/logo.png"} alt="Logo" width={40} height={40} />
+        <Image src={'/logo.png'} alt="Logo" width={40} height={40} />
       </Center>
 
       <div className="mt-[3.125rem] flex-1">
@@ -122,13 +112,9 @@ export function DashboardNavbar() {
 
       <Stack justify="center" gap={0}>
         {isDevelopment && (
-          <Tooltip
-            label="Development Mode"
-            position="right"
-            transitionProps={{ duration: 0 }}
-          >
+          <Tooltip label="Development Mode" position="right" transitionProps={{ duration: 0 }}>
             <UnstyledButton
-              className="group flex items-center justify-center rounded-md hover:!bg-[var(--mantine-color-blue-7)]"
+              className="group hover:!bg-[var(--mantine-color-blue-7)] flex items-center justify-center rounded-md"
               h={50}
               w={50}
               bg="blue.6"

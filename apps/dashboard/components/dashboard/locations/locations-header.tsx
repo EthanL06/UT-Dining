@@ -1,5 +1,5 @@
-import { Flex, Title, Button } from "@mantine/core";
-import { IconPlus } from "@tabler/icons-react";
+import { Button, Flex, Title } from '@mantine/core';
+import { IconPlus } from '@tabler/icons-react';
 
 interface LocationsHeaderProps {
   onAddLocation: () => void;

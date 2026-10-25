@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { AppShell } from "@mantine/core";
-import { DashboardNavbar } from "@/components/dashboard/navbar";
+import { AppShell } from '@mantine/core';
+import { DashboardNavbar } from '@/components/dashboard/navbar';
 
 export default function RootLayout({
   children,
@@ -12,7 +12,7 @@ export default function RootLayout({
     <AppShell
       navbar={{
         width: 80,
-        breakpoint: "",
+        breakpoint: '',
       }}
       padding="md"
     >
@@ -20,9 +20,7 @@ export default function RootLayout({
         <DashboardNavbar />
       </AppShell.Navbar>
 
-      <AppShell.Main bg={"var(--mantine-color-gray-0)"}>
-        {children}
-      </AppShell.Main>
+      <AppShell.Main bg={'var(--mantine-color-gray-0)'}>{children}</AppShell.Main>
     </AppShell>
   );
 }

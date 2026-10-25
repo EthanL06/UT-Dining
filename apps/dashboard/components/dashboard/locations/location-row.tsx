@@ -1,34 +1,30 @@
 import {
-  Table,
+  ActionIcon,
+  Avatar,
   Badge,
   Group,
-  Text,
-  Avatar,
-  ActionIcon,
-  Tooltip,
-  Switch,
   Menu,
-} from "@mantine/core";
+  Switch,
+  Table,
+  Text,
+  Tooltip,
+} from '@mantine/core';
 import {
+  IconChefHat,
+  IconDots,
   IconEdit,
-  IconTrash,
   IconLock,
   IconLockOpen,
-  IconDots,
-  IconChefHat,
-} from "@tabler/icons-react";
-import type { Location, LocationType } from "@/types/location";
+  IconTrash,
+} from '@tabler/icons-react';
+import { getCurrentMealTime, getLocationStatus, getLocationTypeName } from '@/lib/location-utils';
 import {
-  paymentMethodLabels,
   paymentMethodAvatars,
   paymentMethodColors,
+  paymentMethodLabels,
   paymentMethodOptions,
-} from "@/lib/payment-methods";
-import {
-  getLocationStatus,
-  getCurrentMealTime,
-  getLocationTypeName,
-} from "@/lib/location-utils";
+} from '@/lib/payment-methods';
+import type { Location, LocationType } from '@/types/location';
 
 interface LocationRowProps {
   location: Location;
@@ -60,12 +56,8 @@ export function LocationRow({
 
   // Sort payment methods according to the predefined order
   const sortedPaymentMethods = location.methods_of_payment.sort((a, b) => {
-    const indexA = paymentMethodOptions.findIndex(
-      (option) => option.value === a,
-    );
-    const indexB = paymentMethodOptions.findIndex(
-      (option) => option.value === b,
-    );
+    const indexA = paymentMethodOptions.findIndex((option) => option.value === a);
+    const indexB = paymentMethodOptions.findIndex((option) => option.value === b);
     return indexA - indexB;
   });
 
@@ -81,18 +73,18 @@ export function LocationRow({
   // Get color for location type badge
   const getLocationTypeColor = (typeName: string): string => {
     switch (typeName.toLowerCase()) {
-      case "dining hall":
-        return "orange";
-      case "food & drink":
-        return "grape";
-      case "convenience store":
-        return "teal";
-      case "cafe":
-        return "brown";
-      case "food truck":
-        return "lime";
+      case 'dining hall':
+        return 'orange';
+      case 'food & drink':
+        return 'grape';
+      case 'convenience store':
+        return 'teal';
+      case 'cafe':
+        return 'brown';
+      case 'food truck':
+        return 'lime';
       default:
-        return "indigo";
+        return 'indigo';
     }
   };
 
@@ -122,8 +114,8 @@ export function LocationRow({
 
           {/* Menu Availability Indicator */}
           {location.has_menus && (
-            <Tooltip label={"Has menus"} position="top">
-              <ActionIcon variant="subtle" color={"orange"}>
+            <Tooltip label={'Has menus'} position="top">
+              <ActionIcon variant="subtle" color={'orange'}>
                 <IconChefHat size={16} />
               </ActionIcon>
             </Tooltip>
@@ -141,18 +133,12 @@ export function LocationRow({
       {/* Status (Dynamic based on service hours) */}
       <Table.Td>
         <Group gap="xs">
-          <Badge
-            color={currentStatus === "open" ? "green" : "red"}
-            variant="dot"
-          >
+          <Badge color={currentStatus === 'open' ? 'green' : 'red'} variant="dot">
             {currentStatus.toUpperCase()}
           </Badge>
           {location.force_close && (
             <Tooltip label="Force closed by admin">
-              <IconLock
-                size={14}
-                style={{ color: "var(--mantine-color-red-5)" }}
-              />
+              <IconLock size={14} style={{ color: 'var(--mantine-color-red-5)' }} />
             </Tooltip>
           )}
 
@@ -195,7 +181,7 @@ export function LocationRow({
               label={sortedPaymentMethods
                 .slice(4)
                 .map((method) => paymentMethodLabels[method])
-                .join(", ")}
+                .join(', ')}
             >
               <Avatar size="sm" radius="xl" color="gray">
                 +{sortedPaymentMethods.length - 4}
@@ -208,9 +194,7 @@ export function LocationRow({
       {/* Last Updated */}
       <Table.Td>
         <Text size="sm" c="dimmed">
-          {location.updated_at
-            ? new Date(location.updated_at).toLocaleString()
-            : "-"}
+          {location.updated_at ? new Date(location.updated_at).toLocaleString() : '-'}
         </Text>
       </Table.Td>
 
@@ -218,29 +202,21 @@ export function LocationRow({
       <Table.Td>
         <Group gap="xs">
           <Tooltip
-            label={
-              location.force_close ? "Enable location" : "Force close location"
-            }
+            label={location.force_close ? 'Enable location' : 'Force close location'}
             refProp="rootRef"
           >
             <Switch
               size="sm"
               color="red"
               checked={location.force_close || false}
-              onChange={(event) =>
-                handleForceCloseToggle(event.currentTarget.checked)
-              }
+              onChange={(event) => handleForceCloseToggle(event.currentTarget.checked)}
               thumbIcon={
                 location.force_close ? (
-                  <IconLock
-                    size={12}
-                    style={{ color: "var(--mantine-color-gray-6)" }}
-                    stroke={2}
-                  />
+                  <IconLock size={12} style={{ color: 'var(--mantine-color-gray-6)' }} stroke={2} />
                 ) : (
                   <IconLockOpen
                     size={12}
-                    style={{ color: "var(--mantine-color-gray-6)" }}
+                    style={{ color: 'var(--mantine-color-gray-6)' }}
                     stroke={2}
                   />
                 )
@@ -256,17 +232,10 @@ export function LocationRow({
             </Menu.Target>
 
             <Menu.Dropdown>
-              <Menu.Item
-                leftSection={<IconEdit size={14} />}
-                onClick={handleEdit}
-              >
+              <Menu.Item leftSection={<IconEdit size={14} />} onClick={handleEdit}>
                 Edit
               </Menu.Item>
-              <Menu.Item
-                leftSection={<IconTrash size={14} />}
-                color="red"
-                onClick={handleDelete}
-              >
+              <Menu.Item leftSection={<IconTrash size={14} />} color="red" onClick={handleDelete}>
                 Delete
               </Menu.Item>
             </Menu.Dropdown>

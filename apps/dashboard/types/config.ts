@@ -24,4 +24,4 @@ export interface HelpSupportLink {
 
 export interface HelpSupportConfig {
   links: HelpSupportLink[];
-} 
+}

@@ -1,18 +1,13 @@
-import type {
-  Location,
-  LocationType,
-  ServiceHours,
-  MealTime,
-} from "@/types/location";
+import type { Location, LocationType, MealTime, ServiceHours } from '@/types/location';
 
 const daysOfWeek = [
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-  "sunday",
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
 ] as const;
 
 /**
@@ -21,18 +16,16 @@ const daysOfWeek = [
 const getCurrentDay = (): keyof ServiceHours => {
   // Get current time in Central Time Zone
   const now = new Date();
-  const centralTime = new Date(
-    now.toLocaleString("en-US", { timeZone: "America/Chicago" }),
-  );
+  const centralTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Chicago' }));
   const today = centralTime.getDay(); // 0 = Sunday, 1 = Monday, etc.
   const dayNames: (keyof ServiceHours)[] = [
-    "sunday",
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
+    'sunday',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
   ];
   return dayNames[today];
 };
@@ -43,9 +36,7 @@ const getCurrentDay = (): keyof ServiceHours => {
 const getCurrentMilitaryTime = (): number => {
   // Get current time in Central Time Zone
   const now = new Date();
-  const centralTime = new Date(
-    now.toLocaleString("en-US", { timeZone: "America/Chicago" }),
-  );
+  const centralTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Chicago' }));
   const hours = centralTime.getHours();
   const minutes = centralTime.getMinutes();
   return hours * 100 + minutes;
@@ -73,9 +64,7 @@ export const isLocationOpen = (
   const currentTime = getCurrentMilitaryTime();
   const daySchedule = serviceHours[currentDay];
 
-  console.log(
-    `🕐 Checking location status for ${currentDay} at ${currentTime} CST`,
-  );
+  console.log(`🕐 Checking location status for ${currentDay} at ${currentTime} CST`);
 
   // If the day is marked as closed, return false
   if (daySchedule.isClosed) {
@@ -91,23 +80,14 @@ export const isLocationOpen = (
 /**
  * Get the current meal time being served (if any) based on Central Time
  */
-export const getCurrentMealTime = (
-  location: Location,
-  hasMenus?: boolean,
-): string | null => {
+export const getCurrentMealTime = (location: Location, hasMenus?: boolean): string | null => {
   // If force_close is true, return null (no meal served)
   if (location.force_close) {
     return null;
   }
 
   // First check if location is open
-  if (
-    !isLocationOpen(
-      location.regular_service_hours,
-      location.force_close,
-      hasMenus,
-    )
-  ) {
+  if (!isLocationOpen(location.regular_service_hours, location.force_close, hasMenus)) {
     return null;
   }
 
@@ -117,7 +97,6 @@ export const getCurrentMealTime = (
   }
 
   const currentTime = getCurrentMilitaryTime();
-
 
   // Find the meal time that encompasses the current time
   const currentMeal = location.meal_times.find(
@@ -148,7 +127,7 @@ export const getCurrentMealTime = (
   }
 
   console.log(
-    `🎯 Closest meal time found: ${closestMeal?.name || "none"} (${smallestTimeDiff} minutes away)`,
+    `🎯 Closest meal time found: ${closestMeal?.name || 'none'} (${smallestTimeDiff} minutes away)`,
   );
 
   return closestMeal?.name || null;
@@ -161,19 +140,16 @@ export const getLocationStatus = (
   serviceHours: ServiceHours,
   forceClose?: boolean,
   hasMenus?: boolean,
-): "open" | "closed" => {
-  return isLocationOpen(serviceHours, forceClose, hasMenus) ? "open" : "closed";
+): 'open' | 'closed' => {
+  return isLocationOpen(serviceHours, forceClose, hasMenus) ? 'open' : 'closed';
 };
 
 /**
  * Get location type name by ID
  */
-export const getLocationTypeName = (
-  typeId: string,
-  locationTypes: LocationType[],
-): string => {
+export const getLocationTypeName = (typeId: string, locationTypes: LocationType[]): string => {
   const locationType = locationTypes.find((type) => type.id === typeId);
-  return locationType?.name || "Unknown";
+  return locationType?.name || 'Unknown';
 };
 
 /**
@@ -183,18 +159,16 @@ export const formatMilitaryTime = (militaryTime: number): string => {
   const hours = Math.floor(militaryTime / 100);
   const minutes = militaryTime % 100;
 
-  const period = hours >= 12 ? "PM" : "AM";
+  const period = hours >= 12 ? 'PM' : 'AM';
   const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
 
-  return `${displayHours}:${minutes.toString().padStart(2, "0")} ${period}`;
+  return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
 };
 
 /**
  * Get next opening time for a closed location (in Central Time)
  */
-export const getNextOpeningTime = (
-  serviceHours: ServiceHours,
-): string | null => {
+export const getNextOpeningTime = (serviceHours: ServiceHours): string | null => {
   const currentDay = getCurrentDay();
   const currentTime = getCurrentMilitaryTime();
   const currentDayIndex = daysOfWeek.indexOf(currentDay);
@@ -202,9 +176,7 @@ export const getNextOpeningTime = (
   // Check remaining time ranges for today
   const todaySchedule = serviceHours[currentDay];
   if (!todaySchedule.isClosed) {
-    const nextRange = todaySchedule.timeRanges.find(
-      (range) => range.open > currentTime,
-    );
+    const nextRange = todaySchedule.timeRanges.find((range) => range.open > currentTime);
     if (nextRange) {
       return `Today at ${formatMilitaryTime(nextRange.open)} CST`;
     }

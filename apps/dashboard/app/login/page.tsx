@@ -1,13 +1,5 @@
-import login from "../actions/auth";
-import {
-  Button,
-  Center,
-  Container,
-  Paper,
-  PasswordInput,
-  TextInput,
-  Title,
-} from "@mantine/core";
+import { Button, Center, Container, Paper, PasswordInput, TextInput, Title } from '@mantine/core';
+import login from '../actions/auth';
 
 export default function Login() {
   return (
@@ -32,13 +24,7 @@ export default function Login() {
               mt="md"
               radius="md"
             />
-            <Button
-              type="submit"
-              formAction={login}
-              fullWidth
-              mt="md"
-              radius="md"
-            >
+            <Button type="submit" formAction={login} fullWidth mt="md" radius="md">
               Sign in
             </Button>
           </Paper>

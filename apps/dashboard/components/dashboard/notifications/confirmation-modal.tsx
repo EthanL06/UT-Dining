@@ -1,18 +1,9 @@
-"use client";
+'use client';
 
-import {
-  Button,
-  Modal,
-  Stack,
-  Text,
-  Divider,
-  Box,
-  Grid,
-  Group,
-} from "@mantine/core";
-import { IconSend } from "@tabler/icons-react";
-import { NotificationData } from "@/app/(private)/dashboard/notifications/action";
-import { IPhoneNotificationPreview } from "./iphone-notification-preview";
+import { Box, Button, Divider, Grid, Group, Modal, Stack, Text } from '@mantine/core';
+import { IconSend } from '@tabler/icons-react';
+import type { NotificationData } from '@/app/(private)/dashboard/notifications/action';
+import { IPhoneNotificationPreview } from './iphone-notification-preview';
 
 interface ConfirmationModalProps {
   opened: boolean;
@@ -30,21 +21,15 @@ export function ConfirmationModal({
   isLoading,
 }: ConfirmationModalProps) {
   return (
-    <Modal
-      opened={opened}
-      onClose={onClose}
-      title="Confirm Notification"
-      centered
-      size="lg"
-    >
+    <Modal opened={opened} onClose={onClose} title="Confirm Notification" centered size="lg">
       <Stack gap="md">
         <Text>Are you sure you want to send this push notification?</Text>
 
         <Box
           p="md"
           style={{
-            backgroundColor: "var(--mantine-color-gray-0)",
-            borderRadius: "var(--mantine-radius-md)",
+            backgroundColor: 'var(--mantine-color-gray-0)',
+            borderRadius: 'var(--mantine-radius-md)',
           }}
         >
           <Text size="sm" fw={600} mb="sm" c="dimmed">
@@ -77,7 +62,7 @@ export function ConfirmationModal({
                   </Text>
                 </Grid.Col>
                 <Grid.Col span={9}>
-                  <Text size="sm" c="blue" style={{ wordBreak: "break-all" }}>
+                  <Text size="sm" c="blue" style={{ wordBreak: 'break-all' }}>
                     {data.redirectLink}
                   </Text>
                 </Grid.Col>
@@ -107,12 +92,8 @@ export function ConfirmationModal({
           <Button variant="subtle" onClick={onClose} disabled={isLoading}>
             Cancel
           </Button>
-          <Button
-            onClick={onConfirm}
-            loading={isLoading}
-            leftSection={<IconSend size={16} />}
-          >
-            {data.isScheduled ? "Schedule Notification" : "Send Now"}
+          <Button onClick={onConfirm} loading={isLoading} leftSection={<IconSend size={16} />}>
+            {data.isScheduled ? 'Schedule Notification' : 'Send Now'}
           </Button>
         </Group>
       </Stack>

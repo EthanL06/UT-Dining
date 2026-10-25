@@ -1,12 +1,11 @@
-import React from "react";
-import { Stack, Title, Skeleton } from "@mantine/core";
-import { Suspense } from "react";
+import { Skeleton, Stack, Title } from '@mantine/core';
+import React, { Suspense } from 'react';
 import {
   AboutSection,
   CreditsSection,
   HelpSupportSection,
-} from "@/components/dashboard/configuration";
-import { getAppConfig, getCreditsConfig, getHelpSupportConfig } from "./action";
+} from '@/components/dashboard/configuration';
+import { getAppConfig, getCreditsConfig, getHelpSupportConfig } from './action';
 
 function ConfigurationContent() {
   // Fetch all configuration data

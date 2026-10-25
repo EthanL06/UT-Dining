@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { Table, Paper } from "@mantine/core";
-import { LocationRow } from "./location-row";
-import { EmptyState } from "./empty-state";
-import type { Location, LocationType } from "@/types/location";
-import { DndContext, UniqueIdentifier, closestCenter } from "@dnd-kit/core";
-import { SortableContext, arrayMove } from "@dnd-kit/sortable";
-import { useState, useEffect, useId } from "react";
-import { DraggableLocationRow } from "./draggable-location-row";
-import { updateLocationDisplayOrder } from "@/app/(private)/dashboard/action";
-import { IconGripVertical } from "@tabler/icons-react";
+import { closestCenter, DndContext, type UniqueIdentifier } from '@dnd-kit/core';
+import { arrayMove, SortableContext } from '@dnd-kit/sortable';
+import { Paper, Table } from '@mantine/core';
+import { IconGripVertical } from '@tabler/icons-react';
+import { useEffect, useId, useState } from 'react';
+import { updateLocationDisplayOrder } from '@/app/(private)/dashboard/action';
+import type { Location, LocationType } from '@/types/location';
+import { DraggableLocationRow } from './draggable-location-row';
+import { EmptyState } from './empty-state';
+import { LocationRow } from './location-row';
 
 interface LocationsTableProps {
   locations: Location[];
@@ -38,16 +38,14 @@ function SortableLocationsTable({
   onToggleForceClose?: (locationId: string, forceClose: boolean) => void;
   onDragEnd: (event: any) => void;
 }) {
-  const [items, setItems] = useState<
-    (UniqueIdentifier | { id: UniqueIdentifier })[]
-  >(locations.map((loc) => loc.id).filter(Boolean) as UniqueIdentifier[]);
+  const [items, setItems] = useState<(UniqueIdentifier | { id: UniqueIdentifier })[]>(
+    locations.map((loc) => loc.id).filter(Boolean) as UniqueIdentifier[],
+  );
   const id = useId();
 
   // Keep items in sync with locations prop
   useEffect(() => {
-    setItems(
-      locations.map((loc) => loc.id).filter(Boolean) as UniqueIdentifier[],
-    );
+    setItems(locations.map((loc) => loc.id).filter(Boolean) as UniqueIdentifier[]);
   }, [locations]);
 
   const handleDragEnd = async (event: any) => {
@@ -58,11 +56,7 @@ function SortableLocationsTable({
       const newItems = arrayMove(items, oldIndex, newIndex);
       setItems(newItems);
       // Update display_order for each location
-      await Promise.all(
-        newItems.map((id, idx) =>
-          updateLocationDisplayOrder(id as string, idx),
-        ),
-      );
+      await Promise.all(newItems.map((id, idx) => updateLocationDisplayOrder(id as string, idx)));
     }
     onDragEnd(event);
   };
@@ -73,11 +67,7 @@ function SortableLocationsTable({
     .filter(Boolean) as Location[];
 
   return (
-    <DndContext
-      id={id}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
+    <DndContext id={id} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={items}>
         <Table striped highlightOnHover withRowBorders={false}>
           <Table.Thead>
@@ -98,9 +88,7 @@ function SortableLocationsTable({
                 key={location.id}
                 location={location}
                 locationTypes={locationTypes}
-                hasMenus={
-                  location.id ? locationMenuStatus?.[location.id] : undefined
-                }
+                hasMenus={location.id ? locationMenuStatus?.[location.id] : undefined}
                 onEdit={onEditLocation}
                 onDelete={onDeleteLocation}
                 onToggleForceClose={onToggleForceClose}
@@ -170,9 +158,7 @@ export function LocationsTable({
                 key={location.id}
                 location={location}
                 locationTypes={locationTypes}
-                hasMenus={
-                  location.id ? locationMenuStatus?.[location.id] : undefined
-                }
+                hasMenus={location.id ? locationMenuStatus?.[location.id] : undefined}
                 onEdit={onEditLocation}
                 onDelete={onDeleteLocation}
                 onToggleForceClose={onToggleForceClose}

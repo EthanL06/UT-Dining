@@ -1,24 +1,12 @@
-"use client";
+'use client';
 
-import React from "react";
-import {
-  Table,
-  Paper,
-  Text,
-  Badge,
-  Group,
-  Tooltip,
-  ActionIcon,
-} from "@mantine/core";
-import {
-  IconTrash,
-  IconExternalLink,
-  IconInfoCircle,
-} from "@tabler/icons-react";
-import type { Tables } from "@/types/database.types";
+import { ActionIcon, Badge, Group, Paper, Table, Text, Tooltip } from '@mantine/core';
+import { IconExternalLink, IconInfoCircle, IconTrash } from '@tabler/icons-react';
+import type { Tables } from '@ut-dining/supabase';
+import React from 'react';
 
-type ScheduledNotification = Tables<"notifications"> & {
-  notification_types: Pick<Tables<"notification_types">, "name">;
+type ScheduledNotification = Tables<'notifications'> & {
+  notification_types: Pick<Tables<'notification_types'>, 'name'>;
 };
 
 interface ScheduledNotificationsTableProps {
@@ -65,14 +53,14 @@ export function ScheduledNotificationsTable({
               {/* Title */}
               <Table.Td>
                 <Text fw={500} size="sm">
-                  {notification.title || "No title"}
+                  {notification.title || 'No title'}
                 </Text>
               </Table.Td>
 
               {/* Message */}
               <Table.Td style={{ maxWidth: 300 }}>
                 <Text size="sm" lineClamp={2}>
-                  {notification.body || "No message"}
+                  {notification.body || 'No message'}
                 </Text>
               </Table.Td>
 
@@ -85,18 +73,13 @@ export function ScheduledNotificationsTable({
 
               {/* Scheduled Time */}
               <Table.Td>
-                <Text size="sm">
-                  {new Date(notification?.scheduled_at || "").toLocaleString()}
-                </Text>
+                <Text size="sm">{new Date(notification?.scheduled_at || '').toLocaleString()}</Text>
               </Table.Td>
 
               {/* Status */}
               <Table.Td>
-                <Badge
-                  color={notification.sent ? "green" : "blue"}
-                  variant="light"
-                >
-                  {notification.sent ? "Sent" : "Pending"}
+                <Badge color={notification.sent ? 'green' : 'blue'} variant="light">
+                  {notification.sent ? 'Sent' : 'Pending'}
                 </Badge>
               </Table.Td>
 

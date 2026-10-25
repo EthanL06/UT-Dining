@@ -1,20 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import {
-  Paper,
-  Title,
-  TextInput,
-  Textarea,
-  Button,
-  Stack,
-  Group,
-  Text,
-} from "@mantine/core";
-import { IconDeviceFloppy } from "@tabler/icons-react";
-import { notifications } from "@mantine/notifications";
-import type { AppConfig } from "@/types/config";
-import { updateAppConfig } from "@/app/(private)/dashboard/configuration/action";
+import { Button, Group, Paper, Stack, Text, Textarea, TextInput, Title } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
+import { IconDeviceFloppy } from '@tabler/icons-react';
+import { useState } from 'react';
+import { updateAppConfig } from '@/app/(private)/dashboard/configuration/action';
+import type { AppConfig } from '@/types/config';
 
 interface AboutSectionProps {
   initialConfig: AppConfig;
@@ -32,18 +23,18 @@ export function AboutSection({ initialConfig }: AboutSectionProps) {
       setConfig(updatedConfig);
 
       notifications.show({
-        title: "Success!",
-        message: "About section updated successfully.",
-        color: "green",
+        title: 'Success!',
+        message: 'About section updated successfully.',
+        color: 'green',
         autoClose: 3000,
       });
     } catch (error) {
-      console.error("Failed to update about section:", error);
+      console.error('Failed to update about section:', error);
 
       notifications.show({
-        title: "Error",
-        message: "Failed to update about section. Please try again.",
-        color: "red",
+        title: 'Error',
+        message: 'Failed to update about section. Please try again.',
+        color: 'red',
         autoClose: 5000,
       });
     } finally {
@@ -76,9 +67,7 @@ export function AboutSection({ initialConfig }: AboutSectionProps) {
             label="Description"
             placeholder="Enter app description"
             value={config.description}
-            onChange={(e) =>
-              setConfig({ ...config, description: e.target.value })
-            }
+            onChange={(e) => setConfig({ ...config, description: e.target.value })}
             minRows={3}
             maxRows={6}
             required

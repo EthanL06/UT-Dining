@@ -1,10 +1,8 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  eslint: {
-    // Existing lint errors fail `next build`; lint moves to Biome in the monorepo.
-    ignoreDuringBuilds: true,
-  },
+  // Workspace packages ship TypeScript source.
+  transpilePackages: ['@ut-dining/supabase'],
 };
 
 export default nextConfig;

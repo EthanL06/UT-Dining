@@ -1,8 +1,4 @@
-export type PaymentMethod =
-  | "Bevo Pay"
-  | "Cash"
-  | "Credit/Debit"
-  | "Dine In Dollars";
+export type PaymentMethod = 'Bevo Pay' | 'Cash' | 'Credit/Debit' | 'Dine In Dollars';
 
 export interface TimeRange {
   open: number;
@@ -46,7 +42,7 @@ export interface Location {
   regular_service_hours: ServiceHours;
   meal_times?: MealTime[];
   methods_of_payment: PaymentMethod[];
-  status: "open" | "closed";
+  status: 'open' | 'closed';
   type_id: string;
   force_close: boolean;
   has_menus: boolean;

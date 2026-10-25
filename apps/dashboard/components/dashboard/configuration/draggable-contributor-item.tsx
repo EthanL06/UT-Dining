@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { Group, Text, ActionIcon, Paper, TextInput } from "@mantine/core";
-import { IconGripVertical, IconTrash } from "@tabler/icons-react";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { useEffect, useState } from "react";
-import type { Contributor } from "@/types/config";
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { ActionIcon, Group, Paper, Text, TextInput } from '@mantine/core';
+import { IconGripVertical, IconTrash } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
+import type { Contributor } from '@/types/config';
 
 interface DraggableContributorItemProps {
   contributor: Contributor;
@@ -18,14 +18,9 @@ function DraggableContributorItemContent({
   onUpdate,
   onDelete,
 }: DraggableContributorItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: contributor.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: contributor.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -41,7 +36,7 @@ function DraggableContributorItemContent({
           color="gray"
           {...attributes}
           {...listeners}
-          style={{ cursor: "grab" }}
+          style={{ cursor: 'grab' }}
         >
           <IconGripVertical size={16} />
         </ActionIcon>
@@ -58,11 +53,7 @@ function DraggableContributorItemContent({
           size="sm"
         />
 
-        <ActionIcon
-          variant="subtle"
-          color="red"
-          onClick={() => onDelete(contributor.id)}
-        >
+        <ActionIcon variant="subtle" color="red" onClick={() => onDelete(contributor.id)}>
           <IconTrash size={16} />
         </ActionIcon>
       </Group>
@@ -92,9 +83,7 @@ export function DraggableContributorItem(props: DraggableContributorItemProps) {
 
           <TextInput
             value={props.contributor.name}
-            onChange={(e) =>
-              props.onUpdate(props.contributor.id, e.target.value)
-            }
+            onChange={(e) => props.onUpdate(props.contributor.id, e.target.value)}
             placeholder="Enter contributor name"
             style={{ flex: 1 }}
             size="sm"

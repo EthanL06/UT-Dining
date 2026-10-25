@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { ScheduledNotificationsTable } from "@/components/dashboard/notifications";
-import { deleteScheduledNotification } from "./action";
-import { notifications } from "@mantine/notifications";
-import { modals } from "@mantine/modals";
-import { Text, Button, Group } from "@mantine/core";
-import { IconTrash } from "@tabler/icons-react";
-import type { Tables } from "@/types/database.types";
+import { Button, Group, Text } from '@mantine/core';
+import { modals } from '@mantine/modals';
+import { notifications } from '@mantine/notifications';
+import { IconTrash } from '@tabler/icons-react';
+import type { Tables } from '@ut-dining/supabase';
+import React, { useState } from 'react';
+import { ScheduledNotificationsTable } from '@/components/dashboard/notifications';
+import { deleteScheduledNotification } from './action';
 
-type ScheduledNotification = Tables<"notifications"> & {
-  notification_types: Pick<Tables<"notification_types">, "name">;
+type ScheduledNotification = Tables<'notifications'> & {
+  notification_types: Pick<Tables<'notification_types'>, 'name'>;
 };
 
 interface ScheduledNotificationsClientProps {
@@ -27,42 +27,39 @@ export function ScheduledNotificationsClient({
     const notification = scheduledNotifications.find((n) => n.id === id);
 
     modals.openConfirmModal({
-      title: "Delete Scheduled Notification",
+      title: 'Delete Scheduled Notification',
       children: (
         <Text size="sm">
-          Are you sure you want to delete this scheduled notification? This
-          action cannot be undone.
+          Are you sure you want to delete this scheduled notification? This action cannot be undone.
         </Text>
       ),
-      labels: { confirm: "Delete", cancel: "Cancel" },
-      confirmProps: { color: "red", leftSection: <IconTrash size={16} /> },
+      labels: { confirm: 'Delete', cancel: 'Cancel' },
+      confirmProps: { color: 'red', leftSection: <IconTrash size={16} /> },
       onConfirm: async () => {
         try {
           const result = await deleteScheduledNotification(id);
 
           if (result.success) {
             // Remove the notification from the state
-            setScheduledNotifications((prev) =>
-              prev.filter((n) => n.id !== id),
-            );
+            setScheduledNotifications((prev) => prev.filter((n) => n.id !== id));
 
             notifications.show({
-              title: "Success",
+              title: 'Success',
               message: result.message,
-              color: "green",
+              color: 'green',
             });
           } else {
             notifications.show({
-              title: "Error",
+              title: 'Error',
               message: result.message,
-              color: "red",
+              color: 'red',
             });
           }
         } catch (error) {
           notifications.show({
-            title: "Error",
-            message: "Failed to delete scheduled notification",
-            color: "red",
+            title: 'Error',
+            message: 'Failed to delete scheduled notification',
+            color: 'red',
           });
         }
       },
@@ -70,9 +67,6 @@ export function ScheduledNotificationsClient({
   };
 
   return (
-    <ScheduledNotificationsTable
-      notifications={scheduledNotifications}
-      onDelete={handleDelete}
-    />
+    <ScheduledNotificationsTable notifications={scheduledNotifications} onDelete={handleDelete} />
   );
 }

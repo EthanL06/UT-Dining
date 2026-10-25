@@ -1,36 +1,27 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
 import {
-  Paper,
-  Title,
-  TextInput,
-  Button,
-  Stack,
-  Group,
-  Text,
-  ActionIcon,
-} from "@mantine/core";
-import { IconDeviceFloppy, IconPlus } from "@tabler/icons-react";
-import { notifications } from "@mantine/notifications";
-import {
-  DndContext,
   closestCenter,
+  DndContext,
+  type DragEndEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
-} from "@dnd-kit/core";
+} from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import type { CreditsConfig, Contributor } from "@/types/config";
-import { updateCreditsConfig } from "@/app/(private)/dashboard/configuration/action";
-import { DraggableContributorItem } from "./draggable-contributor-item";
+} from '@dnd-kit/sortable';
+import { ActionIcon, Button, Group, Paper, Stack, Text, TextInput, Title } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
+import { IconDeviceFloppy, IconPlus } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
+import { updateCreditsConfig } from '@/app/(private)/dashboard/configuration/action';
+import type { Contributor, CreditsConfig } from '@/types/config';
+import { DraggableContributorItem } from './draggable-contributor-item';
 
 interface CreditsSectionProps {
   initialConfig: CreditsConfig;
@@ -55,15 +46,8 @@ function SortableContributorsList({
   );
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={onDragEnd}
-    >
-      <SortableContext
-        items={contributors.map((c) => c.id)}
-        strategy={verticalListSortingStrategy}
-      >
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+      <SortableContext items={contributors.map((c) => c.id)} strategy={verticalListSortingStrategy}>
         <Stack gap="sm">
           {contributors.map((contributor) => (
             <DraggableContributorItem
@@ -95,11 +79,7 @@ export function CreditsSection({ initialConfig }: CreditsSectionProps) {
       const oldIndex = config.contributors.findIndex((c) => c.id === active.id);
       const newIndex = config.contributors.findIndex((c) => c.id === over.id);
 
-      const newContributors = arrayMove(
-        config.contributors,
-        oldIndex,
-        newIndex,
-      );
+      const newContributors = arrayMove(config.contributors, oldIndex, newIndex);
 
       // Update order numbers
       const updatedContributors = newContributors.map((contributor, index) => ({
@@ -118,7 +98,7 @@ export function CreditsSection({ initialConfig }: CreditsSectionProps) {
     const newId = Date.now().toString();
     const newContributor: Contributor = {
       id: newId,
-      name: "",
+      name: '',
       order: config.contributors.length + 1,
     };
 
@@ -159,18 +139,18 @@ export function CreditsSection({ initialConfig }: CreditsSectionProps) {
       setConfig(updatedConfig);
 
       notifications.show({
-        title: "Success!",
-        message: "Credits section updated successfully.",
-        color: "green",
+        title: 'Success!',
+        message: 'Credits section updated successfully.',
+        color: 'green',
         autoClose: 3000,
       });
     } catch (error) {
-      console.error("Failed to update credits section:", error);
+      console.error('Failed to update credits section:', error);
 
       notifications.show({
-        title: "Error",
-        message: "Failed to update credits section. Please try again.",
-        color: "red",
+        title: 'Error',
+        message: 'Failed to update credits section. Please try again.',
+        color: 'red',
         autoClose: 5000,
       });
     } finally {
@@ -198,7 +178,7 @@ export function CreditsSection({ initialConfig }: CreditsSectionProps) {
               </Text>
               <ActionIcon
                 variant="white"
-                c={"var(--color-UTColors)"}
+                c={'var(--color-UTColors)'}
                 onClick={handleAddContributor}
                 size="sm"
               >

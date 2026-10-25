@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from '@/lib/supabase/server';
 
 // Types
 export interface NotificationData {
@@ -14,12 +14,12 @@ export interface NotificationData {
 
 // Backend functions
 export async function sendNotification(data: NotificationData) {
-  console.log("⏳ Sending notification...");
+  console.log('⏳ Sending notification...');
   const supabase = await createClient();
 
-  const { data: response, error } = await supabase.functions.invoke("manual-push-notification", {
-    body: {      
-      title: data.title,  
+  const { data: response, error } = await supabase.functions.invoke('manual-push-notification', {
+    body: {
+      title: data.title,
       body: data.body,
       redirect_url: data.redirectLink,
       type: data.notification_type_id,
@@ -27,14 +27,14 @@ export async function sendNotification(data: NotificationData) {
   });
 
   if (error) {
-    console.error("❌ Error sending notification:", error);
+    console.error('❌ Error sending notification:', error);
     return {
       success: false,
       message: error.message,
     };
   }
 
-  console.log("✅ Notification sent successfully");
+  console.log('✅ Notification sent successfully');
 
   return {
     success: true,
@@ -46,28 +46,27 @@ export async function scheduleNotification(data: NotificationData) {
   if (!data.scheduledAt) {
     return {
       success: false,
-      message: "Scheduled time is required",
+      message: 'Scheduled time is required',
     };
   }
 
-  console.log("⏳ Scheduling notification...");
+  console.log('⏳ Scheduling notification...');
 
   const supabase = await createClient();
 
   // Ensure we have a valid Date object
-  const scheduledAt = data.scheduledAt instanceof Date 
-    ? data.scheduledAt 
-    : new Date(data.scheduledAt);
+  const scheduledAt =
+    data.scheduledAt instanceof Date ? data.scheduledAt : new Date(data.scheduledAt);
 
   if (isNaN(scheduledAt.getTime())) {
     return {
       success: false,
-      message: "Invalid scheduled time provided",
+      message: 'Invalid scheduled time provided',
     };
   }
 
   // Push to scheduled notifications table
-  const { error } = await supabase.from("notifications").insert({
+  const { error } = await supabase.from('notifications').insert({
     title: data.title,
     body: data.body,
     redirect_url: data.redirectLink,
@@ -76,15 +75,15 @@ export async function scheduleNotification(data: NotificationData) {
   });
 
   if (error) {
-    console.error("❌ Error scheduling notification:", error);
+    console.error('❌ Error scheduling notification:', error);
     return {
       success: false,
       message: error.message,
     };
   }
 
-  console.log("✅ Notification scheduled successfully");
-  
+  console.log('✅ Notification scheduled successfully');
+
   return {
     success: true,
     message: `Notification scheduled successfully for ${scheduledAt.toLocaleString()}`,
@@ -95,14 +94,13 @@ export async function getScheduledNotifications() {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("notifications")
-    .select("*, notification_types(name)")
-    .not("scheduled_at", "is", null)
-    .order("scheduled_at", { ascending: true });
-
+    .from('notifications')
+    .select('*, notification_types(name)')
+    .not('scheduled_at', 'is', null)
+    .order('scheduled_at', { ascending: true });
 
   if (error) {
-    console.error("❌ Error fetching scheduled notifications:", error);
+    console.error('❌ Error fetching scheduled notifications:', error);
     return [];
   }
 
@@ -112,34 +110,34 @@ export async function getScheduledNotifications() {
 export async function deleteScheduledNotification(id: string) {
   const supabase = await createClient();
 
-  const { error } = await supabase
-    .from("notifications")
-    .delete()
-    .eq("id", id);
+  const { error } = await supabase.from('notifications').delete().eq('id', id);
 
   if (error) {
-    console.error("❌ Error deleting scheduled notification:", error);
+    console.error('❌ Error deleting scheduled notification:', error);
     return {
       success: false,
       message: error.message,
     };
   }
 
-  console.log("✅ Scheduled notification deleted successfully");
-  
+  console.log('✅ Scheduled notification deleted successfully');
+
   return {
     success: true,
-    message: "Scheduled notification deleted successfully",
+    message: 'Scheduled notification deleted successfully',
   };
-} 
+}
 
 export async function getNotificationTypes() {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.from("notification_types").select("*").order("name", { ascending: true });
+  const { data, error } = await supabase
+    .from('notification_types')
+    .select('*')
+    .order('name', { ascending: true });
 
   if (error) {
-    console.error("❌ Error fetching notification types:", error);
+    console.error('❌ Error fetching notification types:', error);
     return [];
   }
 

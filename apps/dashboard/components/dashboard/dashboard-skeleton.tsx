@@ -1,4 +1,4 @@
-import { Stack, Flex, Skeleton, Paper, Table, Group } from "@mantine/core";
+import { Flex, Group, Paper, Skeleton, Stack, Table } from '@mantine/core';
 
 export default function DashboardSkeleton() {
   return (

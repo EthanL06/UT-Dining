@@ -1,4 +1,4 @@
-import type { PaymentMethod } from "@/types/location";
+import type { PaymentMethod } from '@/types/location';
 
 export interface PaymentMethodOption {
   value: PaymentMethod;
@@ -8,39 +8,39 @@ export interface PaymentMethodOption {
 }
 
 export const paymentMethodOptions: PaymentMethodOption[] = [
-  { value: "Bevo Pay", label: "Bevo Pay", avatar: "BP", color: "orange" },
-  { value: "Cash", label: "Cash", avatar: "C", color: "green" },
+  { value: 'Bevo Pay', label: 'Bevo Pay', avatar: 'BP', color: 'orange' },
+  { value: 'Cash', label: 'Cash', avatar: 'C', color: 'green' },
   {
-    value: "Credit/Debit",
-    label: "Credit/Debit",
-    avatar: "C/D",
-    color: "blue",
+    value: 'Credit/Debit',
+    label: 'Credit/Debit',
+    avatar: 'C/D',
+    color: 'blue',
   },
   {
-    value: "Dine In Dollars",
-    label: "Dine In Dollars",
-    avatar: "DiD",
-    color: "grape",
+    value: 'Dine In Dollars',
+    label: 'Dine In Dollars',
+    avatar: 'DiD',
+    color: 'grape',
   },
 ];
 
 export const paymentMethodLabels: Record<PaymentMethod, string> = {
-  "Bevo Pay": "Bevo Pay",
-  Cash: "Cash",
-  "Credit/Debit": "Credit/Debit",
-  "Dine In Dollars": "Dine In Dollars",
+  'Bevo Pay': 'Bevo Pay',
+  Cash: 'Cash',
+  'Credit/Debit': 'Credit/Debit',
+  'Dine In Dollars': 'Dine In Dollars',
 };
 
 export const paymentMethodAvatars: Record<PaymentMethod, string> = {
-  "Bevo Pay": "BP",
-  Cash: "C",
-  "Credit/Debit": "C/D",
-  "Dine In Dollars": "DiD",
+  'Bevo Pay': 'BP',
+  Cash: 'C',
+  'Credit/Debit': 'C/D',
+  'Dine In Dollars': 'DiD',
 };
 
 export const paymentMethodColors: Record<PaymentMethod, string> = {
-  "Bevo Pay": "orange",
-  Cash: "green",
-  "Credit/Debit": "blue",
-  "Dine In Dollars": "grape",
+  'Bevo Pay': 'orange',
+  Cash: 'green',
+  'Credit/Debit': 'blue',
+  'Dine In Dollars': 'grape',
 };
