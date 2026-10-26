@@ -63,7 +63,7 @@ Browse menus, check dining hours, and find the perfect meal on campus.
 
 <img src="https://github.com/user-attachments/assets/f1264b22-d0ad-44e8-9342-ec53ec94d37b"><br>
 
-At the core of the system is a remote **Render** instance, which is scheduled to run every 24 hours at 7:00 AM UTC _(or 1:00 AM CST)_. This instance is responsible for scraping the dining menus from UT Austin, sourced from [this page](https://hf-foodpro.austin.utexas.edu/foodpro/location.aspx). Once the menus are scraped, the data is stored in a **Supabase** database. The web scraper lives in [`apps/scraper`](apps/scraper).
+At the core of the system is a scheduled **GitHub Actions** workflow that runs every day at 7:00 AM UTC _(or 1:00 AM CST)_. It is responsible for scraping the dining menus from UT Austin, sourced from [this page](https://hf-foodpro.austin.utexas.edu/foodpro/location.aspx). Once the menus are scraped, the data is stored in a **Supabase** database. The web scraper lives in [`apps/scraper`](apps/scraper).
 
 Every 24 hours, the **Expo** mobile application fetches the latest menu data from the database, keeping the application up-to-date. To optimize performance and reduce loading times, the data is cached locally in an **SQLite** database using **Drizzle ORM**. This local cache allows the app to quickly retrieve the necessary information, ensuring a smooth, **offline-first** user experience.
 
@@ -133,7 +133,7 @@ UT-Dining/
 │   ├── mobile/            # Expo app (Expo Router, NativeWind, Drizzle + SQLite, EAS config)
 │   ├── dashboard/         # Admin dashboard (Next.js + Mantine, deployed on Vercel)
 │   ├── website/           # Public website and privacy policy (Next.js static export, GitHub Pages)
-│   └── scraper/           # Daily menu scraper (Node, runs on Render at 07:00 UTC)
+│   └── scraper/           # Daily menu scraper (Node, runs on GitHub Actions at 07:00 UTC)
 ├── packages/
 │   ├── core/              # @ut-dining/core: shared hours, open/closed status and Central-time logic
 │   ├── supabase/          # @ut-dining/supabase: generated database types shared by all apps
@@ -211,7 +211,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## Deployments
 
 - **Mobile app**: EAS builds from `apps/mobile`.
-- **Scraper**: Render cron job running `pnpm --filter @ut-dining/scraper start`.
+- **Scraper**: `.github/workflows/scraper.yml` runs `pnpm --filter @ut-dining/scraper start` daily at 07:00 UTC, and on demand from the Actions tab. It reads `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` from repository secrets.
 - **Dashboard**: Vercel project with root directory `apps/dashboard`.
 - **Website**: `.github/workflows/website-deploy.yml` builds `apps/website` and publishes it to the `gh-pages` branch of [Longhorn-Developers/ut-dining-website](https://github.com/Longhorn-Developers/ut-dining-website), which keeps the existing GitHub Pages URL (the App Store privacy-policy link points there).
 

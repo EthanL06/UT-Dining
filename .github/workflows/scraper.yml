@@ -1,0 +1,86 @@
+name: Scrape menus
+
+# Daily menu scrape into Supabase. Replaces the Render cron job.
+#
+# Setup (once), in Settings → Secrets and variables → Actions:
+#   Secrets:   SUPABASE_URL          the production project URL
+#              SUPABASE_SERVICE_KEY  the production service_role key
+#   Variables: DAYS_TO_SCRAPE        optional, days ahead to scrape (the scraper defaults to 1)
+#
+# GitHub only runs schedules from the default branch (main) and pauses them after 60 days without
+# a commit. The keepalive job re-enables this workflow on each scheduled run to reset that clock.
+
+on:
+  schedule:
+    # 07:00 UTC is 1 AM CST / 2 AM CDT. GitHub often starts scheduled runs a few minutes late.
+    - cron: '0 7 * * *'
+  workflow_dispatch:
+    inputs:
+      days_to_scrape:
+        description: Days to scrape, starting today (blank uses the DAYS_TO_SCRAPE variable)
+        required: false
+
+concurrency:
+  group: scrape-menus
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  scrape:
+    name: Scrape and upload
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile --filter @ut-dining/scraper...
+
+      - name: Check secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "::error::Add the SUPABASE_URL and SUPABASE_SERVICE_KEY repository secrets."
+            exit 1
+          fi
+
+      - name: Scrape
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ENABLE_SUPABASE: 'true'
+          DAYS_TO_SCRAPE: ${{ inputs.days_to_scrape || vars.DAYS_TO_SCRAPE }}
+          # Menu dates come from the local clock, so use UT's time zone.
+          TZ: America/Chicago
+        run: pnpm --filter @ut-dining/scraper start
+
+      - name: Upload scraped JSON
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: menus-${{ github.run_id }}
+          path: apps/scraper/data/*.json
+          retention-days: 7
+          if-no-files-found: ignore
+
+  keepalive:
+    name: Keep schedule enabled
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Re-enable this workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/scraper.yml/enable"

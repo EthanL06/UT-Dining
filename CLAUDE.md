@@ -7,7 +7,7 @@ pnpm + Turborepo monorepo for the UT Dining iOS/Android app and its services.
 - `apps/mobile`: Expo SDK 58 app (React Native 0.88, React 19, New Architecture only; Expo Router, NativeWind, Drizzle + expo-sqlite, TanStack Query, Zustand, MMKV). Needs a development build, not Expo Go. EAS config lives here.
 - `apps/dashboard`: admin dashboard (Next.js 16, Mantine, Supabase SSR auth). Deployed on Vercel.
 - `apps/website`: public site and privacy policy (Next.js 16 static export, Tailwind 4). Base path `/ut-dining-website` must stay: the App Store privacy link points at its GitHub Pages URL.
-- `apps/scraper`: daily menu scraper. Plain ESM TypeScript run directly by Node (no build). Deployed as a Render cron job.
+- `apps/scraper`: daily menu scraper. Plain ESM TypeScript run directly by Node (no build). Runs daily from `.github/workflows/scraper.yml` (GitHub Actions).
 - `packages/core` (`@ut-dining/core`): pure domain logic shared by the app and the dashboard (service hours, open/closed status, Central-time dates, payment methods). No React, React Native or database code here; Vitest tests live next to the source. Run with `pnpm --filter @ut-dining/core test`.
 - `packages/supabase` (`@ut-dining/supabase`): generated Supabase types. Regenerate with `pnpm db:types`; never hand-edit.
 - `packages/tsconfig` (`@ut-dining/tsconfig`): shared TypeScript presets.
