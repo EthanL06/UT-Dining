@@ -19,23 +19,9 @@ const FavoritesFeatureScreen = ({ width }: Props) => {
       className={cn('flex-1 px-6 py-8', isDark ? 'bg-neutral-900' : 'bg-white')}
     >
       <View className="flex-1 items-center justify-center">
-        <View className="flex-row gap-0">
-          <Image
-            source={favoritesImage}
-            style={{
-              width: 180,
-              height: 512,
-            }}
-            contentFit="contain"
-          />
-          <Image
-            source={mealPlanImage}
-            style={{
-              width: 180,
-              height: 512,
-            }}
-            contentFit="contain"
-          />
+        <View className="mb-8 w-full flex-row" style={{ height: 512, flexShrink: 1, minHeight: 0 }}>
+          <Image source={favoritesImage} style={{ flex: 1 }} contentFit="contain" />
+          <Image source={mealPlanImage} style={{ flex: 1 }} contentFit="contain" />
         </View>
 
         <View>

@@ -21,11 +21,13 @@ const MenusFeatureScreen = ({ width }: Props) => {
         <Image
           source={image}
           style={{
-            width: 236,
+            width: '100%',
             height: 512,
+            flexShrink: 1,
+            minHeight: 0,
+            marginBottom: 32,
           }}
           contentFit="contain"
-          className="mb-8"
         />
 
         <View>

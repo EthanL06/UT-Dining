@@ -11,6 +11,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { getSafePostHog } from '~/services/analytics/posthog';
 import { ONBOARDING_STEPS, useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -207,65 +208,67 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
 
   return (
     <Modal animationType="slide" presentationStyle="fullScreen" visible={!isOnboardingComplete}>
-      <Container className={cn('mx-0', isDarkMode ? 'bg-neutral-900' : 'bg-white')}>
-        <View className="flex-row items-center px-6">
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={goToPrevious}
-            disabled={currentStep === 0}
-            className={cn('rounded-full', currentStep === 0 ? 'opacity-0' : 'opacity-100')}
-          >
-            <ChevronLeft
-              size={24}
-              color={isDarkMode ? COLORS['ut-grey-dark-mode'] : COLORS['ut-grey']}
-            />
-          </TouchableOpacity>
+      <SafeAreaProvider>
+        <Container className={cn('mx-0', isDarkMode ? 'bg-neutral-900' : 'bg-white')}>
+          <View className="flex-row items-center px-6">
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={goToPrevious}
+              disabled={currentStep === 0}
+              className={cn('rounded-full', currentStep === 0 ? 'opacity-0' : 'opacity-100')}
+            >
+              <ChevronLeft
+                size={24}
+                color={isDarkMode ? COLORS['ut-grey-dark-mode'] : COLORS['ut-grey']}
+              />
+            </TouchableOpacity>
 
-          <View className="flex-1 items-center justify-center px-4">
-            <ProgressIndicator
-              step={currentStep}
-              totalSteps={ONBOARDING_SCREENS.length}
-              className="w-[180px]"
-            />
+            <View className="flex-1 items-center justify-center px-4">
+              <ProgressIndicator
+                step={currentStep}
+                totalSteps={ONBOARDING_SCREENS.length}
+                className="w-[180px]"
+              />
+            </View>
+
+            <View className="w-6" />
           </View>
 
-          <View className="w-6" />
-        </View>
-
-        <Animated.ScrollView
-          ref={scrollRef}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={scrollHandler}
-          scrollEventThrottle={16}
-          contentContainerStyle={{ flexGrow: 1 }}
-        >
-          {ONBOARDING_SCREENS.map((stepId, index) => renderScreen(stepId, index))}
-        </Animated.ScrollView>
-
-        <View className="px-4">
-          <AnimatedPressable
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
-            onPress={handlePress}
-            className={cn(
-              'w-full rounded-full p-3',
-              isDarkMode ? 'bg-ut-burnt-orange/90' : 'bg-ut-burnt-orange',
-            )}
-            style={[animatedStyle]}
+          <Animated.ScrollView
+            ref={scrollRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={scrollHandler}
+            scrollEventThrottle={16}
+            contentContainerStyle={{ flexGrow: 1 }}
           >
-            <Text className="py-2 text-center font-semibold text-white">
-              {currentStep === ONBOARDING_SCREENS.length - 1
-                ? 'Finish'
-                : (currentStep === 1 && !hasDataSelection) ||
-                    (currentStep === 2 && !hasReferralSource)
-                  ? 'Skip'
-                  : 'Continue'}
-            </Text>
-          </AnimatedPressable>
-        </View>
-      </Container>
+            {ONBOARDING_SCREENS.map((stepId, index) => renderScreen(stepId, index))}
+          </Animated.ScrollView>
+
+          <View className="px-4 pb-4">
+            <AnimatedPressable
+              onPressIn={handlePressIn}
+              onPressOut={handlePressOut}
+              onPress={handlePress}
+              className={cn(
+                'w-full rounded-full p-3',
+                isDarkMode ? 'bg-ut-burnt-orange/90' : 'bg-ut-burnt-orange',
+              )}
+              style={[animatedStyle]}
+            >
+              <Text className="py-2 text-center font-semibold text-white">
+                {currentStep === ONBOARDING_SCREENS.length - 1
+                  ? 'Finish'
+                  : (currentStep === 1 && !hasDataSelection) ||
+                      (currentStep === 2 && !hasReferralSource)
+                    ? 'Skip'
+                    : 'Continue'}
+              </Text>
+            </AnimatedPressable>
+          </View>
+        </Container>
+      </SafeAreaProvider>
     </Modal>
   );
 };
