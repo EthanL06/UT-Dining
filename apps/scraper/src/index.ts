@@ -614,7 +614,6 @@ const scrapeMenuData = async (url: string, date?: string) => {
       0,
     );
 
-    // An empty scrape with nothing skipped means every page failed, so fail the run.
     if (totalLocations === 0 && totalSkipped === 0) {
       console.error('❌ No menus were scraped');
       process.exitCode = 1;
