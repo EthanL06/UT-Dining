@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@ut-dining/supabase';
 
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_KEY || '';
-
-const supabase = createClient<Database>(supabaseUrl, supabaseKey);
-
-export { supabase };
+export const createSupabase = () => {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_KEY;
+  if (!url || !key) throw new Error('SUPABASE_URL and SUPABASE_KEY are required to upload');
+  return createClient<Database>(url, key, { auth: { persistSession: false } });
+};
