@@ -369,6 +369,9 @@ importers:
       '@supabase/supabase-js':
         specifier: 'catalog:'
         version: 2.50.0
+      '@ut-dining/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       cheerio:
         specifier: ^1.1.0
         version: 1.2.0
@@ -388,6 +391,9 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
+      vitest:
+        specifier: ^5.0.5
+        version: 5.0.5(@types/node@24.0.3)(vite@8.3.5(@types/node@24.0.3)(esbuild@0.25.6)(jiti@2.7.0)(terser@5.43.1)(tsx@4.23.15)(yaml@2.8.0))
 
   apps/website:
     dependencies:
@@ -8778,9 +8784,7 @@ snapshots:
       metro-runtime: 0.87.1
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@react-native/normalize-colors@0.74.89': {}
 
