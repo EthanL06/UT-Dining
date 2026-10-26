@@ -294,47 +294,38 @@ const MapMarkers = ({
 }) => {
   return (
     <>
-      {locations.map((location) => (
-        <Marker
-          key={location.name}
-          coordinate={location.coordinates}
-          tracksViewChanges={false}
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            onMarkerPress(location.coordinates);
+      {locations.map((location) => {
+        const handlePress = () => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          onMarkerPress(location.coordinates);
+          SheetManager.show('map-location', {
+            context: 'global',
+            payload: {
+              name: location.name,
+              address: location.address,
+              description: location.description ?? '',
+              type: location.type,
+              hasMenu: location.hasMenu,
+              ...(location.note ? { note: location.note } : {}),
+            },
+          });
+        };
 
-            SheetManager.show('map-location', {
-              payload: {
-                name: location.name,
-                address: location.address,
-                description: location.description ?? '',
-                type: location.type,
-                hasMenu: location.hasMenu,
-                ...(location.note ? { note: location.note } : {}),
-              },
-            });
-          }}
-        >
-          <MarkerIcon
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              onMarkerPress(location.coordinates);
-              SheetManager.show('map-location', {
-                payload: {
-                  name: location.name,
-                  address: location.address,
-                  description: location.description ?? '',
-                  type: location.type,
-                  hasMenu: location.hasMenu,
-                  ...(location.note ? { note: location.note } : {}),
-                },
-              });
-            }}
-            type={location.type}
-            isColorBlindMode={isColorBlindMode}
-          />
-        </Marker>
-      ))}
+        return (
+          <Marker
+            key={location.name}
+            coordinate={location.coordinates}
+            tracksViewChanges={false}
+            onPress={handlePress}
+          >
+            <MarkerIcon
+              onPress={handlePress}
+              type={location.type}
+              isColorBlindMode={isColorBlindMode}
+            />
+          </Marker>
+        );
+      })}
     </>
   );
 };
