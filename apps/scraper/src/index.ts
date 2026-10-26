@@ -60,12 +60,12 @@ const main = async () => {
   if (config.upload) {
     const uploadStarted = performance.now();
     const uploads = await upload(result.days);
-    for (const { locationName, error } of uploads) {
-      if (error) console.error(`Upload failed for ${locationName}: ${error}`);
+    for (const { locationName, date, error } of uploads) {
+      if (error) console.error(`Upload failed for ${locationName} ${date}: ${error}`);
     }
     const failed = uploads.filter((entry) => entry.error).length;
     console.log(
-      `Uploaded ${uploads.length - failed}/${uploads.length} locations in ${seconds(uploadStarted)}`,
+      `Uploaded ${uploads.length - failed}/${uploads.length} location-days in ${seconds(uploadStarted)}`,
     );
     if (failed > 0) process.exitCode = 1;
   }
