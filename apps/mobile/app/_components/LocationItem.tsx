@@ -92,9 +92,6 @@ const LocationItem = ({ location, currentTime }: LocationItemProps) => {
 
   const handlePress = async () => {
     if (locationData?.has_menus) {
-      if (router.canDismiss()) {
-        router.dismissAll();
-      }
       router.push(`/location/${location.name}`);
     } else {
       router.push(`/location_generic/${location.name}`);
