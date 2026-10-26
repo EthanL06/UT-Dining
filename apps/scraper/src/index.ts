@@ -614,6 +614,11 @@ const scrapeMenuData = async (url: string, date?: string) => {
       0,
     );
 
+    if (totalLocations === 0 && totalSkipped === 0) {
+      console.error('❌ No menus were scraped');
+      process.exitCode = 1;
+    }
+
     console.log(
       `📊 Final summary: ${dates.length} day${
         dates.length > 1 ? 's' : ''
@@ -688,6 +693,7 @@ const scrapeMenuData = async (url: string, date?: string) => {
       );
       if (failedLocations.length > 0) {
         console.error(`❌ Failed locations: ${failedLocations.join(', ')}`);
+        process.exitCode = 1;
       }
     }
 
@@ -696,5 +702,6 @@ const scrapeMenuData = async (url: string, date?: string) => {
     console.log(`⏱️ Total scraping time: ${duration.toFixed(2)} seconds`);
   } catch (error) {
     console.error('💥 Fatal error:', error);
+    process.exitCode = 1;
   }
 })();
