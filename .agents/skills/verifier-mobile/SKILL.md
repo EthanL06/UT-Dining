@@ -26,7 +26,7 @@ description: Verify changes to the UT Dining iOS app (apps/mobile, Expo SDK 58 d
 
 ## Teardown
 
-Stop the Metro server you started: `kill $(lsof -tiTCP:8081 -sTCP:LISTEN)`. Killing the pnpm PID leaves the Expo `node` child listening. Then do the verifier-data teardown if you started Supabase. Set the in-app theme back to what it was. Leave the simulator and the app as you found them, booted or shut down. The app's cache keeps this run's local data, so tap Sync Data again before using the simulator against another backend.
+Stop the Metro server you started: `kill $(lsof -tiTCP:8081 -sTCP:LISTEN)`. Killing the pnpm PID leaves the Expo `node` child listening. Then do the verifier-data teardown if you started Supabase. Set the in-app theme back to what it was. Shut down every simulator you booted (`xcrun simctl shutdown "$SIM"`) and leave the ones that were already booted as you found them. The app's cache keeps this run's local data, so tap Sync Data again before using the simulator against another backend.
 
 ## Result
 
