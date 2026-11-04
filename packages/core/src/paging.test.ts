@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { chunk, fetchAllPages } from './paging.ts';
+import { chunk, fetchAllPages, mapConcurrent } from './paging.ts';
 
 const serverWith = (total: number, cap: number) => {
   const rows = Array.from({ length: total }, (_, id) => ({ id }));
@@ -54,5 +54,25 @@ describe('chunk', () => {
   it('splits into groups of the given size', () => {
     expect(chunk([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]]);
     expect(chunk([], 2)).toEqual([]);
+  });
+});
+
+describe('mapConcurrent', () => {
+  it('keeps the input order and never runs more than the limit at once', async () => {
+    let running = 0;
+    let peak = 0;
+    const result = await mapConcurrent([30, 10, 20, 5, 15], 2, async (ms, index) => {
+      running += 1;
+      peak = Math.max(peak, running);
+      for (let tick = 0; tick < ms; tick += 1) await Promise.resolve();
+      running -= 1;
+      return index;
+    });
+    expect(result).toEqual([0, 1, 2, 3, 4]);
+    expect(peak).toBe(2);
+  });
+
+  it('returns an empty list for no items', async () => {
+    expect(await mapConcurrent([], 4, async () => 1)).toEqual([]);
   });
 });

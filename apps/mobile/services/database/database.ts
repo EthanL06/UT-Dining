@@ -1,4 +1,4 @@
-import { chunk, fetchAllPages } from '@ut-dining/core';
+import { chunk, fetchAllPages, mapConcurrent } from '@ut-dining/core';
 import { eq, sql } from 'drizzle-orm';
 import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import { getTodayInCentralTime } from '~/utils/date';
@@ -46,31 +46,32 @@ type TableTypeMap = {
 
 type TableTypeMapKeys = keyof TableTypeMap;
 
-const ID_CHUNK_SIZE = 300;
+const ID_CHUNK_SIZE = 100;
+const MAX_PARALLEL_REQUESTS = 8;
 
 async function fetchInChunks<T extends TableTypeMapKeys>(
   tableName: T,
   column: string,
   ids: (string | number)[],
 ) {
-  const results: TableTypeMap[T][] = [];
-
-  for (const idChunk of chunk(ids, ID_CHUNK_SIZE)) {
-    const result = await fetchAllPages((from, to) =>
+  const pages = await mapConcurrent(chunk(ids, ID_CHUNK_SIZE), MAX_PARALLEL_REQUESTS, (idChunk) =>
+    fetchAllPages((from, to) =>
       supabase
         .from(tableName as TableTypeMapKeys)
         .select('*')
         .in(column, idChunk)
         .order('id')
         .range(from, to),
-    );
+    ),
+  );
 
-    if (result.error) {
-      console.error(`❌ Error fetching ${tableName}:`, result.error);
-      return { data: null, error: result.error };
+  const results: TableTypeMap[T][] = [];
+  for (const page of pages) {
+    if (page.error) {
+      console.error(`❌ Error fetching ${tableName}:`, page.error);
+      return { data: null, error: page.error };
     }
-
-    results.push(...((result.data ?? []) as TableTypeMap[T][]));
+    results.push(...((page.data ?? []) as TableTypeMap[T][]));
   }
 
   return { data: results, error: null };
