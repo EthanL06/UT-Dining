@@ -4,11 +4,13 @@ import { useEffect, useMemo } from 'react';
 
 import { useDatabase } from '~/hooks/useDatabase';
 import * as schema from '~/services/database/schema';
+import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useNotificationsStore } from '~/store/useNotificationsStore';
 
 export function useUnreadNotifications() {
   const db = useDatabase();
   const { lastVisited, initializeLastVisited } = useNotificationsStore();
+  const lastSyncTime = useDataSyncStore((state) => state.lastSupabaseQueryTime);
 
   // Initialize last visited timestamp on mount
   useEffect(() => {
@@ -24,6 +26,7 @@ export function useUnreadNotifications() {
       })
       .from(schema.notifications)
       .orderBy(sql`datetime(${schema.notifications.sent_at}) DESC`),
+    [lastSyncTime],
   );
 
   // Calculate unread count based on last visited timestamp

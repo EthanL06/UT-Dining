@@ -1,4 +1,5 @@
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
+import { useIsFetching } from '@tanstack/react-query';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams } from 'expo-router';
@@ -11,6 +12,7 @@ import { useCategoryExpansion } from '~/hooks/useCategoryExpansion';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useMenuData } from '~/hooks/useMenuData';
+import { MENU_SYNC_QUERY_KEY } from '~/hooks/useMenuSync';
 import { useScrollToTop } from '~/hooks/useScrollToTop';
 import * as schema from '~/services/database/schema';
 import { type FiltersState, useFiltersStore } from '~/store/useFiltersStore';
@@ -141,6 +143,7 @@ const Location = () => {
     filters: menuFilters,
     isSwitchingMenus,
   } = useMenuData(location, selectedDate);
+  const isSyncing = useIsFetching({ queryKey: MENU_SYNC_QUERY_KEY }) > 0;
   const { toggleCategory, flattenedItems, resetExpandedCategories } = useCategoryExpansion(data);
   const db = useDatabase();
 
@@ -264,6 +267,13 @@ const Location = () => {
   // Empty state component
   const EmptyState = useCallback(() => {
     if (loading) return null;
+    if (isSyncing) {
+      return (
+        <View className="mt-12 flex-1 items-center justify-center">
+          <ActivityIndicator size="small" />
+        </View>
+      );
+    }
 
     const subtitle = () => {
       if (error) {
@@ -291,7 +301,7 @@ const Location = () => {
         </Text>
       </View>
     );
-  }, [loading, error, debouncedSearchQuery, activeFilters, isDarkMode]);
+  }, [loading, isSyncing, error, debouncedSearchQuery, activeFilters, isDarkMode]);
 
   return (
     <View style={{ flex: 1, backgroundColor: isDarkMode ? '#171717' : '#fff' }}>
