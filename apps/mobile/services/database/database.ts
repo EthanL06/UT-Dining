@@ -1,3 +1,4 @@
+import { chunk, fetchAllPages, mapConcurrent } from '@ut-dining/core';
 import { eq, sql } from 'drizzle-orm';
 import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import { getTodayInCentralTime } from '~/utils/date';
@@ -45,47 +46,34 @@ type TableTypeMap = {
 
 type TableTypeMapKeys = keyof TableTypeMap;
 
-/**
- * Fetches data from Supabase in chunks to avoid hitting the 1000 item limit
- */
+const ID_CHUNK_SIZE = 100;
+const MAX_PARALLEL_REQUESTS = 8;
+
 async function fetchInChunks<T extends TableTypeMapKeys>(
   tableName: T,
   column: string,
   ids: (string | number)[],
-  chunkSize: number = 1000,
 ) {
-  if (ids.length === 0) {
-    return { data: [], error: null };
-  }
+  const pages = await mapConcurrent(chunk(ids, ID_CHUNK_SIZE), MAX_PARALLEL_REQUESTS, (idChunk) =>
+    fetchAllPages((from, to) =>
+      supabase
+        .from(tableName as TableTypeMapKeys)
+        .select('*')
+        .in(column, idChunk)
+        .order('id')
+        .range(from, to),
+    ),
+  );
 
-  const chunks = chunkArray(ids, chunkSize);
   const results: TableTypeMap[T][] = [];
-
-  // console.log(
-  //   `📊 Fetching ${tableName} in ${chunks.length} chunks of ${chunkSize} items each (${ids.length} total)`
-  // );
-
-  for (let i = 0; i < chunks.length; i++) {
-    const chunk = chunks[i];
-    // console.log(`  📄 Processing chunk ${i + 1}/${chunks.length} with ${chunk.length} items`);
-
-    const result = await supabase
-      .from(tableName as TableTypeMapKeys)
-      .select('*')
-      .in(column, chunk);
-
-    if (result.error) {
-      console.error(`❌ Error in chunk ${i + 1}/${chunks.length}:`, result.error);
-      return { data: null, error: result.error };
+  for (const page of pages) {
+    if (page.error) {
+      console.error(`❌ Error fetching ${tableName}:`, page.error);
+      return { data: null, error: page.error };
     }
-
-    if (result.data) {
-      results.push(...(result.data as TableTypeMap[T][]));
-      // console.log(`  ✅ Chunk ${i + 1}/${chunks.length} completed: ${result.data.length} records`);
-    }
+    results.push(...((page.data ?? []) as TableTypeMap[T][]));
   }
 
-  // console.log(`✅ ${tableName} chunked fetch completed: ${results.length} total records`);
   return { data: results, error: null };
 }
 
@@ -138,7 +126,7 @@ const querySupabase = async (date?: string) => {
     ] = await Promise.all([
       supabase.from('location').select('*'),
       supabase.from('location_type').select('*'),
-      supabase.from('menu').select('*'),
+      fetchAllPages((from, to) => supabase.from('menu').select('*').order('id').range(from, to)),
       supabase.from('app_information').select('*'),
       supabase.from('notifications').select('*'),
       supabase.from('notification_types').select('*'),
