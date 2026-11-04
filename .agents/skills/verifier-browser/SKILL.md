@@ -15,11 +15,11 @@ Drives the dashboard and the website with agent-browser against the dev servers 
 ## Setup
 
 1. `cd "$(git rev-parse --show-toplevel)"` and `pnpm install --frozen-lockfile` if `node_modules` is missing.
-2. For the dashboard only: local Supabase must be running (see verifier-data setup steps 1 and 2), then `node scripts/env.ts --local` writes `apps/dashboard/.env.local` with the local URL and anon key. Never point the dashboard at the hosted dev or production project.
+2. For the dashboard only: local Supabase must be running (see verifier-data setup steps 1 to 5, including the port check), then `node scripts/env.ts --local` writes `apps/dashboard/.env.local` with the local URL and anon key. Never point the dashboard at the hosted dev or production project.
 3. Start each dev server the change touches on a free port and keep its log: `pnpm --filter @ut-dining/<app> dev --port <port> > "$run/<app>.log" 2>&1 &`. Save the PID. Wait until `curl -sf -o /dev/null <URL>` answers (at most 90 s), else BLOCKED with the last 30 lines of the log. The website answers its root with a redirect to the base path, so curl the base path.
 4. Use one headless browser session per run: `export AGENT_BROWSER_SESSION="verify-$(basename "$run")"` and `unset AGENT_BROWSER_HEADED`. Do not pass `--headed` unless a check needs a window, and say why in the result. In a Linux cloud container, also `export AGENT_BROWSER_EXECUTABLE_PATH=/opt/pw-browsers/chromium AGENT_BROWSER_ARGS=--no-sandbox` when that Chromium exists.
 5. Sign in to the dashboard: any confirmed Supabase user can sign in. Create a local one with the local service role key:
-   `SKEY="$(pnpm exec supabase status -o env | sed -n 's/^SERVICE_ROLE_KEY="\(.*\)"/\1/p')"; curl -sS -X POST http://127.0.0.1:54321/auth/v1/admin/users -H "apikey: $SKEY" -H "Authorization: Bearer $SKEY" -H 'Content-Type: application/json' -d '{"email":"verifier@local.test","password":"verifier-local-only","email_confirm":true}'`.
+   `eval "$(pnpm exec supabase status -o env | grep -E '^(API_URL|SERVICE_ROLE_KEY)=')"; curl -sS -X POST "$API_URL/auth/v1/admin/users" -H "apikey: $SERVICE_ROLE_KEY" -H "Authorization: Bearer $SERVICE_ROLE_KEY" -H 'Content-Type: application/json' -d '{"email":"verifier@local.test","password":"verifier-local-only","email_confirm":true}'`.
    It answers 422 when the user exists from an earlier run; that is fine. Then open `/login`, `fill` Email and Password from the snapshot, click "Sign in", and wait with `agent-browser wait --text Locations`. `get url` must end in `/dashboard`.
 
 ## Steps

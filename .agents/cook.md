@@ -44,7 +44,7 @@ verifiers: [tests, browser, data, mobile]
 
 A pnpm + Turborepo monorepo for the UT Dining app. `apps/mobile` is the Expo iOS and Android app (Expo Router, NativeWind, Drizzle on SQLite as an offline cache). It reads menus, locations and app settings from Supabase and caches them locally. `apps/scraper` runs daily on GitHub Actions, scrapes UT's FoodPro pages and writes menus to Supabase through the `insert_multiple_locations_and_menus` database function. `apps/dashboard` is the admin dashboard (Next.js, Mantine, Supabase SSR auth) on Vercel; it edits locations and sends push notifications through the edge functions in `supabase/functions`. `apps/website` is the public site and privacy policy, a static Next.js export on GitHub Pages. `packages/core` holds the shared hours and open/closed logic, and `packages/supabase` holds the generated database types. The schema lives in `supabase/migrations`.
 
-Ports: Supabase API 54321, Postgres 54322, dashboard 3000, website 3001 (base path `/ut-dining-website`), Metro 8081.
+Ports: Supabase API 54321 and Postgres 54322 by default (verifier-data moves them when another project holds them), dashboard 3000, website 3001 (base path `/ut-dining-website`), Metro 8081.
 
 ## Rules
 
@@ -53,7 +53,7 @@ Ports: Supabase API 54321, Postgres 54322, dashboard 3000, website 3001 (base pa
 - Do not add code comments in code you write, including workflow YAML.
 - Commits and PR titles follow Conventional Commits. Lefthook runs commitlint and Biome on commit; never skip the hooks.
 - Run `pnpm check` before you push. CI runs the same checks plus a build of the dashboard and the website.
-- Use local Supabase (`pnpm db:start`, then `pnpm env:local`) for every verifier. Never point a build, test or verifier at the production Supabase project, and never write to the hosted dev project from a build. The scraper uploads only with `ENABLE_SUPABASE=true`; leave it unset unless `SUPABASE_URL` is the local `http://127.0.0.1:54321`.
+- Use local Supabase (`pnpm db:start`, then `pnpm env:local`) for every verifier. Never point a build, test or verifier at the production Supabase project, and never write to the hosted dev project from a build. The scraper uploads only with `ENABLE_SUPABASE=true`; leave it unset unless `SUPABASE_URL` is the local `API_URL` from `pnpm exec supabase status -o env` (an `http://127.0.0.1:` address).
 - Never hand-edit `packages/supabase/src/database.types.ts`. Regenerate it with `pnpm db:types` after a migration.
 - Never edit a migration that is already on `staging`. Add a new one with `pnpm db:new <name>`.
 - `packages/core` stays pure: no React, React Native or database imports. Its tests sit next to the source.

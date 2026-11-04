@@ -11,10 +11,10 @@ Steps that worked on a fresh Linux cloud container on 2026-11-04 (Node 24, pnpm 
 ## Local Supabase
 
 1. Docker must be running. A cloud container may have the `docker` CLI with no daemon; start it with `dockerd > /tmp/dockerd.log 2>&1 &` and wait for `docker info`.
-2. `pnpm exec supabase start -x vector,logflare,imgproxy,studio,edge-runtime,realtime,storage-api,inbucket,postgres-meta` starts only Postgres, the API gateway, auth and PostgREST. The first run pulls images for a few minutes. Plain `pnpm db:start` starts everything.
+2. `pnpm exec supabase start -x vector,logflare,imgproxy,studio,edge-runtime,realtime,storage-api,postgres-meta` starts a smaller stack. The first run pulls images for a few minutes. Plain `pnpm db:start` starts everything. When another project already holds ports 54320 to 54329 ("port is already allocated"), move this stack for the run as verifier-data setup step 2 says, and read the real URL from `pnpm exec supabase status -o env`.
 3. `pnpm db:reset` applies all migrations and `supabase/seed.sql` (53 locations, no menus).
 4. `node scripts/env.ts --local` writes each app's `.env.local` with the local URL and keys. These are Supabase's fixed local demo keys, not secrets.
-5. Menus: from `apps/scraper`, run one day into the local database with `ENABLE_SUPABASE=true SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_KEY=<local SERVICE_ROLE_KEY from pnpm exec supabase status -o env> DAYS_TO_SCRAPE=1 node src/index.ts`. It took 16 s for 7 location-days and 840 items.
+5. Menus: from `apps/scraper`, run one day into the local database with `ENABLE_SUPABASE=true SUPABASE_URL=<API_URL> SUPABASE_KEY=<SERVICE_ROLE_KEY>, both from `pnpm exec supabase status -o env`, DAYS_TO_SCRAPE=1 node src/index.ts`. It took 16 s for 7 location-days and 840 items.
 6. Query it: `docker exec -i supabase_db_ut-dining psql -U postgres -At -c "<sql>"`.
 
 The cloud SessionStart hook (`scripts/claude-session-start.sh`) points the apps at the hosted dev project when `SUPABASE_DEV_*` vars are set. Verifiers use local Supabase instead, so run `node scripts/env.ts --local` after the hook.
@@ -28,6 +28,8 @@ The cloud SessionStart hook (`scripts/claude-session-start.sh`) points the apps 
 ## Mobile app
 
 Needs macOS with Xcode, a development build and Metro. See verifier-mobile. `pnpm dev:ios` builds and installs the dev build, `pnpm dev:mobile` starts Metro on 8081.
+
+On Ethan's Mac (checked 2026-11-04): other projects run their own Supabase stacks, so 54321 and 54322 may be taken. Some simulators hold a release build of `com.ethanl06.ut-dining.dev`; iPhone 17 and iPhone 17e had dev clients. After a sync from local Supabase, a simulator's app cache holds local data until the next Sync Data.
 
 ## Known noise
 
