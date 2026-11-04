@@ -21,7 +21,6 @@ export interface MealPlanItem {
 
 interface MealPlanState {
   mealPlanItems: MealPlanItem[];
-  initialized: boolean;
 
   // Actions
   addMealPlanItem: (item: MealPlanItem) => void;
@@ -41,7 +40,6 @@ export const useMealPlanStore = create<MealPlanState>()(
   persist(
     (set, get) => ({
       mealPlanItems: [],
-      initialized: false,
 
       // Add a food item to meal plan
       addMealPlanItem: (item) => {
@@ -115,11 +113,6 @@ export const useMealPlanStore = create<MealPlanState>()(
     {
       name: STORAGE_KEY_MEALPLAN,
       storage: createJSONStorage(() => zustandStorage),
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          state.initialized = true;
-        }
-      },
     },
   ),
 );

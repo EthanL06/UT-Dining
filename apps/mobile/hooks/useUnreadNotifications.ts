@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { useDatabase } from '~/hooks/useDatabase';
 import * as schema from '~/services/database/schema';
@@ -8,12 +8,7 @@ import { useNotificationsStore } from '~/store/useNotificationsStore';
 
 export function useUnreadNotifications() {
   const db = useDatabase();
-  const { lastVisited, initializeLastVisited } = useNotificationsStore();
-
-  // Initialize last visited timestamp on mount
-  useEffect(() => {
-    initializeLastVisited();
-  }, [initializeLastVisited]);
+  const lastVisited = useNotificationsStore((state) => state.lastVisited);
 
   // Get notifications from database
   const { data: dbNotifications = [] } = useLiveQuery(
