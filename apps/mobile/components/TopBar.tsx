@@ -95,15 +95,16 @@ const LocationTopBar = () => {
 };
 
 const FoodTopBar = () => {
-  const { category, food, location, menu, favorite } = useLocalSearchParams<{
+  const { category, food, location, menu, favorite, date } = useLocalSearchParams<{
     category: string;
     food: string;
     location: string;
     menu: string;
     favorite: string;
+    date: string;
   }>();
 
-  const { foodItem } = useFoodData(location, menu, category, food, favorite === 'true');
+  const { foodItem } = useFoodData(location, menu, category, food, favorite === 'true', date);
   const toggleMealPlanItem = useMealPlanStore((state) => state.toggleMealPlanItem);
   const isMealPlanItem = useMealPlanStore((state) => state.isMealPlanItem(food));
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
