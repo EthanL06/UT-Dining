@@ -5,7 +5,7 @@ import { Stack } from 'expo-router';
 import { openDatabaseSync, SQLiteProvider } from 'expo-sqlite';
 import { PostHogProvider } from 'posthog-react-native';
 import { Suspense, useEffect } from 'react';
-import { ActivityIndicator } from 'react-native';
+import { ActivityIndicator, Appearance } from 'react-native';
 import { SheetProvider } from 'react-native-actions-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NotifierWrapper } from 'react-native-notifier';
@@ -25,6 +25,7 @@ import { POSTHOG_API_KEY, POSTHOG_CONFIG } from '~/services/analytics/posthog';
 import { PushNotificationsInitializer } from '~/services/notifications/notifications';
 import { ratingService } from '~/services/rating/rating';
 import { useAppLaunchStore } from '~/store/useAppLaunchStore';
+import { useSettingsStore } from '~/store/useSettingsStore';
 export const DATABASE_NAME = 'database.db';
 
 // This is the default configuration
@@ -42,6 +43,11 @@ const AppContent = () => {
   const { incrementLaunchCount } = useAppLaunchStore();
   useSyncQueries({ queryClient });
   usePostHogScreens();
+  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+
+  useEffect(() => {
+    Appearance.setColorScheme(isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
 
   const isTablet = Device.deviceType === Device.DeviceType.TABLET;
 
