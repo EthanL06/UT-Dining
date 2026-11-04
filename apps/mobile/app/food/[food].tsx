@@ -24,8 +24,9 @@ const FoodScreen = () => {
     category: string;
     location: string;
     favorite: string;
+    date: string;
   }>();
-  const { food, menu, category, location, favorite } = params;
+  const { food, menu, category, location, favorite, date } = params;
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
 
   const { foodItem, nutritionData, hasAllergens, allergenList, dietaryList } = useFoodData(
@@ -34,6 +35,7 @@ const FoodScreen = () => {
     category,
     food,
     favorite === 'true',
+    date,
   );
 
   const analytics = getSafePostHog(usePostHog());

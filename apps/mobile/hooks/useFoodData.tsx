@@ -18,6 +18,7 @@ export function useFoodData(
   category: string | string[],
   food: string | string[],
   isFavorite?: boolean,
+  date?: string,
 ) {
   const db = useDatabase();
 
@@ -30,6 +31,7 @@ export function useFoodData(
   const prevFood = useRef<string>('');
   const prevLocation = useRef<string>('');
   const prevIsFavorite = useRef<boolean | undefined>(undefined);
+  const prevDate = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     const fetchFoodItem = async () => {
@@ -56,7 +58,7 @@ export function useFoodData(
           item = convertFavoriteItemToFoodItem(favoriteItem);
         } else {
           // Fetch from regular food items table
-          item = await getFoodItem(db, locString, menuString, categoryString, foodString);
+          item = await getFoodItem(db, locString, menuString, categoryString, foodString, date);
         }
 
         if (!item) {
@@ -75,7 +77,8 @@ export function useFoodData(
       isFirstRender.current ||
       (Array.isArray(food) ? food[0] : food) !== prevFood.current ||
       (Array.isArray(location) ? location[0] : location) !== prevLocation.current ||
-      isFavorite !== prevIsFavorite.current
+      isFavorite !== prevIsFavorite.current ||
+      date !== prevDate.current
     ) {
       fetchFoodItem();
       isFirstRender.current = false;
@@ -85,7 +88,8 @@ export function useFoodData(
     prevFood.current = Array.isArray(food) ? food[0] : food;
     prevLocation.current = Array.isArray(location) ? location[0] : location;
     prevIsFavorite.current = isFavorite;
-  }, [location, menu, category, food, isFavorite, db]);
+    prevDate.current = date;
+  }, [location, menu, category, food, isFavorite, date, db]);
 
   // Process nutrition data
   const nutritionData = useMemo(() => {

@@ -30,6 +30,7 @@ const FoodComponent = ({
   selectedMenu,
   categoryName,
   location,
+  date,
   onFavorite,
   isFavorite,
   isFavoriteScreen = false,
@@ -40,6 +41,7 @@ const FoodComponent = ({
   selectedMenu: string;
   categoryName: string;
   location: string;
+  date?: string;
   onFavorite: (food: FoodItem) => Promise<void>;
   isFavorite: boolean;
   isFavoriteScreen?: boolean; // If the component is rendered on the favorites screen
@@ -81,6 +83,7 @@ const FoodComponent = ({
         category: categoryName,
         location,
         favorite: isFavoriteScreen ? 'true' : 'false',
+        ...(date ? { date } : {}),
       },
     });
   };
