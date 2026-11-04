@@ -603,6 +603,20 @@ const MapPage = () => {
           />
         </MapView>
 
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: TAB_BAR_CLEARANCE,
+            experimental_backgroundImage: isDarkMode
+              ? 'linear-gradient(to bottom, rgba(23, 23, 23, 0) 0%, #171717 20%)'
+              : 'linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #fff 20%)',
+          }}
+        />
+
         {/* Edge Indicators */}
         {Object.entries(outOfViewLocations).map(([direction, locations]) => {
           if (locations.length === 0) return null;
