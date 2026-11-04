@@ -18,3 +18,12 @@ export const resolveAllergens = (icons: Set<FlagKey>, label: Set<AllergenKey>): 
   if (NOT_VEGETARIAN.some((key) => flags[key])) flags.vegetarian = false;
   return flags;
 };
+
+export const mergeAllergens = (variants: Allergens[]): Allergens => {
+  const merged = { ...variants[0] };
+  for (const flags of variants.slice(1)) {
+    for (const key of ALLERGEN_KEYS) merged[key] ||= flags[key];
+    for (const key of DIETARY_KEYS) merged[key] &&= flags[key];
+  }
+  return merged;
+};

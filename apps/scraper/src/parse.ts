@@ -39,19 +39,19 @@ const LABEL_ALLERGENS: Record<string, AllergenKey> = {
 };
 
 const NUTRIENTS = [
-  ['totalFat', 'Total Fat', 'g'],
-  ['saturatedFat', 'Saturated Fat', 'g'],
-  ['transFat', 'Trans Fat', 'g'],
-  ['cholesterol', 'Cholesterol', 'mg'],
-  ['sodium', 'Sodium', 'mg'],
-  ['totalCarbohydrates', 'Total Carbohydrate', 'g'],
-  ['dietaryFiber', 'Dietary Fiber', 'g'],
-  ['totalSugars', 'Total Sugars', 'g'],
-  ['protein', 'Protein', 'g'],
-  ['vitaminD', 'Vitamin D', 'mcg'],
-  ['calcium', 'Calcium', 'mg'],
-  ['iron', 'Iron', 'mg'],
-  ['potassium', 'Potassium', 'mg'],
+  ['totalFat', 'Total Fat'],
+  ['saturatedFat', 'Saturated Fat'],
+  ['transFat', 'Trans Fat'],
+  ['cholesterol', 'Cholesterol'],
+  ['sodium', 'Sodium'],
+  ['totalCarbohydrates', 'Total Carbohydrate'],
+  ['dietaryFiber', 'Dietary Fiber'],
+  ['totalSugars', 'Total Sugars'],
+  ['protein', 'Protein'],
+  ['vitaminD', 'Vitamin D'],
+  ['calcium', 'Calcium'],
+  ['iron', 'Iron'],
+  ['potassium', 'Potassium'],
 ] as const;
 
 const absolute = (href: string) => new URL(href, FOODPRO_BASE).href;
@@ -116,9 +116,9 @@ export const parseMenuPage = (html: string): MenuPage => {
   return { type, categories: categories.filter((category) => category.rows.length > 0) };
 };
 
-const amount = (text: string, unit: string) => {
+const amount = (text: string) => {
   const match = text.match(/([\d.]+)\s*(mcg|mg|g)\b/);
-  return match ? `${match[1]}${match[2]}` : `0${unit}`;
+  return match ? `${match[1]}${match[2]}` : null;
 };
 
 export const parseLabel = (html: string): Label => {
@@ -127,18 +127,19 @@ export const parseLabel = (html: string): Label => {
   const rows = $('.nutfactstopnutrient')
     .map((_, element) => $(element).text())
     .get();
-  const nutrient = (name: string, unit: string) => {
+  const nutrient = (name: string) => {
     const row = rows.find((text) => text.includes(name));
-    return row ? amount(row, unit) : `0${unit}`;
+    return row ? amount(row) : null;
   };
 
   const servingSizes = $('.nutfactsservsize');
   const ingredients = $('.labelingredientsvalue').text().trim();
+  const calories = Number.parseFloat($('.nutfactscaloriesval').text().trim());
 
   const nutrition = {
     servingSize: servingSizes.length > 1 ? servingSizes.eq(1).text().trim() : '',
-    calories: Number.parseFloat($('.nutfactscaloriesval').text().trim()) || 0,
-    ...Object.fromEntries(NUTRIENTS.map(([key, name, unit]) => [key, nutrient(name, unit)])),
+    calories: Number.isNaN(calories) ? null : calories,
+    ...Object.fromEntries(NUTRIENTS.map(([key, name]) => [key, nutrient(name)])),
     ingredients: ingredients || undefined,
   } as Nutrition;
 

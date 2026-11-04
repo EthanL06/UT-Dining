@@ -11,7 +11,7 @@ import { useFoodData } from '~/hooks/useFoodData';
 import { getSafePostHog } from '~/services/analytics/posthog';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
-import { cn } from '~/utils/utils';
+import { cn, displayNutrient } from '~/utils/utils';
 import AllergenSection from './components/AllergenSection';
 import NutritionFooter from './components/NutritionFooter';
 import NutritionInfo from './components/NutritionInfo';
@@ -24,8 +24,9 @@ const FoodScreen = () => {
     category: string;
     location: string;
     favorite: string;
+    date: string;
   }>();
-  const { food, menu, category, location, favorite } = params;
+  const { food, menu, category, location, favorite, date } = params;
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
 
   const { foodItem, nutritionData, hasAllergens, allergenList, dietaryList } = useFoodData(
@@ -34,6 +35,7 @@ const FoodScreen = () => {
     category,
     food,
     favorite === 'true',
+    date,
   );
 
   const analytics = getSafePostHog(usePostHog());
@@ -99,7 +101,7 @@ const FoodScreen = () => {
                             size={16}
                           />
                         }
-                        value={`${foodItem.nutrition?.calories} kcal`}
+                        value={`${displayNutrient(foodItem.nutrition?.calories)} kcal`}
                         isDarkMode={isDarkMode}
                       />
                       <NutritionInfo
@@ -110,7 +112,7 @@ const FoodScreen = () => {
                             size={16}
                           />
                         }
-                        value={`${foodItem.nutrition?.protein} Protein`}
+                        value={`${displayNutrient(foodItem.nutrition?.protein)} Protein`}
                         isDarkMode={isDarkMode}
                       />
                       <NutritionInfo
@@ -121,7 +123,7 @@ const FoodScreen = () => {
                             size={16}
                           />
                         }
-                        value={`${foodItem.nutrition?.total_carbohydrates} Carbs`}
+                        value={`${displayNutrient(foodItem.nutrition?.total_carbohydrates)} Carbs`}
                         isDarkMode={isDarkMode}
                       />
                     </View>
@@ -165,7 +167,7 @@ const FoodScreen = () => {
                           Serving Size
                         </Text>
                         <Text className={cn('font-bold', isDarkMode ? 'text-white' : 'text-black')}>
-                          {foodItem.nutrition?.serving_size}
+                          {displayNutrient(foodItem.nutrition?.serving_size)}
                         </Text>
                       </View>
                       <View

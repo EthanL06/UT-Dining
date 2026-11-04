@@ -21,7 +21,7 @@ import type { FoodItem } from '~/services/database/database';
 import { useMealPlanStore } from '~/store/useMealPlanStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
-import { cn } from '~/utils/utils';
+import { cn, displayNutrient } from '~/utils/utils';
 import Alert from './Alert';
 import { AddMealPlanAction, FavoriteAction, RemoveAction } from './AnimatedActions';
 
@@ -30,6 +30,7 @@ const FoodComponent = ({
   selectedMenu,
   categoryName,
   location,
+  date,
   onFavorite,
   isFavorite,
   isFavoriteScreen = false,
@@ -40,6 +41,7 @@ const FoodComponent = ({
   selectedMenu: string;
   categoryName: string;
   location: string;
+  date?: string;
   onFavorite: (food: FoodItem) => Promise<void>;
   isFavorite: boolean;
   isFavoriteScreen?: boolean; // If the component is rendered on the favorites screen
@@ -81,6 +83,7 @@ const FoodComponent = ({
         category: categoryName,
         location,
         favorite: isFavoriteScreen ? 'true' : 'false',
+        ...(date ? { date } : {}),
       },
     });
   };
@@ -228,7 +231,7 @@ const FoodContent = ({
                   isDarkMode ? 'text-gray-300' : 'text-gray-700',
                 )}
               >
-                {food.nutrition?.calories} kcal
+                {displayNutrient(food.nutrition?.calories)} kcal
               </Text>
             </View>
             <View className="flex-row items-center gap-x-0.5">
@@ -243,7 +246,7 @@ const FoodContent = ({
                   isDarkMode ? 'text-gray-300' : 'text-gray-700',
                 )}
               >
-                {food.nutrition?.protein} Protein
+                {displayNutrient(food.nutrition?.protein)} Protein
               </Text>
             </View>
             <View className="flex-row items-center gap-x-0.5">
@@ -254,7 +257,7 @@ const FoodContent = ({
                   isDarkMode ? 'text-gray-300' : 'text-gray-700',
                 )}
               >
-                {food.nutrition?.total_carbohydrates} Carbs
+                {displayNutrient(food.nutrition?.total_carbohydrates)} Carbs
               </Text>
             </View>
           </View>

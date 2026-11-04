@@ -241,6 +241,7 @@ const Location = () => {
               item={item}
               selectedMenu={selectedMenu ?? ''}
               location={location as string}
+              date={selectedDate}
               db={db}
               favorites={favorites}
             />
@@ -257,7 +258,7 @@ const Location = () => {
           return null;
       }
     },
-    [selectedMenu, location, toggleCategory, favorites, db],
+    [selectedMenu, location, selectedDate, toggleCategory, favorites, db],
   );
 
   // Empty state component

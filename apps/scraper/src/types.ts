@@ -21,20 +21,20 @@ export type Allergens = Record<FlagKey, boolean>;
 
 export interface Nutrition {
   servingSize: string;
-  calories: number;
-  totalFat: string;
-  saturatedFat: string;
-  transFat: string;
-  cholesterol: string;
-  sodium: string;
-  totalCarbohydrates: string;
-  dietaryFiber: string;
-  totalSugars: string;
-  protein: string;
-  vitaminD: string;
-  calcium: string;
-  iron: string;
-  potassium: string;
+  calories: number | null;
+  totalFat: string | null;
+  saturatedFat: string | null;
+  transFat: string | null;
+  cholesterol: string | null;
+  sodium: string | null;
+  totalCarbohydrates: string | null;
+  dietaryFiber: string | null;
+  totalSugars: string | null;
+  protein: string | null;
+  vitaminD: string | null;
+  calcium: string | null;
+  iron: string | null;
+  potassium: string | null;
   ingredients?: string;
 }
 

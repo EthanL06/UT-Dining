@@ -95,15 +95,16 @@ const LocationTopBar = () => {
 };
 
 const FoodTopBar = () => {
-  const { category, food, location, menu, favorite } = useLocalSearchParams<{
+  const { category, food, location, menu, favorite, date } = useLocalSearchParams<{
     category: string;
     food: string;
     location: string;
     menu: string;
     favorite: string;
+    date: string;
   }>();
 
-  const { foodItem } = useFoodData(location, menu, category, food, favorite === 'true');
+  const { foodItem } = useFoodData(location, menu, category, food, favorite === 'true', date);
   const toggleMealPlanItem = useMealPlanStore((state) => state.toggleMealPlanItem);
   const isMealPlanItem = useMealPlanStore((state) => state.isMealPlanItem(food));
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
@@ -188,9 +189,9 @@ const FoodTopBar = () => {
                   Object.entries(foodItem.allergens || {}).filter(([key]) => key !== 'id'),
                 ) as Record<string, boolean>,
                 nutrition: {
-                  calories: foodItem.nutrition?.calories || '0',
-                  protein: foodItem.nutrition?.protein || '0',
-                  total_carbohydrates: foodItem.nutrition?.total_carbohydrates || '0',
+                  calories: foodItem.nutrition?.calories || '',
+                  protein: foodItem.nutrition?.protein || '',
+                  total_carbohydrates: foodItem.nutrition?.total_carbohydrates || '',
                 },
               });
 

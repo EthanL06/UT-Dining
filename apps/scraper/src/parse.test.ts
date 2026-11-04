@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveAllergens } from './allergens.ts';
+import { mergeAllergens, resolveAllergens } from './allergens.ts';
 import { dateRange, shortMenuUrl } from './config.ts';
 import { parseLabel, parseMealLinks, parseMenuPage } from './parse.ts';
 
@@ -73,16 +73,24 @@ describe('parseLabel', () => {
       servingSize: '1 each',
       calories: 250,
       totalFat: '10.5g',
-      saturatedFat: '0g',
+      saturatedFat: null,
       sodium: '480mg',
       totalCarbohydrates: '30g',
       vitaminD: '1.2mcg',
       protein: '8g',
-      iron: '0mg',
+      iron: null,
       ingredients: 'Flour, Water',
     });
     expect([...parsed.allergens].sort()).toEqual(['shellfish', 'soy', 'tree_nuts', 'wheat']);
     expect(parsed.unrecognized).toEqual([]);
+  });
+
+  it('keeps a real zero and leaves a blank label unknown', () => {
+    const zero = parseLabel(
+      '<span class="nutfactscaloriesval">0</span><div class="nutfactstopnutrient">Sodium 0mg</div>',
+    );
+    expect(zero.nutrition).toMatchObject({ calories: 0, sodium: '0mg' });
+    expect(parseLabel('').nutrition).toMatchObject({ calories: null, sodium: null });
   });
 
   it('reports allergens it does not recognize', () => {
@@ -101,6 +109,14 @@ describe('resolveAllergens', () => {
     expect(resolveAllergens(new Set(['vegan']), new Set(['milk'])).vegan).toBe(false);
     const fish = resolveAllergens(new Set(['vegetarian']), new Set(['fish']));
     expect(fish.vegetarian).toBe(false);
+  });
+
+  it('keeps every allergen and only shared dietary flags when merging recipes', () => {
+    const merged = mergeAllergens([
+      resolveAllergens(new Set(['vegan', 'soy']), new Set()),
+      resolveAllergens(new Set(['pork']), new Set()),
+    ]);
+    expect(merged).toMatchObject({ soy: true, pork: true, vegan: false });
   });
 
   it('returns every key in the existing order', () => {

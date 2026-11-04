@@ -20,11 +20,12 @@ interface FoodItemRowProps {
   item: FoodItemProps;
   selectedMenu: string;
   location: string;
+  date: string;
   db: ExpoSQLiteDatabase<typeof schema>;
   favorites: schema.Favorite[];
 }
 
-const FoodItemRow = ({ item, selectedMenu, location, db, favorites }: FoodItemRowProps) => {
+const FoodItemRow = ({ item, selectedMenu, location, date, db, favorites }: FoodItemRowProps) => {
   const foodName = item.data.name;
   // Use state for favorite status
   const [isFavorite, setIsFavorite] = useState(favorites.some((f) => f.name === foodName));
@@ -41,6 +42,7 @@ const FoodItemRow = ({ item, selectedMenu, location, db, favorites }: FoodItemRo
         selectedMenu={selectedMenu}
         categoryName={item.categoryId}
         location={location}
+        date={date}
         onFavorite={async (food) => {
           // Update local state immediately for a responsive UI
           const newFavoriteState = !isFavorite;

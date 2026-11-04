@@ -676,6 +676,7 @@ export const getLocationMenuData = async (
  * @param menuName - The menu containing the item.
  * @param categoryName - The category containing the item.
  * @param itemName - The name of the food item.
+ * @param date - Optional date string in YYYY-MM-DD format. Defaults to today in Central Time.
  * @returns A Promise resolving to a `FoodItem` or null if not found.
  */
 export const getFoodItem = async (
@@ -684,7 +685,9 @@ export const getFoodItem = async (
   menuName: string,
   categoryName: string,
   itemName: string,
+  date?: string,
 ): Promise<FoodItem | null> => {
+  const targetDate = date || getTodayInCentralTime();
   const data = await db
     .select({
       food_name: schema.food_item.name,
@@ -735,6 +738,7 @@ export const getFoodItem = async (
     .where(
       sql`${schema.location.name} = ${locationName}
           AND ${schema.menu.name} = ${menuName}
+          AND ${schema.menu.date} = ${targetDate}
           AND ${schema.menu_category.title} = ${categoryName}
           AND ${schema.food_item.name} = ${itemName}`,
     )
