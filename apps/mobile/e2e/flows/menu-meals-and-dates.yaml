@@ -1,0 +1,36 @@
+appId: com.ethanl06.ut-dining.dev
+name: Switching meals and days changes the menu
+---
+- runFlow: ../subflows/start.yaml
+- runFlow: ../subflows/open-j2.yaml
+- tapOn: Breakfast
+- extendedWaitUntil:
+    visible: Maestro Breakfast Tacos
+    timeout: 5000
+- tapOn: Lunch
+- extendedWaitUntil:
+    notVisible: Maestro Breakfast Tacos
+    timeout: 5000
+- assertVisible: Maestro Veggie Burger
+- assertNotVisible: Maestro Tomorrow Special
+- tapOn:
+    id: date-next-button
+- extendedWaitUntil:
+    visible:
+      id: selected-date
+      text: Tomorrow
+    timeout: 5000
+- extendedWaitUntil:
+    visible: Maestro Tomorrow Special
+    timeout: 10000
+- takeScreenshot: tomorrow-menu
+- tapOn:
+    id: date-previous-button
+- extendedWaitUntil:
+    visible:
+      id: selected-date
+      text: Today
+    timeout: 5000
+- extendedWaitUntil:
+    notVisible: Maestro Tomorrow Special
+    timeout: 10000

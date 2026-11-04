@@ -1,0 +1,20 @@
+appId: com.ethanl06.ut-dining.dev
+---
+- extendedWaitUntil:
+    visible:
+      id: onboarding-next-button
+    timeout: 60000
+- runFlow: dismiss-alerts.yaml
+- repeat:
+    while:
+      notVisible: Finish
+    times: 10
+    commands:
+      - tapOn:
+          id: onboarding-next-button
+      - waitForAnimationToEnd
+- tapOn: Finish
+- runFlow: dismiss-alerts.yaml
+- extendedWaitUntil:
+    visible: J2 Dining
+    timeout: 60000

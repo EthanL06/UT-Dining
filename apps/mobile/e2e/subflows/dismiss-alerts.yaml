@@ -1,0 +1,14 @@
+appId: com.ethanl06.ut-dining.dev
+---
+- waitForAnimationToEnd:
+    timeout: 5000
+- runFlow:
+    when:
+      visible: Must use physical device for push notifications.
+    commands:
+      - tapOn: OK
+- runFlow:
+    when:
+      visible: .*Would Like to Send You Notifications.*
+    commands:
+      - tapOn: Allow

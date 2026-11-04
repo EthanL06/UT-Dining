@@ -1,0 +1,19 @@
+appId: com.ethanl06.ut-dining.dev
+name: A food item opens its nutrition details
+---
+- runFlow: ../subflows/start.yaml
+- runFlow: ../subflows/open-j2.yaml
+- tapOn: Maestro Veggie Burger
+- extendedWaitUntil:
+    visible: Nutrition Facts
+    timeout: 10000
+- assertVisible: 410 kcal
+- assertVisible: 21g Protein
+- assertVisible: 38g Carbs
+- assertVisible: Allergens:.*
+- takeScreenshot: food-details
+- tapOn:
+    id: back-button
+- extendedWaitUntil:
+    visible: Maestro Grill
+    timeout: 5000

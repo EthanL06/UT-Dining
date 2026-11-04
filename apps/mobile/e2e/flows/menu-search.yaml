@@ -1,0 +1,24 @@
+appId: com.ethanl06.ut-dining.dev
+name: Search filters the menu by food name
+---
+- runFlow: ../subflows/start.yaml
+- runFlow: ../subflows/open-j2.yaml
+- tapOn:
+    id: menu-search-input
+- inputText: tofu
+- extendedWaitUntil:
+    visible: Maestro Tofu Bowl
+    timeout: 5000
+- assertNotVisible: Maestro Veggie Burger
+- assertNotVisible: Maestro Grill
+- takeScreenshot: search-tofu
+- eraseText: 10
+- inputText: zzzz
+- extendedWaitUntil:
+    visible: No items found.
+    timeout: 5000
+- assertVisible: Try a different search term.
+- tapOn: Cancel
+- extendedWaitUntil:
+    visible: Maestro Veggie Burger
+    timeout: 5000

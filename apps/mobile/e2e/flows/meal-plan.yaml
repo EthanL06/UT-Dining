@@ -1,0 +1,42 @@
+appId: com.ethanl06.ut-dining.dev
+name: Meal plan items can be added and removed
+---
+- runFlow: ../subflows/start.yaml
+- runFlow: ../subflows/open-j2.yaml
+- swipe:
+    from: Maestro Grilled Chicken
+    direction: RIGHT
+- extendedWaitUntil:
+    visible: Maestro Grilled Chicken saved for today!
+    timeout: 5000
+- tapOn: Maestro Veggie Burger
+- extendedWaitUntil:
+    visible:
+      id: food-meal-plan-button
+    timeout: 10000
+- tapOn:
+    id: food-meal-plan-button
+- extendedWaitUntil:
+    visible: Maestro Veggie Burger saved for today!
+    timeout: 5000
+- tapOn:
+    id: back-button
+- tapOn:
+    id: location-meal-plan-button
+- extendedWaitUntil:
+    visible: Maestro Grilled Chicken
+    timeout: 5000
+- assertVisible: Maestro Veggie Burger
+- takeScreenshot: meal-plan
+- swipe:
+    from: Maestro Grilled Chicken
+    direction: RIGHT
+- extendedWaitUntil:
+    notVisible: Maestro Grilled Chicken
+    timeout: 5000
+- swipe:
+    from: Maestro Veggie Burger
+    direction: RIGHT
+- extendedWaitUntil:
+    visible: Empty Meal Plan!
+    timeout: 5000
