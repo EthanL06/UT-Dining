@@ -132,6 +132,7 @@ export default function Home() {
   // Handle refresh
   const handleRefresh = async () => {
     setRefreshing(true);
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     try {
       // Check if user is online before attempting to refetch
       const networkState = await Network.getNetworkStateAsync();
@@ -147,7 +148,7 @@ export default function Home() {
 
       // Add timeout to refetch operation (10 seconds)
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')), 30000);
+        timeoutId = setTimeout(() => reject(new Error('Request timeout')), 30000);
       });
 
       // Force sync with Supabase and then refetch the query
@@ -180,6 +181,7 @@ export default function Home() {
         Component: Alert,
       });
     } finally {
+      clearTimeout(timeoutId);
       setRefreshing(false);
     }
   };

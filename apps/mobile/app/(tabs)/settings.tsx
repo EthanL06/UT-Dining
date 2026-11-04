@@ -379,11 +379,10 @@ const LocationSettingsSection = ({ isDarkMode }: { isDarkMode: boolean }): React
 };
 
 const SyncDataSection = ({ isDarkMode }: { isDarkMode: boolean }): React.JSX.Element => {
-  const { getTimeSinceLastSync } = useDataSyncStore();
+  const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
   const db = useDatabase();
   const queryClient = useQueryClient();
-  const [isSyncing, setIsSyncing] = React.useState(false);
-  const [syncError, setSyncError] = React.useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = React.useState<'idle' | 'syncing' | 'failed'>('idle');
   const [currentTime, setCurrentTime] = React.useState(Date.now());
 
   // Update every minute to keep the time display current
@@ -395,23 +394,24 @@ const SyncDataSection = ({ isDarkMode }: { isDarkMode: boolean }): React.JSX.Ele
     return () => clearInterval(interval);
   }, []);
 
-  const timeSinceSync = getTimeSinceLastSync();
+  const isSyncing = syncStatus === 'syncing';
+  const syncError = syncStatus === 'failed' ? 'Failed to sync data' : null;
+  const timeSinceSync = lastSyncedAt === null ? Infinity : Math.max(0, currentTime - lastSyncedAt);
   const lastSyncText = formatTimeSinceSync(timeSinceSync);
 
   const handleSync = async () => {
     if (!db || isSyncing) return;
 
-    setIsSyncing(true);
-    setSyncError(null);
+    setSyncStatus('syncing');
 
     try {
       await fetchMenuData(db, true);
       await queryClient.invalidateQueries({ queryKey: ['menuData'] });
+      setCurrentTime(Date.now());
+      setSyncStatus('idle');
     } catch (error) {
-      setSyncError('Failed to sync data');
+      setSyncStatus('failed');
       console.warn('Sync failed:', error);
-    } finally {
-      setIsSyncing(false);
     }
   };
 

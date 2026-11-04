@@ -16,23 +16,22 @@ function chunkArray<T>(array: T[], chunkSize: number = 1000): T[][] {
   return chunks;
 }
 
+type CacheWriter = Pick<ExpoSQLiteDatabase<typeof schema>, 'insert' | 'delete'>;
+
 /**
  * Inserts data into a SQLite table in chunks to avoid "too many SQL variables" error
  * SQLite has a limit of 999 variables per SQL statement
  */
-async function insertInChunks<T>(
-  db: ExpoSQLiteDatabase<typeof schema>,
+function insertInChunks<T>(
+  db: CacheWriter,
   // biome-ignore lint/suspicious/noExplicitAny: Drizzle table types are complex
   table: any,
   data: T[],
   chunkSize: number = 100,
 ) {
-  if (data.length === 0) return;
-
-  const chunks = chunkArray(data, chunkSize);
-  const insertPromises = chunks.map((chunk) => db.insert(table).values(chunk));
-
-  await Promise.all(insertPromises);
+  for (const chunk of chunkArray(data, chunkSize)) {
+    db.insert(table).values(chunk).run();
+  }
 }
 
 // Type mapping for table names to their corresponding schema types
@@ -220,6 +219,8 @@ const querySupabase = async (date?: string) => {
         nutrition: [],
         allergens: [],
         app_information: appInformationData,
+        notifications: notificationData,
+        notification_types: notificationTypeData,
       };
     }
 
@@ -301,6 +302,51 @@ const querySupabase = async (date?: string) => {
   }
 };
 
+type SupabaseSnapshot = NonNullable<Awaited<ReturnType<typeof querySupabase>>>;
+
+const replaceCachedData = (db: ExpoSQLiteDatabase<typeof schema>, data: SupabaseSnapshot) => {
+  db.transaction((tx) => {
+    for (const table of [
+      location,
+      schema.location_type,
+      menu,
+      menu_category,
+      food_item,
+      nutrition,
+      allergens,
+      schema.app_information,
+      schema.notifications,
+      schema.notification_types,
+    ]) {
+      tx.delete(table).run();
+    }
+
+    insertInChunks(tx, location, data.location as schema.Location[], 45);
+    insertInChunks(tx, schema.location_type, data.location_type as schema.LocationType[], 150);
+    insertInChunks(tx, menu, data.menu as schema.Menu[], 150);
+    insertInChunks(tx, menu_category, data.menu_category as schema.MenuCategory[], 200);
+    insertInChunks(tx, food_item, data.food_item as schema.FoodItem[], 150);
+    insertInChunks(tx, nutrition, data.nutrition as schema.Nutrition[], 60);
+    insertInChunks(tx, allergens, data.allergens as schema.Allergens[], 60);
+    insertInChunks(
+      tx,
+      schema.app_information,
+      data.app_information as (typeof schema.app_information.$inferInsert)[],
+      150,
+    );
+    insertInChunks(
+      tx,
+      schema.notifications,
+      (data.notifications ?? []).map((notification) => ({
+        ...notification,
+        sent_at: notification.scheduled_at || notification.created_at,
+      })) as schema.Notification[],
+      150,
+    );
+    insertInChunks(tx, schema.notification_types, data.notification_types ?? [], 200);
+  });
+};
+
 /**
  * Inserts Supabase data into local SQLite database
  *
@@ -311,109 +357,15 @@ export const insertDataIntoSQLiteDB = async (
   db: ExpoSQLiteDatabase<typeof schema>,
   date?: string,
 ) => {
-  // Always fetch and insert data when called (TanStack Query will control when this runs)
   console.log('📡 Fetching fresh data from Supabase...');
   const data = await querySupabase(date);
 
-  if (data) {
-    try {
-      // Delete everything to start fresh
-      await Promise.all([
-        db.delete(location).execute(),
-        db.delete(schema.location_type).execute(),
-        db.delete(menu).execute(),
-        db.delete(menu_category).execute(),
-        db.delete(food_item).execute(),
-        db.delete(nutrition).execute(),
-        db.delete(allergens).execute(),
-        db.delete(schema.app_information).execute(),
-        db.delete(schema.notifications).execute(),
-        db.delete(schema.notification_types).execute(),
-      ]);
-
-      // Insert data from Supabase using chunked insertions to avoid SQLite variable limits
-      const insertPromises = [];
-
-      if (data.location.length > 0) {
-        insertPromises.push(insertInChunks(db, location, data.location as schema.Location[], 45));
-      }
-      if (data.location_type.length > 0) {
-        insertPromises.push(
-          insertInChunks(
-            db,
-            schema.location_type,
-            data.location_type as schema.LocationType[],
-            150,
-          ),
-        );
-      }
-      if (data.menu.length > 0) {
-        insertPromises.push(insertInChunks(db, menu, data.menu as schema.Menu[], 150));
-      }
-      if (data.menu_category.length > 0) {
-        insertPromises.push(
-          insertInChunks(db, menu_category, data.menu_category as schema.MenuCategory[], 200),
-        );
-      }
-      if (data.food_item.length > 0) {
-        insertPromises.push(
-          insertInChunks(db, food_item, data.food_item as schema.FoodItem[], 150),
-        );
-      }
-      if (data.nutrition.length > 0) {
-        insertPromises.push(
-          insertInChunks(db, nutrition, data.nutrition as schema.Nutrition[], 60),
-        );
-      }
-      if (data.allergens.length > 0) {
-        insertPromises.push(
-          insertInChunks(db, allergens, data.allergens as schema.Allergens[], 60),
-        );
-      }
-      if (data.app_information.length > 0) {
-        insertPromises.push(
-          insertInChunks(
-            db,
-            schema.app_information,
-            data.app_information as (typeof schema.app_information.$inferInsert)[],
-            150,
-          ),
-        );
-      }
-      if (data.notifications && data.notifications.length > 0) {
-        // For each notification, determine what sent_at value to use. If the notification is scheduled, sent_at will each scheduled_at value. If the notification is not scheduled, sent_at will be created_at value.
-        const notificationsWithSentAt = data.notifications.map((notification) => {
-          if (notification.scheduled_at) {
-            return { ...notification, sent_at: notification.scheduled_at };
-          }
-          return { ...notification, sent_at: notification.created_at };
-        });
-        insertPromises.push(
-          insertInChunks(
-            db,
-            schema.notifications,
-            notificationsWithSentAt as schema.Notification[],
-            150,
-          ),
-        );
-      }
-      if (data.notification_types && data.notification_types.length > 0) {
-        insertPromises.push(
-          insertInChunks(db, schema.notification_types, data.notification_types, 200),
-        );
-      }
-
-      if (insertPromises.length > 0) {
-        await Promise.all(insertPromises);
-      }
-
-      console.log('✅ Data added to database');
-    } catch (error) {
-      console.error('❌ Error inserting data into SQLite:', error);
-    }
-  } else {
-    console.error('❌ Error fetching data from Supabase');
+  if (!data) {
+    throw new Error('Failed to fetch data from Supabase');
   }
+
+  replaceCachedData(db, data);
+  console.log('✅ Data added to database');
 };
 
 /**
