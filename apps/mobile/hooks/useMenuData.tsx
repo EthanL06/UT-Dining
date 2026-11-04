@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { toCentralTime } from '@ut-dining/core';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   getLocationMenuData,
@@ -7,20 +8,16 @@ import {
 } from '~/services/database/database';
 import { getTodayInCentralTime } from '~/utils/date';
 import { getMealTimes } from '~/utils/locations';
-import { timeOfDay } from '~/utils/time';
 import { useDatabase } from './useDatabase';
-
-const MEAL_FOR_TIME_OF_DAY = {
-  morning: 'Breakfast',
-  afternoon: 'Lunch',
-  evening: 'Dinner',
-} as const;
 
 const pickDefaultMenu = (
   menuNames: (string | null)[],
   mealTimes: ReturnType<typeof getMealTimes>,
 ) => {
-  const meal = MEAL_FOR_TIME_OF_DAY[timeOfDay(new Date(), mealTimes ?? undefined)];
+  const now = toCentralTime().time;
+  const breakfastEnd = mealTimes?.breakfast?.closeTime ?? 1100;
+  const lunchEnd = mealTimes?.lunch?.closeTime ?? 1700;
+  const meal = now < breakfastEnd ? 'Breakfast' : now < lunchEnd ? 'Lunch' : 'Dinner';
   return menuNames.find((name) => name === meal) ?? menuNames[0];
 };
 

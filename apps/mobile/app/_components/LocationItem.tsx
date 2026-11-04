@@ -1,7 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, Pressable, Text, View } from 'react-native';
 import Reanimated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
@@ -22,7 +22,6 @@ type LocationItemProps = {
 };
 
 const LocationItem = ({ location, currentTime }: LocationItemProps) => {
-  const [open, setOpen] = useState(false);
   const pingAnimation = useRef(new Animated.Value(0)).current;
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
@@ -31,11 +30,10 @@ const LocationItem = ({ location, currentTime }: LocationItemProps) => {
   const { locationData } = useLocationDetails(location.name ?? '');
   const displayName = useLocationName(location.name ?? '', useColloquialNames);
 
-  useEffect(() => {
-    const todayDate = getTodayInCentralTime();
-    const isOpen = getLocationOpenStatus(location, locationData, db, currentTime, todayDate);
-    setOpen(isOpen);
-  }, [locationData, currentTime, db, location]);
+  const open = useMemo(
+    () => getLocationOpenStatus(location, locationData, db, currentTime, getTodayInCentralTime()),
+    [locationData, currentTime, db, location],
+  );
 
   const startPingAnimation = useCallback(() => {
     // Create a looping animation that expands and fades
