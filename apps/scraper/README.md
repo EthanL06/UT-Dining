@@ -28,7 +28,7 @@ Every run also writes the scraped data to `data/ut_menus_<timestamp>.json`.
 2. Fetch each meal's long menu and read its stations, items, recipe numbers and allergen icons.
 3. Fetch each recipe's nutrition label once, however many stations, locations or days serve it.
 4. Each item's allergens are the union of its menu icons and the ALLERGENS line on its label, because FoodPro's icons sometimes miss allergens the label lists. Vegan and vegetarian are cleared when the label lists an animal allergen.
-5. Upload each location's days in parallel. The database function replaces a menu's stations and items when it already exists, so every day in the range is refreshed on every run.
+5. Upload each location-day as its own transaction, two at a time, so a slow or failed day never blocks the rest. The database function replaces a menu's stations and items when it already exists, so every day in the range is refreshed on every run.
 
 All requests share one pool of `CONCURRENCY` connections with retries and backoff. If a meal's page or any of its labels still fails after retries, that meal is left out of the upload so the previous data stays, and the run exits non-zero.
 

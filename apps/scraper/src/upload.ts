@@ -1,23 +1,24 @@
 import type { Json } from '@ut-dining/supabase';
+import pLimit from 'p-limit';
 import { createSupabase } from './supabase.ts';
 import type { LocationDay } from './types.ts';
 
+const UPLOAD_CONCURRENCY = 2;
+
 export const upload = async (days: LocationDay[]) => {
   const supabase = createSupabase();
-  const byLocation = new Map<string, LocationDay[]>();
-  for (const day of days) {
-    if (day.menus.length === 0) continue;
-    byLocation.set(day.locationName, [...(byLocation.get(day.locationName) ?? []), day]);
-  }
+  const limit = pLimit(UPLOAD_CONCURRENCY);
 
-  const results = await Promise.all(
-    [...byLocation].map(async ([locationName, locationDays]) => {
-      const { error } = await supabase.rpc('insert_multiple_locations_and_menus', {
-        arg_data_array: locationDays as unknown as Json[],
-      });
-      return { locationName, error: error?.message };
-    }),
+  return Promise.all(
+    days
+      .filter((day) => day.menus.length > 0)
+      .map((day) =>
+        limit(async () => {
+          const { error } = await supabase.rpc('insert_multiple_locations_and_menus', {
+            arg_data_array: [day] as unknown as Json[],
+          });
+          return { locationName: day.locationName, date: day.date, error: error?.message };
+        }),
+      ),
   );
-
-  return results;
 };
