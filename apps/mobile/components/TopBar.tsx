@@ -188,9 +188,9 @@ const FoodTopBar = () => {
                   Object.entries(foodItem.allergens || {}).filter(([key]) => key !== 'id'),
                 ) as Record<string, boolean>,
                 nutrition: {
-                  calories: foodItem.nutrition?.calories || '0',
-                  protein: foodItem.nutrition?.protein || '0',
-                  total_carbohydrates: foodItem.nutrition?.total_carbohydrates || '0',
+                  calories: foodItem.nutrition?.calories || '',
+                  protein: foodItem.nutrition?.protein || '',
+                  total_carbohydrates: foodItem.nutrition?.total_carbohydrates || '',
                 },
               });
 

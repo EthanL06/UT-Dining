@@ -1,8 +1,8 @@
-import { resolveAllergens } from './allergens.ts';
+import { mergeAllergens, resolveAllergens } from './allergens.ts';
 import { LOCATIONS, shortMenuUrl } from './config.ts';
 import type { HttpClient } from './http.ts';
 import { parseLabel, parseMealLinks, parseMenuPage } from './parse.ts';
-import type { Food, Label, LocationDay, Menu, MenuPage } from './types.ts';
+import type { Food, Label, LocationDay, Menu, MenuPage, MenuRow } from './types.ts';
 
 export interface ScrapeFailure {
   locationName: string;
@@ -42,16 +42,18 @@ export const scrape = async (http: HttpClient, dates: string[]): Promise<ScrapeR
   const buildMenu = async (page: MenuPage): Promise<Menu | null> => {
     const menuCategories = await Promise.all(
       page.categories.map(async ({ categoryName, rows }) => {
-        const seen = new Set<string>();
-        const unique = rows.filter((row) => !seen.has(row.name) && seen.add(row.name));
+        const byName = new Map<string, MenuRow[]>();
+        for (const row of rows) byName.set(row.name, [...(byName.get(row.name) ?? []), row]);
         const foods = await Promise.all(
-          unique.map(async (row): Promise<Food> => {
-            const { nutrition, allergens } = await label(row.recipe, row.link);
+          [...byName.values()].map(async (variants): Promise<Food> => {
+            const labels = await Promise.all(variants.map((row) => label(row.recipe, row.link)));
             return {
-              name: row.name,
-              link: row.link,
-              allergens: resolveAllergens(row.icons, allergens),
-              nutrition,
+              name: variants[0].name,
+              link: variants[0].link,
+              allergens: mergeAllergens(
+                variants.map((row, index) => resolveAllergens(row.icons, labels[index].allergens)),
+              ),
+              nutrition: labels[0].nutrition,
             };
           }),
         );

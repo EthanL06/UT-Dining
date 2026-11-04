@@ -15,7 +15,7 @@ import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import { type MealPlanItem, useMealPlanStore } from '~/store/useMealPlanStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
-import { cn } from '~/utils/utils';
+import { cn, displayNutrient } from '~/utils/utils';
 
 const MealPlanComponent = ({
   food,
@@ -98,7 +98,7 @@ const MealPlanComponent = ({
               <Text
                 className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-black')}
               >
-                {food.nutrition?.calories} kcal
+                {displayNutrient(food.nutrition?.calories)} kcal
               </Text>
             </View>
             <View className="flex-row items-center gap-x-0.5">
@@ -110,7 +110,7 @@ const MealPlanComponent = ({
               <Text
                 className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-black')}
               >
-                {food.nutrition?.protein} Protein
+                {displayNutrient(food.nutrition?.protein)} Protein
               </Text>
             </View>
             <View className="flex-row items-center gap-x-0.5">
@@ -118,7 +118,7 @@ const MealPlanComponent = ({
               <Text
                 className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-black')}
               >
-                {food.nutrition?.total_carbohydrates} Carbs
+                {displayNutrient(food.nutrition?.total_carbohydrates)} Carbs
               </Text>
             </View>
           </View>
