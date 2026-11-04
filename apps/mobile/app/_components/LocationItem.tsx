@@ -5,35 +5,25 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, Pressable, Text, View } from 'react-native';
 import Reanimated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
-import { useDatabase } from '~/hooks/useDatabase';
-import { useLocationDetails } from '~/hooks/useLocationDetails';
 import type { LocationWithType } from '~/services/database/schema';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getColor } from '~/utils/colors';
-import { getTodayInCentralTime } from '~/utils/date';
-import { getLocationOpenStatus } from '~/utils/locationStatus';
 import { useLocationName } from '~/utils/locations';
 import { getLocationTimeMessage } from '~/utils/time';
 import { cn } from '~/utils/utils';
 
 type LocationItemProps = {
   location: LocationWithType;
+  isOpen: boolean;
   currentTime: Date;
 };
 
-const LocationItem = ({ location, currentTime }: LocationItemProps) => {
+const LocationItem = ({ location, isOpen: open, currentTime }: LocationItemProps) => {
   const pingAnimation = useRef(new Animated.Value(0)).current;
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
-  const db = useDatabase();
   const { useColloquialNames, isDarkMode, isColorBlindMode } = useSettingsStore();
-  const { locationData } = useLocationDetails(location.name ?? '');
   const displayName = useLocationName(location.name ?? '', useColloquialNames);
-
-  const open = useMemo(
-    () => getLocationOpenStatus(location, locationData, db, currentTime, getTodayInCentralTime()),
-    [locationData, currentTime, db, location],
-  );
 
   const startPingAnimation = useCallback(() => {
     // Create a looping animation that expands and fades
@@ -89,7 +79,7 @@ const LocationItem = ({ location, currentTime }: LocationItemProps) => {
   };
 
   const handlePress = async () => {
-    if (locationData?.has_menus) {
+    if (location.has_menus) {
       router.push(`/location/${location.name}`);
     } else {
       router.push(`/location_generic/${location.name}`);
@@ -175,7 +165,7 @@ const LocationItem = ({ location, currentTime }: LocationItemProps) => {
                 isDarkMode ? 'text-gray-400' : 'text-ut-grey/75',
               )}
             >
-              {open ? getLocationTimeMessage(locationData, currentTime) : 'Closed'}
+              {open ? getLocationTimeMessage(location, currentTime) : 'Closed'}
             </Text>
           </View>
         </View>

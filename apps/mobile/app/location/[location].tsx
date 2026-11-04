@@ -141,7 +141,6 @@ const Location = () => {
     selectedMenu,
     setSelectedMenu,
     filters: menuFilters,
-    isSwitchingMenus,
   } = useMenuData(location, selectedDate);
   const isSyncing = useIsFetching({ queryKey: MENU_SYNC_QUERY_KEY }) > 0;
   const { toggleCategory, flattenedItems, resetExpandedCategories } = useCategoryExpansion(data);
@@ -315,7 +314,6 @@ const Location = () => {
           showsVerticalScrollIndicator
           data={displayedItems}
           removeClippedSubviews
-          scrollEnabled={!isSwitchingMenus}
           ListHeaderComponent=<LocationHeader
             location={location}
             selectedMenu={selectedMenu ?? null}
@@ -334,29 +332,6 @@ const Location = () => {
           getItemType={(item) => ('type' in item ? item.type : 'unknown')}
           keyboardShouldPersistTaps="always"
         />
-
-        {/* Loading indicator for menu switching */}
-        {isSwitchingMenus && (
-          <View
-            className="absolute inset-0 z-10 flex h-screen items-center justify-center"
-            style={{
-              backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.7)',
-            }}
-          >
-            <View
-              className="flex items-center justify-center rounded-lg p-4"
-              style={{
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.25,
-                shadowRadius: 3.84,
-                elevation: 5,
-              }}
-            >
-              <ActivityIndicator size="small" style={{ marginBottom: 8 }} />
-            </View>
-          </View>
-        )}
 
         <ScrollToTopButton
           visible={showScrollToTop}
