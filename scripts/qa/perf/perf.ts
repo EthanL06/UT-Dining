@@ -339,6 +339,11 @@ export const runHarness = async (db: any, schema: any) => {
   if (control.sql) await sqlBench(db);
   if (control.write) await writeBench(db, schema);
   if (control.setStale) useDataSyncStore.getState().setLastSupabaseQueryTime(0);
+  if (control.dropToday) {
+    const store = useDataSyncStore.getState();
+    const { [hooks.today()]: _, ...rest } = store.menuDayVersions;
+    store.setMenuDayVersions(rest);
+  }
   mark('cycle.done');
   flush();
 };

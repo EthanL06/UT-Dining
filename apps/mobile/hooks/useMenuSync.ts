@@ -10,7 +10,7 @@ const refreshLocalQueries = (queryClient: QueryClient) =>
   queryClient.invalidateQueries({ predicate: (query) => query.queryKey[0] !== 'menuSync' });
 
 export const forceMenuSync = async (db: DrizzleDB, queryClient: QueryClient) => {
-  await syncMenuData(db, { force: true });
+  await syncMenuData(db, { force: true, onCacheChange: () => refreshLocalQueries(queryClient) });
   queryClient.setQueryData(MENU_SYNC_QUERY_KEY, true);
   await refreshLocalQueries(queryClient);
 };
@@ -21,7 +21,9 @@ export function useMenuSync(db: DrizzleDB) {
   return useQuery({
     queryKey: MENU_SYNC_QUERY_KEY,
     queryFn: async () => {
-      const synced = await syncMenuData(db);
+      const synced = await syncMenuData(db, {
+        onCacheChange: () => refreshLocalQueries(queryClient),
+      });
       if (synced) await refreshLocalQueries(queryClient);
       return synced;
     },

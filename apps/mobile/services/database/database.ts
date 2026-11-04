@@ -1,4 +1,11 @@
-import { chunk, fetchAllPages, mapConcurrent } from '@ut-dining/core';
+import {
+  chunk,
+  fetchAllPages,
+  flattenMenuTree,
+  getMenuDayVersions,
+  type MenuDayVersions,
+  planMenuDays,
+} from '@ut-dining/core';
 import { eq, sql } from 'drizzle-orm';
 import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import type { SQLiteBindValue, SQLiteDatabase } from 'expo-sqlite';
@@ -11,46 +18,6 @@ import { allergens, food_item, location, menu, menu_category, nutrition } from '
 export type DrizzleDB = ExpoSQLiteDatabase<typeof schema> & {
   $client: SQLiteDatabase;
 };
-
-type TableTypeMap = {
-  food_item: schema.FoodItem;
-  nutrition: schema.Nutrition;
-  allergens: schema.Allergens;
-  menu_category: schema.MenuCategory;
-};
-
-type TableTypeMapKeys = keyof TableTypeMap;
-
-const ID_CHUNK_SIZE = 100;
-const MAX_PARALLEL_REQUESTS = 8;
-
-async function fetchInChunks<T extends TableTypeMapKeys>(
-  tableName: T,
-  column: string,
-  ids: (string | number)[],
-) {
-  const pages = await mapConcurrent(chunk(ids, ID_CHUNK_SIZE), MAX_PARALLEL_REQUESTS, (idChunk) =>
-    fetchAllPages((from, to) =>
-      supabase
-        .from(tableName as TableTypeMapKeys)
-        .select('*')
-        .in(column, idChunk)
-        .order('id')
-        .range(from, to),
-    ),
-  );
-
-  const results: TableTypeMap[T][] = [];
-  for (const page of pages) {
-    if (page.error) {
-      console.error(`❌ Error fetching ${tableName}:`, page.error);
-      return { data: null, error: page.error };
-    }
-    results.push(...((page.data ?? []) as TableTypeMap[T][]));
-  }
-
-  return { data: results, error: null };
-}
 
 export interface Location extends schema.Location {
   location_name: schema.Location['name'];
@@ -75,208 +42,101 @@ export interface FoodItem {
   nutrition?: schema.Nutrition;
 }
 
-/**
- * Fetches all relevant data from Supabase tables including locations, menus, notifications, and nutrition/allergens.
- *
- * - Uses provided date or defaults to today's date in Central Time.
- * - Fetches base data in parallel.
- * - Fetches related menu categories, food items, nutrition, and allergens if menus exist.
- *
- * @param date - Optional date string in YYYY-MM-DD format. Defaults to today in Central Time.
- * @returns A Promise resolving to an object containing all fetched data, or null if an error occurs.
- */
-const querySupabase = async (date?: string) => {
-  try {
-    // Use provided date or default to today's date in Central Time Zone
-    const formattedDate = date || getTodayInCentralTime();
+const MENU_TREE_SELECT =
+  '*,menu_category(*,food_item(*,nutrition!food_item_nutrition_id_fkey(*),allergens!food_item_allergens_id_fkey(*)))';
 
-    // Fetch base data in parallel (independent queries)
-    const [
-      locationResult,
-      locationTypeResult,
-      menuResult,
-      appInformationResult,
-      notificationResult,
-      notificationTypeResult,
-    ] = await Promise.all([
+const fetchSharedTables = async () => {
+  const [locationResult, locationTypeResult, appInformationResult, notificationResult, typeResult] =
+    await Promise.all([
       supabase.from('location').select('*'),
       supabase.from('location_type').select('*'),
-      fetchAllPages((from, to) => supabase.from('menu').select('*').order('id').range(from, to)),
       supabase.from('app_information').select('*'),
       supabase.from('notifications').select('*'),
       supabase.from('notification_types').select('*'),
     ]);
 
-    // Check for errors in base queries
-    if (locationResult.error) {
-      console.error('❌ Error fetching location:', locationResult.error);
-      throw new Error(`location: ${locationResult.error.message}`);
-    }
-    if (locationTypeResult.error) {
-      console.error('❌ Error fetching location_type:', locationTypeResult.error);
-      throw new Error(`location_type: ${locationTypeResult.error.message}`);
-    }
-    if (menuResult.error) {
-      console.error('❌ Error fetching menu:', menuResult.error);
-      throw new Error(`menu: ${menuResult.error.message}`);
-    }
-    if (appInformationResult.error) {
-      console.error('❌ Error fetching app_information:', appInformationResult.error);
-      throw new Error(`app_information: ${appInformationResult.error.message}`);
-    }
-
-    if (notificationResult.error) {
-      console.error('❌ Error fetching notifications:', notificationResult.error);
-      throw new Error(`notifications: ${notificationResult.error.message}`);
-    }
-    if (notificationTypeResult.error) {
-      console.error('❌ Error fetching notification_types:', notificationTypeResult.error);
-      throw new Error(`notification_types: ${notificationTypeResult.error.message}`);
-    }
-
-    const locationData = locationResult.data ?? [];
-    const locationTypeData = locationTypeResult.data ?? [];
-    const menuData = menuResult.data ?? [];
-    const appInformationData = appInformationResult.data ?? [];
-    const notificationData = notificationResult.data ?? [];
-    const notificationTypeData = notificationTypeResult.data ?? [];
-
-    // Early return if no menus for today
-    if (menuData.length === 0) {
-      console.log('ℹ️ No menus found for today:', formattedDate);
-      return {
-        location: locationData,
-        location_type: locationTypeData,
-        menu: [],
-        menu_category: [],
-        food_item: [],
-        nutrition: [],
-        allergens: [],
-        app_information: appInformationData,
-        notifications: notificationData,
-        notification_types: notificationTypeData,
-      };
-    }
-
-    // Extract IDs for subsequent queries
-    const menuIds = menuData.map((menu) => menu.id);
-
-    // Fetch menu categories (with chunking to avoid 1000 item limit)
-    const menuCategoryResult = await fetchInChunks('menu_category', 'menu_id', menuIds);
-
-    if (menuCategoryResult.error) {
-      console.error('❌ Error fetching menu_category:', menuCategoryResult.error);
-      throw new Error(`menu_category: ${menuCategoryResult.error.message}`);
-    }
-
-    const menuCategoryData = menuCategoryResult.data ?? [];
-
-    // Early return if no menu categories
-    if (menuCategoryData.length === 0) {
-      console.log('ℹ️  No menu categories found for menus:', menuIds);
-      return {
-        location: locationData,
-        location_type: locationTypeData,
-        menu: menuData,
-        menu_category: [],
-        food_item: [],
-        nutrition: [],
-        allergens: [],
-        app_information: appInformationData,
-        notifications: notificationData,
-        notification_types: notificationTypeData,
-      };
-    }
-
-    const menuCategoryIds = menuCategoryData.map((category) => category.id);
-
-    // Fetch food items (with chunking to avoid 1000 item limit)
-    const foodItemResult = await fetchInChunks('food_item', 'menu_category_id', menuCategoryIds);
-
-    if (foodItemResult.error) {
-      console.error('❌ Error fetching food_item:', foodItemResult.error);
-      throw new Error(`food_item: ${foodItemResult.error.message}`);
-    }
-
-    const foodItemData = foodItemResult.data ?? [];
-
-    // Early return if no food items
-    if (foodItemData.length === 0) {
-      console.log('ℹ️ No food items found for categories:', menuCategoryIds);
-      return {
-        location: locationData,
-        location_type: locationTypeData,
-        menu: menuData,
-        menu_category: menuCategoryData,
-        food_item: [],
-        nutrition: [],
-        allergens: [],
-        app_information: appInformationData,
-        notifications: notificationData,
-        notification_types: notificationTypeData,
-      };
-    }
-
-    // Extract nutrition and allergen IDs from food items
-    const nutritionIds = foodItemData.map((item) => item.nutrition_id).filter((id) => id !== null);
-    const allergenIds = foodItemData.map((item) => item.allergens_id).filter((id) => id !== null);
-
-    // Fetch nutrition and allergens data in parallel (with chunking to avoid 1000 item limit)
-    const nutritionPromise =
-      nutritionIds.length > 0
-        ? fetchInChunks('nutrition', 'id', nutritionIds)
-        : Promise.resolve({ data: [], error: null });
-
-    const allergensPromise =
-      allergenIds.length > 0
-        ? fetchInChunks('allergens', 'id', allergenIds)
-        : Promise.resolve({ data: [], error: null });
-
-    const [nutritionResult, allergensResult] = await Promise.all([
-      nutritionPromise,
-      allergensPromise,
-    ]);
-
-    // Check for errors in nutrition and allergens queries
-    if (nutritionResult.error) {
-      console.error('❌ Error fetching nutrition:', nutritionResult.error);
-      throw new Error(`nutrition: ${nutritionResult.error.message}`);
-    }
-    if (allergensResult.error) {
-      console.error('❌ Error fetching allergens:', allergensResult.error);
-      throw new Error(`allergens: ${allergensResult.error.message}`);
-    }
-
-    console.log('✅ Successfully fetched all Supabase data');
-    return {
-      location: locationData,
-      location_type: locationTypeData,
-      menu: menuData,
-      menu_category: menuCategoryData,
-      food_item: foodItemData,
-      nutrition: nutritionResult.data ?? [],
-      allergens: allergensResult.data ?? [],
-      app_information: appInformationData,
-      notifications: notificationData,
-      notification_types: notificationTypeData,
-    };
-  } catch (error) {
-    console.error('❌ Unexpected error fetching Supabase data:', error);
-    return null;
+  for (const result of [
+    locationResult,
+    locationTypeResult,
+    appInformationResult,
+    notificationResult,
+    typeResult,
+  ]) {
+    if (result.error) throw new Error(result.error.message);
   }
+
+  return {
+    location: locationResult.data ?? [],
+    location_type: locationTypeResult.data ?? [],
+    app_information: appInformationResult.data ?? [],
+    notifications: notificationResult.data ?? [],
+    notification_types: typeResult.data ?? [],
+  };
 };
 
-type SupabaseSnapshot = NonNullable<Awaited<ReturnType<typeof querySupabase>>>;
+const fetchMenuVersions = async () => {
+  const { data, error } = await fetchAllPages((from, to) =>
+    supabase.from('menu').select('id,date,updated_at').order('id').range(from, to),
+  );
+  if (error) throw new Error(error.message);
+  return getMenuDayVersions(data ?? []);
+};
 
-function* cacheReplacementStatements(db: DrizzleDB, data: SupabaseSnapshot) {
+type TreeRow = Record<string, unknown> & { id: number };
+type MenuTree = TreeRow & {
+  menu_category:
+    | (TreeRow & {
+        food_item: (TreeRow & { nutrition: TreeRow | null; allergens: TreeRow | null })[] | null;
+      })[]
+    | null;
+};
+
+const fetchMenuDay = async (date: string) => {
+  const { data, error } = await supabase.from('menu').select(MENU_TREE_SELECT).eq('date', date);
+  if (error) throw new Error(error.message);
+  return flattenMenuTree((data ?? []) as unknown as MenuTree[]);
+};
+
+// biome-ignore lint/suspicious/noExplicitAny: Drizzle table types are complex
+type InsertGroup = [any, Record<string, unknown>[], number];
+
+function* insertStatements(db: DrizzleDB, groups: InsertGroup[]) {
+  for (const [table, rows, chunkSize] of groups) {
+    for (const rowChunk of chunk(rows, chunkSize)) {
+      yield db.insert(table).values(rowChunk).onConflictDoNothing().toSQL();
+    }
+  }
+}
+
+const runStatements = (db: DrizzleDB, statements: Iterable<{ sql: string; params: unknown[] }>) =>
+  db.$client.withExclusiveTransactionAsync(async (tx) => {
+    for (const { sql: statement, params } of statements) {
+      await tx.runAsync(statement, params as SQLiteBindValue[]);
+    }
+  });
+
+const DELETE_MENU_DAYS_SQL = (dates: string) => [
+  `DELETE FROM nutrition WHERE id IN (SELECT nutrition_id FROM food_item WHERE menu_category_id IN (SELECT id FROM menu_category WHERE menu_id IN (SELECT id FROM menu WHERE date IN (${dates}))))`,
+  `DELETE FROM allergens WHERE id IN (SELECT allergens_id FROM food_item WHERE menu_category_id IN (SELECT id FROM menu_category WHERE menu_id IN (SELECT id FROM menu WHERE date IN (${dates}))))`,
+  `DELETE FROM food_item WHERE menu_category_id IN (SELECT id FROM menu_category WHERE menu_id IN (SELECT id FROM menu WHERE date IN (${dates})))`,
+  `DELETE FROM menu_category WHERE menu_id IN (SELECT id FROM menu WHERE date IN (${dates}))`,
+  `DELETE FROM menu WHERE date IN (${dates})`,
+];
+
+function* deleteMenuDaysStatements(dates: string[]) {
+  const placeholders = dates.map(() => '?').join(',');
+  for (const statement of DELETE_MENU_DAYS_SQL(placeholders)) {
+    yield { sql: statement, params: dates };
+  }
+}
+
+function* sharedTableStatements(
+  db: DrizzleDB,
+  shared: Awaited<ReturnType<typeof fetchSharedTables>>,
+) {
   for (const table of [
     schema.notifications,
     schema.notification_types,
-    food_item,
-    nutrition,
-    allergens,
-    menu_category,
-    menu,
     location,
     schema.location_type,
     schema.app_information,
@@ -284,54 +144,86 @@ function* cacheReplacementStatements(db: DrizzleDB, data: SupabaseSnapshot) {
     yield db.delete(table).toSQL();
   }
 
-  const notifications = (data.notifications ?? []).map((notification) => ({
-    ...notification,
-    sent_at: notification.scheduled_at || notification.created_at,
-  }));
+  yield* insertStatements(db, [
+    [schema.location_type, shared.location_type, 150],
+    [location, shared.location, 45],
+    [schema.app_information, shared.app_information, 150],
+    [schema.notification_types, shared.notification_types, 200],
+    [
+      schema.notifications,
+      shared.notifications.map((notification) => ({
+        ...notification,
+        sent_at: notification.scheduled_at || notification.created_at,
+      })),
+      150,
+    ],
+  ]);
+}
 
-  // biome-ignore lint/suspicious/noExplicitAny: Drizzle table types are complex
-  const inserts: [any, Record<string, unknown>[], number][] = [
-    [schema.location_type, data.location_type, 150],
-    [location, data.location, 45],
-    [menu, data.menu, 150],
-    [menu_category, data.menu_category, 200],
-    [nutrition, data.nutrition, 60],
-    [allergens, data.allergens, 60],
-    [food_item, data.food_item, 150],
-    [schema.app_information, data.app_information, 150],
-    [schema.notification_types, data.notification_types ?? [], 200],
-    [schema.notifications, notifications, 150],
-  ];
+function* menuDayStatements(db: DrizzleDB, date: string, rows: ReturnType<typeof flattenMenuTree>) {
+  yield* deleteMenuDaysStatements([date]);
+  yield* insertStatements(db, [
+    [menu, rows.menu as Record<string, unknown>[], 150],
+    [menu_category, rows.menu_category as Record<string, unknown>[], 200],
+    [nutrition, rows.nutrition as Record<string, unknown>[], 60],
+    [allergens, rows.allergens as Record<string, unknown>[], 60],
+    [food_item, rows.food_item as Record<string, unknown>[], 150],
+  ]);
+}
 
-  for (const [table, rows, chunkSize] of inserts) {
-    for (const rowChunk of chunk(rows, chunkSize)) {
-      yield db.insert(table).values(rowChunk).toSQL();
-    }
-  }
+interface MenuSyncOptions {
+  force: boolean;
+  syncedVersions: MenuDayVersions;
+  onVersionsChange: (versions: MenuDayVersions) => void;
+  onCacheChange: () => void | Promise<void>;
 }
 
 /**
- * Replaces the local cache with Supabase data in one transaction.
- * Rejects without changing the cache if a request or a write fails.
- *
- * @param db - The Expo SQLite database instance.
- * @param date - Optional date string in YYYY-MM-DD format. Defaults to today in Central Time.
+ * Updates the local cache from Supabase. The small tables are replaced on every run, then only the
+ * menu days that changed are downloaded, today first. Each write is one transaction, so a failure
+ * keeps what the cache had and a later run continues from the days that are left.
  */
-export const insertDataIntoSQLiteDB = async (db: DrizzleDB, date?: string) => {
-  const data = await querySupabase(date);
+export const syncCacheWithSupabase = async (
+  db: DrizzleDB,
+  { force, syncedVersions, onVersionsChange, onCacheChange }: MenuSyncOptions,
+) => {
+  const [shared, remote] = await Promise.all([fetchSharedTables(), fetchMenuVersions()]);
 
-  if (!data) {
-    throw new Error('Failed to fetch data from Supabase');
-  }
-  if (data.location.length === 0) {
+  if (shared.location.length === 0) {
     throw new Error('Supabase returned no locations');
   }
 
-  await db.$client.withExclusiveTransactionAsync(async (tx) => {
-    for (const { sql: statement, params } of cacheReplacementStatements(db, data)) {
-      await tx.runAsync(statement, params as SQLiteBindValue[]);
-    }
+  await runStatements(db, sharedTableStatements(db, shared));
+  await onCacheChange();
+
+  const cachedDates = (await db.selectDistinct({ date: menu.date }).from(menu)).map(
+    (row) => row.date,
+  );
+  const plan = planMenuDays({
+    remote,
+    synced: syncedVersions,
+    cachedDates,
+    today: getTodayInCentralTime(),
+    force,
   });
+
+  let versions = syncedVersions;
+
+  if (plan.remove.length > 0) {
+    await runStatements(db, deleteMenuDaysStatements(plan.remove));
+    versions = Object.fromEntries(
+      Object.entries(versions).filter(([date]) => !plan.remove.includes(date)),
+    );
+    onVersionsChange(versions);
+  }
+
+  for (const date of plan.fetch) {
+    const rows = await fetchMenuDay(date);
+    await runStatements(db, menuDayStatements(db, date, rows));
+    versions = { ...versions, [date]: remote[date] };
+    onVersionsChange(versions);
+    await onCacheChange();
+  }
 };
 
 /**
