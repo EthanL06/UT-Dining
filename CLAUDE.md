@@ -30,3 +30,12 @@ pnpm + Turborepo monorepo for the UT Dining iOS/Android app and its services.
 - Before an Expo SDK bump, run `npx expo install expo@^<sdk> && npx expo install --fix` in `apps/mobile`, then `npx expo-doctor`.
 - Env files: each app commits `.env.example`; real values go in the gitignored `.env.local` (written by `scripts/env.ts`). Never commit keys.
 - Cloud sessions: the SessionStart hook installs deps and, when `SUPABASE_DEV_*` vars are set, points the apps at the hosted dev Supabase project. Never point a session at production.
+
+## Cooking
+
+This repo uses [cook](https://github.com/EthanL06/cook).
+
+- Project facts for agents: `.agents/cook.md`. Follow its rules.
+- Before you start a task, read `.agents/recipes/README.md` and the recipes for your area.
+- To prove a change works, run the verifier skills in `.agents/skills/verifier-*` (or `/cook-verify`).
+- Repeatable QA flows live in `scripts/qa/` when that folder exists. Use them before you test by hand.
