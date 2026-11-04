@@ -6,7 +6,23 @@ import {
   type Location,
 } from '~/services/database/database';
 import { getTodayInCentralTime } from '~/utils/date';
+import { getMealTimes } from '~/utils/locations';
+import { timeOfDay } from '~/utils/time';
 import { useDatabase } from './useDatabase';
+
+const MEAL_FOR_TIME_OF_DAY = {
+  morning: 'Breakfast',
+  afternoon: 'Lunch',
+  evening: 'Dinner',
+} as const;
+
+const pickDefaultMenu = (
+  menuNames: (string | null)[],
+  mealTimes: ReturnType<typeof getMealTimes>,
+) => {
+  const meal = MEAL_FOR_TIME_OF_DAY[timeOfDay(new Date(), mealTimes ?? undefined)];
+  return menuNames.find((name) => name === meal) ?? menuNames[0];
+};
 
 export function useMenuData(location: string, date?: string) {
   const db = useDatabase();
@@ -32,8 +48,10 @@ export function useMenuData(location: string, date?: string) {
     enabled: !!location,
   });
 
-  // Auto-select first menu if none selected
-  const defaultMenu = selectedMenu || menuNames[0];
+  const defaultMenu = useMemo(() => {
+    if (selectedMenu && menuNames.includes(selectedMenu)) return selectedMenu;
+    return pickDefaultMenu(menuNames, getMealTimes(db, location));
+  }, [selectedMenu, menuNames, db, location]);
 
   // Prefetch all menu data for instant switching
   useEffect(() => {
@@ -63,11 +81,6 @@ export function useMenuData(location: string, date?: string) {
     refetchOnWindowFocus: false,
     enabled: !!location && !!defaultMenu,
   });
-
-  // Reset selected menu when date changes
-  useEffect(() => {
-    setSelectedMenu(null);
-  }, []);
 
   // Track menu switching state
   useEffect(() => {
