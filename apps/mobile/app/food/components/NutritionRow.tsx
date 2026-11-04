@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 
 import { DAILY_VALUES, INDENTED_NUTRITION } from '~/data/AllergenInfo';
-import { cn } from '~/utils/utils';
+import { cn, displayNutrient } from '~/utils/utils';
 
 interface NutritionRowProps {
   item: { key: string; value: unknown };
@@ -10,6 +10,7 @@ interface NutritionRowProps {
 }
 
 const NutritionRow = React.memo(({ item, isDarkMode }: NutritionRowProps) => {
+  const isKnown = item.value !== null && item.value !== undefined;
   const nutrientValue = parseFloat(String(item.value ?? 0));
   const percentage = getPercentage(nutrientValue, item.key);
 
@@ -53,11 +54,13 @@ const NutritionRow = React.memo(({ item, isDarkMode }: NutritionRowProps) => {
             </Text>
           )}
           <Text className={isDarkMode ? 'text-gray-300' : 'text-black'}>
-            {item.key === 'Calories' ? ` ${item.value} kcal` : ` ${item.value}`}
+            {item.key === 'Calories' && isKnown
+              ? ` ${item.value} kcal`
+              : ` ${displayNutrient(item.value)}`}
           </Text>
         </View>
         <View>
-          {DAILY_VALUES[item.key] && (
+          {isKnown && DAILY_VALUES[item.key] && (
             <Text className={cn('font-bold', isDarkMode ? 'text-gray-300' : 'text-black')}>
               {percentage}%
             </Text>
