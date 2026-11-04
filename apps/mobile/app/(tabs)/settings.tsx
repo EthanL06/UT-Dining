@@ -104,7 +104,11 @@ const SettingItem = ({
       <Switch
         value={toggleValue}
         onValueChange={onToggle}
-        trackColor={{ false: '#D1D5DB', true: getColor('ut-burnt-orange', false) }}
+        trackColor={{
+          false: isDarkMode ? '#3A3A3C' : '#D1D5DB',
+          true: getColor('ut-burnt-orange', false),
+        }}
+        ios_backgroundColor={isDarkMode ? '#3A3A3C' : '#D1D5DB'}
         thumbColor="#FFFFFF"
       />
     )}

@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { toCentralTime } from '@ut-dining/core';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   getLocationMenuData,
@@ -6,7 +7,19 @@ import {
   type Location,
 } from '~/services/database/database';
 import { getTodayInCentralTime } from '~/utils/date';
+import { getMealTimes } from '~/utils/locations';
 import { useDatabase } from './useDatabase';
+
+const pickDefaultMenu = (
+  menuNames: (string | null)[],
+  mealTimes: ReturnType<typeof getMealTimes>,
+) => {
+  const now = toCentralTime().time;
+  const breakfastEnd = mealTimes?.breakfast?.closeTime ?? 1100;
+  const lunchEnd = mealTimes?.lunch?.closeTime ?? 1700;
+  const meal = now < breakfastEnd ? 'Breakfast' : now < lunchEnd ? 'Lunch' : 'Dinner';
+  return menuNames.find((name) => name === meal) ?? menuNames[0];
+};
 
 export function useMenuData(location: string, date?: string) {
   const db = useDatabase();
@@ -32,8 +45,10 @@ export function useMenuData(location: string, date?: string) {
     enabled: !!location,
   });
 
-  // Auto-select first menu if none selected
-  const defaultMenu = selectedMenu || menuNames[0];
+  const defaultMenu = useMemo(() => {
+    if (selectedMenu && menuNames.includes(selectedMenu)) return selectedMenu;
+    return pickDefaultMenu(menuNames, getMealTimes(db, location));
+  }, [selectedMenu, menuNames, db, location]);
 
   // Prefetch all menu data for instant switching
   useEffect(() => {
@@ -63,11 +78,6 @@ export function useMenuData(location: string, date?: string) {
     refetchOnWindowFocus: false,
     enabled: !!location && !!defaultMenu,
   });
-
-  // Reset selected menu when date changes
-  useEffect(() => {
-    setSelectedMenu(null);
-  }, []);
 
   // Track menu switching state
   useEffect(() => {
