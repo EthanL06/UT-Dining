@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { CircleAlert, MapPin } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import type React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useEffectEvent } from 'react';
 import { Platform, Text, TouchableOpacity, View } from 'react-native';
 import ActionSheet, {
   type ActionSheetRef,
@@ -50,9 +50,12 @@ const MapLocationSheet = ({ payload, sheetId }: MapLocationProps) => {
     Linking.openURL(url);
   };
 
-  // biome-ignorelint/correctness/useExhaustiveDependencies: analytics only
-  useEffect(() => {
+  const trackScreen = useEffectEvent(() => {
     analytics.screen(`${name}-map-sheet`);
+  });
+
+  useEffect(() => {
+    trackScreen();
   }, []);
 
   return (

@@ -1,7 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Animated, Easing, Pressable, Text, View } from 'react-native';
 import Reanimated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 

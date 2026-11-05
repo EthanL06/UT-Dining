@@ -105,7 +105,7 @@ export default function Home() {
               },
             ].map((item, index) => (
               <motion.div
-                key={index}
+                key={item.label}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -176,7 +176,7 @@ export default function Home() {
               },
             ].map((feature, index) => (
               <motion.div
-                key={index}
+                key={feature.title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}

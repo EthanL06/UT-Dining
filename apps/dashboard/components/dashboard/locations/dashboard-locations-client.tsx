@@ -68,18 +68,19 @@ export default function DashboardLocationsClient({
       confirmProps: { color: 'red' },
       onConfirm: async () => {
         try {
-          if (!location.id) {
+          const locationId = location.id;
+          if (!locationId) {
             throw new Error('Location ID is required');
           }
 
-          await deleteLocation(location.id);
+          await deleteLocation(locationId);
 
-          setLocations((prev) => prev.filter((loc) => loc.id !== location.id));
+          setLocations((prev) => prev.filter((loc) => loc.id !== locationId));
 
           // Remove menu status for deleted location
           setLocationMenuStatus((prev) => {
             const newStatus = { ...prev };
-            delete newStatus[location.id!];
+            delete newStatus[locationId];
             return newStatus;
           });
 
@@ -92,7 +93,7 @@ export default function DashboardLocationsClient({
         } catch (err) {
           notifications.show({
             title: 'Delete Failed',
-            message: 'Failed to delete location: ' + (err as Error).message,
+            message: `Failed to delete location: ${(err as Error).message}`,
             color: 'red',
             autoClose: 5000,
           });
@@ -135,7 +136,7 @@ export default function DashboardLocationsClient({
       close();
     } catch (err) {
       const action = editingLocation ? 'update' : 'add';
-      throw new Error(`❌ Failed to ${action} location: ` + (err as Error).message);
+      throw new Error(`❌ Failed to ${action} location: ${(err as Error).message}`);
     }
   };
 
@@ -228,7 +229,7 @@ export default function DashboardLocationsClient({
         } catch (err) {
           notifications.show({
             title: 'Toggle Failed',
-            message: 'Failed to toggle force close: ' + (err as Error).message,
+            message: `Failed to toggle force close: ${(err as Error).message}`,
             color: 'red',
             autoClose: 5000,
           });

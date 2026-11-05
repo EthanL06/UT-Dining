@@ -1,7 +1,6 @@
 'use client';
 
-import { Box, Flex, Group, Text } from '@mantine/core';
-import { IconBell } from '@tabler/icons-react';
+import { Box, Flex, Text } from '@mantine/core';
 import Image from 'next/image';
 import type { NotificationData } from '@/app/(private)/dashboard/notifications/action';
 

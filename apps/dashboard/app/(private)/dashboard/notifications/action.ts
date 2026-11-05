@@ -58,7 +58,7 @@ export async function scheduleNotification(data: NotificationData) {
   const scheduledAt =
     data.scheduledAt instanceof Date ? data.scheduledAt : new Date(data.scheduledAt);
 
-  if (isNaN(scheduledAt.getTime())) {
+  if (Number.isNaN(scheduledAt.getTime())) {
     return {
       success: false,
       message: 'Invalid scheduled time provided',
