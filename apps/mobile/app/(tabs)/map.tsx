@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
-import { Stack } from 'expo-router';
+import { Stack, useFocusEffect } from 'expo-router';
 import {
   ChevronDown,
   ChevronLeft,
@@ -15,7 +15,7 @@ import {
   Truck,
   Utensils,
 } from 'lucide-react-native';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Animated, Dimensions, Platform, TouchableOpacity, View } from 'react-native';
 import { SheetManager } from 'react-native-actions-sheet';
 import type { Region } from 'react-native-maps';
@@ -666,4 +666,16 @@ const MapPage = () => {
   );
 };
 
-export default MapPage;
+const MapTab = () => {
+  const [hasOpened, setHasOpened] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      setHasOpened(true);
+    }, []),
+  );
+
+  return hasOpened ? <MapPage /> : null;
+};
+
+export default MapTab;

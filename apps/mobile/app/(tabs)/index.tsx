@@ -1,5 +1,4 @@
 import { onlineManager, useQuery, useQueryClient } from '@tanstack/react-query';
-import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
 import * as Network from 'expo-network';
@@ -26,7 +25,7 @@ import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
 import { getTodayInCentralTime } from '~/utils/date';
-import { getLocationOpenStatus } from '~/utils/locationStatus';
+import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
 import { readCachedMenuData } from '~/utils/queries';
 import { formatTimeSinceSync } from '~/utils/time';
 import { cn } from '~/utils/utils';
@@ -35,7 +34,7 @@ import HomeHeader from '../_components/HomeHeader';
 import LocationItem from '../_components/LocationItem';
 
 // Constants
-const SPLASH_SCREEN_DURATION = 1000;
+const SPLASH_SCREEN_DURATION = 200;
 const NOTIFICATION_DURATION = 3000;
 
 // Configure splash screen
@@ -55,53 +54,25 @@ const filterAndSortLocations = (
   db: DrizzleDB,
   currentTime: Date,
 ) => {
-  // First filter by type
-  let filteredLocations = locations;
-  if (filter !== 'all') {
-    const targetType = locationTypes.find((type) => type.name === filter);
-    if (targetType) {
-      filteredLocations = locations.filter((location) => location.type_id === targetType.id);
-    }
-  }
+  const targetType =
+    filter === 'all' ? undefined : locationTypes.find((type) => type.name === filter);
+  const filteredLocations = targetType
+    ? locations.filter((location) => location.type_id === targetType.id)
+    : locations;
 
-  // Then sort by open/closed status while maintaining original order within each group
-  const openLocations: schema.LocationWithType[] = [];
-  const closedLocations: schema.LocationWithType[] = [];
+  const locationIdsWithMenus = getLocationIdsWithMenus(db, getTodayInCentralTime());
+  const items = filteredLocations.map((location) => ({
+    location,
+    isOpen: isLocationOpenNow(location, locationIdsWithMenus, currentTime),
+  }));
 
-  // Get today's date for menu checking
-  const todayDate = getTodayInCentralTime();
-
-  filteredLocations.forEach((location) => {
-    // Get location data for each location to determine if it's open
-    const locationData = db
-      .select()
-      .from(schema.location)
-      .where(eq(schema.location.id, location.id))
-      .get();
-    if (!locationData) {
-      // count as closed, todo: log error
-      closedLocations.push(location);
-      return;
-    }
-    const isOpen = getLocationOpenStatus(location, locationData, db, currentTime, todayDate);
-
-    if (isOpen) {
-      openLocations.push(location);
-    } else {
-      closedLocations.push(location);
-    }
-  });
-
-  // Return open locations first, then closed locations
-  return [...openLocations, ...closedLocations];
+  return [...items.filter((item) => item.isOpen), ...items.filter((item) => !item.isOpen)];
 };
 
 export default function Home() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const [refreshing, setRefreshing] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [layoutLoaded, setLayoutLoaded] = useState(false);
   const isOnboardingComplete = useOnboardingStore((state) => state.isOnboardingComplete);
 
   const db = useSQLiteContext();
@@ -153,8 +124,6 @@ export default function Home() {
       // Force sync with Supabase and then refetch the query
       await Promise.race([forceMenuSync(drizzleDb, queryClient), timeoutPromise]);
 
-      setRefreshKey((prev) => prev + 1);
-
       Notifier.showNotification({
         title: 'Refreshed!',
         description: 'Menu data is up to date.',
@@ -180,14 +149,10 @@ export default function Home() {
     }
   };
 
-  // Handle splash screen
-  const onLayoutRootView = () => {
-    setLayoutLoaded(true);
-  };
-
   useEffect(() => {
-    SplashScreen.hide();
-  }, []);
+    if (isLoading) return;
+    requestAnimationFrame(() => SplashScreen.hide());
+  }, [isLoading]);
 
   if (isLoading) {
     return (
@@ -251,7 +216,7 @@ export default function Home() {
   return (
     <View style={{ flex: 1, backgroundColor: isDarkMode ? '#171717' : '#fff' }}>
       <Stack.Screen options={{ title: 'Home' }} />
-      <Container className="pb-0" disableBottomPadding onLayout={onLayoutRootView}>
+      <Container className="pb-0" disableBottomPadding>
         <OnboardingScreen isOnboardingComplete={isOnboardingComplete} />
 
         {isLoading ? (
@@ -288,7 +253,7 @@ export default function Home() {
         ) : (
           <FlatList
             contentInsetAdjustmentBehavior="automatic"
-            extraData={[currentTime, selectedFilter, refreshKey]}
+            extraData={[currentTime, selectedFilter]}
             data={filteredLocations}
             refreshControl={
               <RefreshControl
@@ -298,16 +263,14 @@ export default function Home() {
               />
             }
             contentContainerClassName="flex gap-y-3 pb-8"
-            renderItem={({ item }) => {
-              return (
-                <LocationItem
-                  key={`${item.id}-${refreshKey}`}
-                  location={item}
-                  currentTime={currentTime}
-                />
-              );
-            }}
-            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <LocationItem
+                location={item.location}
+                isOpen={item.isOpen}
+                currentTime={currentTime}
+              />
+            )}
+            keyExtractor={(item) => item.location.id.toString()}
             numColumns={1}
             showsVerticalScrollIndicator={false}
             ListHeaderComponent={
