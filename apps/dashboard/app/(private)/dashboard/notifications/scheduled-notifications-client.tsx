@@ -1,11 +1,11 @@
 'use client';
 
-import { Button, Group, Text } from '@mantine/core';
+import { Text } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { IconTrash } from '@tabler/icons-react';
 import type { Tables } from '@ut-dining/supabase';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ScheduledNotificationsTable } from '@/components/dashboard/notifications';
 import { deleteScheduledNotification } from './action';
 
@@ -24,8 +24,6 @@ export function ScheduledNotificationsClient({
     useState<ScheduledNotification[]>(initialNotifications);
 
   const handleDelete = async (id: string) => {
-    const notification = scheduledNotifications.find((n) => n.id === id);
-
     modals.openConfirmModal({
       title: 'Delete Scheduled Notification',
       children: (
@@ -55,7 +53,7 @@ export function ScheduledNotificationsClient({
               color: 'red',
             });
           }
-        } catch (error) {
+        } catch {
           notifications.show({
             title: 'Error',
             message: 'Failed to delete scheduled notification',

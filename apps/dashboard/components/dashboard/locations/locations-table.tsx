@@ -1,6 +1,6 @@
 'use client';
 
-import { closestCenter, DndContext, type UniqueIdentifier } from '@dnd-kit/core';
+import { closestCenter, DndContext, type DragEndEvent, type UniqueIdentifier } from '@dnd-kit/core';
 import { arrayMove, SortableContext } from '@dnd-kit/sortable';
 import { Paper, Table } from '@mantine/core';
 import { IconGripVertical } from '@tabler/icons-react';
@@ -36,7 +36,7 @@ function SortableLocationsTable({
   onEditLocation?: (location: Location) => void;
   onDeleteLocation?: (location: Location) => void;
   onToggleForceClose?: (locationId: string, forceClose: boolean) => void;
-  onDragEnd: (event: any) => void;
+  onDragEnd: (event: DragEndEvent) => void;
 }) {
   const [items, setItems] = useState<(UniqueIdentifier | { id: UniqueIdentifier })[]>(
     locations.map((loc) => loc.id).filter(Boolean) as UniqueIdentifier[],
@@ -48,9 +48,9 @@ function SortableLocationsTable({
     setItems(locations.map((loc) => loc.id).filter(Boolean) as UniqueIdentifier[]);
   }, [locations]);
 
-  const handleDragEnd = async (event: any) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-    if (active.id !== over.id) {
+    if (over && active.id !== over.id) {
       const oldIndex = items.indexOf(active.id);
       const newIndex = items.indexOf(over.id);
       const newItems = arrayMove(items, oldIndex, newIndex);
@@ -121,7 +121,7 @@ export function LocationsTable({
     return <EmptyState onAddLocation={onAddLocation} />;
   }
 
-  const handleDragEnd = (event: any) => {
+  const handleDragEnd = () => {
     // This will be handled by the SortableLocationsTable component
   };
 

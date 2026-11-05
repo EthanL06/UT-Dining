@@ -1,7 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
 import { eq, sql } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
-import { router, Stack, useFocusEffect } from 'expo-router';
+import { type Href, router, Stack, useFocusEffect } from 'expo-router';
 import { Bell, ChefHat, ExternalLink, MapPin, Star } from 'lucide-react-native';
 import { useCallback, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
@@ -184,8 +184,7 @@ const Notifications = () => {
 
   const handleNotificationPress = (notification: Notification) => {
     if (notification.redirect_url) {
-      // biome-ignore lint/suspicious/noExplicitAny: The redirect url is valid.
-      router.push(notification.redirect_url as any);
+      router.push(notification.redirect_url as Href);
     }
   };
 

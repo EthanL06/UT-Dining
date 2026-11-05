@@ -32,7 +32,8 @@ function DraggableLocationRowContent(props: DraggableLocationRowProps) {
 
   // Drag handle to be rendered in the row
   const dragHandle = (
-    <span
+    <button
+      type="button"
       ref={setActivatorNodeRef}
       {...listeners}
       {...attributes}
@@ -41,20 +42,18 @@ function DraggableLocationRowContent(props: DraggableLocationRowProps) {
         alignItems: 'center',
         opacity: isDragging ? 0.5 : 1,
       }}
-      tabIndex={0}
       aria-label="Drag to reorder"
       className="ml-2 text-gray-500 transition-all hover:cursor-grab hover:text-gray-600 active:cursor-grabbing"
     >
       <IconGripVertical size={18} />
-    </span>
+    </button>
   );
 
   return (
     <LocationRow
       {...props}
       rowProps={{
-        // @ts-expect-error: setNodeRef is required for dnd-kit, even if not in TableTrProps
-        ref: setNodeRef as React.Ref<HTMLTableRowElement>,
+        ref: setNodeRef,
         style: {
           transform: CSS.Translate.toString(transform),
           transition,
