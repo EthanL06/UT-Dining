@@ -1,3 +1,4 @@
+import { decideSync, SYNC_INTERVAL_MS, singleFlight } from '@ut-dining/core';
 import { eq } from 'drizzle-orm';
 import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import * as Network from 'expo-network';
@@ -5,45 +6,14 @@ import { insertDataIntoSQLiteDB } from '~/services/database/database';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import * as schema from '../services/database/schema';
 
-export const fetchMenuData = async (
-  drizzleDb: ExpoSQLiteDatabase<typeof schema>,
-  forceSync: boolean = false,
-) => {
-  // Check internet connection and time-based sync logic
-  const networkState = await Network.getNetworkStateAsync();
-  if (networkState.isConnected) {
-    // Get sync store state directly (not using hook since this is not a React component)
-    const syncStore = useDataSyncStore.getState();
+const HOUR_IN_MS = 60 * 60 * 1000;
 
-    // Sync with Supabase if 6 hours have passed since last sync OR if manually forced
-    if (forceSync || syncStore.shouldSyncWithSupabase()) {
-      try {
-        const reason = forceSync ? 'Manual refresh requested' : '6+ hours since last sync';
-        console.log(`🔄 ${reason}, fetching fresh data from Supabase...`);
-        await insertDataIntoSQLiteDB(drizzleDb); // Sync with remote when conditions are met
+const syncWithSupabase = singleFlight(async (drizzleDb: ExpoSQLiteDatabase<typeof schema>) => {
+  await insertDataIntoSQLiteDB(drizzleDb);
+  useDataSyncStore.getState().setLastSupabaseQueryTime(Date.now());
+});
 
-        // Update the last sync time after successful sync
-        syncStore.setLastSupabaseQueryTime(Date.now());
-        console.log('✅ Successfully synced with Supabase and updated sync timestamp');
-      } catch (error) {
-        console.warn('Failed to sync with remote database, using cached data:', error);
-        // Continue to return cached data even if sync fails
-      }
-    } else {
-      const timeSinceLastSync = syncStore.getTimeSinceLastSync();
-      const hoursUntilNextSync = Math.max(
-        0,
-        (6 * 60 * 60 * 1000 - timeSinceLastSync) / (60 * 60 * 1000), // 6 hours in milliseconds
-      );
-      console.log(
-        `ℹ️  Using cached data (${(timeSinceLastSync / (60 * 60 * 1000)).toFixed(1)}h since last sync, next sync in ${hoursUntilNextSync.toFixed(1)}h)`,
-      );
-    }
-  } else {
-    console.log('📱 Offline mode: using cached SQLite data');
-  }
-
-  // Always return cached data from SQLite (works both online and offline)
+const readCachedLocations = async (drizzleDb: ExpoSQLiteDatabase<typeof schema>) => {
   const [data, types] = await Promise.all([
     drizzleDb
       .select()
@@ -60,4 +30,43 @@ export const fetchMenuData = async (
   ]);
 
   return { locations: data, locationTypes: types };
+};
+
+export const fetchMenuData = async (
+  drizzleDb: ExpoSQLiteDatabase<typeof schema>,
+  forceSync: boolean = false,
+) => {
+  const networkState = await Network.getNetworkStateAsync();
+  const decision = decideSync({
+    isConnected: Boolean(networkState.isConnected),
+    force: forceSync,
+    lastSyncedAt: useDataSyncStore.getState().lastSupabaseQueryTime,
+    now: Date.now(),
+  });
+
+  switch (decision.kind) {
+    case 'offline':
+      console.log('📱 Offline mode: using cached SQLite data');
+      break;
+    case 'fresh': {
+      const hoursSinceSync = decision.ageMs / HOUR_IN_MS;
+      const hoursUntilNextSync = (SYNC_INTERVAL_MS - decision.ageMs) / HOUR_IN_MS;
+      console.log(
+        `ℹ️  Using cached data (${hoursSinceSync.toFixed(1)}h since last sync, next sync in ${hoursUntilNextSync.toFixed(1)}h)`,
+      );
+      break;
+    }
+    case 'sync':
+      try {
+        console.log(`🔄 Syncing with Supabase (${decision.reason})...`);
+        await syncWithSupabase(drizzleDb);
+        console.log('✅ Successfully synced with Supabase and updated sync timestamp');
+      } catch (error) {
+        if (forceSync) throw error;
+        console.warn('Failed to sync with remote database, using cached data:', error);
+      }
+      break;
+  }
+
+  return readCachedLocations(drizzleDb);
 };

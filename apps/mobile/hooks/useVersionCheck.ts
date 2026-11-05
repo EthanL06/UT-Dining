@@ -1,6 +1,6 @@
 import * as Application from 'expo-application';
 import { usePostHog } from 'posthog-react-native';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Alert, AppState, Linking, Platform } from 'react-native';
 import { getSafePostHog } from '~/services/analytics/posthog';
 import { getAppInformation } from '~/services/database/database';
@@ -12,27 +12,15 @@ const APP_STORE_URL = Platform.select({
 });
 
 export const useVersionCheck = () => {
-  const [isChecking, setIsChecking] = useState(true);
-  const [hasShownAlert, setHasShownAlert] = useState(false);
-  const [isAlertVisible, setIsAlertVisible] = useState(false);
   const db = useDatabase();
-  const posthog = getSafePostHog(usePostHog());
-
-  // Reset alert state when app comes back to foreground
-  useEffect(() => {
-    const handleAppStateChange = (nextAppState: string) => {
-      if (nextAppState === 'active' && !isAlertVisible) {
-        // Reset alert state when app becomes active, but only if no alert is currently visible
-        setHasShownAlert(false);
-      }
-    };
-
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
-    return () => subscription?.remove();
-  }, [isAlertVisible]);
+  const rawPosthog = usePostHog();
+  const posthog = useMemo(() => getSafePostHog(rawPosthog), [rawPosthog]);
+  const hasShownAlertRef = useRef(false);
+  const isAlertVisibleRef = useRef(false);
 
   const showUpdateAlert = useCallback(() => {
-    setIsAlertVisible(true);
+    isAlertVisibleRef.current = true;
+    hasShownAlertRef.current = true;
     Alert.alert(
       'Update Required',
       'A new version is ready. Please update to continue using UT Dining.',
@@ -40,10 +28,10 @@ export const useVersionCheck = () => {
         {
           text: 'Update',
           onPress: async () => {
-            setIsAlertVisible(false);
-            posthog?.capture('update_button_pressed', {
+            isAlertVisibleRef.current = false;
+            posthog.capture('update_button_pressed', {
               platform: Platform.OS,
-              app_store_url: APP_STORE_URL ?? '', // Fix: ensure string type for analytics event
+              app_store_url: APP_STORE_URL ?? '',
             });
 
             if (APP_STORE_URL) {
@@ -51,7 +39,7 @@ export const useVersionCheck = () => {
                 await Linking.openURL(APP_STORE_URL);
               } catch (error) {
                 console.error('Error opening app store:', error);
-                posthog?.capture('update_button_error', {
+                posthog.capture('update_button_error', {
                   error: error instanceof Error ? error.message : 'Unknown error',
                 });
               }
@@ -64,7 +52,7 @@ export const useVersionCheck = () => {
                 text: 'Cancel',
                 style: 'cancel' as const,
                 onPress: () => {
-                  setIsAlertVisible(false);
+                  isAlertVisibleRef.current = false;
                 },
               },
             ]
@@ -72,58 +60,55 @@ export const useVersionCheck = () => {
       ],
       { cancelable: __DEV__ },
     );
-    setHasShownAlert(true);
   }, [posthog]);
 
-  useEffect(() => {
-    const checkVersion = async () => {
-      try {
-        // Get current app version
-        const currentVersion = Application.nativeApplicationVersion;
+  const checkVersion = useCallback(async () => {
+    try {
+      const currentVersion = Application.nativeApplicationVersion;
+      const appInfo = await getAppInformation(db);
 
-        // Get app information from database
-        const appInfo = await getAppInformation(db);
+      if (appInfo?.app_version && currentVersion) {
+        const shouldUpdate = compareVersions(currentVersion, appInfo.app_version);
 
-        if (appInfo?.app_version && currentVersion) {
-          const shouldUpdate = compareVersions(currentVersion, appInfo.app_version);
-
-          // Track version check event
-          posthog?.capture('version_check_performed', {
-            current_version: currentVersion,
-            latest_version: appInfo.app_version,
-            update_required: shouldUpdate,
-          });
-
-          // Show native alert if update is needed
-          if (shouldUpdate && !hasShownAlert && !isAlertVisible) {
-            console.log(
-              '☁️  New version available. Current version:',
-              currentVersion,
-              'Latest version:',
-              appInfo.app_version,
-            );
-
-            if (!__DEV__) {
-              showUpdateAlert();
-            }
-          } else {
-            console.log('☁️  No update available');
-          }
-        }
-      } catch (error) {
-        console.error('Error checking app version:', error);
-        posthog?.capture('version_check_error', {
-          error: error instanceof Error ? error.message : 'Unknown error',
+        posthog.capture('version_check_performed', {
+          current_version: currentVersion,
+          latest_version: appInfo.app_version,
+          update_required: shouldUpdate,
         });
-      } finally {
-        setIsChecking(false);
+
+        if (shouldUpdate && !isAlertVisibleRef.current) {
+          console.log(
+            '☁️  New version available. Current version:',
+            currentVersion,
+            'Latest version:',
+            appInfo.app_version,
+          );
+
+          if (!__DEV__) {
+            showUpdateAlert();
+          }
+        } else {
+          console.log('☁️  No update available');
+        }
       }
-    };
+    } catch (error) {
+      console.error('Error checking app version:', error);
+      posthog.capture('version_check_error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  }, [db, posthog, showUpdateAlert]);
 
+  useEffect(() => {
     checkVersion();
-  }, [db, posthog, hasShownAlert, isAlertVisible, showUpdateAlert]);
 
-  return { isChecking };
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active' && hasShownAlertRef.current && !isAlertVisibleRef.current) {
+        checkVersion();
+      }
+    });
+    return () => subscription.remove();
+  }, [checkVersion]);
 };
 
 /**

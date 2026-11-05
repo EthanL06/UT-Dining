@@ -342,8 +342,12 @@ const MapPage = () => {
   >([]);
   const isColorBlindMode = useSettingsStore((state) => state.isColorBlindMode);
   useEffect(() => {
+    let cancelled = false;
+    let locationSubscription: Location.LocationSubscription | null = null;
+
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
+      if (cancelled) return;
       if (status !== 'granted') {
         Alert.alert(
           'Location Permission Denied',
@@ -354,12 +358,11 @@ const MapPage = () => {
       }
       setHasLocationPermission(true);
 
-      // Get initial location
       const location = await Location.getCurrentPositionAsync({});
+      if (cancelled) return;
       setUserLocation(location);
 
-      // Watch for location updates
-      const locationSubscription = await Location.watchPositionAsync(
+      const subscription = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
           timeInterval: 10000, // Update every 10 seconds
@@ -369,11 +372,17 @@ const MapPage = () => {
           setUserLocation(newLocation);
         },
       );
-
-      return () => {
-        locationSubscription.remove();
-      };
+      if (cancelled) {
+        subscription.remove();
+        return;
+      }
+      locationSubscription = subscription;
     })();
+
+    return () => {
+      cancelled = true;
+      locationSubscription?.remove();
+    };
   }, []);
 
   useEffect(() => {
