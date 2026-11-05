@@ -26,7 +26,13 @@ tags:
 - extendedWaitUntil:
     visible: You're all set.*
     timeout: 5000
-- tapOn: Finish
+- repeat:
+    while:
+      visible: Finish
+    times: 3
+    commands:
+      - tapOn: Finish
+      - waitForAnimationToEnd
 - repeat:
     while:
       notVisible: '.*Your planned meals.*'

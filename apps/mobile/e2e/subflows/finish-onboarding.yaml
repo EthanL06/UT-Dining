@@ -13,7 +13,13 @@ appId: com.ethanl06.ut-dining.dev
       - tapOn:
           id: onboarding-next-button
       - waitForAnimationToEnd
-- tapOn: Finish
+- repeat:
+    while:
+      visible: Finish
+    times: 3
+    commands:
+      - tapOn: Finish
+      - waitForAnimationToEnd
 - runFlow: dismiss-alerts.yaml
 - extendedWaitUntil:
     visible: '.*Your planned meals.*'

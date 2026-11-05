@@ -17,8 +17,15 @@ name: Meal plan items can be added and removed
     timeout: 10000
 - tapOn:
     id: food-meal-plan-button
-- tapOn:
-    id: back-button
+- repeat:
+    while:
+      visible:
+        id: food-meal-plan-button
+    times: 3
+    commands:
+      - tapOn:
+          id: back-button
+      - waitForAnimationToEnd
 - tapOn:
     id: location-meal-plan-button
 - extendedWaitUntil:

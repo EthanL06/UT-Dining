@@ -7,13 +7,6 @@ appId: com.ethanl06.ut-dining.dev
     commands:
       - runFlow:
           when:
-            visible: Must use physical device for push notifications.
-          commands:
-            - tapOn:
-                text: OK
-                optional: true
-      - runFlow:
-          when:
             visible: .*Would Like to Send You Notifications.*
           commands:
             - tapOn:
