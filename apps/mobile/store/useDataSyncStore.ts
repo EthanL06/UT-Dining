@@ -1,3 +1,4 @@
+import type { MenuDayVersions } from '@ut-dining/core';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -5,45 +6,23 @@ import { zustandStorage } from './rnmmkv-storage';
 
 interface DataSyncState {
   lastSupabaseQueryTime: number | null;
+  menuDayVersions: MenuDayVersions;
   setLastSupabaseQueryTime: (timestamp: number) => void;
-  shouldSyncWithSupabase: () => boolean;
-  getTimeSinceLastSync: () => number;
+  setMenuDayVersions: (versions: MenuDayVersions) => void;
 }
-
-const SIX_HOURS_IN_MS = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
 
 export const useDataSyncStore = create<DataSyncState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       lastSupabaseQueryTime: null,
+      menuDayVersions: {},
 
       setLastSupabaseQueryTime: (timestamp: number) => {
         set({ lastSupabaseQueryTime: timestamp });
       },
 
-      shouldSyncWithSupabase: () => {
-        const { lastSupabaseQueryTime } = get();
-
-        // If never synced before, should sync
-        if (lastSupabaseQueryTime === null) {
-          return true;
-        }
-
-        const now = Date.now();
-        const timeSinceLastSync = now - lastSupabaseQueryTime;
-
-        // Should sync if more than 6 hours have passed
-        return timeSinceLastSync >= SIX_HOURS_IN_MS;
-      },
-
-      getTimeSinceLastSync: () => {
-        const { lastSupabaseQueryTime } = get();
-
-        if (lastSupabaseQueryTime === null) {
-          return Infinity; // Never synced
-        }
-
-        return Date.now() - lastSupabaseQueryTime;
+      setMenuDayVersions: (versions: MenuDayVersions) => {
+        set({ menuDayVersions: versions });
       },
     }),
     {

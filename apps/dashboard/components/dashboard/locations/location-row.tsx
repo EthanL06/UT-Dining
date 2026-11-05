@@ -33,7 +33,7 @@ interface LocationRowProps {
   onEdit?: (location: Location) => void;
   onDelete?: (location: Location) => void;
   onToggleForceClose?: (locationId: string, forceClose: boolean) => void;
-  rowProps?: React.ComponentPropsWithoutRef<typeof Table.Tr>;
+  rowProps?: React.ComponentPropsWithRef<typeof Table.Tr>;
   dragHandle?: React.ReactNode;
 }
 

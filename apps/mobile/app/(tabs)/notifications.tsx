@@ -1,7 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
 import { eq, sql } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
-import { router, Stack, useFocusEffect } from 'expo-router';
+import { type Href, router, Stack, useFocusEffect } from 'expo-router';
 import { Bell, ChefHat, ExternalLink, MapPin, Star } from 'lucide-react-native';
 import { useCallback, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
@@ -9,6 +9,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { Container } from '~/components/Container';
 import { useDatabase } from '~/hooks/useDatabase';
 import * as schema from '~/services/database/schema';
+import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useNotificationsStore } from '~/store/useNotificationsStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
@@ -139,6 +140,7 @@ const Notifications = () => {
   );
 
   // Use live query to get notifications in real-time, sorted by sent_at DESC
+  const lastSyncTime = useDataSyncStore((state) => state.lastSupabaseQueryTime);
   const { data: dbNotifications = [] } = useLiveQuery(
     db
       ?.select({
@@ -156,6 +158,7 @@ const Notifications = () => {
         eq(schema.notifications.type, schema.notification_types.id),
       )
       .orderBy(sql`datetime(${schema.notifications.sent_at}) DESC`),
+    [lastSyncTime],
   );
 
   // Convert database notifications to UI format with isRead state
@@ -181,8 +184,7 @@ const Notifications = () => {
 
   const handleNotificationPress = (notification: Notification) => {
     if (notification.redirect_url) {
-      // biome-ignore lint/suspicious/noExplicitAny: The redirect url is valid.
-      router.push(notification.redirect_url as any);
+      router.push(notification.redirect_url as Href);
     }
   };
 

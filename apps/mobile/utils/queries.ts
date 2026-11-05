@@ -1,51 +1,39 @@
+import { decideSync, singleFlight } from '@ut-dining/core';
 import { eq } from 'drizzle-orm';
-import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
-import * as Network from 'expo-network';
-import { insertDataIntoSQLiteDB } from '~/services/database/database';
+import { type DrizzleDB, syncCacheWithSupabase } from '~/services/database/database';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import * as schema from '../services/database/schema';
 
-export const fetchMenuData = async (
-  drizzleDb: ExpoSQLiteDatabase<typeof schema>,
-  forceSync: boolean = false,
-) => {
-  // Check internet connection and time-based sync logic
-  const networkState = await Network.getNetworkStateAsync();
-  if (networkState.isConnected) {
-    // Get sync store state directly (not using hook since this is not a React component)
-    const syncStore = useDataSyncStore.getState();
+const MENU_CHECK_INTERVAL_MS = 15 * 60 * 1000;
+const SYNC_DEADLINE_MS = 120_000;
 
-    // Sync with Supabase if 6 hours have passed since last sync OR if manually forced
-    if (forceSync || syncStore.shouldSyncWithSupabase()) {
-      try {
-        const reason = forceSync ? 'Manual refresh requested' : '6+ hours since last sync';
-        console.log(`🔄 ${reason}, fetching fresh data from Supabase...`);
-        await insertDataIntoSQLiteDB(drizzleDb); // Sync with remote when conditions are met
+interface SyncRun {
+  force: boolean;
+  onCacheChange: () => void | Promise<void>;
+}
 
-        // Update the last sync time after successful sync
-        syncStore.setLastSupabaseQueryTime(Date.now());
-        console.log('✅ Successfully synced with Supabase and updated sync timestamp');
-      } catch (error) {
-        console.warn('Failed to sync with remote database, using cached data:', error);
-        // Continue to return cached data even if sync fails
-      }
-    } else {
-      const timeSinceLastSync = syncStore.getTimeSinceLastSync();
-      const hoursUntilNextSync = Math.max(
-        0,
-        (6 * 60 * 60 * 1000 - timeSinceLastSync) / (60 * 60 * 1000), // 6 hours in milliseconds
-      );
-      console.log(
-        `ℹ️  Using cached data (${(timeSinceLastSync / (60 * 60 * 1000)).toFixed(1)}h since last sync, next sync in ${hoursUntilNextSync.toFixed(1)}h)`,
-      );
-    }
-  } else {
-    console.log('📱 Offline mode: using cached SQLite data');
-  }
+const rejectAfter = (ms: number) =>
+  new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error('Sync timed out')), ms);
+  });
 
-  // Always return cached data from SQLite (works both online and offline)
+const syncWithSupabase = singleFlight(async (db: DrizzleDB, { force, onCacheChange }: SyncRun) => {
+  const store = useDataSyncStore.getState();
+  await Promise.race([
+    syncCacheWithSupabase(db, {
+      force,
+      syncedVersions: store.menuDayVersions,
+      onVersionsChange: store.setMenuDayVersions,
+      onCacheChange,
+    }),
+    rejectAfter(SYNC_DEADLINE_MS),
+  ]);
+  store.setLastSupabaseQueryTime(Date.now());
+});
+
+export const readCachedMenuData = async (db: DrizzleDB) => {
   const [data, types] = await Promise.all([
-    drizzleDb
+    db
       .select()
       .from(schema.location)
       .innerJoin(schema.location_type, eq(schema.location.type_id, schema.location_type.id))
@@ -56,8 +44,25 @@ export const fetchMenuData = async (
           type: location_type.name,
         })),
       ),
-    drizzleDb.select().from(schema.location_type).orderBy(schema.location_type.display_order),
+    db.select().from(schema.location_type).orderBy(schema.location_type.display_order),
   ]);
 
   return { locations: data, locationTypes: types };
+};
+
+export const syncMenuData = async (
+  db: DrizzleDB,
+  { force = false, onCacheChange = () => {} }: Partial<SyncRun> = {},
+): Promise<boolean> => {
+  const decision = decideSync({
+    isConnected: true,
+    force,
+    lastSyncedAt: useDataSyncStore.getState().lastSupabaseQueryTime,
+    now: Date.now(),
+    intervalMs: MENU_CHECK_INTERVAL_MS,
+  });
+  if (decision.kind !== 'sync') return false;
+
+  await syncWithSupabase(db, { force, onCacheChange });
+  return true;
 };

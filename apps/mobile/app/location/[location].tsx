@@ -1,4 +1,5 @@
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
+import { useIsFetching } from '@tanstack/react-query';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams } from 'expo-router';
@@ -11,6 +12,7 @@ import { useCategoryExpansion } from '~/hooks/useCategoryExpansion';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useMenuData } from '~/hooks/useMenuData';
+import { MENU_SYNC_QUERY_KEY } from '~/hooks/useMenuSync';
 import { useScrollToTop } from '~/hooks/useScrollToTop';
 import * as schema from '~/services/database/schema';
 import { type FiltersState, useFiltersStore } from '~/store/useFiltersStore';
@@ -139,8 +141,8 @@ const Location = () => {
     selectedMenu,
     setSelectedMenu,
     filters: menuFilters,
-    isSwitchingMenus,
   } = useMenuData(location, selectedDate);
+  const isSyncing = useIsFetching({ queryKey: MENU_SYNC_QUERY_KEY }) > 0;
   const { toggleCategory, flattenedItems, resetExpandedCategories } = useCategoryExpansion(data);
   const db = useDatabase();
 
@@ -264,6 +266,13 @@ const Location = () => {
   // Empty state component
   const EmptyState = useCallback(() => {
     if (loading) return null;
+    if (isSyncing) {
+      return (
+        <View className="mt-12 flex-1 items-center justify-center">
+          <ActivityIndicator size="small" />
+        </View>
+      );
+    }
 
     const subtitle = () => {
       if (error) {
@@ -291,7 +300,7 @@ const Location = () => {
         </Text>
       </View>
     );
-  }, [loading, error, debouncedSearchQuery, activeFilters, isDarkMode]);
+  }, [loading, isSyncing, error, debouncedSearchQuery, activeFilters, isDarkMode]);
 
   return (
     <View style={{ flex: 1, backgroundColor: isDarkMode ? '#171717' : '#fff' }}>
@@ -305,7 +314,6 @@ const Location = () => {
           showsVerticalScrollIndicator
           data={displayedItems}
           removeClippedSubviews
-          scrollEnabled={!isSwitchingMenus}
           ListHeaderComponent=<LocationHeader
             location={location}
             selectedMenu={selectedMenu ?? null}
@@ -324,29 +332,6 @@ const Location = () => {
           getItemType={(item) => ('type' in item ? item.type : 'unknown')}
           keyboardShouldPersistTaps="always"
         />
-
-        {/* Loading indicator for menu switching */}
-        {isSwitchingMenus && (
-          <View
-            className="absolute inset-0 z-10 flex h-screen items-center justify-center"
-            style={{
-              backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.7)',
-            }}
-          >
-            <View
-              className="flex items-center justify-center rounded-lg p-4"
-              style={{
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.25,
-                shadowRadius: 3.84,
-                elevation: 5,
-              }}
-            >
-              <ActivityIndicator size="small" style={{ marginBottom: 8 }} />
-            </View>
-          </View>
-        )}
 
         <ScrollToTopButton
           visible={showScrollToTop}

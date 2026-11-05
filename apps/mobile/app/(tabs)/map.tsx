@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
-import { Stack } from 'expo-router';
+import { Stack, useFocusEffect } from 'expo-router';
 import {
   ChevronDown,
   ChevronLeft,
@@ -15,7 +15,7 @@ import {
   Truck,
   Utensils,
 } from 'lucide-react-native';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Animated, Dimensions, Platform, TouchableOpacity, View } from 'react-native';
 import { SheetManager } from 'react-native-actions-sheet';
 import type { Region } from 'react-native-maps';
@@ -342,8 +342,12 @@ const MapPage = () => {
   >([]);
   const isColorBlindMode = useSettingsStore((state) => state.isColorBlindMode);
   useEffect(() => {
+    let cancelled = false;
+    let locationSubscription: Location.LocationSubscription | null = null;
+
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
+      if (cancelled) return;
       if (status !== 'granted') {
         Alert.alert(
           'Location Permission Denied',
@@ -354,12 +358,11 @@ const MapPage = () => {
       }
       setHasLocationPermission(true);
 
-      // Get initial location
       const location = await Location.getCurrentPositionAsync({});
+      if (cancelled) return;
       setUserLocation(location);
 
-      // Watch for location updates
-      const locationSubscription = await Location.watchPositionAsync(
+      const subscription = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
           timeInterval: 10000, // Update every 10 seconds
@@ -369,11 +372,17 @@ const MapPage = () => {
           setUserLocation(newLocation);
         },
       );
-
-      return () => {
-        locationSubscription.remove();
-      };
+      if (cancelled) {
+        subscription.remove();
+        return;
+      }
+      locationSubscription = subscription;
     })();
+
+    return () => {
+      cancelled = true;
+      locationSubscription?.remove();
+    };
   }, []);
 
   useEffect(() => {
@@ -657,4 +666,16 @@ const MapPage = () => {
   );
 };
 
-export default MapPage;
+const MapTab = () => {
+  const [hasOpened, setHasOpened] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      setHasOpened(true);
+    }, []),
+  );
+
+  return hasOpened ? <MapPage /> : null;
+};
+
+export default MapTab;

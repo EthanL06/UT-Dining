@@ -1,0 +1,262 @@
+diff --git a/apps/mobile/app/(tabs)/index.tsx b/apps/mobile/app/(tabs)/index.tsx
+index 8c3788c..f7f5499 100644
+--- a/apps/mobile/app/(tabs)/index.tsx
++++ b/apps/mobile/app/(tabs)/index.tsx
+@@ -1,3 +1,4 @@
++import { hooks as perfHooks, mark, painted, runHarness, timeIt } from '~/utils/perf';
+ import { onlineManager, useQuery, useQueryClient } from '@tanstack/react-query';
+ import { drizzle } from 'drizzle-orm/expo-sqlite';
+ import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
+@@ -150,10 +151,20 @@ export default function Home() {
+   };
+ 
+   useEffect(() => {
++    mark('home.mount');
+     if (isLoading) return;
++    mark('splash.hide');
+     requestAnimationFrame(() => SplashScreen.hide());
+   }, [isLoading]);
+ 
++  useEffect(() => {
++    if (!data || data.locations.length === 0) return;
++    painted('home.ready', { locations: data.locations.length });
++    perfHooks.today = getTodayInCentralTime;
++    runHarness(drizzleDb, schema);
++    perfHooks.locations = ['J2 Dining', 'Kins Dining'].filter((n) => data.locations.some((l) => l.name === n));
++  }, [data]);
++
+   if (isLoading) {
+     return (
+       <View
+@@ -205,12 +216,8 @@ export default function Home() {
+   const locationTypes = data?.locationTypes || [];
+   const syncUnavailable = menuSync.isError || menuSync.fetchStatus === 'paused';
+ 
+-  const filteredLocations = filterAndSortLocations(
+-    locations,
+-    locationTypes,
+-    selectedFilter,
+-    drizzleDb,
+-    currentTime,
++  const filteredLocations = timeIt('filterAndSort', () =>
++    filterAndSortLocations(locations, locationTypes, selectedFilter, drizzleDb, currentTime),
+   );
+ 
+   return (
+diff --git a/apps/mobile/app/(tabs)/map.tsx b/apps/mobile/app/(tabs)/map.tsx
+index 98ccde9..58c7dcc 100644
+--- a/apps/mobile/app/(tabs)/map.tsx
++++ b/apps/mobile/app/(tabs)/map.tsx
+@@ -1,3 +1,4 @@
++import { painted } from '~/utils/perf';
+ import * as Haptics from 'expo-haptics';
+ import * as Location from 'expo-location';
+ import { Stack, useFocusEffect } from 'expo-router';
+@@ -331,6 +332,12 @@ const MapMarkers = ({
+ };
+ 
+ const MapPage = () => {
++  useEffect(() => {
++    painted('tab.map');
++  }, []);
++  useEffect(() => {
++    painted('tab.map');
++  }, []);
+   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+   const mapRef = useRef<MapView>(null);
+   const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
+diff --git a/apps/mobile/app/(tabs)/notifications.tsx b/apps/mobile/app/(tabs)/notifications.tsx
+index 274fedc..fbf2cee 100644
+--- a/apps/mobile/app/(tabs)/notifications.tsx
++++ b/apps/mobile/app/(tabs)/notifications.tsx
+@@ -1,9 +1,10 @@
++import { painted } from '~/utils/perf';
+ import { FlashList } from '@shopify/flash-list';
+ import { eq, sql } from 'drizzle-orm';
+ import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
+ import { router, Stack, useFocusEffect } from 'expo-router';
+ import { Bell, ChefHat, ExternalLink, MapPin, Star } from 'lucide-react-native';
+-import { useCallback, useMemo } from 'react';
++import { useCallback, useEffect, useMemo } from 'react';
+ import { Text, TouchableOpacity, View } from 'react-native';
+ 
+ import { Container } from '~/components/Container';
+@@ -124,6 +125,9 @@ const NotificationItem = ({
+ };
+ 
+ const Notifications = () => {
++  useEffect(() => {
++    painted('tab.notifications');
++  }, []);
+   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+   const db = useDatabase();
+   const { lastVisited, setLastVisited } = useNotificationsStore();
+diff --git a/apps/mobile/app/(tabs)/settings.tsx b/apps/mobile/app/(tabs)/settings.tsx
+index 83906f4..ba8229f 100644
+--- a/apps/mobile/app/(tabs)/settings.tsx
++++ b/apps/mobile/app/(tabs)/settings.tsx
+@@ -1,4 +1,5 @@
+ import { Ionicons } from '@expo/vector-icons';
++import { painted } from '~/utils/perf';
+ import { useQueryClient } from '@tanstack/react-query';
+ import * as Application from 'expo-application';
+ import { Link, router } from 'expo-router';
+@@ -21,7 +22,7 @@ import {
+   Star,
+   Type,
+ } from 'lucide-react-native';
+-import React from 'react';
++import React, { useEffect } from 'react';
+ import { Linking, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
+ import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
+ 
+@@ -482,6 +483,9 @@ const VersionInfo = ({ isDarkMode }: VersionInfoProps): React.JSX.Element => {
+ };
+ 
+ const SettingsPage = () => {
++  useEffect(() => {
++    painted('tab.settings');
++  }, []);
+   const {
+     useColloquialNames,
+     toggleColloquialNames,
+diff --git a/apps/mobile/app/_layout.tsx b/apps/mobile/app/_layout.tsx
+index dc8ccf3..55cd732 100644
+--- a/apps/mobile/app/_layout.tsx
++++ b/apps/mobile/app/_layout.tsx
+@@ -1,3 +1,5 @@
++import '~/utils/perf';
++import { hooks as perfHooks, mark } from '~/utils/perf';
+ import {
+   focusManager,
+   onlineManager,
+@@ -72,6 +74,9 @@ onlineManager.setEventListener((setOnline) => {
+   return () => subscription.remove();
+ });
+ 
++perfHooks.queryClient = queryClient;
++mark('layout.module');
++
+ const AppContent = () => {
+   const { success, error } = useMigrations(db, migrations);
+   const { incrementLaunchCount } = useAppLaunchStore();
+@@ -86,6 +91,7 @@ const AppContent = () => {
+   const isTablet = Device.deviceType === Device.DeviceType.TABLET;
+ 
+   useEffect(() => {
++    if (success) mark('migrations.done');
+     if (success) {
+       console.log('✅ Database migrated successfully');
+ 
+diff --git a/apps/mobile/app/food/[food].tsx b/apps/mobile/app/food/[food].tsx
+index 67299a7..18eda99 100644
+--- a/apps/mobile/app/food/[food].tsx
++++ b/apps/mobile/app/food/[food].tsx
+@@ -1,3 +1,4 @@
++import { painted } from '~/utils/perf';
+ import { FlashList } from '@shopify/flash-list';
+ import { Stack, useLocalSearchParams } from 'expo-router';
+ import { BicepsFlexed, Flame, Wheat } from 'lucide-react-native';
+@@ -40,6 +41,10 @@ const FoodScreen = () => {
+ 
+   const analytics = getSafePostHog(usePostHog());
+ 
++  useEffect(() => {
++    if (foodItem) painted('food.ready');
++  }, [foodItem]);
++
+   // Filter out serving size from nutrition data
+   const nutritionDataFiltered = nutritionData.filter((item) => item.key !== 'Serving Size');
+ 
+diff --git a/apps/mobile/app/location/[location].tsx b/apps/mobile/app/location/[location].tsx
+index b9e1b5d..8d0a9d3 100644
+--- a/apps/mobile/app/location/[location].tsx
++++ b/apps/mobile/app/location/[location].tsx
+@@ -1,3 +1,4 @@
++import { hooks as perfHooks, mark, painted } from '~/utils/perf';
+ import { FlashList, type FlashListRef } from '@shopify/flash-list';
+ import { useIsFetching } from '@tanstack/react-query';
+ import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
+@@ -171,6 +172,25 @@ const Location = () => {
+   const { showScrollToTop, scrollButtonAnimation, handleScroll, scrollToTop } =
+     useScrollToTop(listRef);
+ 
++  perfHooks.setSelectedMenu = setSelectedMenu;
++  perfHooks.selectedMenu = selectedMenu;
++  perfHooks.setDate = setSelectedDate;
++  perfHooks.filters = menuFilters;
++  perfHooks.tomorrow = () => {
++    const d = new Date(getTodayInCentralTime() + 'T12:00:00Z');
++    d.setUTCDate(d.getUTCDate() + 1);
++    return d.toISOString().split('T')[0];
++  };
++  perfHooks.firstFood = () => {
++    const item = flattenedItems.find((x) => x.type === 'food_item') as any;
++    return item ? { food: item.data.name, menu: selectedMenu, category: item.categoryId, location, date: selectedDate } : null;
++  };
++  useEffect(() => {
++    if (!loading && data) painted('loc.ready', { items: flattenedItems.length });
++    if (!loading && data) painted('menu.data');
++    if (!loading && data) painted('menu.ready');
++  }, [loading, data, flattenedItems.length]);
++
+   // Date change handler
+   const handleDateChange = (date: string) => {
+     setSelectedDate(date);
+diff --git a/apps/mobile/services/database/database.ts b/apps/mobile/services/database/database.ts
+index ddee1e8..5bb01e8 100644
+--- a/apps/mobile/services/database/database.ts
++++ b/apps/mobile/services/database/database.ts
+@@ -1,3 +1,4 @@
++import { mark } from '~/utils/perf';
+ import {
+   chunk,
+   fetchAllPages,
+@@ -187,6 +188,7 @@ export const syncCacheWithSupabase = async (
+   { force, syncedVersions, onVersionsChange, onCacheChange }: MenuSyncOptions,
+ ) => {
+   const [shared, remote] = await Promise.all([fetchSharedTables(), fetchMenuVersions()]);
++  mark('sync.fetched', { ok: true });
+ 
+   if (shared.location.length === 0) {
+     throw new Error('Supabase returned no locations');
+@@ -222,7 +224,9 @@ export const syncCacheWithSupabase = async (
+     versions = { ...versions, [date]: remote[date] };
+     onVersionsChange(versions);
+     await onCacheChange();
++    mark('sync.day', { date, foods: rows.food_item.length });
+   }
++  mark('sync.inserted', { days: plan.fetch.length });
+ };
+ 
+ /**
+diff --git a/apps/mobile/utils/queries.ts b/apps/mobile/utils/queries.ts
+index 11b2ffb..4cdbd0a 100644
+--- a/apps/mobile/utils/queries.ts
++++ b/apps/mobile/utils/queries.ts
+@@ -1,3 +1,4 @@
++import { mark, startReadStress } from '~/utils/perf';
+ import { decideSync, singleFlight } from '@ut-dining/core';
+ import { eq } from 'drizzle-orm';
+ import { type DrizzleDB, syncCacheWithSupabase } from '~/services/database/database';
+@@ -19,6 +20,9 @@ const rejectAfter = (ms: number) =>
+ 
+ const syncWithSupabase = singleFlight(async (db: DrizzleDB, { force, onCacheChange }: SyncRun) => {
+   const store = useDataSyncStore.getState();
++  mark('sync.start');
++  const stopReadStress = startReadStress(db);
++  try {
+   await Promise.race([
+     syncCacheWithSupabase(db, {
+       force,
+@@ -28,6 +32,10 @@ const syncWithSupabase = singleFlight(async (db: DrizzleDB, { force, onCacheChan
+     }),
+     rejectAfter(SYNC_DEADLINE_MS),
+   ]);
++  } finally {
++    stopReadStress();
++  }
++  mark('sync.end');
+   store.setLastSupabaseQueryTime(Date.now());
+ });
+ 
