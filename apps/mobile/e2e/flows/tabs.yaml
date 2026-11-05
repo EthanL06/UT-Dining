@@ -14,5 +14,5 @@ name: Every tab opens
 - takeScreenshot: notifications
 - tapOn: Home
 - extendedWaitUntil:
-    visible: J2 Dining
+    visible: 'J2 Dining(,.*)?'
     timeout: 5000

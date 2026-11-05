@@ -5,14 +5,14 @@ name: Switching meals and days changes the menu
 - runFlow: ../subflows/open-j2.yaml
 - tapOn: Breakfast
 - extendedWaitUntil:
-    visible: Maestro Breakfast Tacos
+    visible: 'Maestro Breakfast Tacos(,.*)?'
     timeout: 5000
 - tapOn: Lunch
 - extendedWaitUntil:
     notVisible: Maestro Breakfast Tacos
     timeout: 5000
-- assertVisible: Maestro Veggie Burger
-- assertNotVisible: Maestro Tomorrow Special
+- assertVisible: 'Maestro Veggie Burger(,.*)?'
+- assertNotVisible: 'Maestro Tomorrow Special(,.*)?'
 - tapOn:
     id: date-next-button
 - extendedWaitUntil:
@@ -21,7 +21,7 @@ name: Switching meals and days changes the menu
       text: Tomorrow
     timeout: 5000
 - extendedWaitUntil:
-    visible: Maestro Tomorrow Special
+    visible: 'Maestro Tomorrow Special(,.*)?'
     timeout: 10000
 - takeScreenshot: tomorrow-menu
 - tapOn:

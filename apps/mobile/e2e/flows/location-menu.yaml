@@ -6,18 +6,18 @@ tags:
 - runFlow: ../subflows/start.yaml
 - runFlow: ../subflows/open-j2.yaml
 - assertVisible: Today
-- assertVisible: Maestro Veggie Burger
-- assertVisible: Maestro Grilled Chicken
-- assertVisible: Maestro Greens
+- assertVisible: 'Maestro Veggie Burger(,.*)?'
+- assertVisible: 'Maestro Grilled Chicken(,.*)?'
+- assertVisible: 'Maestro Greens(,.*)?'
 - takeScreenshot: j2-menu
-- tapOn: Maestro Greens
-- assertNotVisible: Maestro Tofu Bowl
-- tapOn: Maestro Greens
+- tapOn: 'Maestro Greens(,.*)?'
+- assertNotVisible: 'Maestro Tofu Bowl(,.*)?'
+- tapOn: 'Maestro Greens(,.*)?'
 - scrollUntilVisible:
-    element: Maestro Tofu Bowl
+    element: 'Maestro Tofu Bowl(,.*)?'
     direction: DOWN
 - tapOn:
     id: back-button
 - extendedWaitUntil:
-    visible: J2 Dining
+    visible: 'J2 Dining(,.*)?'
     timeout: 5000

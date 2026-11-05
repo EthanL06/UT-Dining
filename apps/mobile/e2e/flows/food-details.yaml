@@ -3,7 +3,7 @@ name: A food item opens its nutrition details
 ---
 - runFlow: ../subflows/start.yaml
 - runFlow: ../subflows/open-j2.yaml
-- tapOn: Maestro Veggie Burger
+- tapOn: 'Maestro Veggie Burger(,.*)?'
 - extendedWaitUntil:
     visible: Nutrition Facts
     timeout: 10000
@@ -15,5 +15,5 @@ name: A food item opens its nutrition details
 - tapOn:
     id: back-button
 - extendedWaitUntil:
-    visible: Maestro Grill
+    visible: 'Maestro Grill(,.*)?'
     timeout: 5000

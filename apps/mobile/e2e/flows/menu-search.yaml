@@ -7,10 +7,10 @@ name: Search filters the menu by food name
     id: menu-search-input
 - inputText: tofu
 - extendedWaitUntil:
-    visible: Maestro Tofu Bowl
+    visible: 'Maestro Tofu Bowl(,.*)?'
     timeout: 5000
-- assertNotVisible: Maestro Veggie Burger
-- assertNotVisible: Maestro Grill
+- assertNotVisible: 'Maestro Veggie Burger(,.*)?'
+- assertNotVisible: 'Maestro Grill(,.*)?'
 - takeScreenshot: search-tofu
 - eraseText: 10
 - inputText: zzzz
@@ -20,5 +20,5 @@ name: Search filters the menu by food name
 - assertVisible: Try a different search term.
 - tapOn: Cancel
 - extendedWaitUntil:
-    visible: Maestro Veggie Burger
+    visible: 'Maestro Veggie Burger(,.*)?'
     timeout: 5000

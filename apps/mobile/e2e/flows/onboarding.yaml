@@ -18,23 +18,25 @@ tags:
       - tapOn:
           id: onboarding-next-button
       - waitForAnimationToEnd
-- assertVisible: Location Services
-- assertVisible: Push Notifications
+- runFlow: ../subflows/dismiss-alerts.yaml
+- assertVisible: 'Location Services(,.*)?'
+- assertVisible: 'Push Notifications(,.*)?'
 - tapOn:
     id: onboarding-next-button
 - extendedWaitUntil:
     visible: You're all set.*
     timeout: 5000
 - tapOn: Finish
+- runFlow: ../subflows/dismiss-alerts.yaml
 - extendedWaitUntil:
-    visible: J2 Dining
+    visible: 'J2 Dining(,.*)?'
     timeout: 60000
 - assertNotVisible:
     id: onboarding-next-button
 - takeScreenshot: home
 - runFlow: ../subflows/relaunch.yaml
 - extendedWaitUntil:
-    visible: J2 Dining
+    visible: 'J2 Dining(,.*)?'
     timeout: 60000
 - assertNotVisible:
     id: onboarding-next-button
