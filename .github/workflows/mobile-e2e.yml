@@ -49,7 +49,7 @@ jobs:
 
       - name: Restore the built app
         id: app-cache
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         with:
           path: .context/app
           key: ios-release-app-${{ hashFiles('apps/mobile/**', '!apps/mobile/e2e/**', 'packages/core/**', 'pnpm-lock.yaml') }}
@@ -79,6 +79,13 @@ jobs:
           tail -5 build.log
           mkdir -p ../../../.context/app
           cp -R build/Build/Products/Release-iphonesimulator/*.app ../../../.context/app/
+
+      - name: Save the built app
+        if: steps.app-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: .context/app
+          key: ${{ steps.app-cache.outputs.cache-primary-key }}
 
       - name: Create a simulator and install the app
         run: |
