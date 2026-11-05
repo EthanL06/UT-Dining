@@ -97,17 +97,6 @@ jobs:
           curl -fsSL https://get.maestro.mobile.dev | bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
 
-      - name: Capture the first launch
-        run: |
-          mkdir -p .context/maestro/first-launch
-          xcrun simctl launch "$SIM" com.ethanl06.ut-dining.dev
-          sleep 30
-          xcrun simctl io "$SIM" screenshot .context/maestro/first-launch/screen.png
-          maestro --device "$SIM" hierarchy > .context/maestro/first-launch/hierarchy.json || true
-          xcrun simctl terminate "$SIM" com.ethanl06.ut-dining.dev || true
-          xcrun simctl spawn "$SIM" defaults write com.apple.Accessibility AccessibilityEnabled -bool true
-          xcrun simctl spawn "$SIM" defaults write com.apple.Accessibility ApplicationAccessibilityEnabled -bool true
-
       - name: Run Maestro flows
         run: ./scripts/qa/mobile-e2e.sh --sim "$SIM" --release --fixture-server
 
