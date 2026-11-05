@@ -26,11 +26,15 @@ name: Favorites can be added from a food and removed with a swipe
 - swipe:
     from: 'Maestro Grilled Chicken(,.*)?'
     direction: LEFT
-- tapOn:
-    id: location-favorites-button
-- extendedWaitUntil:
-    visible: Your Favorites
-    timeout: 5000
+- repeat:
+    while:
+      notVisible: Your Favorites
+    times: 3
+    commands:
+      - tapOn:
+          id: location-favorites-button
+      - waitForAnimationToEnd
+- assertVisible: Your Favorites
 - assertVisible: 'Maestro Veggie Burger(,.*)?'
 - assertVisible: 'Maestro Grilled Chicken(,.*)?'
 - takeScreenshot: favorites
