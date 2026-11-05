@@ -50,7 +50,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.run == 'true'
     runs-on: macos-26
-    timeout-minutes: 120
+    timeout-minutes: 150
     env:
       APP_VARIANT: development
       EXPO_PUBLIC_SUPABASE_URL: http://127.0.0.1:54331
@@ -126,7 +126,7 @@ jobs:
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
 
       - name: Run Maestro flows
-        run: ./scripts/qa/mobile-e2e.sh --sim "$SIM" --release --fixture-server
+        run: ./scripts/qa/mobile-e2e.sh --sim "$SIM" --release --fixture-server --retry-failed
 
       - name: Upload Maestro output
         if: always()

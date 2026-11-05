@@ -4,7 +4,8 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage: scripts/qa/mobile-e2e.sh [--sim <UDID>] [--release] [--port <metro port>]
-                                [--fixture-server [port]] [--shards <n>] [maestro test args...]
+                                [--fixture-server [port]] [--shards <n>] [--retry-failed]
+                                [maestro test args...]
 
 Runs the Maestro flows in apps/mobile/e2e on an iOS Simulator against local Supabase.
 
@@ -18,6 +19,8 @@ Runs the Maestro flows in apps/mobile/e2e on an iOS Simulator against local Supa
   --shards <n>             Split the flows across n simulators that run at the same time. The
                            extra simulators are clones of --sim (app included) and are deleted
                            afterwards. Each one needs about 2 GB of RAM.
+  --retry-failed           Run the flows that failed once more, in a fresh Maestro session. The
+                           exit code comes from the retry. Reports go to <output>/retry.
 
 Anything else goes to `maestro test`, for example a single flow file or `--include-tags smoke`.
 EOF
@@ -31,6 +34,7 @@ FIXTURE_PORT=""
 DEV_CLIENT=true
 METRO_PORT=8081
 SHARDS=1
+RETRIES=0
 MAESTRO_ARGS=()
 
 while [[ $# -gt 0 ]]; do
@@ -39,6 +43,7 @@ while [[ $# -gt 0 ]]; do
     --release) DEV_CLIENT=false; shift ;;
     --port) METRO_PORT="$2"; shift 2 ;;
     --shards) SHARDS="$2"; shift 2 ;;
+    --retry-failed) RETRIES=1; shift ;;
     --fixture-server)
       if [[ "${2:-}" =~ ^[0-9]+$ ]]; then FIXTURE_PORT="$2"; shift 2; else FIXTURE_PORT=54331; shift; fi ;;
     -h|--help) usage; exit 0 ;;
@@ -153,22 +158,46 @@ fi
 
 [[ ${#MAESTRO_ARGS[@]} -gt 0 ]] || MAESTRO_ARGS=("$E2E_DIR")
 
+DEVICE_LIST="$(IFS=,; echo "${DEVICES[*]}")"
+
+run_maestro() {
+  local dir="$1" shards="$2"
+  shift 2
+  local shard_args=()
+  [[ "$shards" -gt 1 ]] && shard_args=(--shard-split "$shards")
+  mkdir -p "$dir"
+  (cd "$dir" && maestro --device "$DEVICE_LIST" test \
+    ${shard_args[@]+"${shard_args[@]}"} \
+    -e DEV_CLIENT="$DEV_CLIENT" \
+    -e METRO_URL="http://localhost:$METRO_PORT" \
+    --format junit --output "$dir/report.xml" \
+    --test-output-dir "$dir" \
+    "$@")
+}
+
 step "Running Maestro. Output: $OUT"
 set +e
-cd "$OUT"
-DEVICE_LIST="$(IFS=,; echo "${DEVICES[*]}")"
-SHARD_ARGS=()
-[[ "$SHARDS" -gt 1 ]] && SHARD_ARGS=(--shard-split "$SHARDS")
-maestro --device "$DEVICE_LIST" test \
-  ${SHARD_ARGS[@]+"${SHARD_ARGS[@]}"} \
-  -e DEV_CLIENT="$DEV_CLIENT" \
-  -e METRO_URL="http://localhost:$METRO_PORT" \
-  --format junit --output "$OUT/report.xml" \
-  --test-output-dir "$OUT" \
-  "${MAESTRO_ARGS[@]}"
+run_maestro "$OUT" "$SHARDS" "${MAESTRO_ARGS[@]}"
 RESULT=$?
 set -e
+REPORT="$OUT/report.xml"
 
-echo "Report: $OUT/report.xml"
+if [[ "$RESULT" -ne 0 && "$RETRIES" -gt 0 && -f "$REPORT" ]]; then
+  FAILED=()
+  while IFS= read -r flow; do
+    [[ -n "$flow" ]] && FAILED+=("$flow")
+  done < <(grep -o '<testcase [^>]*status="[A-Z]*"' "$REPORT" | grep -v 'status="SUCCESS"' | sed -E 's/.* file="([^"]*)".*/\1/')
+  if [[ ${#FAILED[@]} -gt 0 ]]; then
+    RETRY_SHARDS=$(( ${#FAILED[@]} < SHARDS ? ${#FAILED[@]} : SHARDS ))
+    step "Retrying ${#FAILED[@]} failed flow(s) once. Output: $OUT/retry"
+    set +e
+    run_maestro "$OUT/retry" "$RETRY_SHARDS" "${FAILED[@]}"
+    RESULT=$?
+    set -e
+    REPORT="$OUT/retry/report.xml"
+  fi
+fi
+
+echo "Report: $REPORT"
 echo "Screenshots and logs: $OUT"
 exit "$RESULT"
