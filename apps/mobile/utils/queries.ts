@@ -1,21 +1,24 @@
-import { decideSync, SYNC_INTERVAL_MS, singleFlight } from '@ut-dining/core';
+import { decideSync, singleFlight } from '@ut-dining/core';
 import { eq } from 'drizzle-orm';
-import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
-import * as Network from 'expo-network';
-import { insertDataIntoSQLiteDB } from '~/services/database/database';
+import { type DrizzleDB, insertDataIntoSQLiteDB } from '~/services/database/database';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import * as schema from '../services/database/schema';
 
-const HOUR_IN_MS = 60 * 60 * 1000;
+const SYNC_DEADLINE_MS = 120_000;
 
-const syncWithSupabase = singleFlight(async (drizzleDb: ExpoSQLiteDatabase<typeof schema>) => {
-  await insertDataIntoSQLiteDB(drizzleDb);
+const rejectAfter = (ms: number) =>
+  new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error('Sync timed out')), ms);
+  });
+
+const syncWithSupabase = singleFlight(async (db: DrizzleDB) => {
+  await Promise.race([insertDataIntoSQLiteDB(db), rejectAfter(SYNC_DEADLINE_MS)]);
   useDataSyncStore.getState().setLastSupabaseQueryTime(Date.now());
 });
 
-const readCachedLocations = async (drizzleDb: ExpoSQLiteDatabase<typeof schema>) => {
+export const readCachedMenuData = async (db: DrizzleDB) => {
   const [data, types] = await Promise.all([
-    drizzleDb
+    db
       .select()
       .from(schema.location)
       .innerJoin(schema.location_type, eq(schema.location.type_id, schema.location_type.id))
@@ -26,47 +29,21 @@ const readCachedLocations = async (drizzleDb: ExpoSQLiteDatabase<typeof schema>)
           type: location_type.name,
         })),
       ),
-    drizzleDb.select().from(schema.location_type).orderBy(schema.location_type.display_order),
+    db.select().from(schema.location_type).orderBy(schema.location_type.display_order),
   ]);
 
   return { locations: data, locationTypes: types };
 };
 
-export const fetchMenuData = async (
-  drizzleDb: ExpoSQLiteDatabase<typeof schema>,
-  forceSync: boolean = false,
-) => {
-  const networkState = await Network.getNetworkStateAsync();
+export const syncMenuData = async (db: DrizzleDB, { force = false } = {}): Promise<boolean> => {
   const decision = decideSync({
-    isConnected: Boolean(networkState.isConnected),
-    force: forceSync,
+    isConnected: true,
+    force,
     lastSyncedAt: useDataSyncStore.getState().lastSupabaseQueryTime,
     now: Date.now(),
   });
+  if (decision.kind !== 'sync') return false;
 
-  switch (decision.kind) {
-    case 'offline':
-      console.log('📱 Offline mode: using cached SQLite data');
-      break;
-    case 'fresh': {
-      const hoursSinceSync = decision.ageMs / HOUR_IN_MS;
-      const hoursUntilNextSync = (SYNC_INTERVAL_MS - decision.ageMs) / HOUR_IN_MS;
-      console.log(
-        `ℹ️  Using cached data (${hoursSinceSync.toFixed(1)}h since last sync, next sync in ${hoursUntilNextSync.toFixed(1)}h)`,
-      );
-      break;
-    }
-    case 'sync':
-      try {
-        console.log(`🔄 Syncing with Supabase (${decision.reason})...`);
-        await syncWithSupabase(drizzleDb);
-        console.log('✅ Successfully synced with Supabase and updated sync timestamp');
-      } catch (error) {
-        if (forceSync) throw error;
-        console.warn('Failed to sync with remote database, using cached data:', error);
-      }
-      break;
-  }
-
-  return readCachedLocations(drizzleDb);
+  await syncWithSupabase(db);
+  return true;
 };

@@ -28,6 +28,7 @@ import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 import { Container } from '~/components/Container';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationPermissions } from '~/hooks/useLocationPermissions';
+import { forceMenuSync } from '~/hooks/useMenuSync';
 import { useNotificationPermissions } from '~/hooks/useNotificationPermissions';
 import { getAppInformation } from '~/services/database/database';
 import type { AppInformation } from '~/services/database/schema';
@@ -37,7 +38,7 @@ import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getColor } from '~/utils/colors';
-import { fetchMenuData } from '~/utils/queries';
+import { formatTimeSinceSync } from '~/utils/time';
 import { cn } from '~/utils/utils';
 
 interface SettingItemProps {
@@ -409,8 +410,7 @@ const SyncDataSection = ({ isDarkMode }: { isDarkMode: boolean }): React.JSX.Ele
     setSyncStatus('syncing');
 
     try {
-      await fetchMenuData(db, true);
-      await queryClient.invalidateQueries({ queryKey: ['menuData'] });
+      await forceMenuSync(db, queryClient);
       setCurrentTime(Date.now());
       setSyncStatus('idle');
     } catch (error) {
@@ -479,27 +479,6 @@ const VersionInfo = ({ isDarkMode }: VersionInfoProps): React.JSX.Element => {
       )}
     </View>
   );
-};
-
-const formatTimeSinceSync = (timeSinceSync: number): string => {
-  if (timeSinceSync === Infinity) {
-    return 'Never synced';
-  }
-
-  const seconds = Math.floor(timeSinceSync / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  if (days > 0) {
-    return `${days} day${days === 1 ? '' : 's'} ago`;
-  } else if (hours > 0) {
-    return `${hours} hour${hours === 1 ? '' : 's'} ago`;
-  } else if (minutes > 0) {
-    return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
-  } else {
-    return 'Just now';
-  }
 };
 
 const SettingsPage = () => {

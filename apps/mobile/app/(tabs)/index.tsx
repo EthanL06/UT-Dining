@@ -1,11 +1,11 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { onlineManager, useQuery, useQueryClient } from '@tanstack/react-query';
 import { eq } from 'drizzle-orm';
-import { drizzle, type ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
 import * as Network from 'expo-network';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { type SQLiteDatabase, useSQLiteContext } from 'expo-sqlite';
+import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -19,12 +19,16 @@ import { Notifier } from 'react-native-notifier';
 import Alert from '~/components/Alert';
 import { Container } from '~/components/Container';
 import OnboardingScreen from '~/components/onboarding/OnboardingScreen';
+import { forceMenuSync, useMenuSync } from '~/hooks/useMenuSync';
+import type { DrizzleDB } from '~/services/database/database';
+import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
 import { getTodayInCentralTime } from '~/utils/date';
 import { getLocationOpenStatus } from '~/utils/locationStatus';
-import { fetchMenuData } from '~/utils/queries';
+import { readCachedMenuData } from '~/utils/queries';
+import { formatTimeSinceSync } from '~/utils/time';
 import { cn } from '~/utils/utils';
 import * as schema from '../../services/database/schema';
 import HomeHeader from '../_components/HomeHeader';
@@ -92,10 +96,6 @@ const filterAndSortLocations = (
   return [...openLocations, ...closedLocations];
 };
 
-export type DrizzleDB = ExpoSQLiteDatabase<typeof schema> & {
-  $client: SQLiteDatabase;
-};
-
 export default function Home() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
@@ -119,15 +119,14 @@ export default function Home() {
   }, []);
 
   // Use TanStack Query for menu/location data
-  const { data, isLoading, isError, isFetching } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['menuData'],
-    queryFn: () => fetchMenuData(drizzleDb),
-    staleTime: 3 * 60 * 60 * 1000, // 3 hours
-    refetchInterval: 30 * 60 * 1000, // 15 minutes polling while in app
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    retry: false, // Don't retry on failure - just use cached data
+    queryFn: () => readCachedMenuData(drizzleDb),
+    staleTime: Infinity,
+    retry: false,
   });
+  const menuSync = useMenuSync(drizzleDb);
+  const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
 
   // Handle refresh
   const handleRefresh = async () => {
@@ -152,12 +151,7 @@ export default function Home() {
       });
 
       // Force sync with Supabase and then refetch the query
-      await Promise.race([
-        fetchMenuData(drizzleDb, true).then(() =>
-          queryClient.invalidateQueries({ queryKey: ['menuData'] }),
-        ),
-        timeoutPromise,
-      ]);
+      await Promise.race([forceMenuSync(drizzleDb, queryClient), timeoutPromise]);
 
       setRefreshKey((prev) => prev + 1);
 
@@ -194,12 +188,6 @@ export default function Home() {
   useEffect(() => {
     SplashScreen.hide();
   }, []);
-
-  useEffect(() => {
-    if (layoutLoaded && !isLoading && !isFetching) {
-      console.log('✅ Splash screen hidden');
-    }
-  }, [layoutLoaded, isLoading, isFetching]);
 
   if (isLoading) {
     return (
@@ -250,6 +238,7 @@ export default function Home() {
 
   const locations = data?.locations || [];
   const locationTypes = data?.locationTypes || [];
+  const syncUnavailable = menuSync.isError || menuSync.fetchStatus === 'paused';
 
   const filteredLocations = filterAndSortLocations(
     locations,
@@ -274,6 +263,27 @@ export default function Home() {
             <Text style={{ color: isDarkMode ? '#fff' : '#000' }}>
               Failed to load data. Please try again.
             </Text>
+          </View>
+        ) : locations.length === 0 && menuSync.isFetching ? (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator size="small" />
+          </View>
+        ) : locations.length === 0 && syncUnavailable ? (
+          <View className="flex-1 items-center justify-center px-8">
+            <Text
+              className={cn('mb-1 font-bold text-lg', isDarkMode ? 'text-white' : 'text-ut-grey')}
+            >
+              Can't load menus yet
+            </Text>
+            <Text className={cn('mb-4 text-center', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}>
+              UT Dining needs a connection the first time you open it.
+            </Text>
+            <TouchableOpacity
+              onPress={() => menuSync.refetch()}
+              className="rounded-full bg-ut-burnt-orange px-4 py-2"
+            >
+              <Text className="font-bold text-white">Try again</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <FlatList
@@ -301,12 +311,23 @@ export default function Home() {
             numColumns={1}
             showsVerticalScrollIndicator={false}
             ListHeaderComponent={
-              <HomeHeader
-                currentTime={currentTime}
-                selectedFilter={selectedFilter}
-                setSelectedFilter={setSelectedFilter}
-                locationTypes={locationTypes}
-              />
+              <>
+                <HomeHeader
+                  currentTime={currentTime}
+                  selectedFilter={selectedFilter}
+                  setSelectedFilter={setSelectedFilter}
+                  locationTypes={locationTypes}
+                />
+                {syncUnavailable && (
+                  <Text
+                    className={cn('mt-3 text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}
+                  >
+                    {onlineManager.isOnline() ? "Couldn't update" : 'Offline'}
+                    {lastSyncedAt !== null &&
+                      ` · menus updated ${formatTimeSinceSync(Date.now() - lastSyncedAt).toLowerCase()}`}
+                  </Text>
+                )}
+              </>
             }
           />
         )}

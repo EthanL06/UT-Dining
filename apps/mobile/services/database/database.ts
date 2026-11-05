@@ -1,41 +1,17 @@
 import { chunk, fetchAllPages, mapConcurrent } from '@ut-dining/core';
 import { eq, sql } from 'drizzle-orm';
 import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
+import type { SQLiteBindValue, SQLiteDatabase } from 'expo-sqlite';
 import { getTodayInCentralTime } from '~/utils/date';
 import { supabase } from '~/utils/supabase';
 import * as schema from './schema';
 import { allergens, food_item, location, menu, menu_category, nutrition } from './schema';
 
-/**
- * Splits an array into chunks of specified size
- */
-function chunkArray<T>(array: T[], chunkSize: number = 1000): T[][] {
-  const chunks: T[][] = [];
-  for (let i = 0; i < array.length; i += chunkSize) {
-    chunks.push(array.slice(i, i + chunkSize));
-  }
-  return chunks;
-}
-
-type CacheWriter = Pick<ExpoSQLiteDatabase<typeof schema>, 'insert' | 'delete'>;
-
-/**
- * Inserts data into a SQLite table in chunks to avoid "too many SQL variables" error
- * SQLite has a limit of 999 variables per SQL statement
- */
-function insertInChunks<T>(
-  db: CacheWriter,
-  // biome-ignore lint/suspicious/noExplicitAny: Drizzle table types are complex
-  table: any,
-  data: T[],
-  chunkSize: number = 100,
-) {
-  for (const chunk of chunkArray(data, chunkSize)) {
-    db.insert(table).values(chunk).run();
-  }
-}
-
 // Type mapping for table names to their corresponding schema types
+export type DrizzleDB = ExpoSQLiteDatabase<typeof schema> & {
+  $client: SQLiteDatabase;
+};
+
 type TableTypeMap = {
   food_item: schema.FoodItem;
   nutrition: schema.Nutrition;
@@ -292,68 +268,70 @@ const querySupabase = async (date?: string) => {
 
 type SupabaseSnapshot = NonNullable<Awaited<ReturnType<typeof querySupabase>>>;
 
-const replaceCachedData = (db: ExpoSQLiteDatabase<typeof schema>, data: SupabaseSnapshot) => {
-  db.transaction((tx) => {
-    for (const table of [
-      location,
-      schema.location_type,
-      menu,
-      menu_category,
-      food_item,
-      nutrition,
-      allergens,
-      schema.app_information,
-      schema.notifications,
-      schema.notification_types,
-    ]) {
-      tx.delete(table).run();
-    }
+function* cacheReplacementStatements(db: DrizzleDB, data: SupabaseSnapshot) {
+  for (const table of [
+    schema.notifications,
+    schema.notification_types,
+    food_item,
+    nutrition,
+    allergens,
+    menu_category,
+    menu,
+    location,
+    schema.location_type,
+    schema.app_information,
+  ]) {
+    yield db.delete(table).toSQL();
+  }
 
-    insertInChunks(tx, location, data.location as schema.Location[], 45);
-    insertInChunks(tx, schema.location_type, data.location_type as schema.LocationType[], 150);
-    insertInChunks(tx, menu, data.menu as schema.Menu[], 150);
-    insertInChunks(tx, menu_category, data.menu_category as schema.MenuCategory[], 200);
-    insertInChunks(tx, food_item, data.food_item as schema.FoodItem[], 150);
-    insertInChunks(tx, nutrition, data.nutrition as schema.Nutrition[], 60);
-    insertInChunks(tx, allergens, data.allergens as schema.Allergens[], 60);
-    insertInChunks(
-      tx,
-      schema.app_information,
-      data.app_information as (typeof schema.app_information.$inferInsert)[],
-      150,
-    );
-    insertInChunks(
-      tx,
-      schema.notifications,
-      (data.notifications ?? []).map((notification) => ({
-        ...notification,
-        sent_at: notification.scheduled_at || notification.created_at,
-      })) as schema.Notification[],
-      150,
-    );
-    insertInChunks(tx, schema.notification_types, data.notification_types ?? [], 200);
-  });
-};
+  const notifications = (data.notifications ?? []).map((notification) => ({
+    ...notification,
+    sent_at: notification.scheduled_at || notification.created_at,
+  }));
+
+  // biome-ignore lint/suspicious/noExplicitAny: Drizzle table types are complex
+  const inserts: [any, Record<string, unknown>[], number][] = [
+    [schema.location_type, data.location_type, 150],
+    [location, data.location, 45],
+    [menu, data.menu, 150],
+    [menu_category, data.menu_category, 200],
+    [nutrition, data.nutrition, 60],
+    [allergens, data.allergens, 60],
+    [food_item, data.food_item, 150],
+    [schema.app_information, data.app_information, 150],
+    [schema.notification_types, data.notification_types ?? [], 200],
+    [schema.notifications, notifications, 150],
+  ];
+
+  for (const [table, rows, chunkSize] of inserts) {
+    for (const rowChunk of chunk(rows, chunkSize)) {
+      yield db.insert(table).values(rowChunk).toSQL();
+    }
+  }
+}
 
 /**
- * Inserts Supabase data into local SQLite database
+ * Replaces the local cache with Supabase data in one transaction.
+ * Rejects without changing the cache if a request or a write fails.
  *
  * @param db - The Expo SQLite database instance.
  * @param date - Optional date string in YYYY-MM-DD format. Defaults to today in Central Time.
  */
-export const insertDataIntoSQLiteDB = async (
-  db: ExpoSQLiteDatabase<typeof schema>,
-  date?: string,
-) => {
-  console.log('📡 Fetching fresh data from Supabase...');
+export const insertDataIntoSQLiteDB = async (db: DrizzleDB, date?: string) => {
   const data = await querySupabase(date);
 
   if (!data) {
     throw new Error('Failed to fetch data from Supabase');
   }
+  if (data.location.length === 0) {
+    throw new Error('Supabase returned no locations');
+  }
 
-  replaceCachedData(db, data);
-  console.log('✅ Data added to database');
+  await db.$client.withExclusiveTransactionAsync(async (tx) => {
+    for (const { sql: statement, params } of cacheReplacementStatements(db, data)) {
+      await tx.runAsync(statement, params as SQLiteBindValue[]);
+    }
+  });
 };
 
 /**
