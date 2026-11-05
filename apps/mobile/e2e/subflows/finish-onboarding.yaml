@@ -16,5 +16,5 @@ appId: com.ethanl06.ut-dining.dev
 - tapOn: Finish
 - runFlow: dismiss-alerts.yaml
 - extendedWaitUntil:
-    visible: 'J2 Dining(,.*)?'
+    visible: '.*Your planned meals.*'
     timeout: 60000

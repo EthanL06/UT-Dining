@@ -9,7 +9,7 @@ name: Switching meals and days changes the menu
     timeout: 5000
 - tapOn: Lunch
 - extendedWaitUntil:
-    notVisible: Maestro Breakfast Tacos
+    notVisible: 'Maestro Breakfast Tacos(,.*)?'
     timeout: 5000
 - assertVisible: 'Maestro Veggie Burger(,.*)?'
 - assertNotVisible: 'Maestro Tomorrow Special(,.*)?'
@@ -32,5 +32,5 @@ name: Switching meals and days changes the menu
       text: Today
     timeout: 5000
 - extendedWaitUntil:
-    notVisible: Maestro Tomorrow Special
+    notVisible: 'Maestro Tomorrow Special(,.*)?'
     timeout: 10000

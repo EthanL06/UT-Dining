@@ -3,6 +3,10 @@ name: A food item opens its nutrition details
 ---
 - runFlow: ../subflows/start.yaml
 - runFlow: ../subflows/open-j2.yaml
+- scrollUntilVisible:
+    element: 'Maestro Veggie Burger(,.*)?'
+    direction: DOWN
+    centerElement: true
 - tapOn: 'Maestro Veggie Burger(,.*)?'
 - extendedWaitUntil:
     visible: Nutrition Facts

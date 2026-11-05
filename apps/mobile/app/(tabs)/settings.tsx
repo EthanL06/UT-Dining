@@ -71,6 +71,7 @@ const SettingItem = ({
 }: SettingItemProps) => (
   <TouchableOpacity
     testID={hasToggle ? undefined : testID}
+    accessible={!hasToggle}
     className={cn(
       'flex-row items-center justify-between border-b py-3',
       isDarkMode ? 'border-neutral-800' : 'border-gray-100',
@@ -106,6 +107,7 @@ const SettingItem = ({
     {hasToggle && (
       <Switch
         testID={testID}
+        accessibilityLabel={title}
         value={toggleValue}
         onValueChange={onToggle}
         trackColor={{

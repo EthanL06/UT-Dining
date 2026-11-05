@@ -29,14 +29,14 @@ tags:
 - tapOn: Finish
 - runFlow: ../subflows/dismiss-alerts.yaml
 - extendedWaitUntil:
-    visible: 'J2 Dining(,.*)?'
+    visible: '.*Your planned meals.*'
     timeout: 60000
 - assertNotVisible:
     id: onboarding-next-button
 - takeScreenshot: home
 - runFlow: ../subflows/relaunch.yaml
 - extendedWaitUntil:
-    visible: 'J2 Dining(,.*)?'
+    visible: '.*Your planned meals.*'
     timeout: 60000
 - assertNotVisible:
     id: onboarding-next-button
