@@ -2,16 +2,9 @@ name: Mobile E2E
 
 on:
   pull_request:
-    paths:
-      - apps/mobile/**
-      - packages/core/**
-      - scripts/qa/**
-      - patches/**
-      - pnpm-lock.yaml
-      - pnpm-workspace.yaml
-      - .github/workflows/mobile-e2e.yml
+    branches: [main, staging]
   push:
-    branches: [staging, claude/project-thread-xehbd4]
+    branches: [claude/project-thread-xehbd4]
     paths:
       - apps/mobile/**
       - packages/core/**
@@ -27,8 +20,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Decide whether to run
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+    steps:
+      - uses: actions/checkout@v7
+        if: github.event_name == 'pull_request' && github.base_ref != 'main'
+        with:
+          fetch-depth: 0
+      - id: decide
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [[ "$EVENT" != pull_request || "$BASE_REF" == main ]]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only "$BASE_SHA...$HEAD_SHA" | grep -qE '^(apps/mobile/|packages/core/|scripts/qa/|patches/|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|\.github/workflows/mobile-e2e\.yml$)'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
   ios:
     name: Maestro on iOS
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
     runs-on: macos-26
     timeout-minutes: 120
     env:
