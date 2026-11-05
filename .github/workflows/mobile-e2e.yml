@@ -3,16 +3,6 @@ name: Mobile E2E
 on:
   pull_request:
     branches: [main, staging]
-  push:
-    branches: [claude/project-thread-xehbd4]
-    paths:
-      - apps/mobile/**
-      - packages/core/**
-      - scripts/qa/**
-      - patches/**
-      - pnpm-lock.yaml
-      - pnpm-workspace.yaml
-      - .github/workflows/mobile-e2e.yml
   workflow_dispatch:
 
 concurrency:
