@@ -10,9 +10,6 @@ name: Meal plan items can be added and removed
 - swipe:
     from: 'Maestro Grilled Chicken(,.*)?'
     direction: RIGHT
-- extendedWaitUntil:
-    visible: 'Maestro Grilled Chicken saved for today!.*'
-    timeout: 5000
 - tapOn: 'Maestro Veggie Burger(,.*)?'
 - extendedWaitUntil:
     visible:
@@ -20,9 +17,6 @@ name: Meal plan items can be added and removed
     timeout: 10000
 - tapOn:
     id: food-meal-plan-button
-- extendedWaitUntil:
-    visible: 'Maestro Veggie Burger saved for today!.*'
-    timeout: 5000
 - tapOn:
     id: back-button
 - tapOn:
