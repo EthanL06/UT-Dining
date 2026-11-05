@@ -6,7 +6,7 @@ name: Favorites can be added from a food and removed with a swipe
 - scrollUntilVisible:
     element: 'Maestro Veggie Burger(,.*)?'
     direction: DOWN
-    centerElement: true
+    visibilityPercentage: 100
 - tapOn: 'Maestro Veggie Burger(,.*)?'
 - extendedWaitUntil:
     visible:

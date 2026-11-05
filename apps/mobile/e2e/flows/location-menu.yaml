@@ -19,5 +19,5 @@ tags:
 - tapOn:
     id: back-button
 - extendedWaitUntil:
-    visible: '.*Your planned meals.*'
+    visible: 'J2 Dining(,.*)?'
     timeout: 5000

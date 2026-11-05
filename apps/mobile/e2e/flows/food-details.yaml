@@ -6,7 +6,7 @@ name: A food item opens its nutrition details
 - scrollUntilVisible:
     element: 'Maestro Veggie Burger(,.*)?'
     direction: DOWN
-    centerElement: true
+    visibilityPercentage: 100
 - tapOn: 'Maestro Veggie Burger(,.*)?'
 - extendedWaitUntil:
     visible: Nutrition Facts

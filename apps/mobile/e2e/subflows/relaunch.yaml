@@ -14,6 +14,8 @@ env:
 - extendedWaitUntil:
     visible: '.*Your planned meals.*|Enjoying.*'
     timeout: 60000
-- waitForAnimationToEnd:
-    timeout: 5000
+- extendedWaitUntil:
+    visible: Enjoying.*
+    timeout: 10000
+    optional: true
 - runFlow: dismiss-alerts.yaml

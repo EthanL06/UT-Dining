@@ -6,7 +6,7 @@ name: Meal plan items can be added and removed
 - scrollUntilVisible:
     element: 'Maestro Veggie Burger(,.*)?'
     direction: DOWN
-    centerElement: true
+    visibilityPercentage: 100
 - swipe:
     from: 'Maestro Grilled Chicken(,.*)?'
     direction: RIGHT
