@@ -35,6 +35,7 @@ jobs:
       APP_VARIANT: development
       EXPO_PUBLIC_SUPABASE_URL: http://127.0.0.1:54331
       EXPO_PUBLIC_SUPABASE_ANON_KEY: fixture
+      MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000
     steps:
       - uses: actions/checkout@v7
 
