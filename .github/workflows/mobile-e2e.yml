@@ -41,11 +41,20 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Restore the built app
+        id: app-cache
+        uses: actions/cache@v6
+        with:
+          path: .context/app
+          key: ios-release-app-${{ hashFiles('apps/mobile/**', '!apps/mobile/e2e/**', 'packages/core/**', 'pnpm-lock.yaml') }}
+
       - name: Generate the iOS project
+        if: steps.app-cache.outputs.cache-hit != 'true'
         working-directory: apps/mobile
         run: npx expo prebuild --platform ios
 
       - name: Build a release simulator app
+        if: steps.app-cache.outputs.cache-hit != 'true'
         working-directory: apps/mobile/ios
         run: |
           WORKSPACE="$(ls -d *.xcworkspace | head -1)"
@@ -62,23 +71,36 @@ jobs:
               exit 1
             }
           tail -5 build.log
+          mkdir -p ../../../.context/app
+          cp -R build/Build/Products/Release-iphonesimulator/*.app ../../../.context/app/
 
       - name: Create a simulator and install the app
         run: |
           RUNTIME_JSON="$(xcrun simctl list runtimes -j | jq '[.runtimes[] | select(.platform == "iOS" and .isAvailable)] | last')"
           RUNTIME="$(jq -r '.identifier' <<<"$RUNTIME_JSON")"
-          DEVICE_TYPE="$(jq -r '[.supportedDeviceTypes[] | select(.name | test("^iPhone [0-9]+$"))] | last | .identifier' <<<"$RUNTIME_JSON")"
+          DEVICE_TYPE="$(jq -r '[.supportedDeviceTypes[] | select(.name | test("^iPhone [0-9]+$"))] | sort_by(.name | ltrimstr("iPhone ") | tonumber) | last | .identifier' <<<"$RUNTIME_JSON")"
           echo "Runtime $RUNTIME, device type $DEVICE_TYPE"
           SIM="$(xcrun simctl create maestro "$DEVICE_TYPE" "$RUNTIME")"
           xcrun simctl boot "$SIM"
           xcrun simctl bootstatus "$SIM" -b
-          xcrun simctl install "$SIM" apps/mobile/ios/build/Build/Products/Release-iphonesimulator/*.app
+          xcrun simctl install "$SIM" .context/app/*.app
           echo "SIM=$SIM" >> "$GITHUB_ENV"
 
       - name: Install Maestro
         run: |
           curl -fsSL https://get.maestro.mobile.dev | bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Capture the first launch
+        run: |
+          mkdir -p .context/maestro/first-launch
+          xcrun simctl launch "$SIM" com.ethanl06.ut-dining.dev
+          sleep 30
+          xcrun simctl io "$SIM" screenshot .context/maestro/first-launch/screen.png
+          maestro --device "$SIM" hierarchy > .context/maestro/first-launch/hierarchy.json || true
+          xcrun simctl terminate "$SIM" com.ethanl06.ut-dining.dev || true
+          xcrun simctl spawn "$SIM" defaults write com.apple.Accessibility AccessibilityEnabled -bool true
+          xcrun simctl spawn "$SIM" defaults write com.apple.Accessibility ApplicationAccessibilityEnabled -bool true
 
       - name: Run Maestro flows
         run: ./scripts/qa/mobile-e2e.sh --sim "$SIM" --release --fixture-server
