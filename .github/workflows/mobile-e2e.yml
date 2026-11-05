@@ -1,0 +1,86 @@
+name: Mobile E2E
+
+on:
+  pull_request:
+    paths:
+      - apps/mobile/**
+      - packages/core/**
+      - scripts/qa/**
+      - .github/workflows/mobile-e2e.yml
+  push:
+    branches: [staging, claude/project-thread-xehbd4]
+    paths:
+      - apps/mobile/**
+      - packages/core/**
+      - scripts/qa/**
+      - .github/workflows/mobile-e2e.yml
+  workflow_dispatch:
+
+concurrency:
+  group: mobile-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios:
+    name: Maestro on iOS
+    runs-on: macos-26
+    timeout-minutes: 90
+    env:
+      APP_VARIANT: development
+      EXPO_PUBLIC_SUPABASE_URL: http://127.0.0.1:54331
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: fixture
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Generate the iOS project
+        working-directory: apps/mobile
+        run: npx expo prebuild --platform ios
+
+      - name: Build a release simulator app
+        working-directory: apps/mobile/ios
+        run: |
+          WORKSPACE="$(ls -d *.xcworkspace | head -1)"
+          xcodebuild \
+            -workspace "$WORKSPACE" \
+            -scheme "${WORKSPACE%.xcworkspace}" \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            | tail -50
+
+      - name: Create a simulator and install the app
+        run: |
+          RUNTIME="$(xcrun simctl list runtimes -j | jq -r '[.runtimes[] | select(.platform == "iOS" and .isAvailable)] | last | .identifier')"
+          DEVICE_TYPE="$(xcrun simctl list devicetypes -j | jq -r '[.devicetypes[] | select(.name | test("^iPhone [0-9]+$"))] | last | .identifier')"
+          SIM="$(xcrun simctl create maestro "$DEVICE_TYPE" "$RUNTIME")"
+          xcrun simctl boot "$SIM"
+          xcrun simctl bootstatus "$SIM" -b
+          xcrun simctl install "$SIM" apps/mobile/ios/build/Build/Products/Release-iphonesimulator/*.app
+          echo "SIM=$SIM" >> "$GITHUB_ENV"
+
+      - name: Install Maestro
+        run: |
+          curl -fsSL https://get.maestro.mobile.dev | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Run Maestro flows
+        run: ./scripts/qa/mobile-e2e.sh --sim "$SIM" --release --fixture-server
+
+      - name: Upload Maestro output
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maestro-ios
+          path: .context/maestro
+          if-no-files-found: ignore

@@ -13,13 +13,15 @@ pnpm e2e:ios --sim <UDID> apps/mobile/e2e/flows/favorites.yaml
 pnpm e2e:ios --sim <UDID> --include-tags smoke
 ```
 
-`scripts/qa/mobile-e2e.sh` loads the fixture menus into local Supabase, points `apps/mobile/.env.local` at it, boots the simulator in light appearance, starts Metro when it is not running, runs Maestro, and stops what it started. The JUnit report, screenshots and Maestro logs go to `.context/maestro/<time>/`. Pass `--release` when the simulator has a release build of the dev bundle id instead of a development client.
+`scripts/qa/mobile-e2e.sh` loads the fixture menus into local Supabase (`scripts/qa/e2e-load-fixtures.ts`), points `apps/mobile/.env.local` at it, boots the simulator in light appearance, starts Metro when it is not running, runs Maestro, and stops what it started. The JUnit report, screenshots and Maestro logs go to `.context/maestro/<time>/`. Pass `--release` when the simulator has a release build of the dev bundle id instead of a development client.
 
 It refuses to run unless `supabase status` reports a `http://127.0.0.1:` API URL, so fixtures never reach the hosted projects.
 
 ## Test data
 
-`fixtures/menus.sql` writes menus for J2 Dining from yesterday to three days ahead (Central time), through the same `insert_multiple_locations_and_menus` function the scraper uses. It replaces any J2 menus on those days and is safe to run again.
+`fixtures/menus.json` defines menus for J2 Dining from yesterday to three days ahead (Central time). `scripts/qa/e2e-fixtures.ts` turns it into the scraper's upload shape, and `scripts/qa/e2e-load-fixtures.ts` sends that through the same `insert_multiple_locations_and_menus` function the scraper uses. It replaces any J2 menus on those days and is safe to run again.
+
+`fixtures/base.json` is a snapshot of what the anon role reads from the seeded tables (locations, location types, app information, notifications). Refresh it after a change to `supabase/seed.sql` or to those tables' columns.
 
 | Item | Where |
 | --- | --- |
@@ -49,3 +51,9 @@ Every flow starts from a clean install state (`subflows/start.yaml`: clear state
 - Match on visible text when it is stable. For icon buttons, use the `testID` on the component (`back-button`, `location-favorites-button`, `food-favorite-button`, `food-meal-plan-button`, `date-next-button`, `menu-search-input`, `settings-dark-mode-switch` and others).
 - Use the fixture items, never scraped menus, so a flow does not depend on what UT serves that day.
 - Run one flow with `maestro test <file>` while you write it, and `maestro studio` to inspect the screen.
+
+## CI
+
+`.github/workflows/mobile-e2e.yml` runs the suite on a GitHub macOS runner for pull requests that touch the app. macOS runners have no Docker, so it builds a release simulator app pointed at `scripts/qa/e2e-fixture-server.ts` and runs `mobile-e2e.sh --release --fixture-server`. The fixture server answers the Supabase REST reads the app makes (`select`, `eq`, `in`, `order`, `offset`, `limit`) from `base.json` and `menus.json`, with the same rows and columns local Supabase returns. If the app starts using another table or filter, add it to the server, or the CI run fails with a 400 or 404 from it.
+
+To run the same thing on a Mac without Docker, build the app with `EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:54331` and pass `--fixture-server`.
