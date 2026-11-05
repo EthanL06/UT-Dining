@@ -204,52 +204,59 @@ index b9e1b5d..8d0a9d3 100644
    const handleDateChange = (date: string) => {
      setSelectedDate(date);
 diff --git a/apps/mobile/services/database/database.ts b/apps/mobile/services/database/database.ts
-index dfeab93..fa26601 100644
+index ddee1e8..5bb01e8 100644
 --- a/apps/mobile/services/database/database.ts
 +++ b/apps/mobile/services/database/database.ts
 @@ -1,3 +1,4 @@
 +import { mark } from '~/utils/perf';
- import { chunk, fetchAllPages, mapConcurrent } from '@ut-dining/core';
- import { eq, sql } from 'drizzle-orm';
- import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
-@@ -319,6 +320,7 @@ function* cacheReplacementStatements(db: DrizzleDB, data: SupabaseSnapshot) {
-  */
- export const insertDataIntoSQLiteDB = async (db: DrizzleDB, date?: string) => {
-   const data = await querySupabase(date);
-+  mark('sync.fetched', { ok: !!data });
+ import {
+   chunk,
+   fetchAllPages,
+@@ -187,6 +188,7 @@ export const syncCacheWithSupabase = async (
+   { force, syncedVersions, onVersionsChange, onCacheChange }: MenuSyncOptions,
+ ) => {
+   const [shared, remote] = await Promise.all([fetchSharedTables(), fetchMenuVersions()]);
++  mark('sync.fetched', { ok: true });
  
-   if (!data) {
-     throw new Error('Failed to fetch data from Supabase');
-@@ -332,6 +334,7 @@ export const insertDataIntoSQLiteDB = async (db: DrizzleDB, date?: string) => {
-       await tx.runAsync(statement, params as SQLiteBindValue[]);
-     }
-   });
-+  mark('sync.inserted');
+   if (shared.location.length === 0) {
+     throw new Error('Supabase returned no locations');
+@@ -222,7 +224,9 @@ export const syncCacheWithSupabase = async (
+     versions = { ...versions, [date]: remote[date] };
+     onVersionsChange(versions);
+     await onCacheChange();
++    mark('sync.day', { date, foods: rows.food_item.length });
+   }
++  mark('sync.inserted', { days: plan.fetch.length });
  };
  
  /**
 diff --git a/apps/mobile/utils/queries.ts b/apps/mobile/utils/queries.ts
-index a3976a0..ecbfe66 100644
+index 11b2ffb..4cdbd0a 100644
 --- a/apps/mobile/utils/queries.ts
 +++ b/apps/mobile/utils/queries.ts
 @@ -1,3 +1,4 @@
 +import { mark, startReadStress } from '~/utils/perf';
  import { decideSync, singleFlight } from '@ut-dining/core';
  import { eq } from 'drizzle-orm';
- import { type DrizzleDB, insertDataIntoSQLiteDB } from '~/services/database/database';
-@@ -12,7 +13,14 @@ const rejectAfter = (ms: number) =>
-   });
+ import { type DrizzleDB, syncCacheWithSupabase } from '~/services/database/database';
+@@ -19,6 +20,9 @@ const rejectAfter = (ms: number) =>
  
- const syncWithSupabase = singleFlight(async (db: DrizzleDB) => {
--  await Promise.race([insertDataIntoSQLiteDB(db), rejectAfter(SYNC_DEADLINE_MS)]);
+ const syncWithSupabase = singleFlight(async (db: DrizzleDB, { force, onCacheChange }: SyncRun) => {
+   const store = useDataSyncStore.getState();
 +  mark('sync.start');
 +  const stopReadStress = startReadStress(db);
 +  try {
-+    await Promise.race([insertDataIntoSQLiteDB(db), rejectAfter(SYNC_DEADLINE_MS)]);
+   await Promise.race([
+     syncCacheWithSupabase(db, {
+       force,
+@@ -28,6 +32,10 @@ const syncWithSupabase = singleFlight(async (db: DrizzleDB, { force, onCacheChan
+     }),
+     rejectAfter(SYNC_DEADLINE_MS),
+   ]);
 +  } finally {
 +    stopReadStress();
 +  }
 +  mark('sync.end');
-   useDataSyncStore.getState().setLastSupabaseQueryTime(Date.now());
+   store.setLastSupabaseQueryTime(Date.now());
  });
  

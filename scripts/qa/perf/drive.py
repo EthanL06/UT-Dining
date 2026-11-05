@@ -85,7 +85,9 @@ for r in range(3):
 for r in range(2):
     cycle('stale-blackhole', r, 'blackhole', stale, timeout=60, shots={'blackhole-3s': 3} if r == 0 else None)
     shot(f'blackhole-end-{r}')
-cycle('stale-reconnect', 0, 'pass', {}, timeout=40)
+cycle('stale-reconnect', 0, 'pass', stale, timeout=40)
+cycle('no-change', 0, 'pass', {**stale, 'dropToday': True}, timeout=40)
+cycle('one-day-changed', 0, 'pass', {}, timeout=40)
 reinstall('app-proxied')
 cycle('install-503', 0, 'fail503', {}, timeout=8)
 shot('install-503')
