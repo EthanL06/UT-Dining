@@ -57,12 +57,18 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
-            | tail -50
+            > build.log 2>&1 || {
+              grep -nE "error:|Error:|@build-script-error|BUILD FAILED" -A8 build.log | head -150
+              exit 1
+            }
+          tail -5 build.log
 
       - name: Create a simulator and install the app
         run: |
-          RUNTIME="$(xcrun simctl list runtimes -j | jq -r '[.runtimes[] | select(.platform == "iOS" and .isAvailable)] | last | .identifier')"
-          DEVICE_TYPE="$(xcrun simctl list devicetypes -j | jq -r '[.devicetypes[] | select(.name | test("^iPhone [0-9]+$"))] | last | .identifier')"
+          RUNTIME_JSON="$(xcrun simctl list runtimes -j | jq '[.runtimes[] | select(.platform == "iOS" and .isAvailable)] | last')"
+          RUNTIME="$(jq -r '.identifier' <<<"$RUNTIME_JSON")"
+          DEVICE_TYPE="$(jq -r '[.supportedDeviceTypes[] | select(.name | test("^iPhone [0-9]+$"))] | last | .identifier' <<<"$RUNTIME_JSON")"
+          echo "Runtime $RUNTIME, device type $DEVICE_TYPE"
           SIM="$(xcrun simctl create maestro "$DEVICE_TYPE" "$RUNTIME")"
           xcrun simctl boot "$SIM"
           xcrun simctl bootstatus "$SIM" -b
@@ -82,5 +88,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: maestro-ios
-          path: .context/maestro
+          path: |
+            .context/maestro
+            apps/mobile/ios/build.log
           if-no-files-found: ignore
