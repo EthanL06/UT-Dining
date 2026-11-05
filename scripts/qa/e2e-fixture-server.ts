@@ -39,6 +39,59 @@ const applyOrder = (rows: Row[], order: string): Row[] => {
   });
 };
 
+type SelectItem = { name: string; hint?: string; children: SelectItem[] | null };
+
+const parseSelect = (input: string): SelectItem[] => {
+  const items: SelectItem[] = [];
+  let depth = 0;
+  let start = 0;
+  const push = (part: string) => {
+    const trimmed = part.trim();
+    if (!trimmed) return;
+    const open = trimmed.indexOf('(');
+    if (open === -1) {
+      items.push({ name: trimmed, children: null });
+      return;
+    }
+    const head = trimmed.slice(0, open);
+    const [name, hint] = (head.includes(':') ? head.split(':')[1] : head).split('!');
+    items.push({ name, hint, children: parseSelect(trimmed.slice(open + 1, -1)) });
+  };
+  for (let i = 0; i < input.length; i += 1) {
+    if (input[i] === '(') depth += 1;
+    if (input[i] === ')') depth -= 1;
+    if (input[i] === ',' && depth === 0) {
+      push(input.slice(start, i));
+      start = i + 1;
+    }
+  }
+  push(input.slice(start));
+  return items;
+};
+
+const shape = (table: string, row: Row, select: SelectItem[]): Row => {
+  const columns = select.filter((item) => item.children === null).map((item) => item.name);
+  const result: Row = columns.includes('*')
+    ? { ...row }
+    : Object.fromEntries(columns.map((column) => [column, row[column]]));
+  for (const item of select) {
+    if (item.children === null) continue;
+    const related = tables[item.name] ?? [];
+    const manyKey = `${table}_id`;
+    const oneKey = `${item.name}_id`;
+    const parentHoldsKey = item.hint?.startsWith(`${table}_`) ?? false;
+    if (!parentHoldsKey && related.length > 0 && manyKey in related[0]) {
+      result[item.name] = related
+        .filter((child) => child[manyKey] === row.id)
+        .map((child) => shape(item.name, child, item.children ?? []));
+    } else {
+      const match = related.find((child) => child.id === row[oneKey]);
+      result[item.name] = match ? shape(item.name, match, item.children ?? []) : null;
+    }
+  }
+  return result;
+};
+
 const send = (res: import('node:http').ServerResponse, status: number, body: unknown) => {
   const json = JSON.stringify(body);
   res.writeHead(status, {
@@ -78,7 +131,12 @@ const server = createServer((req, res) => {
     const offset = Number(url.searchParams.get('offset') ?? 0);
     const limit = url.searchParams.get('limit');
     rows = rows.slice(offset, limit === null ? undefined : offset + Number(limit));
-    return send(res, 200, rows);
+    const select = parseSelect(url.searchParams.get('select') ?? '*');
+    return send(
+      res,
+      200,
+      rows.map((row) => shape(table, row, select)),
+    );
   } catch (error) {
     return send(res, 400, { message: (error as Error).message });
   }

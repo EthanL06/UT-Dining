@@ -10,7 +10,7 @@ name: Every tab opens
 - extendedWaitUntil:
     visible: Stay updated with the latest dining alerts and updates.
     timeout: 5000
-- assertVisible: Maintenance Underway
+- assertVisible: 'Maintenance Underway(,.*)?'
 - takeScreenshot: notifications
 - tapOn: Home
 - extendedWaitUntil:

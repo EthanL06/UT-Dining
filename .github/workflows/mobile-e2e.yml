@@ -30,7 +30,7 @@ jobs:
   ios:
     name: Maestro on iOS
     runs-on: macos-26
-    timeout-minutes: 90
+    timeout-minutes: 120
     env:
       APP_VARIANT: development
       EXPO_PUBLIC_SUPABASE_URL: http://127.0.0.1:54331

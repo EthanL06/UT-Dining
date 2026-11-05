@@ -11,4 +11,9 @@ env:
       true: ${DEV_CLIENT == 'true'}
     commands:
       - openLink: exp+ut-dining://expo-development-client/?url=${encodeURIComponent(METRO_URL)}&disableOnboarding=1
+- extendedWaitUntil:
+    visible: '.*Your planned meals.*|Enjoying.*'
+    timeout: 60000
+- waitForAnimationToEnd:
+    timeout: 5000
 - runFlow: dismiss-alerts.yaml
