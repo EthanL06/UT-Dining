@@ -45,7 +45,7 @@ It refuses to run unless `supabase status` reports a `http://127.0.0.1:` API URL
 | `settings.yaml` | Dark mode switch, Sync Data, Favorites quick link |
 | `tabs.yaml` | Map, Notifications (seeded notifications) and Home tabs |
 
-Every flow except `onboarding.yaml` starts from a clean install on Home (`subflows/start.yaml`: clear state, open Metro, skip onboarding). The skip is the `e2eSkipOnboarding` launch argument, which only the dev bundle id (`com.ethanl06.ut-dining.dev`) reads. Flows tagged `smoke` are the short set.
+Every flow except `onboarding.yaml` starts from a clean install on Home (`subflows/start.yaml`: clear state, open Metro, skip onboarding). It opens `ut-dining://e2e-setup`, which marks onboarding done only in the dev bundle id (`com.ethanl06.ut-dining.dev`) and then goes Home. Flows tagged `smoke` are the short set.
 
 ## Writing flows
 

@@ -7,13 +7,12 @@ env:
     clearState: true
     permissions:
       all: allow
-    arguments:
-      e2eSkipOnboarding: true
 - runFlow:
     when:
       true: ${DEV_CLIENT == 'true'}
     commands:
       - openLink: exp+ut-dining://expo-development-client/?url=${encodeURIComponent(METRO_URL)}&disableOnboarding=1
+- openLink: ut-dining://e2e-setup
 - extendedWaitUntil:
     visible: '.*Your planned meals.*|.*Would Like to Send You Notifications.*|.*to use your location.*|Enjoying.*'
     timeout: 60000

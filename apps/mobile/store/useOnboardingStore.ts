@@ -1,5 +1,3 @@
-import * as Application from 'expo-application';
-import { Platform, Settings } from 'react-native';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -34,15 +32,10 @@ export const ONBOARDING_STEPS = {
   COMPLETE: 'complete',
 } as const;
 
-const skipOnboardingForE2E =
-  Platform.OS === 'ios' &&
-  Application.applicationId === 'com.ethanl06.ut-dining.dev' &&
-  String(Settings.get('e2eSkipOnboarding')) === 'true';
-
 export const useOnboardingStore = create<OnboardingState>()(
   persist(
     (set, get) => ({
-      isOnboardingComplete: skipOnboardingForE2E,
+      isOnboardingComplete: false,
       completedSteps: [],
       currentStep: 0,
 
