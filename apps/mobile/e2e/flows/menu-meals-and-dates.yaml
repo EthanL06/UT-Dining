@@ -14,7 +14,7 @@ name: Switching meals and days changes the menu
 - assertVisible: 'Maestro Veggie Burger(,.*)?'
 - assertNotVisible: 'Maestro Tomorrow Special(,.*)?'
 - tapOn:
-    id: date-next-button
+    id: menu-day-1
 - extendedWaitUntil:
     visible:
       id: selected-date
@@ -25,7 +25,7 @@ name: Switching meals and days changes the menu
     timeout: 10000
 - takeScreenshot: tomorrow-menu
 - tapOn:
-    id: date-previous-button
+    id: menu-day-0
 - extendedWaitUntil:
     visible:
       id: selected-date

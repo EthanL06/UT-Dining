@@ -17,7 +17,7 @@ tags:
 - extendedWaitUntil:
     visible: Nutrition Facts
     timeout: 10000
-- assertVisible: 410 kcal
+- assertVisible: '410'
 - tapOn:
     id: back-button
 - eraseText
