@@ -3,6 +3,8 @@ name: Mobile E2E
 on:
   pull_request:
     branches: [main, staging]
+  push:
+    branches: [ci-faster-e2e]
   workflow_dispatch:
 
 concurrency:
@@ -35,35 +37,40 @@ jobs:
             echo "run=false" >> "$GITHUB_OUTPUT"
           fi
 
-  ios:
-    name: Maestro on iOS
+  build:
+    name: Build the iOS app
     needs: changes
     if: needs.changes.outputs.run == 'true'
     runs-on: macos-26
-    timeout-minutes: 150
+    timeout-minutes: 90
+    outputs:
+      key: ${{ steps.app-cache.outputs.cache-primary-key }}
     env:
       APP_VARIANT: development
       EXPO_PUBLIC_SUPABASE_URL: http://127.0.0.1:54331
       EXPO_PUBLIC_SUPABASE_ANON_KEY: fixture
-      MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000
     steps:
       - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v6
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .node-version
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      - name: Restore the built app
+      - name: Look up the built app
         id: app-cache
         uses: actions/cache/restore@v6
         with:
           path: .context/app
           key: ios-release-app-${{ hashFiles('apps/mobile/**', '!apps/mobile/e2e/**', 'packages/core/**', 'pnpm-lock.yaml') }}
+          lookup-only: true
+
+      - uses: pnpm/action-setup@v6
+        if: steps.app-cache.outputs.cache-hit != 'true'
+
+      - uses: actions/setup-node@v7
+        if: steps.app-cache.outputs.cache-hit != 'true'
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - if: steps.app-cache.outputs.cache-hit != 'true'
+        run: pnpm install --frozen-lockfile
 
       - name: Generate the iOS project
         if: steps.app-cache.outputs.cache-hit != 'true'
@@ -98,6 +105,44 @@ jobs:
           path: .context/app
           key: ${{ steps.app-cache.outputs.cache-primary-key }}
 
+      - name: Upload the build log
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios-build-log
+          path: apps/mobile/ios/build.log
+          if-no-files-found: ignore
+
+  e2e:
+    name: Maestro shard ${{ matrix.shard }}
+    needs: build
+    runs-on: macos-26
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    env:
+      MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Restore the built app
+        uses: actions/cache/restore@v6
+        with:
+          path: .context/app
+          key: ${{ needs.build.outputs.key }}
+          fail-on-cache-miss: true
+
       - name: Create a simulator and install the app
         run: |
           RUNTIME_JSON="$(xcrun simctl list runtimes -j | jq '[.runtimes[] | select(.platform == "iOS" and .isAvailable)] | last')"
@@ -115,15 +160,36 @@ jobs:
           curl -fsSL https://get.maestro.mobile.dev | bash
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
 
+      - name: Pick this shard's flows
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: |
+          FLOWS="$(ls apps/mobile/e2e/flows/*.yaml | awk -v n=3 -v s="$SHARD" '(NR - 1) % n == s - 1' | tr '\n' ' ')"
+          echo "Flows: $FLOWS"
+          echo "FLOWS=$FLOWS" >> "$GITHUB_ENV"
+
       - name: Run Maestro flows
-        run: ./scripts/qa/mobile-e2e.sh --sim "$SIM" --release --fixture-server --retry-failed
+        run: ./scripts/qa/mobile-e2e.sh --sim "$SIM" --release --fixture-server --retry-failed $FLOWS
 
       - name: Upload Maestro output
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: maestro-ios
-          path: |
-            .context/maestro
-            apps/mobile/ios/build.log
+          name: maestro-ios-${{ matrix.shard }}
+          path: .context/maestro
           if-no-files-found: ignore
+
+  ios:
+    name: Maestro on iOS
+    needs: [changes, build, e2e]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          RUN: ${{ needs.changes.outputs.run }}
+          BUILD: ${{ needs.build.result }}
+          E2E: ${{ needs.e2e.result }}
+        run: |
+          echo "run=$RUN build=$BUILD e2e=$E2E"
+          if [[ "$RUN" != true ]]; then exit 0; fi
+          [[ "$BUILD" == success && "$E2E" == success ]]

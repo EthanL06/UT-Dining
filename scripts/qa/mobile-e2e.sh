@@ -157,6 +157,10 @@ if [[ "$DEV_CLIENT" == true ]]; then
 fi
 
 [[ ${#MAESTRO_ARGS[@]} -gt 0 ]] || MAESTRO_ARGS=("$E2E_DIR")
+for i in "${!MAESTRO_ARGS[@]}"; do
+  arg="${MAESTRO_ARGS[$i]}"
+  if [[ -e "$arg" && "$arg" != /* ]]; then MAESTRO_ARGS[$i]="$PWD/$arg"; fi
+done
 
 DEVICE_LIST="$(IFS=,; echo "${DEVICES[*]}")"
 
