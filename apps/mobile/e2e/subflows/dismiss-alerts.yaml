@@ -26,5 +26,12 @@ appId: com.ethanl06.ut-dining.dev
             - tapOn:
                 text: Not Now
                 optional: true
+      - runFlow:
+          when:
+            visible: Open in .*
+          commands:
+            - tapOn:
+                text: Open
+                optional: true
       - waitForAnimationToEnd:
           timeout: 2000

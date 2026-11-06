@@ -14,6 +14,13 @@ env:
       - openLink: exp+ut-dining://expo-development-client/?url=${encodeURIComponent(METRO_URL)}&disableOnboarding=1
 - openLink: ut-dining://e2e-setup
 - extendedWaitUntil:
+    visible: Open in .*
+    timeout: 10000
+    optional: true
+- tapOn:
+    text: Open
+    optional: true
+- extendedWaitUntil:
     visible: '.*Your planned meals.*|.*Would Like to Send You Notifications.*|.*to use your location.*|Enjoying.*'
     timeout: 60000
 - runFlow:
