@@ -1,0 +1,53 @@
+appId: com.ethanl06.ut-dining.dev
+name: Onboarding runs once and lands on Home
+tags:
+  - smoke
+---
+- runFlow: ../subflows/launch.yaml
+- extendedWaitUntil:
+    visible: The all-in-one UT Austin dining app.*
+    timeout: 60000
+- runFlow: ../subflows/dismiss-alerts.yaml
+- assertVisible: Skip|Continue
+- takeScreenshot: onboarding-welcome
+- repeat:
+    while:
+      notVisible: Enable Permissions
+    times: 8
+    commands:
+      - tapOn:
+          id: onboarding-next-button
+      - waitForAnimationToEnd
+- runFlow: ../subflows/dismiss-alerts.yaml
+- assertVisible: 'Location Services(,.*)?'
+- assertVisible: 'Push Notifications(,.*)?'
+- tapOn:
+    id: onboarding-next-button
+- extendedWaitUntil:
+    visible: You're all set.*
+    timeout: 5000
+- repeat:
+    while:
+      visible: Finish
+    times: 3
+    commands:
+      - tapOn: Finish
+      - waitForAnimationToEnd
+- repeat:
+    while:
+      notVisible: '.*Your planned meals.*'
+    times: 6
+    commands:
+      - runFlow: ../subflows/dismiss-alerts.yaml
+- extendedWaitUntil:
+    visible: '.*Your planned meals.*'
+    timeout: 60000
+- assertNotVisible:
+    id: onboarding-next-button
+- takeScreenshot: home
+- runFlow: ../subflows/relaunch.yaml
+- extendedWaitUntil:
+    visible: '.*Your planned meals.*'
+    timeout: 60000
+- assertNotVisible:
+    id: onboarding-next-button

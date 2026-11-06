@@ -19,6 +19,7 @@ commands:
   build: pnpm build
   dev_mobile: pnpm --filter @ut-dining/mobile start
   dev_ios: pnpm --filter @ut-dining/mobile ios
+  e2e_ios: pnpm e2e:ios
   dev_dashboard: pnpm --filter @ut-dining/dashboard dev
   dev_website: pnpm --filter @ut-dining/website dev --port 3001
   scrape: pnpm --filter @ut-dining/scraper start

@@ -1,0 +1,11 @@
+appId: com.ethanl06.ut-dining.dev
+---
+- tapOn: 'Dining Hall(,.*)?'
+- scrollUntilVisible:
+    element: 'J2 Dining(,.*)?'
+    direction: DOWN
+    timeout: 90000
+- tapOn: 'J2 Dining(,.*)?'
+- extendedWaitUntil:
+    visible: 'Maestro Grill(,.*)?'
+    timeout: 20000

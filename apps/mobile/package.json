@@ -78,11 +78,13 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
+    "@babel/plugin-transform-react-jsx": "^7.29.7",
     "@types/deno": "^2.3.0",
     "@types/react": "~19.3.0",
     "@types/uuid": "^10.0.0",
     "@ut-dining/supabase": "workspace:*",
     "@ut-dining/tsconfig": "workspace:*",
+    "babel-preset-expo": "~58.0.20",
     "tailwindcss": "^3.4.17",
     "tanstack-query-dev-tools-expo-plugin": "^0.1.1",
     "typescript": "catalog:"

@@ -1,0 +1,30 @@
+appId: com.ethanl06.ut-dining.dev
+---
+- waitForAnimationToEnd:
+    timeout: 5000
+- repeat:
+    times: 3
+    commands:
+      - runFlow:
+          when:
+            visible: .*Would Like to Send You Notifications.*
+          commands:
+            - tapOn:
+                text: Allow
+                optional: true
+      - runFlow:
+          when:
+            visible: .*to use your location.*
+          commands:
+            - tapOn:
+                text: Allow While Using App
+                optional: true
+      - runFlow:
+          when:
+            visible: Enjoying.*
+          commands:
+            - tapOn:
+                text: Not Now
+                optional: true
+      - waitForAnimationToEnd:
+          timeout: 2000

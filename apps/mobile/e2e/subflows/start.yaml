@@ -1,0 +1,4 @@
+appId: com.ethanl06.ut-dining.dev
+---
+- runFlow: launch.yaml
+- runFlow: finish-onboarding.yaml

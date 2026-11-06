@@ -1,0 +1,61 @@
+{
+  "locationName": "J2 Dining",
+  "dayOffsets": [-1, 0, 1, 2, 3],
+  "meals": ["Breakfast", "Lunch", "Dinner"],
+  "categories": [
+    {
+      "name": "Maestro Grill",
+      "foods": [
+        {
+          "name": "Maestro Veggie Burger",
+          "calories": "410",
+          "protein": "21g",
+          "carbs": "38g",
+          "allergens": { "wheat": true, "soy": true, "vegetarian": true }
+        },
+        {
+          "name": "Maestro Grilled Chicken",
+          "calories": "320",
+          "protein": "42g",
+          "carbs": "4g",
+          "allergens": { "halal": true }
+        },
+        {
+          "name": "Maestro Breakfast Tacos",
+          "calories": "390",
+          "protein": "18g",
+          "carbs": "33g",
+          "allergens": { "egg": true, "milk": true, "wheat": true },
+          "meals": ["Breakfast"]
+        },
+        {
+          "name": "Maestro Tomorrow Special",
+          "calories": "520",
+          "protein": "30g",
+          "carbs": "45g",
+          "allergens": { "milk": true },
+          "dayOffsets": [1]
+        }
+      ]
+    },
+    {
+      "name": "Maestro Greens",
+      "foods": [
+        {
+          "name": "Maestro Garden Salad",
+          "calories": "150",
+          "protein": "5g",
+          "carbs": "12g",
+          "allergens": { "vegan": true, "vegetarian": true }
+        },
+        {
+          "name": "Maestro Tofu Bowl",
+          "calories": "480",
+          "protein": "24g",
+          "carbs": "61g",
+          "allergens": { "soy": true, "vegan": true, "vegetarian": true }
+        }
+      ]
+    }
+  ]
+}

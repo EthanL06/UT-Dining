@@ -45,6 +45,7 @@ const LocationTopBar = () => {
   return (
     <View className="flex w-full flex-row items-center justify-between ">
       <TouchableOpacity
+        testID="back-button"
         className="flex flex-row items-center"
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -57,6 +58,9 @@ const LocationTopBar = () => {
 
       <View className="flex flex-row gap-x-5">
         <TouchableOpacity
+          testID="location-favorites-button"
+          accessibilityLabel="Favorites"
+          accessibilityRole="button"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             router.push(`/favorites`);
@@ -66,6 +70,9 @@ const LocationTopBar = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
+          testID="location-meal-plan-button"
+          accessibilityLabel="Meal plan"
+          accessibilityRole="button"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             router.push(`/meal-plan`);
@@ -75,6 +82,9 @@ const LocationTopBar = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
+          testID="location-info-button"
+          accessibilityLabel="Location info"
+          accessibilityRole="button"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
@@ -129,6 +139,7 @@ const FoodTopBar = () => {
   return (
     <View className="flex w-full flex-row items-center justify-between ">
       <TouchableOpacity
+        testID="back-button"
         className="flex flex-row items-center"
         onPress={() => {
           router.back();
@@ -142,6 +153,9 @@ const FoodTopBar = () => {
 
       <View className="flex-row gap-x-5">
         <TouchableOpacity
+          testID="food-favorite-button"
+          accessibilityLabel={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          accessibilityRole="button"
           onPress={async () => {
             if (foodItem) {
               if (isFavorite) {
@@ -178,6 +192,9 @@ const FoodTopBar = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
+          testID="food-meal-plan-button"
+          accessibilityLabel={isMealPlanItem ? 'Remove from meal plan' : 'Add to meal plan'}
+          accessibilityRole="button"
           onPress={() => {
             if (foodItem) {
               toggleMealPlanItem({
@@ -226,6 +243,9 @@ const FoodTopBar = () => {
           />
         </TouchableOpacity>
         <TouchableOpacity
+          testID="food-info-button"
+          accessibilityLabel="Food info"
+          accessibilityRole="button"
           onPress={() => {
             SheetManager.show('food-info', {
               context: 'food',
@@ -244,6 +264,7 @@ const BackTopBar = () => {
   return (
     <View className="flex w-full flex-row items-center justify-between ">
       <TouchableOpacity
+        testID="back-button"
         className="flex flex-row items-center"
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
