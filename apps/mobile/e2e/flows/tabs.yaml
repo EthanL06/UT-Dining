@@ -10,7 +10,7 @@ name: Every tab opens
 - tapOn:
     id: notifications-tab
 - extendedWaitUntil:
-    visible: 'Maintenance Underway(,.*)?'
+    visible: '.*Maintenance Underway.*'
     timeout: 5000
 - assertVisible: Today|Yesterday|Earlier
 - takeScreenshot: notifications
@@ -21,13 +21,13 @@ name: Every tab opens
       id: settings-dark-mode-switch
     timeout: 5000
 - tapOn:
-    id: search-tab
-- extendedWaitUntil:
-    visible: "Search today's menus"
-    timeout: 5000
-- tapOn:
     id: home-tab
 - extendedWaitUntil:
     visible: '(Breakfast|Lunch|Dinner) is served.*'
     timeout: 5000
 - assertVisible: Open now|Closed
+- tapOn:
+    id: search-tab
+- extendedWaitUntil:
+    visible: "Search today's menus"
+    timeout: 5000

@@ -82,6 +82,7 @@ export const GroupedRow = ({
   return (
     <Pressable
       testID={testID}
+      accessible={!!onPress}
       onPress={
         onPress
           ? () => {
@@ -91,59 +92,62 @@ export const GroupedRow = ({
           : undefined
       }
       disabled={disabled || !onPress}
-      style={({ pressed }) => ({ backgroundColor: pressed ? theme.fill : 'transparent' })}
     >
-      {!isFirst && (
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            left: separatorInset,
-            height: 0.5,
-            backgroundColor: theme.separator,
-          }}
-        />
-      )}
-      <View className="min-h-[52px] flex-row items-center gap-x-3 px-4 py-2.5">
-        {leading}
-        <View className="flex-1">
-          {typeof title === 'string' ? (
-            <Text
-              numberOfLines={1}
-              className="text-[17px]"
-              style={{ color: titleColor ?? theme.label }}
-            >
-              {title}
-            </Text>
-          ) : (
-            title
+      {({ pressed }) => (
+        <View style={{ backgroundColor: pressed ? theme.fill : 'transparent' }}>
+          {!isFirst && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                left: separatorInset,
+                height: 0.5,
+                backgroundColor: theme.separator,
+              }}
+            />
           )}
-          {subtitle !== undefined &&
-            (typeof subtitle === 'string' ? (
+          <View className="min-h-[52px] flex-row items-center gap-x-3 px-4 py-2.5">
+            {leading}
+            <View className="flex-1">
+              {typeof title === 'string' ? (
+                <Text
+                  numberOfLines={1}
+                  className="text-[17px]"
+                  style={{ color: titleColor ?? theme.label }}
+                >
+                  {title}
+                </Text>
+              ) : (
+                title
+              )}
+              {subtitle !== undefined &&
+                (typeof subtitle === 'string' ? (
+                  <Text
+                    numberOfLines={multilineSubtitle ? undefined : 1}
+                    className="mt-0.5 text-[14px]"
+                    style={{ color: theme.secondaryLabel }}
+                  >
+                    {subtitle}
+                  </Text>
+                ) : (
+                  subtitle
+                ))}
+            </View>
+            {detail !== undefined && (
               <Text
-                numberOfLines={multilineSubtitle ? undefined : 1}
-                className="mt-0.5 text-[14px]"
+                testID={detailTestID}
+                className="text-[15px]"
                 style={{ color: theme.secondaryLabel }}
               >
-                {subtitle}
+                {detail}
               </Text>
-            ) : (
-              subtitle
-            ))}
+            )}
+            {trailing}
+            {showChevron && <ChevronRight size={17} color={theme.tertiaryLabel} />}
+          </View>
         </View>
-        {detail !== undefined && (
-          <Text
-            testID={detailTestID}
-            className="text-[15px]"
-            style={{ color: theme.secondaryLabel }}
-          >
-            {detail}
-          </Text>
-        )}
-        {trailing}
-        {showChevron && <ChevronRight size={17} color={theme.tertiaryLabel} />}
-      </View>
+      )}
     </Pressable>
   );
 };

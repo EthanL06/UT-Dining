@@ -88,24 +88,30 @@ const QuickLink = ({
   href: '/favorites' | '/meal-plan';
   theme: Theme;
 }) => (
-  <Pressable
-    accessibilityRole="button"
-    onPress={() => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      router.push(href);
-    }}
-    className="flex-1 flex-row items-center gap-x-2.5 px-4 py-3.5"
-    style={({ pressed }) => ({
-      backgroundColor: pressed ? theme.fill : theme.card,
-      borderRadius: 22,
-      borderCurve: 'continuous',
-    })}
+  <View
+    className="flex-1 overflow-hidden"
+    style={{ backgroundColor: theme.card, borderRadius: 22, borderCurve: 'continuous' }}
   >
-    {icon}
-    <Text className="font-semibold text-[15px]" style={{ color: theme.label }}>
-      {title}
-    </Text>
-  </Pressable>
+    <Pressable
+      accessibilityRole="button"
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        router.push(href);
+      }}
+    >
+      {({ pressed }) => (
+        <View
+          className="flex-row items-center gap-x-2.5 px-4 py-3.5"
+          style={{ backgroundColor: pressed ? theme.fill : 'transparent' }}
+        >
+          {icon}
+          <Text className="font-semibold text-[15px]" style={{ color: theme.label }}>
+            {title}
+          </Text>
+        </View>
+      )}
+    </Pressable>
+  </View>
 );
 
 const TypeChip = ({
