@@ -2,7 +2,7 @@ name: Mobile E2E
 
 on:
   pull_request:
-    branches: [main, staging]
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -10,60 +10,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  changes:
-    name: Decide whether to run
-    runs-on: ubuntu-latest
-    outputs:
-      run: ${{ steps.decide.outputs.run }}
-    steps:
-      - uses: actions/checkout@v7
-        if: github.event_name == 'pull_request' && github.base_ref != 'main'
-        with:
-          fetch-depth: 0
-      - id: decide
-        env:
-          EVENT: ${{ github.event_name }}
-          BASE_REF: ${{ github.base_ref }}
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          if [[ "$EVENT" != pull_request || "$BASE_REF" == main ]]; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          elif git diff --name-only "$BASE_SHA...$HEAD_SHA" | grep -qE '^(apps/mobile/|packages/core/|scripts/qa/|patches/|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|\.github/workflows/mobile-e2e\.yml$)'; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "run=false" >> "$GITHUB_OUTPUT"
-          fi
-
-  ios:
-    name: Maestro on iOS
-    needs: changes
-    if: needs.changes.outputs.run == 'true'
+  build:
+    name: Build the iOS app
+    if: github.event_name != 'pull_request' || github.head_ref == 'staging'
     runs-on: macos-26
-    timeout-minutes: 150
+    timeout-minutes: 90
+    outputs:
+      key: ${{ steps.app-cache.outputs.cache-primary-key }}
     env:
       APP_VARIANT: development
       EXPO_PUBLIC_SUPABASE_URL: http://127.0.0.1:54331
       EXPO_PUBLIC_SUPABASE_ANON_KEY: fixture
-      MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000
     steps:
       - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v6
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version-file: .node-version
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      - name: Restore the built app
+      - name: Look up the built app
         id: app-cache
         uses: actions/cache/restore@v6
         with:
           path: .context/app
           key: ios-release-app-${{ hashFiles('apps/mobile/**', '!apps/mobile/e2e/**', 'packages/core/**', 'pnpm-lock.yaml') }}
+          lookup-only: true
+
+      - uses: pnpm/action-setup@v6
+        if: steps.app-cache.outputs.cache-hit != 'true'
+
+      - uses: actions/setup-node@v7
+        if: steps.app-cache.outputs.cache-hit != 'true'
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - if: steps.app-cache.outputs.cache-hit != 'true'
+        run: pnpm install --frozen-lockfile
 
       - name: Generate the iOS project
         if: steps.app-cache.outputs.cache-hit != 'true'
@@ -98,7 +77,32 @@ jobs:
           path: .context/app
           key: ${{ steps.app-cache.outputs.cache-primary-key }}
 
-      - name: Create a simulator and install the app
+      - name: Upload the build log
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios-build-log
+          path: apps/mobile/ios/build.log
+          if-no-files-found: ignore
+
+  e2e:
+    name: Maestro shard ${{ matrix.shard }}
+    needs: build
+    runs-on: macos-26
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    env:
+      MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000
+      MAESTRO_VERSION: 2.12.1
+      SHARD_1_FLOWS: onboarding food-details menu-meals-and-dates
+      SHARD_2_FLOWS: favorites tabs settings
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Create and boot a simulator
         run: |
           RUNTIME_JSON="$(xcrun simctl list runtimes -j | jq '[.runtimes[] | select(.platform == "iOS" and .isAvailable)] | last')"
           RUNTIME="$(jq -r '.identifier' <<<"$RUNTIME_JSON")"
@@ -106,24 +110,75 @@ jobs:
           echo "Runtime $RUNTIME, device type $DEVICE_TYPE"
           SIM="$(xcrun simctl create maestro "$DEVICE_TYPE" "$RUNTIME")"
           xcrun simctl boot "$SIM"
-          xcrun simctl bootstatus "$SIM" -b
-          xcrun simctl install "$SIM" .context/app/*.app
           echo "SIM=$SIM" >> "$GITHUB_ENV"
 
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+
+      - name: Restore Maestro
+        id: maestro-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.maestro
+          key: maestro-${{ runner.os }}-${{ runner.arch }}-${{ env.MAESTRO_VERSION }}
+
       - name: Install Maestro
+        if: steps.maestro-cache.outputs.cache-hit != 'true'
+        run: curl -fsSL https://get.maestro.mobile.dev | bash
+
+      - run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Restore the built app
+        uses: actions/cache/restore@v6
+        with:
+          path: .context/app
+          key: ${{ needs.build.outputs.key }}
+          fail-on-cache-miss: true
+
+      - name: Install the app once the simulator has booted
         run: |
-          curl -fsSL https://get.maestro.mobile.dev | bash
-          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+          xcrun simctl bootstatus "$SIM" -b
+          xcrun simctl install "$SIM" .context/app/*.app
+
+      - name: Pick this shard's flows
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: |
+          case "$SHARD" in
+            1) NAMES="$SHARD_1_FLOWS" ;;
+            2) NAMES="$SHARD_2_FLOWS" ;;
+            *) NAMES="$(ls apps/mobile/e2e/flows/*.yaml | xargs -n1 basename | sed 's/\.yaml$//' | grep -vxF -f <(tr ' ' '\n' <<<"$SHARD_1_FLOWS $SHARD_2_FLOWS") | tr '\n' ' ')" ;;
+          esac
+          FLOWS=""
+          for name in $NAMES; do
+            [[ -f "apps/mobile/e2e/flows/$name.yaml" ]] || { echo "::error::No flow named $name"; exit 1; }
+            FLOWS="$FLOWS apps/mobile/e2e/flows/$name.yaml"
+          done
+          echo "Flows:$FLOWS"
+          echo "FLOWS=$FLOWS" >> "$GITHUB_ENV"
 
       - name: Run Maestro flows
-        run: ./scripts/qa/mobile-e2e.sh --sim "$SIM" --release --fixture-server --retry-failed
+        run: ./scripts/qa/mobile-e2e.sh --sim "$SIM" --release --fixture-server --retry-failed $FLOWS
 
       - name: Upload Maestro output
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: maestro-ios
-          path: |
-            .context/maestro
-            apps/mobile/ios/build.log
+          name: maestro-ios-${{ matrix.shard }}
+          path: .context/maestro
           if-no-files-found: ignore
+
+  ios:
+    name: Maestro on iOS
+    needs: [build, e2e]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          BUILD: ${{ needs.build.result }}
+          E2E: ${{ needs.e2e.result }}
+        run: |
+          echo "build=$BUILD e2e=$E2E"
+          if [[ "$BUILD" == skipped ]]; then exit 0; fi
+          [[ "$BUILD" == success && "$E2E" == success ]]
