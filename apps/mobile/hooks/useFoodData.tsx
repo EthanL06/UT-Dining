@@ -1,7 +1,12 @@
 import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ALLERGEN_EXCEPTIONS, NUTRITION_ORDER } from '~/data/AllergenInfo';
-import { type FoodItem, getFavoriteItem, getFoodItem } from '~/services/database/database';
+import {
+  type FoodItem,
+  findServedFoodItem,
+  getFavoriteItem,
+  getFoodItem,
+} from '~/services/database/database';
 import type { Favorite } from '~/services/database/schema';
 import { useDatabase } from './useDatabase';
 
@@ -49,13 +54,20 @@ export function useFoodData(
         let item: FoodItem | null;
 
         if (isFavorite) {
-          // Fetch from favorites table if isFavorite is true
-          const favoriteItem = getFavoriteItem(db, foodString);
+          const favoriteItem = getFavoriteItem(db, foodString, locString);
           if (!favoriteItem) {
             router.back();
             return;
           }
-          item = convertFavoriteItemToFoodItem(favoriteItem);
+          item =
+            (await findServedFoodItem(
+              db,
+              locString,
+              foodString,
+              menuString,
+              categoryString,
+              date,
+            )) ?? convertFavoriteItemToFoodItem(favoriteItem);
         } else {
           // Fetch from regular food items table
           item = await getFoodItem(db, locString, menuString, categoryString, foodString, date);

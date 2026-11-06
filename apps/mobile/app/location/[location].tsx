@@ -1,5 +1,6 @@
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { useIsFetching } from '@tanstack/react-query';
+import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams } from 'expo-router';
@@ -148,7 +149,10 @@ const Location = () => {
 
   const posthog = usePostHog();
 
-  const { data: favorites } = useLiveQuery(db.select().from(schema.favorites));
+  const { data: favorites } = useLiveQuery(
+    db.select().from(schema.favorites).where(eq(schema.favorites.location_name, location)),
+    [location],
+  );
 
   // Get active filters from filters store
   const activeFilters = useFiltersStore((state) => state.filters);

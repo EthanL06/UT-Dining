@@ -112,10 +112,10 @@ const FoodTopBar = () => {
   const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
-    const result = isFavoriteItem(db, foodItem?.name as string);
+    const result = isFavoriteItem(db, foodItem?.name as string, location);
 
     setIsFavorite(result);
-  }, [foodItem, db]);
+  }, [foodItem, location, db]);
 
   if (!foodItem) {
     return null;
