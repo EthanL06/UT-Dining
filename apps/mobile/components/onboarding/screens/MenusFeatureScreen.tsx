@@ -1,56 +1,19 @@
-import { Image } from 'expo-image';
-import { Text, View } from 'react-native';
-import { useSettingsStore } from '~/store/useSettingsStore';
-import { cn } from '~/utils/utils';
+import FeaturePage from './FeaturePage';
 
-type Props = {
-  width: number;
-};
+const images = [
+  {
+    light: require('~/assets/onboarding/menu.webp'),
+    dark: require('~/assets/onboarding/menu-dark.webp'),
+  },
+];
 
-const image = require('~/assets/onboarding/menu.webp');
-
-const MenusFeatureScreen = ({ width }: Props) => {
-  const isDark = useSettingsStore((state) => state.isDarkMode);
-
-  return (
-    <View
-      style={{ width }}
-      className={cn('flex-1 px-6 py-8', isDark ? 'bg-neutral-900' : 'bg-white')}
-    >
-      <View className="flex-1 items-center justify-center">
-        <Image
-          source={image}
-          style={{
-            width: '100%',
-            height: 512,
-            flexShrink: 1,
-            minHeight: 0,
-            marginBottom: 32,
-          }}
-          contentFit="contain"
-        />
-
-        <View>
-          <Text
-            className={cn(
-              'mb-4 text-center font-bold text-3xl',
-              isDark ? 'text-white' : 'text-gray-900',
-            )}
-          >
-            Browse Menus with Ease
-          </Text>
-          <Text
-            className={cn(
-              'mx-auto max-w-[300px] text-center text-lg leading-6',
-              isDark ? 'text-gray-300' : 'text-gray-600',
-            )}
-          >
-            No more guessing. Know what's on the menu before you go
-          </Text>
-        </View>
-      </View>
-    </View>
-  );
-};
+const MenusFeatureScreen = ({ width }: { width: number }) => (
+  <FeaturePage
+    width={width}
+    images={images}
+    title="Browse Menus with Ease"
+    subtitle="No more guessing. Know what's on the menu before you go."
+  />
+);
 
 export default MenusFeatureScreen;

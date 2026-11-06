@@ -90,7 +90,7 @@ const PermissionsScreen = ({ width, onPermissionsChange }: Props) => {
   };
 
   return (
-    <View style={{ width }} className={cn('flex-1 px-6', isDark ? 'bg-neutral-900' : 'bg-white')}>
+    <View style={{ width }} className={cn('flex-1 px-6', isDark ? 'bg-black' : 'bg-[#F2F2F7]')}>
       <View className="flex-1 items-center justify-center">
         <Text
           className={cn(

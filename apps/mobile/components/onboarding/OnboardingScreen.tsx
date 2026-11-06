@@ -209,7 +209,7 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
   return (
     <Modal animationType="slide" presentationStyle="fullScreen" visible={!isOnboardingComplete}>
       <SafeAreaProvider>
-        <Container className={cn('mx-0', isDarkMode ? 'bg-neutral-900' : 'bg-white')}>
+        <Container className={cn('mx-0', isDarkMode ? 'bg-black' : 'bg-[#F2F2F7]')}>
           <View className="flex-row items-center px-6">
             <TouchableOpacity
               activeOpacity={0.8}
@@ -258,7 +258,7 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
               )}
               style={[animatedStyle]}
             >
-              <Text className="py-2 text-center font-semibold text-white">
+              <Text className="py-1.5 text-center font-semibold text-[17px] text-white">
                 {currentStep === ONBOARDING_SCREENS.length - 1
                   ? 'Finish'
                   : (currentStep === 1 && !hasDataSelection) ||

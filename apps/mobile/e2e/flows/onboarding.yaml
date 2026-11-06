@@ -5,7 +5,8 @@ tags:
 ---
 - runFlow: ../subflows/launch.yaml
 - extendedWaitUntil:
-    visible: The all-in-one UT Austin dining app.*
+    visible:
+      id: onboarding-welcome-title
     timeout: 60000
 - runFlow: ../subflows/dismiss-alerts.yaml
 - assertVisible: Skip|Continue
