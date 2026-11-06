@@ -1,674 +1,390 @@
+import { useQuery } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
-import { useFocusEffect } from 'expo-router';
-import {
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  ChevronUp,
-  Coffee,
-  Locate,
-  MapPin,
-  Microwave,
-  Soup,
-  Store,
-  Truck,
-  Utensils,
-} from 'lucide-react-native';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Animated, Dimensions, Platform, TouchableOpacity, View } from 'react-native';
-import { SheetManager } from 'react-native-actions-sheet';
+import { LocateFixed } from 'lucide-react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Pressable, Text, useWindowDimensions, View } from 'react-native';
 import type { Region } from 'react-native-maps';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Container } from '~/components/Container';
+import { type MapFilterId, MapSheet, PLACE_ICONS, usePlaceColor } from '~/components/map/MapSheet';
 import { MICROWAVE_LOCATIONS } from '~/data/MicrowaveLocations';
 import { useDatabase } from '~/hooks/useDatabase';
-import { getAllLocationsWithCoordinates } from '~/services/database/database';
+import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
-import { COLORS } from '~/utils/colors';
-import { cn } from '~/utils/utils';
+import { getTodayInCentralTime } from '~/utils/date';
+import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
+import { getLocationName } from '~/utils/locations';
+import {
+  type Cluster,
+  type Coordinates,
+  clusterPlaces,
+  type Place,
+  regionAround,
+  zoomLevelFor,
+} from '~/utils/mapPlaces';
+import { readCachedMenuData } from '~/utils/queries';
+import { useTheme } from '~/utils/theme';
+import { getLocationStatusText } from '~/utils/time';
 
-// The native iOS tab bar floats over the map, so overlays sit above it.
-const TAB_BAR_CLEARANCE = Platform.OS === 'ios' ? 100 : 0;
-
-// Type for merged location data (dining + microwave locations)
-type MergedLocation = {
-  name: string;
-  address: string;
-  description: string;
-  coordinates: {
-    latitude: number;
-    longitude: number;
-  };
-  type: string;
-  hasMenu: boolean;
-};
-
-const initialRegion = {
+const INITIAL_REGION: Region = {
   latitude: 30.285548,
   longitude: -97.737384,
-  latitudeDelta: 0.01,
-  longitudeDelta: 0.01,
+  latitudeDelta: 0.012,
+  longitudeDelta: 0.012,
 };
 
-// Helper function to check if two coordinates are the same (within small tolerance)
-const coordinatesMatch = (
-  coord1: { latitude: number; longitude: number },
-  coord2: { latitude: number; longitude: number },
-) => {
-  const COORDINATE_TOLERANCE = 1e-6;
+const TAB_BAR_CLEARANCE = 92;
+
+const coordinatesMatch = (a: Coordinates, b: Coordinates) =>
+  Math.abs(a.latitude - b.latitude) < 1e-6 && Math.abs(a.longitude - b.longitude) < 1e-6;
+
+const shortCloseTime = (status: string) =>
+  status.match(/until (\d+)(?::(\d+))? (AM|PM)/)
+    ? status.replace(/^Open until (\d+)(?::00)? (AM|PM)$/, '$1 $2').replace(/^Open until /, '')
+    : '';
+
+const IconPin = ({ place, selected }: { place: Place; selected: boolean }) => {
+  const Icon = PLACE_ICONS[place.type];
+  const color = usePlaceColor(place.type);
+  const size = selected ? 44 : 30;
   return (
-    Math.abs(coord1.latitude - coord2.latitude) < COORDINATE_TOLERANCE &&
-    Math.abs(coord1.longitude - coord2.longitude) < COORDINATE_TOLERANCE
-  );
-};
-
-const ICON_MAP = {
-  microwave: Microwave,
-  'Coffee Shop': Coffee,
-  'Convenience Store': Store,
-  'Dining Hall': Utensils,
-  'Food & Drink': Soup,
-  'Food Truck': Truck,
-};
-
-const ICON_MAP_COLORS = {
-  microwave: {
-    default: '#C0392B', // Gold
-    colorBlind: '#556B2F', // Much darker gold/brown for high contrast
-  },
-  'Coffee Shop': {
-    default: '#5C3A21', // Deep Brown
-    colorBlind: '#D2691E', // Strong reddish-brown (chocolate) for separation
-  },
-  'Convenience Store': {
-    default: '#36827F', // Teal
-    colorBlind: '#004D60', // Deep blue-teal for clearer difference
-  },
-  'Dining Hall': {
-    default: COLORS['ut-burnt-orange'], // Burnt Orange
-    colorBlind: '#5A2200', // Very dark brownish orange for strong contrast
-  },
-  'Food & Drink': {
-    default: '#D97706', // Amber
-    colorBlind: '#C2185B', // Dark burnt brown for clear separation from amber/orange
-  },
-  'Food Truck': {
-    default: '#43A047', // Bright warm red
-    colorBlind: '#7B1FA2', // Deep burgundy for clear separation
-  },
-};
-
-const MarkerIcon = ({
-  onPress,
-  type,
-  isColorBlindMode,
-}: {
-  onPress: () => void;
-  type: string;
-  isColorBlindMode: boolean;
-}) => {
-  const IconComponent = ICON_MAP[type as keyof typeof ICON_MAP] || MapPin;
-  const squishAnimation = useRef(new Animated.Value(1)).current;
-
-  const handlePress = () => {
-    Animated.sequence([
-      Animated.timing(squishAnimation, {
-        toValue: 0.8,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(squishAnimation, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-    onPress();
-  };
-
-  return (
-    <Animated.View
+    <View
+      className="items-center justify-center rounded-full"
       style={{
-        transform: [{ scale: squishAnimation }],
+        width: size,
+        height: size,
+        backgroundColor: color,
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
+        shadowColor: '#000',
+        shadowOpacity: 0.3,
+        shadowRadius: 3,
+        shadowOffset: { width: 0, height: 2 },
       }}
     >
-      <TouchableOpacity
-        onPress={handlePress}
-        activeOpacity={0.9}
-        style={{
-          backgroundColor: isColorBlindMode
-            ? ICON_MAP_COLORS[type as keyof typeof ICON_MAP_COLORS].colorBlind
-            : ICON_MAP_COLORS[type as keyof typeof ICON_MAP_COLORS].default,
-          padding: 8,
-          borderRadius: 50,
-          borderWidth: 2,
-          borderColor: 'white',
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.3,
-          shadowRadius: 2,
-        }}
-      >
-        <IconComponent size={20} color="white" />
-      </TouchableOpacity>
-    </Animated.View>
-  );
-};
-
-type Direction = 'north' | 'south' | 'east' | 'west';
-
-const EdgeIndicator = ({ direction, onPress }: { direction: Direction; onPress: () => void }) => {
-  const scaleAnimation = useRef(new Animated.Value(0)).current;
-  const squishAnimation = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    // Scale in animation when component mounts
-    Animated.spring(scaleAnimation, {
-      toValue: 1,
-      useNativeDriver: true,
-      tension: 100,
-      friction: 8,
-    }).start();
-
-    // Return cleanup function for scale out animation
-    return () => {
-      Animated.spring(scaleAnimation, {
-        toValue: 0,
-        friction: 8,
-        tension: 100,
-        useNativeDriver: true,
-      }).start();
-    };
-  }, [scaleAnimation]);
-
-  const handlePress = () => {
-    Animated.sequence([
-      Animated.timing(squishAnimation, {
-        toValue: 0.8,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(squishAnimation, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-    onPress();
-  };
-
-  const getPositionStyle = () => {
-    const { width, height } = Dimensions.get('window');
-    const indicatorSize = 60;
-    const margin = 20;
-
-    switch (direction) {
-      case 'north':
-        return {
-          top: 100,
-          left: width / 2 - indicatorSize / 2,
-        };
-      case 'south':
-        return {
-          bottom: 80 + TAB_BAR_CLEARANCE,
-          left: width / 2 - indicatorSize / 2,
-        };
-      case 'east':
-        return {
-          top: height / 2 - indicatorSize / 2,
-          right: margin,
-        };
-      case 'west':
-        return {
-          top: height / 2 - indicatorSize / 2,
-          left: margin,
-        };
-    }
-  };
-
-  const getIcon = () => {
-    switch (direction) {
-      case 'north':
-        return <ChevronUp size={24} color="white" />;
-      case 'south':
-        return <ChevronDown size={24} color="white" />;
-      case 'east':
-        return <ChevronRight size={24} color="white" />;
-      case 'west':
-        return <ChevronLeft size={24} color="white" />;
-    }
-  };
-
-  return (
-    <Animated.View
-      style={[
-        {
-          position: 'absolute',
-          transform: [{ scale: scaleAnimation }, { scale: squishAnimation }],
-        },
-        getPositionStyle(),
-      ]}
-    >
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={handlePress}
-        style={{
-          width: 60,
-          height: 60,
-          backgroundColor: COLORS['ut-burnt-orange'],
-          borderRadius: 30,
-          borderWidth: 2,
-          borderColor: 'white',
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.3,
-          shadowRadius: 4,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <View style={{ alignItems: 'center' }}>{getIcon()}</View>
-      </TouchableOpacity>
-    </Animated.View>
-  );
-};
-
-const MapMarkers = ({
-  locations,
-  onMarkerPress,
-  isColorBlindMode,
-}: {
-  locations: {
-    name: string;
-    address: string;
-    coordinates: { latitude: number; longitude: number };
-    hasMenu: boolean;
-    description?: string;
-    note?: string;
-    type: string;
-  }[];
-  onMarkerPress: (coords: { latitude: number; longitude: number }) => void;
-  isColorBlindMode: boolean;
-}) => {
-  return (
-    <>
-      {locations.map((location) => {
-        const handlePress = () => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          onMarkerPress(location.coordinates);
-          SheetManager.show('map-location', {
-            context: 'global',
-            payload: {
-              name: location.name,
-              address: location.address,
-              description: location.description ?? '',
-              type: location.type,
-              hasMenu: location.hasMenu,
-              ...(location.note ? { note: location.note } : {}),
-            },
-          });
-        };
-
-        return (
-          <Marker
-            key={location.name}
-            coordinate={location.coordinates}
-            tracksViewChanges={false}
-            onPress={handlePress}
-          >
-            <MarkerIcon
-              onPress={handlePress}
-              type={location.type}
-              isColorBlindMode={isColorBlindMode}
-            />
-          </Marker>
-        );
-      })}
-    </>
-  );
-};
-
-const MapPage = () => {
-  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
-  const mapRef = useRef<MapView>(null);
-  const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
-  const [hasLocationPermission, setHasLocationPermission] = useState(false);
-  const [currentRegion, setCurrentRegion] = useState<Region>(initialRegion);
-  const db = useDatabase();
-  const [dbLocations, setDbLocations] = useState<
-    Awaited<ReturnType<typeof getAllLocationsWithCoordinates>>
-  >([]);
-  const isColorBlindMode = useSettingsStore((state) => state.isColorBlindMode);
-  useEffect(() => {
-    let cancelled = false;
-    let locationSubscription: Location.LocationSubscription | null = null;
-
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (cancelled) return;
-      if (status !== 'granted') {
-        Alert.alert(
-          'Location Permission Denied',
-          'Enable location services to see your position on the map.',
-          [{ text: 'OK' }],
-        );
-        return;
-      }
-      setHasLocationPermission(true);
-
-      const location = await Location.getCurrentPositionAsync({});
-      if (cancelled) return;
-      setUserLocation(location);
-
-      const subscription = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.High,
-          timeInterval: 10000, // Update every 10 seconds
-          distanceInterval: 10, // Update every 10 meters
-        },
-        (newLocation: Location.LocationObject) => {
-          setUserLocation(newLocation);
-        },
-      );
-      if (cancelled) {
-        subscription.remove();
-        return;
-      }
-      locationSubscription = subscription;
-    })();
-
-    return () => {
-      cancelled = true;
-      locationSubscription?.remove();
-    };
-  }, []);
-
-  useEffect(() => {
-    async function fetchDbLocations() {
-      if (!db) return;
-
-      const locs = await getAllLocationsWithCoordinates(db);
-      setDbLocations(locs);
-    }
-    fetchDbLocations();
-  }, [db]);
-
-  // Merge database dining locations with static microwave locations
-  const mergedLocations: MergedLocation[] = React.useMemo(() => {
-    // Transform database locations to consistent format, filtering out null names
-    const databaseLocations = dbLocations
-      .filter((loc) => loc.name !== null)
-      .map((loc) => ({
-        name: loc.name as string,
-        address: loc.address,
-        description: loc.description,
-        coordinates: {
-          latitude: Number(loc.latitude),
-          longitude: Number(loc.longitude),
-        },
-        type: loc.type,
-        hasMenu: loc.has_menus,
-      }));
-
-    // Add microwave locations that don't overlap with database locations
-    const uniqueMicrowaveLocations = MICROWAVE_LOCATIONS.filter(
-      (microwaveLocation) =>
-        !databaseLocations.some((dbLocation) =>
-          coordinatesMatch(dbLocation.coordinates, microwaveLocation.coordinates),
-        ),
-    ).map((microwaveLocation) => ({
-      ...microwaveLocation,
-      type: 'microwave' as const,
-      hasMenu: false,
-    }));
-
-    return [...databaseLocations, ...uniqueMicrowaveLocations];
-  }, [dbLocations]);
-
-  const handleRegionChangeComplete = (region: Region) => {
-    // Update current region for edge indicator calculations
-    setCurrentRegion(region);
-  };
-
-  const outOfViewLocations = useMemo(() => {
-    // Calculate distance from initial campus center
-    const distanceFromCampus = Math.sqrt(
-      (currentRegion.latitude - initialRegion.latitude) ** 2 +
-        (currentRegion.longitude - initialRegion.longitude) ** 2,
-    );
-
-    // Threshold to determine if user has scrolled away from main campus area
-    const campusDistanceThreshold = 0.013;
-
-    // Only show edge indicators when user has scrolled significantly away from campus
-    const isAwayFromCampus = distanceFromCampus > campusDistanceThreshold;
-
-    const grouped: Record<Direction, typeof mergedLocations> = {
-      north: [],
-      south: [],
-      east: [],
-      west: [],
-    };
-
-    // Return empty groups if still within campus area
-    if (!isAwayFromCampus) {
-      return grouped;
-    }
-
-    const visibleBounds = {
-      north: currentRegion.latitude + currentRegion.latitudeDelta / 2,
-      south: currentRegion.latitude - currentRegion.latitudeDelta / 2,
-      east: currentRegion.longitude + currentRegion.longitudeDelta / 2,
-      west: currentRegion.longitude - currentRegion.longitudeDelta / 2,
-    };
-
-    mergedLocations.forEach((location) => {
-      const { latitude, longitude } = location.coordinates;
-
-      // Check if location is outside visible bounds
-      const isOutOfView =
-        latitude > visibleBounds.north ||
-        latitude < visibleBounds.south ||
-        longitude > visibleBounds.east ||
-        longitude < visibleBounds.west;
-
-      if (isOutOfView) {
-        // Determine primary direction
-        const latDiff = latitude - currentRegion.latitude;
-        const lonDiff = longitude - currentRegion.longitude;
-
-        if (Math.abs(latDiff) > Math.abs(lonDiff)) {
-          // Primary direction is north/south
-          if (latDiff > 0) {
-            grouped.north.push(location);
-          } else {
-            grouped.south.push(location);
-          }
-        } else {
-          // Primary direction is east/west
-          if (lonDiff > 0) {
-            grouped.east.push(location);
-          } else {
-            grouped.west.push(location);
-          }
-        }
-      }
-    });
-
-    // Find the direction with the most locations
-    const directionWithMost = Object.entries(grouped).reduce(
-      (max, [direction, locations]) => {
-        return locations.length > max.count
-          ? { direction: direction as Direction, count: locations.length }
-          : max;
-      },
-      { direction: 'north' as Direction, count: 0 },
-    );
-
-    // Return only the direction with the most locations
-    return {
-      [directionWithMost.direction]: grouped[directionWithMost.direction],
-    };
-  }, [currentRegion, mergedLocations]);
-
-  const navigateToDirection = (
-    direction: Direction,
-    deltas?: { latitudeDelta: number; longitudeDelta: number },
-  ) => {
-    const locationsInDirection = outOfViewLocations[direction];
-    if (locationsInDirection.length === 0) return;
-
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    // Find the closest location in that direction
-    const closest = locationsInDirection.reduce((closest, current) => {
-      const closestDistance = Math.sqrt(
-        (closest.coordinates.latitude - currentRegion.latitude) ** 2 +
-          (closest.coordinates.longitude - currentRegion.longitude) ** 2,
-      );
-      const currentDistance = Math.sqrt(
-        (current.coordinates.latitude - currentRegion.latitude) ** 2 +
-          (current.coordinates.longitude - currentRegion.longitude) ** 2,
-      );
-      return currentDistance < closestDistance ? current : closest;
-    });
-
-    // Animate to the closest location
-    mapRef.current?.animateToRegion(
-      {
-        latitude: closest.coordinates.latitude,
-        longitude: closest.coordinates.longitude,
-        latitudeDelta: deltas?.latitudeDelta ?? 0.0015,
-        longitudeDelta: deltas?.longitudeDelta ?? 0.0015,
-      },
-      500,
-    );
-  };
-
-  const handleMarkerPress = (coordinates: { latitude: number; longitude: number }) => {
-    // Calculate a vertical offset to account for the sheet height (60vh)
-    // We'll move the target point up by ~25% of the view delta to position it in the upper portion of the screen
-    const targetLatitude = coordinates.latitude - 0.00031; // Offset north by a small amount
-
-    mapRef.current?.animateToRegion(
-      {
-        latitude: targetLatitude,
-        longitude: coordinates.longitude,
-        latitudeDelta: 0.00125,
-        longitudeDelta: 0.00125,
-      },
-      500,
-    );
-  };
-
-  const centerOnUser = () => {
-    if (userLocation && mapRef.current) {
-      const userLat = userLocation.coords.latitude;
-      const userLong = userLocation.coords.longitude;
-
-      mapRef.current.animateToRegion({
-        latitude: userLat,
-        longitude: userLong,
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
-      });
-    }
-  };
-
-  return (
-    <View style={{ flex: 1, backgroundColor: isDarkMode ? '#171717' : '#fff' }}>
-      <Container
-        disableInsets
-        className={cn('mx-0 gap-6', isDarkMode ? 'bg-neutral-900' : 'bg-white')}
-      >
-        <MapView
-          ref={mapRef}
-          style={{
-            flex: 1,
-            borderTopWidth: 1,
-            borderColor: isDarkMode ? 'rgba(75, 85, 99, 0.3)' : 'rgba(51, 63, 72, 0.15)',
-          }}
-          provider={PROVIDER_DEFAULT}
-          initialRegion={initialRegion}
-          showsUserLocation={hasLocationPermission}
-          onRegionChangeComplete={handleRegionChangeComplete}
-          userInterfaceStyle={isDarkMode ? 'dark' : 'light'}
-          loadingEnabled
-          loadingBackgroundColor={isDarkMode ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)'}
-        >
-          <MapMarkers
-            locations={mergedLocations}
-            onMarkerPress={handleMarkerPress}
-            isColorBlindMode={isColorBlindMode}
-          />
-        </MapView>
-
-        <View
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: TAB_BAR_CLEARANCE,
-            experimental_backgroundImage: isDarkMode
-              ? 'linear-gradient(to bottom, rgba(23, 23, 23, 0) 0%, #171717 20%)'
-              : 'linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #fff 20%)',
-          }}
-        />
-
-        {/* Edge Indicators */}
-        {Object.entries(outOfViewLocations).map(([direction, locations]) => {
-          if (locations.length === 0) return null;
-
-          return (
-            <EdgeIndicator
-              key={direction}
-              direction={direction as Direction}
-              onPress={() =>
-                navigateToDirection(direction as Direction, {
-                  latitudeDelta: 0.0075,
-                  longitudeDelta: 0.0075,
-                })
-              }
-            />
-          );
-        })}
-
-        {/* Location Button */}
-        {hasLocationPermission && (
-          <TouchableOpacity
-            activeOpacity={0.5}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              centerOnUser();
-            }}
-            style={{ bottom: 48 + TAB_BAR_CLEARANCE }}
-            className={cn(
-              'absolute right-12 rounded-full p-4',
-              isDarkMode ? 'bg-[#171717]' : 'bg-white',
-            )}
-          >
-            <Locate size={24} color={COLORS['ut-burnt-orange']} />
-          </TouchableOpacity>
-        )}
-      </Container>
+      {Icon && <Icon size={size * 0.5} color="#FFFFFF" />}
     </View>
   );
 };
 
-const MapTab = () => {
-  const [hasOpened, setHasOpened] = useState(false);
+const ClosedDot = () => (
+  <View
+    className="size-3 rounded-full"
+    style={{ backgroundColor: '#8E8E93', borderWidth: 2, borderColor: '#FFFFFF' }}
+  />
+);
 
-  useFocusEffect(
-    useCallback(() => {
-      setHasOpened(true);
-    }, []),
+const LabelPin = ({ place }: { place: Place }) => {
+  const theme = useTheme();
+  const Icon = PLACE_ICONS[place.type];
+  const color = usePlaceColor(place.type);
+  const closes = shortCloseTime(place.status);
+  return (
+    <View
+      className="h-9 flex-row items-center gap-x-1.5 rounded-full pr-3 pl-1"
+      style={{
+        backgroundColor: theme.card,
+        shadowColor: '#000',
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 },
+      }}
+    >
+      <View
+        className="size-[28px] items-center justify-center rounded-full"
+        style={{ backgroundColor: color }}
+      >
+        {Icon && <Icon size={15} color="#FFFFFF" />}
+      </View>
+      <Text
+        numberOfLines={1}
+        className="max-w-40 font-semibold text-[13px]"
+        style={{ color: theme.label }}
+      >
+        {place.name}
+      </Text>
+      {closes !== '' && (
+        <Text className="text-[13px]" style={{ color: theme.secondaryLabel }}>
+          {closes}
+        </Text>
+      )}
+    </View>
   );
-
-  return hasOpened ? <MapPage /> : null;
 };
 
-export default MapTab;
+const ClusterPin = ({ cluster }: { cluster: Cluster }) => {
+  const size = Math.min(42, 32 + cluster.places.length);
+  return (
+    <View
+      className="items-center justify-center rounded-full"
+      style={{
+        width: size,
+        height: size,
+        backgroundColor: '#BF5700',
+        borderWidth: 3,
+        borderColor: '#FFFFFF',
+        shadowColor: '#000',
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 },
+      }}
+    >
+      <Text className="font-bold text-[15px] text-white">{cluster.places.length}</Text>
+    </View>
+  );
+};
+
+const MapPage = () => {
+  const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+  const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
+  const db = useDatabase();
+  const mapRef = useRef<MapView>(null);
+  const [region, setRegion] = useState<Region>(INITIAL_REGION);
+  const [userCoordinates, setUserCoordinates] = useState<Coordinates | null>(null);
+  const [hasLocationPermission, setHasLocationPermission] = useState(false);
+  const [query, setQuery] = useState('');
+  const [filters, setFilters] = useState<Set<MapFilterId>>(new Set());
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const [sheetHeight, setSheetHeight] = useState(0);
+  const bottomOffset = TAB_BAR_CLEARANCE + insets.bottom - 34;
+
+  const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
+  const [minuteTick, setMinuteTick] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => setMinuteTick((tick) => tick + 1), 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const { data } = useQuery({
+    queryKey: ['menuData'],
+    queryFn: () => readCachedMenuData(db),
+    staleTime: Number.POSITIVE_INFINITY,
+    retry: false,
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    let subscription: Location.LocationSubscription | null = null;
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (cancelled || status !== 'granted') return;
+      setHasLocationPermission(true);
+      const sub = await Location.watchPositionAsync(
+        { accuracy: Location.Accuracy.Balanced, timeInterval: 10000, distanceInterval: 10 },
+        (location) => setUserCoordinates(location.coords),
+      );
+      if (cancelled) sub.remove();
+      else subscription = sub;
+    })();
+    return () => {
+      cancelled = true;
+      subscription?.remove();
+    };
+  }, []);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: recompute open status after each sync and every minute
+  const places: Place[] = useMemo(() => {
+    const now = new Date();
+    const withMenus = getLocationIdsWithMenus(db, getTodayInCentralTime());
+    const dining = (data?.locations ?? [])
+      .filter((location) => location.latitude !== null && location.longitude !== null)
+      .map((location) => {
+        const isOpen = isLocationOpenNow(location, withMenus, now);
+        return {
+          name: getLocationName(db, location.name ?? '', useColloquialNames),
+          address: location.address,
+          description: location.description,
+          coordinates: {
+            latitude: Number(location.latitude),
+            longitude: Number(location.longitude),
+          },
+          type: location.type,
+          hasMenu: location.has_menus,
+          isOpen,
+          status: getLocationStatusText(location, isOpen, now),
+        };
+      });
+    const microwaves = MICROWAVE_LOCATIONS.filter(
+      (microwave) =>
+        !dining.some((place) => coordinatesMatch(place.coordinates, microwave.coordinates)),
+    ).map((microwave) => ({
+      ...microwave,
+      type: 'microwave',
+      hasMenu: false,
+      isOpen: true,
+      status: 'Microwave',
+    }));
+    return [...dining, ...microwaves];
+  }, [data, db, useColloquialNames, lastSyncedAt, minuteTick]);
+
+  const filteredPlaces = useMemo(() => {
+    const typeFilters: string[] = [...filters].filter((id) => id !== 'open');
+    const needle = query.trim().toLowerCase();
+    return places.filter(
+      (place) =>
+        (!filters.has('open') || place.isOpen) &&
+        (typeFilters.length === 0 || typeFilters.includes(place.type)) &&
+        (needle === '' || place.name.toLowerCase().includes(needle)),
+    );
+  }, [places, filters, query]);
+
+  const hasFitCampus = useRef(false);
+  useEffect(() => {
+    if (hasFitCampus.current || sheetHeight === 0) return;
+    const dining = places.filter((place) => place.type !== 'microwave');
+    if (dining.length === 0) return;
+    hasFitCampus.current = true;
+    mapRef.current?.fitToCoordinates(
+      dining.map((place) => place.coordinates),
+      {
+        edgePadding: { top: insets.top + 24, right: 32, bottom: 32, left: 32 },
+        animated: false,
+      },
+    );
+    const timeout = setTimeout(async () => {
+      const bounds = await mapRef.current?.getMapBoundaries();
+      if (!bounds) return;
+      setRegion({
+        latitude: (bounds.northEast.latitude + bounds.southWest.latitude) / 2,
+        longitude: (bounds.northEast.longitude + bounds.southWest.longitude) / 2,
+        latitudeDelta: bounds.northEast.latitude - bounds.southWest.latitude,
+        longitudeDelta: bounds.northEast.longitude - bounds.southWest.longitude,
+      });
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [places, sheetHeight, insets.top]);
+
+  const zoom = zoomLevelFor(region);
+  const screen = useWindowDimensions();
+  const clusters = useMemo(
+    () => (zoom === 'labels' ? [] : clusterPlaces(filteredPlaces, region, screen.width)),
+    [zoom, filteredPlaces, region, screen.width],
+  );
+
+  const focusPlace = useCallback((place: Place) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSelectedPlace(place);
+    mapRef.current?.animateToRegion(
+      { ...place.coordinates, latitudeDelta: 0.003, longitudeDelta: 0.003 },
+      450,
+    );
+  }, []);
+
+  const toggleFilter = useCallback((id: MapFilterId) => {
+    setFilters((previous) => {
+      const next = new Set(previous);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const renderPlace = (place: Place) => {
+    const selected = selectedPlace?.name === place.name;
+    const showLabel = zoom === 'labels' && place.isOpen && place.type !== 'microwave';
+    const showDot = !place.isOpen && !selected;
+    return (
+      <Marker
+        key={`${place.name}-${showLabel ? 'label' : showDot ? 'dot' : 'pin'}-${selected}`}
+        coordinate={place.coordinates}
+        tracksViewChanges={false}
+        anchor={showLabel ? { x: 0.1, y: 0.5 } : { x: 0.5, y: 0.5 }}
+        onPress={() => focusPlace(place)}
+        accessibilityLabel={`Map pin, ${place.name}`}
+      >
+        {showLabel && !selected ? (
+          <LabelPin place={place} />
+        ) : showDot ? (
+          <ClosedDot />
+        ) : (
+          <IconPin place={place} selected={selected} />
+        )}
+      </Marker>
+    );
+  };
+
+  return (
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
+      <MapView
+        ref={mapRef}
+        style={{ flex: 1 }}
+        provider={PROVIDER_DEFAULT}
+        initialRegion={INITIAL_REGION}
+        showsUserLocation={hasLocationPermission}
+        showsPointsOfInterests={false}
+        onRegionChangeComplete={setRegion}
+        userInterfaceStyle={isDarkMode ? 'dark' : 'light'}
+        mapPadding={{ top: insets.top, right: 0, bottom: sheetHeight + bottomOffset, left: 0 }}
+        loadingEnabled
+        loadingBackgroundColor={theme.background}
+      >
+        {zoom === 'pins'
+          ? clusters.map((cluster) =>
+              cluster.places.length === 1 ? (
+                renderPlace(cluster.places[0])
+              ) : (
+                <Marker
+                  key={`cluster-${cluster.id}-${cluster.places.length}`}
+                  coordinate={cluster.coordinates}
+                  tracksViewChanges={false}
+                  accessibilityLabel={`${cluster.places.length} places`}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    mapRef.current?.animateToRegion(regionAround(cluster.places), 450);
+                  }}
+                >
+                  <ClusterPin cluster={cluster} />
+                </Marker>
+              ),
+            )
+          : filteredPlaces.map(renderPlace)}
+      </MapView>
+
+      {hasLocationPermission && userCoordinates && (
+        <Pressable
+          testID="map-locate-button"
+          accessibilityLabel="Show my location"
+          accessibilityRole="button"
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            mapRef.current?.animateToRegion(
+              { ...userCoordinates, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+              450,
+            );
+          }}
+          className="absolute right-4 size-11 items-center justify-center rounded-full"
+          style={{
+            bottom: bottomOffset + sheetHeight + 12,
+            backgroundColor: theme.card,
+            shadowColor: '#000',
+            shadowOpacity: 0.18,
+            shadowRadius: 8,
+            shadowOffset: { width: 0, height: 2 },
+          }}
+        >
+          <LocateFixed size={20} color={theme.tint} />
+        </Pressable>
+      )}
+
+      <MapSheet
+        places={filteredPlaces}
+        query={query}
+        onQueryChange={setQuery}
+        filters={filters}
+        onToggleFilter={toggleFilter}
+        selectedPlace={selectedPlace}
+        onSelectPlace={focusPlace}
+        onClosePlace={() => setSelectedPlace(null)}
+        userCoordinates={userCoordinates}
+        bottomOffset={bottomOffset}
+        onHeightChange={setSheetHeight}
+      />
+    </View>
+  );
+};
+
+export default MapPage;
