@@ -1,6 +1,9 @@
 import {
+  formatHhmm,
+  getNextOpening,
   getOpenRanges,
   isWithinRanges,
+  type MealTime,
   type ServiceHours,
   type TimeRange,
   toLocalTime,
@@ -238,3 +241,37 @@ export const formatTimeSinceSync = (timeSinceSync: number): string => {
     return 'Just now';
   }
 };
+
+export function getLocationStatusText(
+  locationData: schema.Location,
+  isOpen: boolean,
+  currentTime: Date = new Date(),
+): string {
+  const { day, time } = toLocalTime(currentTime);
+  const hours = locationData.regular_service_hours as Partial<ServiceHours> | null;
+
+  if (isOpen) {
+    const range = getOpenRanges(hours, day)?.find((r) => isWithinRanges([r], time));
+    return range ? `Open until ${formatHhmm(range.close)}` : 'Open';
+  }
+  if (locationData.force_close) return 'Temporarily closed';
+  if (isWithinRanges(getOpenRanges(hours, day), time)) return 'No menu today';
+
+  const next = getNextOpening(hours, day, time);
+  if (!next) return 'Closed';
+  if (next.daysFromNow === 0) return `Opens at ${formatHhmm(next.open)}`;
+  if (next.daysFromNow === 1) return `Opens tomorrow at ${formatHhmm(next.open)}`;
+  return 'Closed today';
+}
+
+export function getCurrentMeal(
+  locationData: schema.Location,
+  currentTime: Date = new Date(),
+): MealTime | null {
+  const meals = (locationData.meal_times ?? []) as MealTime[];
+  const now = toMinutes(toLocalTime(currentTime).time);
+  return (
+    meals.find((meal) => now >= toMinutes(meal.start_time) && now < toMinutes(meal.end_time)) ??
+    null
+  );
+}
