@@ -12,7 +12,7 @@ env:
     commands:
       - openLink: exp+ut-dining://expo-development-client/?url=${encodeURIComponent(METRO_URL)}&disableOnboarding=1
 - extendedWaitUntil:
-    visible: '.*Your planned meals.*|Enjoying.*'
+    visible: '(Breakfast|Lunch|Dinner) is served.*|Enjoying.*'
     timeout: 60000
 - extendedWaitUntil:
     visible: Enjoying.*
