@@ -1,0 +1,27 @@
+appId: com.ethanl06.ut-dining.dev
+name: Search finds a food on today's menus and opens it
+tags:
+  - smoke
+---
+- runFlow: ../subflows/start.yaml
+- tapOn:
+    id: search-tab
+- tapOn: "Search today's menus"
+- inputText: Maestro Veggie
+- extendedWaitUntil:
+    visible: 'Maestro Veggie Burger(,.*)?'
+    timeout: 10000
+- assertVisible: "On today's menus"
+- takeScreenshot: search-results
+- tapOn: 'Maestro Veggie Burger(,.*)?'
+- extendedWaitUntil:
+    visible: Nutrition Facts
+    timeout: 10000
+- assertVisible: 410 kcal
+- tapOn:
+    id: back-button
+- eraseText
+- inputText: zzzz
+- extendedWaitUntil:
+    visible: "Nothing on today's menus matches.*"
+    timeout: 5000

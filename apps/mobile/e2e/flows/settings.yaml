@@ -4,7 +4,8 @@ tags:
   - smoke
 ---
 - runFlow: ../subflows/start.yaml
-- tapOn: Settings
+- tapOn:
+    id: settings-tab
 - extendedWaitUntil:
     visible:
       id: settings-dark-mode-switch
@@ -32,7 +33,7 @@ tags:
 - extendedWaitUntil:
     visible:
       id: settings-sync-status
-      text: Last synced:.*
+      text: Just now|.*minute.*ago
     timeout: 30000
 - scrollUntilVisible:
     element:

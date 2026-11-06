@@ -2,17 +2,32 @@ appId: com.ethanl06.ut-dining.dev
 name: Every tab opens
 ---
 - runFlow: ../subflows/start.yaml
-- tapOn: Map
+- tapOn:
+    id: map-tab
 - waitForAnimationToEnd:
     timeout: 5000
 - takeScreenshot: map
-- tapOn: Notifications
+- tapOn:
+    id: notifications-tab
 - extendedWaitUntil:
-    visible: Stay updated with the latest dining alerts and updates.
+    visible: '.*Maintenance Underway.*'
     timeout: 5000
-- assertVisible: 'Maintenance Underway(,.*)?'
+- assertVisible: Today|Yesterday|Earlier
 - takeScreenshot: notifications
-- tapOn: Home
+- tapOn:
+    id: settings-tab
 - extendedWaitUntil:
-    visible: '.*Your planned meals.*'
+    visible:
+      id: settings-dark-mode-switch
+    timeout: 5000
+- tapOn:
+    id: home-tab
+- extendedWaitUntil:
+    visible: '(Breakfast|Lunch|Dinner) is served.*'
+    timeout: 5000
+- assertVisible: Open now|Closed
+- tapOn:
+    id: search-tab
+- extendedWaitUntil:
+    visible: "Search today's menus"
     timeout: 5000

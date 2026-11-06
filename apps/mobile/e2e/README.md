@@ -43,7 +43,9 @@ It refuses to run unless `supabase status` reports a `http://127.0.0.1:` API URL
 | `favorites.yaml` | Heart on a food and a left swipe add favorites, left swipes remove them |
 | `meal-plan.yaml` | A right swipe and the chef hat add to the meal plan, right swipes remove |
 | `settings.yaml` | Dark mode switch, Sync Data, Favorites quick link |
-| `tabs.yaml` | Map, Notifications (seeded notifications) and Home tabs |
+| `tabs.yaml` | Every tab by its `testID` (`home-tab`, `map-tab`, `notifications-tab`, `settings-tab`, `search-tab`), with the search tab last because opening it collapses the other tabs |
+| `search.yaml` | The search tab finds a food on today's menus and opens it, and a miss shows the empty state |
+| `meal-strip.yaml` | When a dining hall is serving a meal, the strip opens its menu, and its x hides it after a relaunch. Skipped when no meal is being served at run time |
 
 Every flow except `onboarding.yaml` starts from a clean install on Home (`subflows/start.yaml`: clear state, open Metro, skip onboarding). It opens `ut-dining://e2e-setup`, which marks onboarding done only in the dev bundle id (`com.ethanl06.ut-dining.dev`) and then goes Home. Flows tagged `smoke` are the short set.
 
