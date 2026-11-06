@@ -14,10 +14,13 @@ import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { toggleFavoriteForFood } from '~/utils/foodActions';
 import { useTheme } from '~/utils/theme';
+import { timeOfDay } from '~/utils/time';
 import { displayNutrient } from '~/utils/utils';
 
 type Favorite = schema.Favorite;
 type TodayMatch = { location: string; menu: string };
+
+const CURRENT_MEAL = { morning: 'Breakfast', afternoon: 'Lunch', evening: 'Dinner' } as const;
 
 const positionOf = (index: number, count: number): RowPosition => {
   if (count === 1) return 'single';
@@ -42,8 +45,12 @@ const todaysMatches = (db: DrizzleDB, names: string[]) => {
       and(eq(schema.menu.date, getTodayInCentralTime()), inArray(schema.food_item.name, names)),
     )
     .all();
+  const currentMeal = CURRENT_MEAL[timeOfDay(new Date())];
   const matches = new Map<string, TodayMatch>();
-  for (const row of rows) {
+  const ordered = [...rows].sort(
+    (a, b) => Number(b.menu === currentMeal) - Number(a.menu === currentMeal),
+  );
+  for (const row of ordered) {
     if (row.name && !matches.has(row.name)) {
       matches.set(row.name, { location: row.location ?? '', menu: row.menu ?? '' });
     }
