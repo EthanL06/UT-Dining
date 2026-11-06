@@ -18,7 +18,7 @@ const Changelog = () => {
     <View style={{ flex: 1, backgroundColor: isDarkMode ? '#171717' : '#fff' }}>
       <Stack.Screen options={{ title: 'Changelog', headerShown: false }} />
       <Container className="mx-0 gap-y-0" disableBottomPadding>
-        <View className="mt-6 flex gap-y-5 px-6">
+        <View className="mt-2 flex gap-y-4 px-6">
           <TopBar variant="back" />
           <View>
             <View className="flex-row items-center gap-x-2">
@@ -43,7 +43,12 @@ const Changelog = () => {
         <ScrollView
           testID="changelog-list"
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ padding: 24, paddingBottom: 64, gap: 16 }}
+          contentContainerStyle={{
+            paddingHorizontal: 24,
+            paddingTop: 16,
+            paddingBottom: 64,
+            gap: 16,
+          }}
         >
           {CHANGELOG.map((entry) => (
             <ChangelogEntryCard
