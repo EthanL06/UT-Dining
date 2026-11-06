@@ -35,19 +35,19 @@ tags:
       - waitForAnimationToEnd
 - repeat:
     while:
-      notVisible: '.*Your planned meals.*'
+      notVisible: '(Breakfast|Lunch|Dinner) is served.*'
     times: 6
     commands:
       - runFlow: ../subflows/dismiss-alerts.yaml
 - extendedWaitUntil:
-    visible: '.*Your planned meals.*'
+    visible: '(Breakfast|Lunch|Dinner) is served.*'
     timeout: 60000
 - assertNotVisible:
     id: onboarding-next-button
 - takeScreenshot: home
 - runFlow: ../subflows/relaunch.yaml
 - extendedWaitUntil:
-    visible: '.*Your planned meals.*'
+    visible: '(Breakfast|Lunch|Dinner) is served.*'
     timeout: 60000
 - assertNotVisible:
     id: onboarding-next-button

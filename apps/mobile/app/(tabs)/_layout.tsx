@@ -27,15 +27,19 @@ export default function Layout() {
           <MealStrip strip={mealStrip} />
         </NativeTabs.BottomAccessory>
       )}
-      <NativeTabs.Trigger name="(home)">
+      <NativeTabs.Trigger name="(home)" testID="home-tab" accessibilityLabel="Home">
         <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} md="home" />
         <NativeTabs.Trigger.Label hidden>Home</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="map">
+      <NativeTabs.Trigger name="map" testID="map-tab" accessibilityLabel="Map">
         <NativeTabs.Trigger.Icon sf={{ default: 'map', selected: 'map.fill' }} md="map" />
         <NativeTabs.Trigger.Label hidden>Map</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="notifications">
+      <NativeTabs.Trigger
+        name="notifications"
+        testID="notifications-tab"
+        accessibilityLabel="Notifications"
+      >
         <NativeTabs.Trigger.Icon
           sf={{ default: 'bell', selected: 'bell.fill' }}
           md="notifications"
@@ -45,7 +49,7 @@ export default function Layout() {
           <NativeTabs.Trigger.Badge>{String(unreadCount)}</NativeTabs.Trigger.Badge>
         )}
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="settings">
+      <NativeTabs.Trigger name="settings" testID="settings-tab" accessibilityLabel="Settings">
         <NativeTabs.Trigger.Icon
           sf={{ default: 'gearshape', selected: 'gearshape.fill' }}
           md="settings"
@@ -53,7 +57,12 @@ export default function Layout() {
         <NativeTabs.Trigger.Label hidden>Settings</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
       {/* biome-ignore lint/a11y/useSemanticElements: role sets the native iOS search tab, not an ARIA role */}
-      <NativeTabs.Trigger name="search" role="search">
+      <NativeTabs.Trigger
+        name="search"
+        role="search"
+        testID="search-tab"
+        accessibilityLabel="Search"
+      >
         <NativeTabs.Trigger.Icon sf="magnifyingglass" md="search" />
         <NativeTabs.Trigger.Label hidden>Search</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>

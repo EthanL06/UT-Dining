@@ -101,6 +101,7 @@ export const MealStrip = ({
 
   return (
     <Pressable
+      testID="meal-strip"
       accessibilityRole="button"
       accessibilityLabel={`${strip.meal.name} at ${displayName}, until ${formatHhmm(strip.meal.end_time)}. Open menu.`}
       onPress={() => {
@@ -121,6 +122,7 @@ export const MealStrip = ({
         until {formatHhmm(strip.meal.end_time)}
       </Text>
       <Pressable
+        testID="meal-strip-dismiss"
         accessibilityRole="button"
         accessibilityLabel="Hide until the next meal"
         hitSlop={8}
