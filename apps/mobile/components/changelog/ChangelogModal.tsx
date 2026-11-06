@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import { Sparkles } from 'lucide-react-native';
+import { useState } from 'react';
 import { Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import { getChangelogEntry } from '~/data/Changelog';
@@ -18,8 +19,13 @@ interface ChangelogModalProps {
 export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: ChangelogModalProps) => {
   const prompt = useChangelogPromptStore((state) => state.prompt);
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+  const [listHeight, setListHeight] = useState(0);
+  const [contentHeight, setContentHeight] = useState(0);
+  const [isAtEnd, setIsAtEnd] = useState(false);
 
   if (!prompt) return null;
+
+  const canScroll = contentHeight > listHeight + 1;
 
   const entry = getChangelogEntry(prompt.version);
   const isUpdate = prompt.kind === 'update';
@@ -43,7 +49,7 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
           testID="changelog-modal"
           className={cn(
             'w-full max-w-md overflow-hidden rounded-3xl',
-            isDarkMode ? 'bg-neutral-900' : 'bg-white',
+            isDarkMode ? 'border border-neutral-700 bg-neutral-800' : 'bg-white',
           )}
           style={{ maxHeight: '80%' }}
         >
@@ -51,7 +57,7 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
             <View
               className={cn(
                 'h-12 w-12 items-center justify-center rounded-full',
-                isDarkMode ? 'bg-neutral-800' : 'bg-orange-100',
+                isDarkMode ? 'bg-neutral-700' : 'bg-orange-100',
               )}
             >
               <Sparkles size={22} color={COLORS['ut-burnt-orange']} />
@@ -73,8 +79,15 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
 
           <ScrollView
             className="mt-4"
-            contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 8 }}
-            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
+            persistentScrollbar
+            onLayout={(event) => setListHeight(event.nativeEvent.layout.height)}
+            onContentSizeChange={(_, height) => setContentHeight(height)}
+            onScroll={(event) => {
+              const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
+              setIsAtEnd(contentOffset.y + layoutMeasurement.height >= contentSize.height - 8);
+            }}
+            scrollEventThrottle={32}
           >
             {entry ? (
               <ChangelogChanges entry={entry} />
@@ -89,7 +102,23 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
             )}
           </ScrollView>
 
-          <View className="gap-y-2 p-6">
+          <View
+            className={cn(
+              'gap-y-2 p-6',
+              canScroll && !isAtEnd && 'border-t',
+              isDarkMode ? 'border-neutral-700' : 'border-gray-200',
+            )}
+          >
+            {canScroll && !isAtEnd && (
+              <Text
+                className={cn(
+                  '-mt-3 mb-1 text-center text-xs',
+                  isDarkMode ? 'text-gray-400' : 'text-gray-500',
+                )}
+              >
+                Scroll for more
+              </Text>
+            )}
             {isUpdate ? (
               <>
                 <TouchableOpacity

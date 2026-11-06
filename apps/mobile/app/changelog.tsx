@@ -33,6 +33,12 @@ const Changelog = () => {
               Everything new in UT Dining, one update at a time.
             </Text>
           </View>
+          <View
+            className={cn(
+              'w-full border-b',
+              isDarkMode ? 'border-neutral-800' : 'border-ut-grey/15',
+            )}
+          />
         </View>
         <ScrollView
           testID="changelog-list"
