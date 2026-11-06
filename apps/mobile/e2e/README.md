@@ -40,10 +40,12 @@ It refuses to run unless `supabase status` reports a `http://127.0.0.1:` API URL
 | `menu-search.yaml` | Search narrows the menu, a miss shows the empty state, Cancel clears it |
 | `menu-meals-and-dates.yaml` | The meal picker switches menus, and the week strip (`menu-day-<offset>`) loads tomorrow's menu |
 | `food-details.yaml` | A food opens nutrition and allergens |
-| `save-hold-and-select.yaml` | Press and hold on a food adds it to the meal plan, and Select Multiple adds several foods at once |
+| `save-hold-and-select.yaml` | Press and hold on a food adds it to the meal plan, Select Multiple adds several foods at once, and Reset empties the plan |
 | `favorites.yaml` | Heart on a food and a left swipe add favorites, left swipes remove them |
 | `meal-plan.yaml` | A right swipe and the chef hat add to the meal plan, right swipes remove |
 | `settings.yaml` | Dark mode switch, Sync Data, Favorites quick link |
+| `filters.yaml` | Hiding soy removes the soy foods from the J2 menu, and Reset brings them back |
+| `no-menu-location.yaml` | Search opens a place without a menu, which shows Directions and Hours |
 | `map.yaml` | The map sheet filters to dining halls, opens J2's place card and its menu, and closes the card |
 | `tabs.yaml` | Every tab by its `testID` (`home-tab`, `map-tab`, `notifications-tab`, `settings-tab`, `search-tab`), with the search tab last because opening it collapses the other tabs |
 | `search.yaml` | The search tab finds a food on today's menus and opens it, and a miss shows the empty state |

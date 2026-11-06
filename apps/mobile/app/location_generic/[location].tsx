@@ -1,54 +1,53 @@
 import * as Device from 'expo-device';
+import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Clock, MapPin } from 'lucide-react-native';
+import { MapPin, Navigation, X } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import { useEffect, useEffectEvent, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
   Image,
   Linking,
   Platform,
+  Pressable,
+  ScrollView,
   Text,
-  TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
-import { Container } from '~/components/Container';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { PLACE_ICONS, usePlaceColor } from '~/components/map/MapSheet';
+import { GroupedRow, GroupedSection } from '~/components/ui/Grouped';
 import { PAYMENT_INFO_ICONS } from '~/data/PaymentInfo';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { getSafePostHog } from '~/services/analytics/posthog';
 import { useSettingsStore } from '~/store/useSettingsStore';
-import { COLORS } from '~/utils/colors';
 import { getLocationName } from '~/utils/locations';
-import { generateSchedule, isLocationOpen } from '~/utils/time';
-import { cn } from '~/utils/utils';
+import { useTheme } from '~/utils/theme';
+import { generateSchedule, getLocationStatusText, isLocationOpen } from '~/utils/time';
+
+const COVER_HEIGHT = 240;
 
 export default function LocationGenericScreen() {
   const { location } = useLocalSearchParams<{ location: string }>();
-  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+  const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
   const db = useDatabase();
-  const [imageLoading, setImageLoading] = useState(true);
+  const [imageFailed, setImageFailed] = useState(false);
   const analytics = getSafePostHog(usePostHog());
 
   const { locationData } = useLocationDetails(location || '');
-  const displayName = getLocationName(db, location || '', useColloquialNames);
-
-  const schedule = generateSchedule(locationData, false);
-
-  const isOpen = isLocationOpen(locationData);
-
-  const paymentMethods = Array.isArray(locationData?.methods_of_payment)
-    ? locationData.methods_of_payment
-    : [];
-
+  const typeColor = usePlaceColor(locationData?.type ?? '');
+  const TypeIcon = PLACE_ICONS[locationData?.type ?? ''] ?? MapPin;
   const isTablet = Device.deviceType === Device.DeviceType.TABLET;
-  // Only track screen view if PostHog is enabled
+
   const trackScreen = useEffectEvent(() => {
     analytics.screen(location);
   });
-
   useEffect(() => {
     trackScreen();
   }, []);
@@ -56,241 +55,167 @@ export default function LocationGenericScreen() {
   if (!location || !locationData) {
     return (
       <View
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: isDarkMode ? '#171717' : '#fff',
-        }}
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: theme.background }}
       >
         <ActivityIndicator size="small" />
       </View>
     );
   }
 
+  const displayName = getLocationName(db, location, useColloquialNames);
+  const isOpen = isLocationOpen(locationData);
+  const status = getLocationStatusText(locationData, isOpen);
+  const schedule = generateSchedule(locationData, false);
+  const paymentMethods = Array.isArray(locationData.methods_of_payment)
+    ? (locationData.methods_of_payment as string[])
+    : [];
+  const showImage = !!locationData.image && !imageFailed;
+
+  const openDirections = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Linking.openURL(
+      Platform.OS === 'ios' ? locationData.apple_maps_link : locationData.google_maps_link,
+    );
+  };
+
   return (
-    <View style={{ flex: 1, width: '100%', backgroundColor: isDarkMode ? '#171717' : '#fff' }}>
-      <View
-        style={{
-          alignItems: 'center',
-          paddingTop: 8,
-          paddingBottom: 8,
-          backgroundColor: isDarkMode ? '#171717' : '#fff',
-        }}
-      >
-        <View
-          style={{
-            width: 40,
-            height: 5,
-            borderRadius: 2.5,
-            backgroundColor: isDarkMode ? '#fff' : '#F0F0F0',
-          }}
-        />
-      </View>
-      <Container disableInsets className="mx-0">
-        <FlatList
-          data={[{}]} // dummy item just to satisfy FlatList
-          keyExtractor={(_, index) => `main-content-${index}`}
-          className="w-full px-6" // <-- tailwind for width: 100%
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            padding: 0,
-            paddingBottom: 100,
-            alignItems: 'center',
-            width: '100%', // now this 100% is relative to the FlatList's real width
-          }}
-          renderItem={() => (
-            <View className="mt-3 mb-6 flex-1 flex-col gap-y-4">
-              {locationData.image && (
-                <View className="mb-3 aspect-[16/9] w-full overflow-hidden rounded-3xl shadow-lg">
-                  {imageLoading && (
-                    <View
-                      className={cn(
-                        'absolute inset-0 rounded-3xl',
-                        isDarkMode ? 'bg-neutral-700' : 'bg-neutral-200',
-                      )}
-                    />
-                  )}
-                  <Image
-                    className="aspect-[16/9] w-full rounded-3xl"
-                    source={{ uri: locationData.image }}
-                    resizeMode="cover"
-                    onLoadStart={() => setImageLoading(true)}
-                    onLoadEnd={() => setImageLoading(false)}
-                  />
-                </View>
-              )}
-
-              {locationData.force_close && (
-                <View className="mb-3 rounded-lg bg-red-600 px-4 py-2">
-                  <Text className="text-center font-extrabold text-lg text-white tracking-wider">
-                    TEMPORARILY CLOSED
-                  </Text>
-                </View>
-              )}
-
-              <View className="gap-2">
-                <View className="flex-row items-center gap-x-2">
-                  <View>
-                    <Text
-                      className={cn('font-bold text-3xl', isDarkMode ? 'text-white' : 'text-black')}
-                    >
-                      {displayName}
-                    </Text>
-                  </View>
-                </View>
-
-                <View className="flex-row items-center gap-x-3">
-                  <View className="flex-row items-center gap-x-1">
-                    <Clock size={16} color={COLORS['ut-burnt-orange']} />
-                    <Text className="font-semibold text-lg text-ut-burnt-orange">
-                      {isOpen ? 'Open' : 'Closed'}
-                    </Text>
-                  </View>
-                  <View
-                    className={cn(
-                      'size-1 rounded-full',
-                      isDarkMode ? 'bg-ut-grey-dark-mode' : 'bg-ut-burnt-orange',
-                    )}
-                  />
-
-                  {/* Location Type Pill */}
-                  {locationData.type && (
-                    <View>
-                      <View
-                        className={cn(
-                          'self-start rounded-full px-3 py-1 ',
-                          isDarkMode ? 'bg-ut-grey-dark-mode/10' : 'bg-ut-grey/5',
-                        )}
-                      >
-                        <Text
-                          className={cn(
-                            'font-bold text-xs uppercase',
-                            isDarkMode ? 'text-white' : 'text-black/75',
-                          )}
-                        >
-                          {locationData.type}
-                        </Text>
-                      </View>
-                    </View>
-                  )}
-                </View>
-
-                <TouchableOpacity
-                  onPress={() => {
-                    const url =
-                      Platform.OS === 'ios'
-                        ? locationData.apple_maps_link
-                        : locationData.google_maps_link;
-                    Linking.openURL(url);
-                  }}
-                  className="flex-row items-center gap-x-1"
-                >
-                  <MapPin
-                    size={16}
-                    color={isDarkMode ? COLORS['ut-grey-dark-mode'] : COLORS['ut-grey']}
-                  />
-                  <Text className={cn(isDarkMode ? 'text-ut-grey-dark-mode' : 'text-ut-grey')}>
-                    {locationData.address}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              <View
-                className={cn(
-                  'my-2 h-1 w-full border-b',
-                  isDarkMode ? 'border-neutral-800' : 'border-b-ut-grey/15',
-                )}
-              />
-
-              <Text
-                className={cn(
-                  'text-base leading-relaxed',
-                  isDarkMode ? 'text-gray-300' : 'text-gray-700',
-                )}
-              >
-                {locationData.description}
-              </Text>
-
-              <View
-                className={cn(
-                  'flex-col gap-y-3 rounded-xl p-4',
-                  isDarkMode ? 'bg-ut-grey-dark-mode/10' : 'bg-neutral-50',
-                )}
-              >
-                <Text
-                  className={cn(
-                    'font-semibold text-2xl',
-                    isDarkMode ? 'text-white' : 'text-gray-800',
-                  )}
-                >
-                  Regular Service Hours
-                </Text>
-                {schedule.map((schedule) => (
-                  <View
-                    key={`${schedule.dayRange}${schedule.time}`}
-                    className="flex-row items-start justify-between"
-                  >
-                    <Text className={cn('font-medium', isDarkMode ? 'text-white' : 'text-black')}>
-                      {schedule.dayRange}:
-                    </Text>
-                    <Text
-                      className={cn('leading-loose', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}
-                    >
-                      {schedule.time.includes(',')
-                        ? schedule.time.replace(/, /g, '\n')
-                        : schedule.time}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-
-              <View className="flex-col gap-y-3">
-                <Text
-                  className={cn('font-semibold text-2xl', isDarkMode ? 'text-white' : 'text-black')}
-                >
-                  Methods of Payment
-                </Text>
-                <View className={cn('flex-row flex-wrap items-center justify-around gap-4')}>
-                  {paymentMethods.map((method: string) => {
-                    if (method in PAYMENT_INFO_ICONS) {
-                      return (
-                        <View key={method} className="items-center justify-center gap-0.5">
-                          <Image
-                            className="size-6"
-                            source={PAYMENT_INFO_ICONS[method as keyof typeof PAYMENT_INFO_ICONS]}
-                          />
-                          <Text
-                            className={cn(
-                              'font-medium',
-                              isDarkMode ? 'text-gray-300' : 'text-ut-grey',
-                            )}
-                          >
-                            {method}
-                          </Text>
-                        </View>
-                      );
-                    }
-                    return null;
-                  })}
-                </View>
-              </View>
-
-              {isTablet && (
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  className="mt-4 rounded-full bg-ut-burnt-orange px-4 py-4"
-                  onPress={() => {
-                    router.dismissTo('/');
-                  }}
-                >
-                  <Text className="text-center font-semibold text-white">Back to Home</Text>
-                </TouchableOpacity>
-              )}
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
+        <View style={{ height: COVER_HEIGHT, backgroundColor: typeColor }}>
+          {showImage ? (
+            <Image
+              source={{ uri: locationData.image as string }}
+              style={{ width, height: COVER_HEIGHT }}
+              resizeMode="cover"
+              onError={() => setImageFailed(true)}
+            />
+          ) : (
+            <View className="flex-1 items-center justify-center">
+              <TypeIcon size={72} color="rgba(255,255,255,0.75)" />
             </View>
           )}
-        />
-      </Container>
+          <Pressable
+            testID="back-button"
+            accessibilityLabel="Close"
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            className="absolute top-4 left-4 size-11 items-center justify-center rounded-full"
+            style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
+          >
+            <X size={20} color="#FFFFFF" />
+          </Pressable>
+        </View>
+
+        <View className="px-5 pt-4 pb-3">
+          {locationData.force_close && (
+            <View className="mb-3 rounded-2xl bg-red-600 px-4 py-2.5">
+              <Text className="text-center font-bold text-[15px] text-white">
+                Temporarily closed
+              </Text>
+            </View>
+          )}
+          <Text className="font-bold text-[28px] leading-[33px]" style={{ color: theme.label }}>
+            {displayName}
+          </Text>
+          <Text className="mt-0.5 text-[15px]" style={{ color: theme.secondaryLabel }}>
+            <Text
+              className="font-semibold"
+              style={{ color: isOpen ? theme.tint : theme.secondaryLabel }}
+            >
+              {isOpen ? 'Open' : status}
+            </Text>
+            {isOpen ? status.replace(/^Open/, '') : ''}
+            {locationData.type ? ` · ${locationData.type}` : ''}
+          </Text>
+        </View>
+
+        <View className="mx-4 mb-5">
+          <Pressable
+            testID="generic-directions-button"
+            accessibilityRole="button"
+            onPress={openDirections}
+            className="h-12 flex-row items-center justify-center gap-x-2 rounded-full"
+            style={{ backgroundColor: theme.tint }}
+          >
+            <Navigation size={17} color="#FFFFFF" />
+            <Text className="font-semibold text-[16px] text-white">Directions</Text>
+          </Pressable>
+        </View>
+
+        {locationData.description !== '' && (
+          <GroupedSection header="About">
+            <View className="px-4 py-3">
+              <Text className="text-[15px] leading-5" style={{ color: theme.label }}>
+                {locationData.description}
+              </Text>
+            </View>
+          </GroupedSection>
+        )}
+
+        {schedule.length > 0 && (
+          <GroupedSection header="Hours">
+            {schedule.map((entry, index) => (
+              <GroupedRow
+                key={`${entry.dayRange}-${entry.time}`}
+                isFirst={index === 0}
+                title={entry.dayRange}
+                trailing={
+                  <Text className="text-right text-[15px]" style={{ color: theme.secondaryLabel }}>
+                    {entry.time.replace(/, /g, '\n')}
+                  </Text>
+                }
+              />
+            ))}
+          </GroupedSection>
+        )}
+
+        {paymentMethods.length > 0 && (
+          <GroupedSection header="Payment">
+            {paymentMethods.map((method, index) => (
+              <GroupedRow
+                key={method}
+                isFirst={index === 0}
+                separatorInset={56}
+                leading={
+                  method in PAYMENT_INFO_ICONS ? (
+                    <Image
+                      source={PAYMENT_INFO_ICONS[method as keyof typeof PAYMENT_INFO_ICONS]}
+                      className="size-7"
+                      resizeMode="contain"
+                    />
+                  ) : undefined
+                }
+                title={method}
+              />
+            ))}
+          </GroupedSection>
+        )}
+
+        <GroupedSection header="Address">
+          <GroupedRow
+            isFirst
+            separatorInset={56}
+            leading={<MapPin size={20} color={theme.tint} />}
+            title={locationData.address}
+            showChevron
+            onPress={openDirections}
+          />
+        </GroupedSection>
+
+        {isTablet && (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.dismissTo('/')}
+            className="mx-4 mt-2 h-12 items-center justify-center rounded-full"
+            style={{ backgroundColor: theme.fill }}
+          >
+            <Text className="font-semibold text-[16px]" style={{ color: theme.label }}>
+              Back to Home
+            </Text>
+          </Pressable>
+        )}
+      </ScrollView>
     </View>
   );
 }

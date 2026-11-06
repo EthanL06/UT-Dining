@@ -1,0 +1,29 @@
+appId: com.ethanl06.ut-dining.dev
+name: Filters hide foods with an allergen, and Reset brings them back
+---
+- runFlow: ../subflows/start.yaml
+- runFlow: ../subflows/open-j2.yaml
+- tapOn:
+    id: menu-filters-button
+- extendedWaitUntil:
+    visible: Hide foods with
+    timeout: 5000
+- tapOn:
+    id: filter-allergen-soy
+- takeScreenshot: filters-sheet
+- tapOn:
+    id: filters-done-button
+- extendedWaitUntil:
+    notVisible: 'Maestro Veggie Burger(,.*)?'
+    timeout: 5000
+- assertNotVisible: 'Maestro Tofu Bowl(,.*)?'
+- assertVisible: 'Maestro Grilled Chicken(,.*)?'
+- tapOn:
+    id: menu-filters-button
+- tapOn:
+    id: filters-reset-button
+- tapOn:
+    id: filters-done-button
+- extendedWaitUntil:
+    visible: 'Maestro Veggie Burger(,.*)?'
+    timeout: 5000

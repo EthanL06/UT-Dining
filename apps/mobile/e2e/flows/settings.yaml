@@ -42,7 +42,8 @@ tags:
 - tapOn:
     id: settings-favorites
 - extendedWaitUntil:
-    visible: Your Favorites
+    visible:
+      id: favorites-title
     timeout: 5000
 - tapOn:
     id: back-button
