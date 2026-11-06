@@ -1,50 +1,23 @@
-import { Image } from 'expo-image';
-import { Text, View } from 'react-native';
-import { useSettingsStore } from '~/store/useSettingsStore';
-import { cn } from '~/utils/utils';
+import FeaturePage from './FeaturePage';
 
-type Props = {
-  width: number;
-};
+const images = [
+  {
+    light: require('~/assets/onboarding/favorites.webp'),
+    dark: require('~/assets/onboarding/favorites-dark.webp'),
+  },
+  {
+    light: require('~/assets/onboarding/meal-plan.webp'),
+    dark: require('~/assets/onboarding/meal-plan-dark.webp'),
+  },
+];
 
-const favoritesImage = require('~/assets/onboarding/favorites.webp');
-const mealPlanImage = require('~/assets/onboarding/meal-plan.webp');
-
-const FavoritesFeatureScreen = ({ width }: Props) => {
-  const isDark = useSettingsStore((state) => state.isDarkMode);
-
-  return (
-    <View
-      style={{ width }}
-      className={cn('flex-1 px-6 py-8', isDark ? 'bg-neutral-900' : 'bg-white')}
-    >
-      <View className="flex-1 items-center justify-center">
-        <View className="mb-8 w-full flex-row" style={{ height: 512, flexShrink: 1, minHeight: 0 }}>
-          <Image source={favoritesImage} style={{ flex: 1 }} contentFit="contain" />
-          <Image source={mealPlanImage} style={{ flex: 1 }} contentFit="contain" />
-        </View>
-
-        <View>
-          <Text
-            className={cn(
-              'mb-4 text-center font-bold text-3xl',
-              isDark ? 'text-white' : 'text-gray-900',
-            )}
-          >
-            Favorites & Meal Planning
-          </Text>
-          <Text
-            className={cn(
-              'mx-auto max-w-[300px] text-center text-lg leading-6',
-              isDark ? 'text-gray-300' : 'text-gray-600',
-            )}
-          >
-            Keep track of your favorites and plan your meals ahead of time
-          </Text>
-        </View>
-      </View>
-    </View>
-  );
-};
+const FavoritesFeatureScreen = ({ width }: { width: number }) => (
+  <FeaturePage
+    width={width}
+    images={images}
+    title="Favorites & Meal Planning"
+    subtitle="Press and hold any food to save it or add it to today's plan."
+  />
+);
 
 export default FavoritesFeatureScreen;
