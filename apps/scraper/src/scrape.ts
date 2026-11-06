@@ -83,11 +83,13 @@ export const scrape = async (http: HttpClient, dates: string[]): Promise<ScrapeR
       return null;
     }
 
+    let complete = true;
     const menus = await Promise.all(
       mealLinks.map(async (link) => {
         try {
           return await buildMenu(parseMenuPage(await http.get(link)));
         } catch (error) {
+          complete = false;
           failures.push({
             locationName: location.name,
             date,
@@ -104,6 +106,7 @@ export const scrape = async (http: HttpClient, dates: string[]): Promise<ScrapeR
       locationName: location.name,
       date,
       menus: menus.filter((menu): menu is Menu => menu !== null),
+      complete,
     };
   };
 

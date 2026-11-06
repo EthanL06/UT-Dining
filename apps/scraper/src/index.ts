@@ -60,8 +60,9 @@ const main = async () => {
   if (config.upload) {
     const uploadStarted = performance.now();
     const uploads = await upload(result.days);
-    for (const { locationName, date, error } of uploads) {
+    for (const { locationName, date, error, pruned } of uploads) {
       if (error) console.error(`Upload failed for ${locationName} ${date}: ${error}`);
+      if (pruned > 0) console.log(`  Removed ${pruned} stale menus for ${locationName} ${date}`);
     }
     const failed = uploads.filter((entry) => entry.error).length;
     console.log(
