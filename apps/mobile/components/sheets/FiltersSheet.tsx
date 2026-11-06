@@ -1,18 +1,17 @@
 import * as Haptics from 'expo-haptics';
-import { ChefHat, Filter, Heart, RotateCwIcon } from 'lucide-react-native';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
-import ActionSheet, { ScrollView, type SheetProps } from 'react-native-actions-sheet';
+import { ChefHat, Heart } from 'lucide-react-native';
+import type React from 'react';
+import { Image, Pressable, Text, View } from 'react-native';
+import ActionSheet, { ScrollView, SheetManager, type SheetProps } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ALLERGEN_EXCEPTIONS, ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import { useFiltersStore } from '~/store/useFiltersStore';
-import { useSettingsStore } from '~/store/useSettingsStore';
-import { COLORS } from '~/utils/colors';
-import { cn } from '~/utils/utils';
+import { useTheme } from '~/utils/theme';
 
 const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
   const insets = useSafeAreaInsets();
-  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+  const theme = useTheme();
 
   // Get filters from store
   const {
@@ -40,187 +39,172 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
     ALLERGEN_EXCEPTIONS.has(key),
   );
 
+  const activeCount =
+    Number(filters.favorites) +
+    Number(filters.mealPlan) +
+    Object.values(filters.allergens).filter(Boolean).length +
+    Object.values(filters.dietary).filter(Boolean).length;
+
+  const Chip = ({
+    label,
+    isOn,
+    onPress,
+    icon,
+    testID,
+  }: {
+    label: string;
+    isOn: boolean;
+    onPress: () => void;
+    icon: React.ReactNode;
+    testID?: string;
+  }) => (
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isOn }}
+      onPress={() => {
+        Haptics.selectionAsync();
+        onPress();
+      }}
+      className="h-10 flex-row items-center gap-x-1.5 rounded-full pr-3.5 pl-1.5"
+      style={{ backgroundColor: isOn ? theme.tint : theme.card }}
+    >
+      {icon}
+      <Text
+        className={isOn ? 'font-semibold text-[14px]' : 'font-medium text-[14px]'}
+        style={{ color: isOn ? '#FFFFFF' : theme.label }}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+
+  const SectionTitle = ({ title, subtitle }: { title: string; subtitle?: string }) => (
+    <View className="mt-6 mb-2.5">
+      <Text className="font-bold text-[18px]" style={{ color: theme.label }}>
+        {title}
+      </Text>
+      {subtitle && (
+        <Text className="text-[13.5px]" style={{ color: theme.secondaryLabel }}>
+          {subtitle}
+        </Text>
+      )}
+    </View>
+  );
+
   return (
     <ActionSheet
       id={sheetId}
-      defaultOverlayOpacity={0.5}
-      containerStyle={{ backgroundColor: isDarkMode ? '#171717' : 'white' }}
+      defaultOverlayOpacity={0.3}
+      containerStyle={{
+        backgroundColor: theme.background,
+        borderTopLeftRadius: 34,
+        borderTopRightRadius: 34,
+      }}
+      indicatorStyle={{ backgroundColor: theme.tertiaryLabel, width: 36 }}
       gestureEnabled
       safeAreaInsets={insets}
       useBottomSafeAreaPadding
     >
+      <View className="flex-row items-center justify-between px-4 pt-1 pb-2">
+        <Pressable
+          testID="filters-reset-button"
+          accessibilityRole="button"
+          disabled={activeCount === 0}
+          onPress={() => {
+            resetFilters();
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }}
+          className="h-9 justify-center rounded-full px-3.5"
+          style={{ backgroundColor: theme.card, opacity: activeCount === 0 ? 0.5 : 1 }}
+        >
+          <Text className="font-medium text-[15px]" style={{ color: theme.label }}>
+            Reset
+          </Text>
+        </Pressable>
+        <Text className="font-semibold text-[17px]" style={{ color: theme.label }}>
+          Filters
+        </Text>
+        <Pressable
+          testID="filters-done-button"
+          accessibilityRole="button"
+          onPress={() => SheetManager.hide(sheetId)}
+          className="h-9 justify-center rounded-full px-3.5"
+          style={{ backgroundColor: theme.card }}
+        >
+          <Text className="font-semibold text-[15px]" style={{ color: theme.tint }}>
+            Done
+          </Text>
+        </Pressable>
+      </View>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View className="p-6">
-          {/* Header */}
-          <View className="mb-4 flex-row items-center justify-between">
-            <View className="flex-row items-center gap-x-2">
-              <Filter color={COLORS['ut-burnt-orange']} size={20} />
-              <Text className={cn('font-bold text-3xl', isDarkMode ? 'text-white' : 'text-black')}>
-                Filters
-              </Text>
-            </View>
-
-            <TouchableOpacity
-              onPress={() => {
-                resetFilters();
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              }}
-              className={cn(
-                'flex-row items-center gap-x-1 rounded-full border px-3 py-1',
-                isDarkMode ? 'border-neutral-800' : 'border-ut-grey/50',
-              )}
-            >
-              <RotateCwIcon size={16} color={isDarkMode ? '#ccc' : COLORS['ut-grey']} />
-              <Text
-                className={cn('font-medium text-sm', isDarkMode ? 'text-gray-200' : 'text-ut-grey')}
-              >
-                Reset
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Special Filters */}
-          <Text className={cn('mb-2 font-semibold text-xl', isDarkMode ? 'text-gray-100' : '')}>
-            My Items
-          </Text>
-          <View className="mb-4 flex-row flex-wrap gap-2">
-            <TouchableOpacity
+        <View className="px-4 pb-6">
+          <SectionTitle title="My items" />
+          <View className="flex-row flex-wrap gap-2">
+            <Chip
+              label="Favorites"
+              isOn={filters.favorites}
               onPress={toggleFavoriteFilter}
-              className={cn(
-                'grow flex-row items-center justify-center gap-x-2 rounded-lg border px-3 py-3',
-                filters.favorites
-                  ? 'border-ut-burnt-orange bg-ut-burnt-orange'
-                  : isDarkMode
-                    ? 'border-neutral-800 bg-neutral-800'
-                    : 'border-ut-grey/15 bg-white',
-              )}
-            >
-              <Heart
-                size={16}
-                color={filters.favorites ? '#fff' : COLORS['ut-burnt-orange']}
-                fill={filters.favorites ? '#fff' : 'none'}
-              />
-              <Text
-                className={cn(
-                  'font-medium text-sm',
-                  filters.favorites ? 'text-white' : isDarkMode ? 'text-gray-200' : 'text-ut-grey',
-                )}
-              >
-                Favorites
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+              icon={
+                <View className="size-7 items-center justify-center">
+                  <Heart
+                    size={16}
+                    color={filters.favorites ? '#FFFFFF' : theme.tint}
+                    fill={filters.favorites ? '#FFFFFF' : 'transparent'}
+                  />
+                </View>
+              }
+            />
+            <Chip
+              label="Meal Plan"
+              isOn={filters.mealPlan}
               onPress={toggleMealPlanFilter}
-              className={cn(
-                'grow flex-row items-center justify-center gap-x-2 rounded-lg border px-3 py-3',
-                filters.mealPlan
-                  ? 'border-ut-burnt-orange bg-ut-burnt-orange'
-                  : isDarkMode
-                    ? 'border-neutral-800 bg-neutral-800'
-                    : 'border-ut-grey/15 bg-white',
-              )}
-            >
-              <ChefHat
-                size={16}
-                color={filters.mealPlan ? '#fff' : COLORS['ut-burnt-orange']}
-                fill={filters.mealPlan ? '#fff' : 'none'}
-              />
-              <Text
-                className={cn(
-                  'font-medium text-sm',
-                  filters.mealPlan ? 'text-white' : isDarkMode ? 'text-gray-200' : 'text-ut-grey',
-                )}
-              >
-                Meal Plan
-              </Text>
-            </TouchableOpacity>
+              icon={
+                <View className="size-7 items-center justify-center">
+                  <ChefHat size={16} color={filters.mealPlan ? '#FFFFFF' : theme.tint} />
+                </View>
+              }
+            />
           </View>
 
-          {/* Allergen Filters */}
-          <Text className={cn('font-semibold text-xl', isDarkMode ? 'text-gray-100' : '')}>
-            Allergens
-          </Text>
-          <Text className={cn('mb-2 text-sm', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}>
-            Exclude items that contain these allergens
-          </Text>
-          <View className="mb-6 flex-row flex-wrap gap-2">
+          <SectionTitle title="Hide foods with" subtitle="Allergens to avoid" />
+          <View className="flex-row flex-wrap gap-2">
             {allergens.map(([key, iconSource]) => (
-              <TouchableOpacity
+              <Chip
                 key={key}
-                onPress={() => {
-                  toggleAllergenFilter(key);
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }}
-                className={cn(
-                  'flex-row items-center gap-x-2 rounded-lg border px-3 py-2',
-                  filters.allergens[key]
-                    ? 'border-ut-burnt-orange bg-ut-burnt-orange'
-                    : isDarkMode
-                      ? 'border-neutral-800 bg-neutral-800'
-                      : 'border-ut-grey/15 bg-white',
-                )}
-              >
-                <Image source={iconSource} className="size-4 rounded-full" resizeMode="contain" />
-                <Text
-                  className={cn(
-                    'font-medium text-sm',
-                    filters.allergens[key]
-                      ? 'text-white'
-                      : isDarkMode
-                        ? 'text-gray-200'
-                        : 'text-ut-grey',
-                  )}
-                >
-                  {formatKey(key)}
-                </Text>
-              </TouchableOpacity>
+                testID={`filter-allergen-${key}`}
+                label={formatKey(key)}
+                isOn={!!filters.allergens[key]}
+                onPress={() => toggleAllergenFilter(key)}
+                icon={
+                  <Image source={iconSource} className="size-7 rounded-full" resizeMode="contain" />
+                }
+              />
             ))}
           </View>
 
-          {/* Dietary Preferences */}
-          <Text className={cn('font-semibold text-xl', isDarkMode ? 'text-gray-100' : '')}>
-            Dietary Preferences
-          </Text>
-          <Text className={cn('mb-2 text-sm', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}>
-            Show only items that match these dietary preferences
-          </Text>
-          <View className="mb-6 flex-row flex-wrap gap-2">
+          <SectionTitle title="Only show" subtitle="Dietary preferences" />
+          <View className="flex-row flex-wrap gap-2">
             {dietaryOptions.map(([key, iconSource]) => (
-              <TouchableOpacity
+              <Chip
                 key={key}
-                onPress={() => {
-                  toggleDietaryFilter(key);
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }}
-                className={cn(
-                  'flex-row items-center gap-x-2 rounded-lg border px-3 py-2',
-                  filters.dietary[key]
-                    ? 'border-ut-burnt-orange bg-ut-burnt-orange'
-                    : isDarkMode
-                      ? 'border-neutral-800 bg-neutral-800'
-                      : 'border-ut-grey/15 bg-white',
-                )}
-              >
-                <Image source={iconSource} className="size-4 rounded-full" resizeMode="contain" />
-                <Text
-                  className={cn(
-                    'font-medium text-sm',
-                    filters.dietary[key]
-                      ? 'text-white'
-                      : isDarkMode
-                        ? 'text-gray-200'
-                        : 'text-ut-grey',
-                  )}
-                >
-                  {formatKey(key)}
-                </Text>
-              </TouchableOpacity>
+                testID={`filter-diet-${key}`}
+                label={formatKey(key)}
+                isOn={!!filters.dietary[key]}
+                onPress={() => toggleDietaryFilter(key)}
+                icon={
+                  <Image source={iconSource} className="size-7 rounded-full" resizeMode="contain" />
+                }
+              />
             ))}
           </View>
 
-          <Text className={cn('text-xs', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}>
-            Note: Allergen and dietary data comes directly from the University Housing and Dining
-            and may not always be accurate. Use discretion when making dietary choices
+          <Text
+            className="mt-6 text-[12.5px] leading-[17px]"
+            style={{ color: theme.secondaryLabel }}
+          >
+            Allergen and dietary data comes from University Housing and Dining and may not always be
+            accurate. Use discretion when making dietary choices.
           </Text>
         </View>
       </ScrollView>
