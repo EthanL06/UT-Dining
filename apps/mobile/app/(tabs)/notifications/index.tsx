@@ -68,58 +68,58 @@ const NotificationRow = ({
   const { Icon, color } = TYPE_STYLE[notification.type_name] ?? DEFAULT_TYPE_STYLE;
 
   return (
-    <Pressable
-      disabled={!notification.redirect_url}
-      onPress={() => onPress(notification)}
-      style={({ pressed }) => ({ backgroundColor: pressed ? theme.fill : 'transparent' })}
-    >
-      {!isFirst && (
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            left: 64,
-            height: 0.5,
-            backgroundColor: theme.separator,
-          }}
-        />
-      )}
-      <View className="flex-row items-start gap-x-3 py-3.5 pr-4 pl-4">
-        {!notification.isRead && (
-          <View
-            accessibilityLabel="Unread"
-            className="absolute top-[30px] left-1.5 size-[7px] rounded-full"
-            style={{ backgroundColor: theme.tint }}
-          />
-        )}
-        <View
-          className="mt-0.5 size-9 items-center justify-center rounded-full"
-          style={{ backgroundColor: color }}
-        >
-          <Icon size={18} color="#FFFFFF" />
-        </View>
-        <View className="flex-1 gap-y-1">
-          <View className="flex-row items-baseline justify-between gap-x-2">
-            <Text
-              className={
-                notification.isRead
-                  ? 'flex-1 font-semibold text-[16px]'
-                  : 'flex-1 font-bold text-[16px]'
-              }
-              style={{ color: theme.label }}
+    <Pressable disabled={!notification.redirect_url} onPress={() => onPress(notification)}>
+      {({ pressed }) => (
+        <View style={{ backgroundColor: pressed ? theme.fill : 'transparent' }}>
+          {!isFirst && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                left: 68,
+                height: 0.5,
+                backgroundColor: theme.separator,
+              }}
+            />
+          )}
+          <View className="flex-row items-start gap-x-3 py-3.5 pr-4 pl-5">
+            {!notification.isRead && (
+              <View
+                accessibilityLabel="Unread"
+                className="absolute top-[30px] left-[7px] size-[7px] rounded-full"
+                style={{ backgroundColor: theme.tint }}
+              />
+            )}
+            <View
+              className="mt-0.5 size-9 items-center justify-center rounded-full"
+              style={{ backgroundColor: color }}
             >
-              {notification.title}
-            </Text>
-            <Text className="text-[13px]" style={{ color: theme.secondaryLabel }}>
-              {formatSentAt(notification.sent_at, group)}
-            </Text>
+              <Icon size={18} color="#FFFFFF" />
+            </View>
+            <View className="flex-1 gap-y-1">
+              <View className="flex-row items-baseline justify-between gap-x-2">
+                <Text
+                  className={
+                    notification.isRead
+                      ? 'flex-1 font-semibold text-[16px]'
+                      : 'flex-1 font-bold text-[16px]'
+                  }
+                  style={{ color: theme.label }}
+                >
+                  {notification.title}
+                </Text>
+                <Text className="text-[13px]" style={{ color: theme.secondaryLabel }}>
+                  {formatSentAt(notification.sent_at, group)}
+                </Text>
+              </View>
+              <Text className="text-[15px] leading-5" style={{ color: theme.secondaryLabel }}>
+                {notification.body}
+              </Text>
+            </View>
           </View>
-          <Text className="text-[15px] leading-5" style={{ color: theme.secondaryLabel }}>
-            {notification.body}
-          </Text>
         </View>
-      </View>
+      )}
     </Pressable>
   );
 };
