@@ -1,4 +1,27 @@
 appId: com.ethanl06.ut-dining.dev
+env:
+  DEV_CLIENT: ${DEV_CLIENT || 'true'}
+  METRO_URL: ${METRO_URL || 'http://localhost:8081'}
 ---
-- runFlow: launch.yaml
-- runFlow: finish-onboarding.yaml
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+    arguments:
+      e2eSkipOnboarding: true
+- runFlow:
+    when:
+      true: ${DEV_CLIENT == 'true'}
+    commands:
+      - openLink: exp+ut-dining://expo-development-client/?url=${encodeURIComponent(METRO_URL)}&disableOnboarding=1
+- extendedWaitUntil:
+    visible: '.*Your planned meals.*|.*Would Like to Send You Notifications.*|.*to use your location.*|Enjoying.*'
+    timeout: 60000
+- runFlow:
+    when:
+      notVisible: '.*Your planned meals.*'
+    commands:
+      - runFlow: dismiss-alerts.yaml
+- extendedWaitUntil:
+    visible: '.*Your planned meals.*'
+    timeout: 30000
