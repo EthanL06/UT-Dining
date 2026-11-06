@@ -17,7 +17,7 @@ const Changelog = () => {
   return (
     <View style={{ flex: 1, backgroundColor: isDarkMode ? '#171717' : '#fff' }}>
       <Stack.Screen options={{ title: 'Changelog', headerShown: false }} />
-      <Container className="mx-0" disableBottomPadding>
+      <Container className="mx-0 gap-y-0" disableBottomPadding>
         <View className="mt-6 flex gap-y-5 px-6">
           <TopBar variant="back" />
           <View>
