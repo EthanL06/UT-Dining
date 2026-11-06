@@ -111,6 +111,9 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({ selectedDate, onDateChang
         )}
       >
         <Pressable
+          testID="date-previous-button"
+          accessibilityLabel="Previous day"
+          accessibilityRole="button"
           onPress={handlePreviousDay}
           onPressIn={handlePreviousPressIn}
           onPressOut={handlePreviousPressOut}
@@ -133,7 +136,10 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({ selectedDate, onDateChang
       </Reanimated.View>
 
       <View className="flex-1 items-center">
-        <Text className={cn('font-semibold text-lg', isDarkMode ? 'text-white' : 'text-black')}>
+        <Text
+          testID="selected-date"
+          className={cn('font-semibold text-lg', isDarkMode ? 'text-white' : 'text-black')}
+        >
           {displayDate}
         </Text>
       </View>
@@ -152,6 +158,9 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({ selectedDate, onDateChang
         )}
       >
         <Pressable
+          testID="date-next-button"
+          accessibilityLabel="Next day"
+          accessibilityRole="button"
           onPress={handleNextDay}
           onPressIn={handleNextPressIn}
           onPressOut={handleNextPressOut}

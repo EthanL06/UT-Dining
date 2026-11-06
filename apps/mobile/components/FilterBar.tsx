@@ -143,6 +143,9 @@ const FilterButton = () => {
 
   return (
     <TouchableOpacity
+      testID="menu-filters-button"
+      accessibilityLabel="Filters"
+      accessibilityRole="button"
       onPress={() => {
         SheetManager.show('filters');
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

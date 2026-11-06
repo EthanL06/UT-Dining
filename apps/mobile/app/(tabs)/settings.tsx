@@ -52,6 +52,7 @@ interface SettingItemProps {
   hasChevron?: boolean;
   onPress?: () => void;
   isDarkMode: boolean;
+  testID?: string;
 }
 
 const ITUNES_ITEM_ID = '6743042002';
@@ -67,8 +68,11 @@ const SettingItem = ({
   hasChevron = false,
   onPress = () => {},
   isDarkMode,
+  testID,
 }: SettingItemProps) => (
   <TouchableOpacity
+    testID={hasToggle ? undefined : testID}
+    accessible={!hasToggle}
     className={cn(
       'flex-row items-center justify-between border-b py-3',
       isDarkMode ? 'border-neutral-800' : 'border-gray-100',
@@ -103,6 +107,8 @@ const SettingItem = ({
     </View>
     {hasToggle && (
       <Switch
+        testID={testID}
+        accessibilityLabel={title}
         value={toggleValue}
         onValueChange={onToggle}
         trackColor={{
@@ -431,6 +437,7 @@ const SyncDataSection = ({ isDarkMode }: { isDarkMode: boolean }): React.JSX.Ele
         'flex-row items-center justify-between border-b py-3',
         isDarkMode ? 'border-neutral-800' : 'border-gray-100',
       )}
+      testID="settings-sync-data"
       onPress={handleSync}
       disabled={isSyncing}
       activeOpacity={isSyncing ? 1 : 0.7}
@@ -451,6 +458,7 @@ const SyncDataSection = ({ isDarkMode }: { isDarkMode: boolean }): React.JSX.Ele
             Sync Data
           </Text>
           <Text
+            testID="settings-sync-status"
             className={cn(
               'text-sm',
               syncError ? 'text-red-500' : isDarkMode ? 'text-gray-400' : 'text-gray-500',
@@ -524,6 +532,7 @@ const SettingsPage = () => {
           <SettingItem
             activeOpacity={0.7}
             title="Favorites"
+            testID="settings-favorites"
             Icon={Heart}
             hasChevron
             isDarkMode={isDarkMode}
@@ -537,6 +546,7 @@ const SettingsPage = () => {
           <SettingItem
             activeOpacity={0.7}
             title="Meal Plan"
+            testID="settings-meal-plan"
             Icon={ChefHat}
             hasChevron
             isDarkMode={isDarkMode}
@@ -550,6 +560,7 @@ const SettingsPage = () => {
           <SettingItem
             activeOpacity={0.7}
             title="Filters"
+            testID="settings-filters"
             Icon={Filter}
             hasChevron
             isDarkMode={isDarkMode}
@@ -562,6 +573,7 @@ const SettingsPage = () => {
           <SectionHeader title="Display" className="mt-4" isDarkMode={isDarkMode} />
           <SettingItem
             title="Dark Mode"
+            testID="settings-dark-mode-switch"
             Icon={Moon}
             hasToggle
             toggleValue={isDarkMode}
@@ -570,6 +582,7 @@ const SettingsPage = () => {
           />
           <SettingItem
             title="Colorblind Mode"
+            testID="settings-colorblind-switch"
             Icon={Accessibility}
             hasToggle
             toggleValue={isColorBlindMode}
@@ -578,6 +591,7 @@ const SettingsPage = () => {
           />
           <SettingItem
             title="Use Colloquial Names"
+            testID="settings-colloquial-names-switch"
             Icon={Type}
             hasToggle
             toggleValue={useColloquialNames}

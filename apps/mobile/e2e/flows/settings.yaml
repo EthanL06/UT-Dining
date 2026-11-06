@@ -1,0 +1,47 @@
+appId: com.ethanl06.ut-dining.dev
+name: Settings toggles dark mode, syncs data and opens quick links
+tags:
+  - smoke
+---
+- runFlow: ../subflows/start.yaml
+- tapOn: Settings
+- extendedWaitUntil:
+    visible:
+      id: settings-dark-mode-switch
+    timeout: 5000
+- assertVisible:
+    id: settings-dark-mode-switch
+    checked: false
+- tapOn:
+    id: settings-dark-mode-switch
+- assertVisible:
+    id: settings-dark-mode-switch
+    checked: true
+- takeScreenshot: settings-dark
+- tapOn:
+    id: settings-dark-mode-switch
+- assertVisible:
+    id: settings-dark-mode-switch
+    checked: false
+- scrollUntilVisible:
+    element:
+      id: settings-sync-data
+    direction: DOWN
+- tapOn:
+    id: settings-sync-data
+- extendedWaitUntil:
+    visible:
+      id: settings-sync-status
+      text: Last synced:.*
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: settings-favorites
+    direction: UP
+- tapOn:
+    id: settings-favorites
+- extendedWaitUntil:
+    visible: Your Favorites
+    timeout: 5000
+- tapOn:
+    id: back-button
