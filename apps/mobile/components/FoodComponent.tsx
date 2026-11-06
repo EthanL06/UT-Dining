@@ -46,6 +46,7 @@ const FoodComponent = ({
   canMealPlan = true,
   position = 'single',
   selection,
+  subtitle,
 }: {
   food: FoodItem;
   selectedMenu: string;
@@ -59,6 +60,7 @@ const FoodComponent = ({
   canMealPlan?: boolean;
   position?: RowPosition;
   selection?: SelectionProps;
+  subtitle?: string;
 }) => {
   const isMealPlan = useMealPlanStore((state) => state.isMealPlanItem(food.name as string));
   const theme = useTheme();
@@ -118,7 +120,12 @@ const FoodComponent = ({
         <Text numberOfLines={2} className="text-[16px]" style={{ color: theme.label }}>
           {food.name}
         </Text>
-        {showExtraInfo && (
+        {subtitle !== undefined && (
+          <Text className="text-[13.5px]" style={{ color: theme.secondaryLabel }}>
+            {subtitle}
+          </Text>
+        )}
+        {showExtraInfo && subtitle === undefined && (
           <View className="flex-row flex-wrap items-center gap-x-1.5">
             <Text className="text-[13.5px]" style={{ color: theme.secondaryLabel }}>
               {displayNutrient(food.nutrition?.calories)} kcal ·{' '}

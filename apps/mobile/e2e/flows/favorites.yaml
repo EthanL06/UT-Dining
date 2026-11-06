@@ -28,13 +28,15 @@ name: Favorites can be added from a food and removed with a swipe
     direction: LEFT
 - repeat:
     while:
-      notVisible: Your Favorites
+      notVisible:
+        id: favorites-title
     times: 3
     commands:
       - tapOn:
           id: location-favorites-button
       - waitForAnimationToEnd
-- assertVisible: Your Favorites
+- assertVisible:
+    id: favorites-title
 - assertVisible: 'Maestro Veggie Burger(,.*)?'
 - assertVisible: 'Maestro Grilled Chicken(,.*)?'
 - takeScreenshot: favorites

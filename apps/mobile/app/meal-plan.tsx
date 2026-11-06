@@ -1,55 +1,73 @@
 import * as Haptics from 'expo-haptics';
-import { BicepsFlexed, Flame, Wheat } from 'lucide-react-native';
-import { useRef, useState } from 'react';
-import { FlatList, Image, Text, TextInput, View } from 'react-native';
+import { router, Stack } from 'expo-router';
+import { ChefHat, ChevronLeft, Flame, Minus, Plus } from 'lucide-react-native';
+import { useRef } from 'react';
+import { Image, Alert as NativeAlert, Pressable, ScrollView, Text, View } from 'react-native';
 import ReanimatedSwipeable, {
   type SwipeableMethods,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { Notifier } from 'react-native-notifier';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Alert from '~/components/Alert';
 import { RemoveAction } from '~/components/AnimatedActions';
-import { Container } from '~/components/Container';
-import TopBar from '~/components/TopBar';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import { type MealPlanItem, useMealPlanStore } from '~/store/useMealPlanStore';
-import { useSettingsStore } from '~/store/useSettingsStore';
-import { COLORS } from '~/utils/colors';
-import { cn, displayNutrient } from '~/utils/utils';
+import { type Theme, useTheme } from '~/utils/theme';
+import { displayNutrient } from '~/utils/utils';
 
-const MealPlanComponent = ({
-  food,
-  selectedMenu,
-  categoryName,
-  location,
-  quantity,
-}: {
-  food: MealPlanItem;
-  selectedMenu: string;
-  categoryName: string;
-  location: string;
-  quantity: number;
-}) => {
-  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
-  const updateMealPlanItemQuantity = useMealPlanStore((state) => state.updateMealPlanItemQuantity);
-  const removeMealPlanItem = useMealPlanStore((state) => state.removeMealPlanItem);
+const MEAL_ORDER = ['Breakfast', 'Lunch', 'Dinner'];
 
-  // Local state to hold TextInput value.
-  const [quantityInput, setQuantityInput] = useState(`${quantity}` || '1');
+const amount = (item: MealPlanItem, key: 'calories' | 'protein' | 'total_carbohydrates') =>
+  (Number.parseFloat(String(item.nutrition?.[key] ?? 0)) || 0) * (item.quantity || 1);
 
-  const description = `${categoryName} - ${location} (${selectedMenu})`;
-  const allergenData = Object.entries(food.allergens || {});
+const sum = (items: MealPlanItem[], key: 'calories' | 'protein' | 'total_carbohydrates') =>
+  items.reduce((total, item) => total + amount(item, key), 0);
+
+const formatGrams = (value: number) => `${Math.round(value * 10) / 10}g`;
+
+const Tile = ({ label, value, theme }: { label: string; value: string; theme: Theme }) => (
+  <View
+    className="flex-1 px-3.5 py-3"
+    style={{ backgroundColor: theme.card, borderRadius: 22, borderCurve: 'continuous' }}
+  >
+    <Text className="text-[12.5px]" style={{ color: theme.secondaryLabel }}>
+      {label}
+    </Text>
+    <Text className="font-bold text-[21px]" style={{ color: theme.label }}>
+      {value}
+    </Text>
+  </View>
+);
+
+const removeItem = (item: MealPlanItem) => {
+  useMealPlanStore.getState().removeMealPlanItem(item.name || '');
+  Notifier.showNotification({
+    title: `${item.name} removed from today's meal plan!`,
+    description: 'You removed this item from your meal plan.',
+    swipeEnabled: true,
+    Component: Alert,
+  });
+};
+
+const PlanRow = ({ item, isFirst }: { item: MealPlanItem; isFirst: boolean }) => {
+  const theme = useTheme();
   const swipeableRef = useRef<SwipeableMethods>(null);
+  const updateQuantity = useMealPlanStore((state) => state.updateMealPlanItemQuantity);
+  const quantity = item.quantity || 1;
+  const allergens = Object.entries(item.allergens || {}).filter(([, value]) => value);
+
+  const step = (delta: number) => {
+    Haptics.selectionAsync();
+    const next = Math.round((quantity + delta) * 100) / 100;
+    if (next <= 0) removeItem(item);
+    else updateQuantity(item.name || '', Math.min(next, 99));
+  };
 
   return (
     <ReanimatedSwipeable
       ref={swipeableRef}
-      containerStyle={{
-        borderRadius: 4,
-        overflow: 'hidden',
-        marginBottom: 8,
-        backgroundColor: COLORS['ut-burnt-orange'],
-      }}
+      containerStyle={{ backgroundColor: theme.card }}
       overshootLeft={false}
       overshootRight={false}
       leftThreshold={50}
@@ -61,116 +79,85 @@ const MealPlanComponent = ({
       }}
       onSwipeableOpen={() => {
         swipeableRef.current?.close();
-
-        removeMealPlanItem(food.name || '');
-
-        Notifier.showNotification({
-          title: `${food.name} removed from today's meal plan!`,
-          description: 'You removed this item from your meal plan.',
-          swipeEnabled: true,
-          Component: Alert,
-        });
+        removeItem(item);
       }}
     >
       <View
-        className={cn(
-          'flex-row items-center justify-between rounded border px-3 py-2 pb-2',
-          isDarkMode ? 'border-neutral-800 bg-neutral-800' : 'border-ut-grey/15 bg-white',
-        )}
+        accessible
+        accessibilityLabel={`${item.name}, ${displayNutrient(String(Math.round(amount(item, 'calories'))))} kcal`}
+        accessibilityActions={[
+          { name: 'increment', label: 'Add one serving' },
+          { name: 'decrement', label: 'Remove one serving' },
+        ]}
+        onAccessibilityAction={({ nativeEvent }) =>
+          step(nativeEvent.actionName === 'increment' ? 1 : -1)
+        }
+        className="min-h-[64px] flex-row items-center gap-x-3 px-4 py-2.5"
+        style={{ backgroundColor: theme.card }}
       >
-        <View className="max-w-[16rem] gap-1">
-          <Text
-            className={cn(
-              'line-clamp-2 font-medium text-lg leading-6',
-              isDarkMode ? 'text-white' : 'text-black',
-            )}
-          >
-            {food.name}
-          </Text>
-          <Text
-            className={cn('font-medium text-sm', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}
-          >
-            {description}
-          </Text>
-          <View className="flex flex-row gap-2">
-            <View className="flex-row items-center gap-x-0.5">
-              <Flame fill={COLORS['ut-burnt-orange']} size={10} color={COLORS['ut-burnt-orange']} />
-              <Text
-                className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-black')}
-              >
-                {displayNutrient(food.nutrition?.calories)} kcal
-              </Text>
-            </View>
-            <View className="flex-row items-center gap-x-0.5">
-              <BicepsFlexed
-                fill={COLORS['ut-burnt-orange']}
-                size={10}
-                color={COLORS['ut-burnt-orange']}
-              />
-              <Text
-                className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-black')}
-              >
-                {displayNutrient(food.nutrition?.protein)} Protein
-              </Text>
-            </View>
-            <View className="flex-row items-center gap-x-0.5">
-              <Wheat fill={COLORS['ut-burnt-orange']} size={10} color={COLORS['ut-burnt-orange']} />
-              <Text
-                className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-black')}
-              >
-                {displayNutrient(food.nutrition?.total_carbohydrates)} Carbs
-              </Text>
-            </View>
-          </View>
-          <View className="flex-row flex-wrap gap-1">
-            {allergenData.map(
-              ([key, value]) =>
-                value && (
-                  <Image
-                    key={key}
-                    source={ALLERGEN_ICONS[key as keyof typeof ALLERGEN_ICONS]}
-                    className="size-3 rounded-full"
-                    resizeMode="contain"
-                  />
-                ),
-            )}
-          </View>
-        </View>
-
-        <View className="relative items-center gap-1">
-          <TextInput
-            className="h-8 w-12 rounded-lg border border-ut-burnt-orange text-center font-bold text-ut-burnt-orange"
-            keyboardType="decimal-pad"
-            value={quantityInput}
-            onChangeText={setQuantityInput}
-            onEndEditing={() => {
-              let quantity = parseFloat(quantityInput);
-              if (Number.isNaN(quantity)) {
-                quantity = 1;
-              }
-              if (quantity <= 0) {
-                removeMealPlanItem(food.name || '');
-
-                Notifier.showNotification({
-                  title: `${food.name} removed from today's meal plan!`,
-                  description: 'You removed this item from your meal plan.',
-                  swipeEnabled: true,
-                  Component: Alert,
-                });
-              } else if (quantity > 99) {
-                quantity = 99;
-              }
-
-              quantity = Math.round(quantity * 100) / 100;
-              setQuantityInput(quantity.toString());
-              updateMealPlanItemQuantity(food.name || '', quantity);
+        {!isFirst && (
+          <View
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              left: 16,
+              height: 0.5,
+              backgroundColor: theme.separator,
             }}
           />
-          <Text
-            className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}
-          >
-            Quantity
+        )}
+        <View className="flex-1 gap-y-0.5">
+          <Text numberOfLines={2} className="text-[16px]" style={{ color: theme.label }}>
+            {item.name}
           </Text>
+          <View className="flex-row flex-wrap items-center gap-x-1.5">
+            <Text className="text-[13.5px]" style={{ color: theme.secondaryLabel }}>
+              {item.locationName} · {formatGrams(amount(item, 'protein'))} protein ·{' '}
+              {formatGrams(amount(item, 'total_carbohydrates'))} carbs
+            </Text>
+            {allergens.map(([key]) => (
+              <Image
+                key={key}
+                source={ALLERGEN_ICONS[key as keyof typeof ALLERGEN_ICONS]}
+                className="size-[15px] rounded-full"
+                resizeMode="contain"
+              />
+            ))}
+          </View>
+        </View>
+        <View className="items-end gap-y-1">
+          <Text className="font-semibold text-[15px]" style={{ color: theme.label }}>
+            {Math.round(amount(item, 'calories'))}
+          </Text>
+          <View
+            className="h-8 flex-row items-center rounded-full"
+            style={{ backgroundColor: theme.fill }}
+          >
+            <Pressable
+              accessibilityLabel="Remove one serving"
+              hitSlop={6}
+              onPress={() => step(-1)}
+              className="h-8 w-8 items-center justify-center"
+            >
+              <Minus size={14} color={theme.label} />
+            </Pressable>
+            <Text
+              testID="meal-plan-quantity"
+              className="min-w-5 text-center font-semibold text-[14px]"
+              style={{ color: theme.label }}
+            >
+              {quantity}
+            </Text>
+            <Pressable
+              accessibilityLabel="Add one serving"
+              hitSlop={6}
+              onPress={() => step(1)}
+              className="h-8 w-8 items-center justify-center"
+            >
+              <Plus size={14} color={theme.label} />
+            </Pressable>
+          </View>
         </View>
       </View>
     </ReanimatedSwipeable>
@@ -178,137 +165,152 @@ const MealPlanComponent = ({
 };
 
 const MealPlan = () => {
-  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
-  const mealPlanItems = useMealPlanStore((state) => state.mealPlanItems);
+  const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  const items = useMealPlanStore((state) => state.mealPlanItems);
+  const clearMealPlan = useMealPlanStore((state) => state.clearMealPlan);
 
-  const totalCalories = mealPlanItems.reduce(
-    (sum, item) => sum + parseFloat(String(item.nutrition?.calories || 0)) * (item?.quantity || 1),
-    0,
+  const meals = [...new Set(items.map((item) => item.menuName || 'Other'))].sort(
+    (a, b) =>
+      (MEAL_ORDER.indexOf(a) + 1 || 99) - (MEAL_ORDER.indexOf(b) + 1 || 99) || a.localeCompare(b),
   );
-  const totalProtein = mealPlanItems.reduce(
-    (sum, item) => sum + parseFloat(String(item.nutrition?.protein || 0)) * (item?.quantity || 1),
-    0,
-  );
-  const totalCarbs = mealPlanItems.reduce(
-    (sum, item) =>
-      sum + parseFloat(String(item.nutrition?.total_carbohydrates || 0)) * (item?.quantity || 1),
-    0,
-  );
+
+  const confirmReset = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    NativeAlert.alert("Reset today's meal plan?", 'This removes every item from today.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Reset',
+        style: 'destructive',
+        onPress: () => {
+          clearMealPlan();
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        },
+      },
+    ]);
+  };
 
   return (
-    <Container className="m-0">
-      <FlatList
-        keyExtractor={(item) => `${item.name}-${item.categoryName}-${item.menuName}`}
-        ListHeaderComponent={
-          <View className={cn('flex gap-y-5 py-6', isDarkMode ? 'bg-neutral-900' : 'bg-white')}>
-            <TopBar variant="back" />
-            <View>
-              <View className="flex-row items-center gap-x-2">
-                <Text
-                  className={cn(
-                    'font-extrabold text-3xl',
-                    isDarkMode ? 'text-white' : 'text-black',
-                  )}
-                >
-                  Your Meal Plan
-                </Text>
-              </View>
-              <Text className={cn('font-medium', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}>
-                Swipe right on a food item to add it to your meal plan. To remove it, swipe right
-                again on the item in your meal plan.
-              </Text>
-              <Text className={cn('mt-2 text-sm', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}>
-                <Text className="font-bold text-ut-burnt-orange">Note: </Text>
-                Your meal plan will reset at the end of the day.
-              </Text>
-            </View>
-
-            <View
-              className={cn(
-                'flex-row justify-around rounded-lg border p-4',
-                isDarkMode ? 'border-neutral-800 bg-neutral-800' : 'border-ut-grey/15 bg-white',
-              )}
+    <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: insets.top }}>
+      <Stack.Screen options={{ title: 'Meal Plan', headerShown: false }} />
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
+        <View className="flex-row items-center justify-between px-4 pt-2">
+          <Pressable
+            testID="back-button"
+            accessibilityLabel="Back"
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            className="size-11 items-center justify-center rounded-full"
+            style={{ backgroundColor: theme.card }}
+          >
+            <ChevronLeft size={22} color={theme.label} />
+          </Pressable>
+          {items.length > 0 && (
+            <Pressable
+              testID="meal-plan-reset-button"
+              accessibilityRole="button"
+              onPress={confirmReset}
+              className="h-11 justify-center rounded-full px-4"
+              style={{ backgroundColor: theme.card }}
             >
-              <View className="flex-1 items-center">
-                <Text className="text-center font-bold text-lg text-ut-burnt-orange">
-                  {totalCalories.toFixed(1)} kcal
-                </Text>
-                <Text
-                  className={cn(
-                    'font-medium text-xs',
-                    isDarkMode ? 'text-gray-300' : 'text-ut-grey',
-                  )}
-                >
-                  Calories
-                </Text>
-              </View>
-              <View className="flex-1 items-center">
-                <Text className="text-center font-bold text-lg text-ut-burnt-orange">
-                  {totalProtein.toFixed(1)}g
-                </Text>
-                <Text
-                  className={cn(
-                    'font-medium text-xs',
-                    isDarkMode ? 'text-gray-300' : 'text-ut-grey',
-                  )}
-                >
-                  Protein
-                </Text>
-              </View>
-              <View className="flex-1 items-center">
-                <Text className="text-center font-bold text-lg text-ut-burnt-orange">
-                  {totalCarbs.toFixed(1)}g
-                </Text>
-                <Text
-                  className={cn(
-                    'font-medium text-xs',
-                    isDarkMode ? 'text-gray-300' : 'text-ut-grey',
-                  )}
-                >
-                  Carbs
-                </Text>
-              </View>
-            </View>
+              <Text className="font-semibold text-[16px]" style={{ color: theme.tint }}>
+                Reset
+              </Text>
+            </Pressable>
+          )}
+        </View>
 
-            <View
-              className={cn(
-                'my-1 w-full border-b',
-                isDarkMode ? 'border-neutral-800' : 'border-b-ut-grey/15',
-              )}
-            />
-          </View>
-        }
-        data={mealPlanItems}
-        contentContainerClassName="px-6"
-        renderItem={({ item }) => (
-          <MealPlanComponent
-            categoryName={item.categoryName}
-            food={item}
-            location={item.locationName}
-            selectedMenu={item.menuName}
-            quantity={item.quantity || 1}
-          />
-        )}
-        ListEmptyComponent={
-          <View className="mt-12 flex items-center justify-center">
-            <Text
-              className={cn(
-                'font-bold text-lg',
-                isDarkMode ? 'text-white' : 'text-ut-burnt-orange',
-              )}
-            >
+        <Text
+          testID="meal-plan-title"
+          className="px-5 pt-3 pb-1 font-bold text-[34px]"
+          style={{ color: theme.label }}
+        >
+          Meal Plan
+        </Text>
+        <Text className="px-5 pb-4 text-[15px]" style={{ color: theme.secondaryLabel }}>
+          Today's plan. It starts over at midnight.
+        </Text>
+
+        {items.length === 0 ? (
+          <View className="mx-8 mt-12 items-center gap-y-2">
+            <ChefHat size={36} color={theme.tertiaryLabel} />
+            <Text className="font-semibold text-[17px]" style={{ color: theme.label }}>
               Empty Meal Plan!
             </Text>
-            <Text
-              className={cn('max-w-64 text-center', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}
-            >
-              Swipe right on a food item to add to your meal plan.
+            <Text className="text-center text-[15px]" style={{ color: theme.secondaryLabel }}>
+              Press and hold a food on any menu, or swipe right on it, to add it here.
             </Text>
           </View>
-        }
-        stickyHeaderIndices={[0]} // Makes the header sticky
-      />
-    </Container>
+        ) : (
+          <>
+            <View className="mx-4 mb-2">
+              <View
+                className="flex-row items-center justify-between px-4 py-3.5"
+                style={{ backgroundColor: theme.card, borderRadius: 22, borderCurve: 'continuous' }}
+              >
+                <View>
+                  <Text className="text-[12.5px]" style={{ color: theme.secondaryLabel }}>
+                    Total for the day
+                  </Text>
+                  <Text className="font-bold text-[38px]" style={{ color: theme.label }}>
+                    {Math.round(sum(items, 'calories'))}
+                    <Text
+                      className="font-medium text-[16px]"
+                      style={{ color: theme.secondaryLabel }}
+                    >
+                      {' '}
+                      kcal
+                    </Text>
+                  </Text>
+                </View>
+                <Flame size={32} color={theme.tint} fill={theme.tint} />
+              </View>
+            </View>
+            <View className="mx-4 mb-5 flex-row gap-x-2">
+              <Tile label="Protein" value={formatGrams(sum(items, 'protein'))} theme={theme} />
+              <Tile
+                label="Carbs"
+                value={formatGrams(sum(items, 'total_carbohydrates'))}
+                theme={theme}
+              />
+              <Tile
+                label="Items"
+                value={String(items.reduce((total, item) => total + (item.quantity || 1), 0))}
+                theme={theme}
+              />
+            </View>
+
+            {meals.map((meal) => {
+              const mealItems = items.filter((item) => (item.menuName || 'Other') === meal);
+              return (
+                <View key={meal} className="mb-5">
+                  <View className="mx-9 mb-1.5 flex-row justify-between">
+                    <Text className="text-[13px]" style={{ color: theme.secondaryLabel }}>
+                      {meal}
+                    </Text>
+                    <Text className="text-[13px]" style={{ color: theme.secondaryLabel }}>
+                      {Math.round(sum(mealItems, 'calories'))} kcal
+                    </Text>
+                  </View>
+                  <View
+                    className="mx-4 overflow-hidden"
+                    style={{ borderRadius: 26, borderCurve: 'continuous' }}
+                  >
+                    {mealItems.map((item, index) => (
+                      <PlanRow
+                        key={`${item.name}-${item.categoryName}-${item.menuName}`}
+                        item={item}
+                        isFirst={index === 0}
+                      />
+                    ))}
+                  </View>
+                </View>
+              );
+            })}
+          </>
+        )}
+      </ScrollView>
+    </View>
   );
 };
 

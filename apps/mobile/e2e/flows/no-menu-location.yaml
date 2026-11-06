@@ -1,0 +1,23 @@
+appId: com.ethanl06.ut-dining.dev
+name: A place without a menu shows its details
+---
+- runFlow: ../subflows/start.yaml
+- tapOn:
+    id: search-tab
+- tapOn: "Search today's menus"
+- inputText: Longhorn Coffee
+- extendedWaitUntil:
+    visible: 'Longhorn Coffee Co.(,.*)?'
+    timeout: 10000
+- tapOn: 'Longhorn Coffee Co.(,.*)?'
+- extendedWaitUntil:
+    visible:
+      id: generic-directions-button
+    timeout: 10000
+- assertVisible: Hours
+- takeScreenshot: no-menu-location
+- tapOn:
+    id: back-button
+- extendedWaitUntil:
+    visible: "On today's menus|Places"
+    timeout: 5000
