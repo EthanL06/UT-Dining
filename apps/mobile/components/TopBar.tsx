@@ -9,7 +9,12 @@ import { useDatabase } from '~/hooks/useDatabase';
 import { useFoodData } from '~/hooks/useFoodData';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { isFavoriteItem, toggleFavorites } from '~/services/database/database';
-import { useMealPlanStore } from '~/store/useMealPlanStore';
+import {
+  planDayPhrase,
+  todayKey,
+  useIsMealPlanItem,
+  useMealPlanStore,
+} from '~/store/useMealPlanStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
 import Alert from './Alert';
@@ -106,7 +111,11 @@ const FoodTopBar = () => {
 
   const { foodItem } = useFoodData(location, menu, category, food, favorite === 'true', date);
   const toggleMealPlanItem = useMealPlanStore((state) => state.toggleMealPlanItem);
-  const isMealPlanItem = useMealPlanStore((state) => state.isMealPlanItem(food));
+  const planDate = date || todayKey();
+  const isMealPlanItem = useIsMealPlanItem(
+    { name: food, locationName: location, menuName: menu, categoryName: category },
+    planDate,
+  );
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
   const db = useDatabase();
   const [isFavorite, setIsFavorite] = useState(false);
@@ -180,24 +189,27 @@ const FoodTopBar = () => {
         <TouchableOpacity
           onPress={() => {
             if (foodItem) {
-              toggleMealPlanItem({
-                name: foodItem.name as string,
-                locationName: location,
-                categoryName: category,
-                menuName: menu,
-                allergens: Object.fromEntries(
-                  Object.entries(foodItem.allergens || {}).filter(([key]) => key !== 'id'),
-                ) as Record<string, boolean>,
-                nutrition: {
-                  calories: foodItem.nutrition?.calories || '',
-                  protein: foodItem.nutrition?.protein || '',
-                  total_carbohydrates: foodItem.nutrition?.total_carbohydrates || '',
+              toggleMealPlanItem(
+                {
+                  name: foodItem.name as string,
+                  locationName: location,
+                  categoryName: category,
+                  menuName: menu,
+                  allergens: Object.fromEntries(
+                    Object.entries(foodItem.allergens || {}).filter(([key]) => key !== 'id'),
+                  ) as Record<string, boolean>,
+                  nutrition: {
+                    calories: foodItem.nutrition?.calories || '',
+                    protein: foodItem.nutrition?.protein || '',
+                    total_carbohydrates: foodItem.nutrition?.total_carbohydrates || '',
+                  },
                 },
-              });
+                planDate,
+              );
 
               if (isMealPlanItem) {
                 Notifier.showNotification({
-                  title: `${foodItem.name} removed from today.`,
+                  title: `${foodItem.name} removed from ${planDayPhrase(planDate)}.`,
                   description: `You've updated your meal plan.`,
                   swipeEnabled: true,
                   Component: Alert,
@@ -206,8 +218,8 @@ const FoodTopBar = () => {
                 });
               } else {
                 Notifier.showNotification({
-                  title: `${foodItem.name} saved for today!`,
-                  description: `Added to today's meal plan.`,
+                  title: `${foodItem.name} saved for ${planDayPhrase(planDate)}!`,
+                  description: `Added to your meal plan for ${planDayPhrase(planDate)}.`,
                   swipeEnabled: true,
                   Component: Alert,
                   duration: 3000,

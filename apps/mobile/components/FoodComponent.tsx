@@ -18,7 +18,12 @@ import { Notifier } from 'react-native-notifier';
 import Reanimated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import type { FoodItem } from '~/services/database/database';
-import { useMealPlanStore } from '~/store/useMealPlanStore';
+import {
+  planDayPhrase,
+  todayKey,
+  useIsMealPlanItem,
+  useMealPlanStore,
+} from '~/store/useMealPlanStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
 import { cn, displayNutrient } from '~/utils/utils';
@@ -48,7 +53,16 @@ const FoodComponent = ({
   showExtraInfo?: boolean;
   canMealPlan?: boolean;
 }) => {
-  const isMealPlan = useMealPlanStore((state) => state.isMealPlanItem(food.name as string));
+  const planDate = date || todayKey();
+  const isMealPlan = useIsMealPlanItem(
+    {
+      name: food.name as string,
+      locationName: location,
+      menuName: selectedMenu,
+      categoryName,
+    },
+    planDate,
+  );
   const toggleMealPlanItem = useMealPlanStore((state) => state.toggleMealPlanItem);
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
   const scale = useSharedValue(1);
@@ -117,28 +131,31 @@ const FoodComponent = ({
           swipeableRef.current?.close();
 
           if (direction === SwipeDirection.RIGHT && canMealPlan) {
-            toggleMealPlanItem({
-              name: food.name as string,
-              locationName: location,
-              categoryName,
-              menuName: selectedMenu,
-              allergens: Object.fromEntries(
-                Object.entries(food.allergens || {}).filter(([key]) => key !== 'id'),
-              ) as Record<string, boolean>,
-              nutrition: {
-                calories: food.nutrition?.calories || '',
-                protein: food.nutrition?.protein || '',
-                total_carbohydrates: food.nutrition?.total_carbohydrates || '',
+            toggleMealPlanItem(
+              {
+                name: food.name as string,
+                locationName: location,
+                categoryName,
+                menuName: selectedMenu,
+                allergens: Object.fromEntries(
+                  Object.entries(food.allergens || {}).filter(([key]) => key !== 'id'),
+                ) as Record<string, boolean>,
+                nutrition: {
+                  calories: food.nutrition?.calories || '',
+                  protein: food.nutrition?.protein || '',
+                  total_carbohydrates: food.nutrition?.total_carbohydrates || '',
+                },
               },
-            });
+              planDate,
+            );
 
             Notifier.showNotification({
               title: isMealPlan
-                ? `${food.name} removed from today.`
-                : `${food.name} saved for today!`,
+                ? `${food.name} removed from ${planDayPhrase(planDate)}.`
+                : `${food.name} saved for ${planDayPhrase(planDate)}!`,
               description: isMealPlan
                 ? `You've updated your meal plan.`
-                : `Added to today's meal plan.`,
+                : `Added to your meal plan for ${planDayPhrase(planDate)}.`,
               swipeEnabled: true,
               Component: Alert,
               duration: 3000,
