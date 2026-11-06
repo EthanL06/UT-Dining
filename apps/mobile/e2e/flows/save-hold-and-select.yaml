@@ -1,0 +1,53 @@
+appId: com.ethanl06.ut-dining.dev
+name: Press and hold adds a food, and Select Multiple adds several at once
+---
+- runFlow: ../subflows/start.yaml
+- runFlow: ../subflows/open-j2.yaml
+- scrollUntilVisible:
+    element: 'Maestro Grilled Chicken(,.*)?'
+    direction: DOWN
+    visibilityPercentage: 100
+- longPressOn: 'Maestro Grilled Chicken(,.*)?'
+- extendedWaitUntil:
+    visible: Add to Meal Plan
+    timeout: 5000
+- takeScreenshot: hold-menu
+- tapOn: Add to Meal Plan
+- waitForAnimationToEnd
+- longPressOn: 'Maestro Veggie Burger(,.*)?'
+- extendedWaitUntil:
+    visible: Select Multiple
+    timeout: 5000
+- tapOn: Select Multiple
+- extendedWaitUntil:
+    visible:
+      id: select-done-button
+    timeout: 5000
+- scrollUntilVisible:
+    element: 'Maestro Tofu Bowl(,.*)?'
+    direction: DOWN
+    visibilityPercentage: 100
+- tapOn: 'Maestro Tofu Bowl(,.*)?'
+- assertVisible: Add 2 to Meal Plan.*
+- takeScreenshot: select-mode
+- tapOn:
+    id: select-add-meal-plan-button
+- extendedWaitUntil:
+    notVisible:
+      id: select-done-button
+    timeout: 5000
+- scrollUntilVisible:
+    element:
+      id: location-meal-plan-button
+    direction: UP
+- repeat:
+    while:
+      notVisible: Your Meal Plan
+    times: 3
+    commands:
+      - tapOn:
+          id: location-meal-plan-button
+      - waitForAnimationToEnd
+- assertVisible: 'Maestro Grilled Chicken(,.*)?'
+- assertVisible: 'Maestro Veggie Burger(,.*)?'
+- assertVisible: 'Maestro Tofu Bowl(,.*)?'

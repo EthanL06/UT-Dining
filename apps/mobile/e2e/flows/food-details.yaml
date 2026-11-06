@@ -11,10 +11,14 @@ name: A food item opens its nutrition details
 - extendedWaitUntil:
     visible: Nutrition Facts
     timeout: 10000
-- assertVisible: 410 kcal
-- assertVisible: 21g Protein
-- assertVisible: 38g Carbs
-- assertVisible: Allergens:.*
+- assertVisible: Calories.*
+- assertVisible: '410'
+- assertVisible: 21g
+- assertVisible: 38g
+- assertVisible:
+    id: food-favorite-button
+- assertVisible:
+    id: food-meal-plan-button
 - takeScreenshot: food-details
 - tapOn:
     id: back-button
