@@ -199,6 +199,15 @@ if [[ "$RESULT" -ne 0 && "$RETRIES" -gt 0 && -f "$REPORT" ]]; then
     RESULT=$?
     set -e
     REPORT="$OUT/retry/report.xml"
+    for flow in "${FAILED[@]}"; do
+      grep -o '<testcase [^>]*>' "$REPORT" | grep -F "file=\"$flow\"" | grep -q 'status="SUCCESS"' || continue
+      name="${flow#"$ROOT"/}"
+      echo "Flaky: $name failed and then passed on retry"
+      if [[ -n "${GITHUB_ACTIONS:-}" ]]; then
+        echo "::warning title=Flaky E2E flow::$name failed and then passed on retry"
+        [[ -n "${GITHUB_STEP_SUMMARY:-}" ]] && echo "- Flaky: \`$name\` failed and then passed on retry" >> "$GITHUB_STEP_SUMMARY"
+      fi
+    done
   fi
 fi
 

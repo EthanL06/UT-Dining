@@ -96,17 +96,38 @@ jobs:
         shard: [1, 2, 3]
     env:
       MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000
+      MAESTRO_VERSION: 2.12.1
+      SHARD_1_FLOWS: onboarding food-details
+      SHARD_2_FLOWS: favorites tabs settings
     steps:
       - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v6
+      - name: Create and boot a simulator
+        run: |
+          RUNTIME_JSON="$(xcrun simctl list runtimes -j | jq '[.runtimes[] | select(.platform == "iOS" and .isAvailable)] | last')"
+          RUNTIME="$(jq -r '.identifier' <<<"$RUNTIME_JSON")"
+          DEVICE_TYPE="$(jq -r '[.supportedDeviceTypes[] | select(.name | test("^iPhone [0-9]+$"))] | sort_by(.name | ltrimstr("iPhone ") | tonumber) | last | .identifier' <<<"$RUNTIME_JSON")"
+          echo "Runtime $RUNTIME, device type $DEVICE_TYPE"
+          SIM="$(xcrun simctl create maestro "$DEVICE_TYPE" "$RUNTIME")"
+          xcrun simctl boot "$SIM"
+          echo "SIM=$SIM" >> "$GITHUB_ENV"
 
       - uses: actions/setup-node@v7
         with:
           node-version-file: .node-version
-          cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
+      - name: Restore Maestro
+        id: maestro-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.maestro
+          key: maestro-${{ runner.os }}-${{ runner.arch }}-${{ env.MAESTRO_VERSION }}
+
+      - name: Install Maestro
+        if: steps.maestro-cache.outputs.cache-hit != 'true'
+        run: curl -fsSL https://get.maestro.mobile.dev | bash
+
+      - run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
 
       - name: Restore the built app
         uses: actions/cache/restore@v6
@@ -115,29 +136,26 @@ jobs:
           key: ${{ needs.build.outputs.key }}
           fail-on-cache-miss: true
 
-      - name: Create a simulator and install the app
+      - name: Install the app once the simulator has booted
         run: |
-          RUNTIME_JSON="$(xcrun simctl list runtimes -j | jq '[.runtimes[] | select(.platform == "iOS" and .isAvailable)] | last')"
-          RUNTIME="$(jq -r '.identifier' <<<"$RUNTIME_JSON")"
-          DEVICE_TYPE="$(jq -r '[.supportedDeviceTypes[] | select(.name | test("^iPhone [0-9]+$"))] | sort_by(.name | ltrimstr("iPhone ") | tonumber) | last | .identifier' <<<"$RUNTIME_JSON")"
-          echo "Runtime $RUNTIME, device type $DEVICE_TYPE"
-          SIM="$(xcrun simctl create maestro "$DEVICE_TYPE" "$RUNTIME")"
-          xcrun simctl boot "$SIM"
           xcrun simctl bootstatus "$SIM" -b
           xcrun simctl install "$SIM" .context/app/*.app
-          echo "SIM=$SIM" >> "$GITHUB_ENV"
-
-      - name: Install Maestro
-        run: |
-          curl -fsSL https://get.maestro.mobile.dev | bash
-          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
 
       - name: Pick this shard's flows
         env:
           SHARD: ${{ matrix.shard }}
         run: |
-          FLOWS="$(ls apps/mobile/e2e/flows/*.yaml | awk -v n=3 -v s="$SHARD" '(NR - 1) % n == s - 1' | tr '\n' ' ')"
-          echo "Flows: $FLOWS"
+          case "$SHARD" in
+            1) NAMES="$SHARD_1_FLOWS" ;;
+            2) NAMES="$SHARD_2_FLOWS" ;;
+            *) NAMES="$(ls apps/mobile/e2e/flows/*.yaml | xargs -n1 basename | sed 's/\.yaml$//' | grep -vxF -f <(tr ' ' '\n' <<<"$SHARD_1_FLOWS $SHARD_2_FLOWS") | tr '\n' ' ')" ;;
+          esac
+          FLOWS=""
+          for name in $NAMES; do
+            [[ -f "apps/mobile/e2e/flows/$name.yaml" ]] || { echo "::error::No flow named $name"; exit 1; }
+            FLOWS="$FLOWS apps/mobile/e2e/flows/$name.yaml"
+          done
+          echo "Flows:$FLOWS"
           echo "FLOWS=$FLOWS" >> "$GITHUB_ENV"
 
       - name: Run Maestro flows

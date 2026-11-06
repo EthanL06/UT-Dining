@@ -3,7 +3,9 @@ appId: com.ethanl06.ut-dining.dev
 - waitForAnimationToEnd:
     timeout: 5000
 - repeat:
-    times: 3
+    while:
+      visible: '.*Would Like to Send You Notifications.*|.*to use your location.*|Enjoying.*|Open in .*'
+    times: 4
     commands:
       - runFlow:
           when:
