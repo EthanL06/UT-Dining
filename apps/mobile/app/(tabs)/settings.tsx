@@ -18,6 +18,7 @@ import {
   Moon,
   RefreshCcw,
   Shield,
+  Sparkles,
   Star,
   Type,
 } from 'lucide-react-native';
@@ -26,6 +27,7 @@ import { Linking, ScrollView, Switch, Text, TouchableOpacity, View } from 'react
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 
 import { Container } from '~/components/Container';
+import { CHANGELOG } from '~/data/Changelog';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationPermissions } from '~/hooks/useLocationPermissions';
 import { forceMenuSync } from '~/hooks/useMenuSync';
@@ -34,6 +36,7 @@ import { getAppInformation } from '~/services/database/database';
 import type { AppInformation } from '~/services/database/schema';
 import { getOrCreateDeviceId } from '~/services/device/deviceId';
 import { useAppLaunchStore } from '~/store/useAppLaunchStore';
+import { useChangelogPromptStore, useChangelogStore } from '~/store/useChangelogStore';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -492,6 +495,8 @@ const SettingsPage = () => {
   } = useSettingsStore();
   const { resetOnboarding } = useOnboardingStore();
   const { resetRatingPrompt } = useAppLaunchStore();
+  const resetChangelog = useChangelogStore((state) => state.resetChangelog);
+  const showChangelogPrompt = useChangelogPromptStore((state) => state.showPrompt);
   const db = useDatabase();
   const [appInfo, setAppInfo] = React.useState<AppInformation | null>(null);
 
@@ -620,7 +625,8 @@ const SettingsPage = () => {
             Icon={History}
             hasChevron
             isDarkMode={isDarkMode}
-            onPress={() => Linking.openURL('https://utdining.userjot.com/updates')}
+            onPress={() => router.push('/changelog')}
+            subtitle="See what's new in each update"
           />
 
           {__DEV__ && (
@@ -656,6 +662,40 @@ const SettingsPage = () => {
                   resetRatingPrompt();
                 }}
                 subtitle="Reset the rating prompt to test it again"
+              />
+              <SettingItem
+                activeOpacity={0.7}
+                title="Preview Update Popup"
+                Icon={Sparkles}
+                hasChevron
+                isDarkMode={isDarkMode}
+                onPress={() =>
+                  showChangelogPrompt({
+                    kind: 'update',
+                    version: CHANGELOG[0].version,
+                    required: false,
+                    releaseNotes: null,
+                  })
+                }
+              />
+              <SettingItem
+                activeOpacity={0.7}
+                title="Preview What's New Popup"
+                Icon={Sparkles}
+                hasChevron
+                isDarkMode={isDarkMode}
+                onPress={() =>
+                  showChangelogPrompt({ kind: 'whats-new', version: CHANGELOG[0].version })
+                }
+              />
+              <SettingItem
+                activeOpacity={0.7}
+                title="Reset Changelog"
+                Icon={RefreshCcw}
+                hasChevron
+                isDarkMode={isDarkMode}
+                onPress={resetChangelog}
+                subtitle="Show What's New again on the next launch"
               />
             </>
           )}

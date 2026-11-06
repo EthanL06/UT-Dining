@@ -1,5 +1,6 @@
 import type React from 'react';
 
+import { ChangelogModal } from '~/components/changelog/ChangelogModal';
 import { useVersionCheck } from '~/hooks/useVersionCheck';
 
 interface VersionCheckProviderProps {
@@ -7,6 +8,16 @@ interface VersionCheckProviderProps {
 }
 
 export const VersionCheckProvider: React.FC<VersionCheckProviderProps> = ({ children }) => {
-  useVersionCheck();
-  return <>{children}</>;
+  const { handleUpdate, handleIgnore, handleDismissWhatsNew } = useVersionCheck();
+
+  return (
+    <>
+      {children}
+      <ChangelogModal
+        onUpdate={handleUpdate}
+        onIgnore={handleIgnore}
+        onDismissWhatsNew={handleDismissWhatsNew}
+      />
+    </>
+  );
 };
