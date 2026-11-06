@@ -22,6 +22,7 @@ export interface MealPlanItem extends MealPlanFoodRef {
     calories: string;
     protein: string;
     total_carbohydrates: string;
+    total_fat?: string;
   } | null;
   allergens: Record<string, boolean>;
 }

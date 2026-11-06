@@ -144,6 +144,7 @@ const FoodComponent = ({
                   calories: food.nutrition?.calories || '',
                   protein: food.nutrition?.protein || '',
                   total_carbohydrates: food.nutrition?.total_carbohydrates || '',
+                  total_fat: food.nutrition?.total_fat || '',
                 },
               },
               planDate,

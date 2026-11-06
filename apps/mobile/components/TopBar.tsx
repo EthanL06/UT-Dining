@@ -202,6 +202,7 @@ const FoodTopBar = () => {
                     calories: foodItem.nutrition?.calories || '',
                     protein: foodItem.nutrition?.protein || '',
                     total_carbohydrates: foodItem.nutrition?.total_carbohydrates || '',
+                    total_fat: foodItem.nutrition?.total_fat || '',
                   },
                 },
                 planDate,
