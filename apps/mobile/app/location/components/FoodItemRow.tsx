@@ -1,14 +1,11 @@
 import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import { memo, useEffect, useState } from 'react';
-import { View } from 'react-native';
-import { Notifier } from 'react-native-notifier';
 
-import Alert from '~/components/Alert';
-import FoodComponent from '~/components/FoodComponent';
-import { type FoodItem, toggleFavorites } from '~/services/database/database';
+import FoodComponent, { type RowPosition } from '~/components/FoodComponent';
+import type { DrizzleDB, FoodItem } from '~/services/database/database';
 import type * as schema from '~/services/database/schema';
+import { toggleFavoriteForFood } from '~/utils/foodActions';
 
-// Define interfaces for the props
 interface FoodItemProps {
   data: FoodItem;
   categoryId: string;
@@ -23,56 +20,57 @@ interface FoodItemRowProps {
   date: string;
   db: ExpoSQLiteDatabase<typeof schema>;
   favorites: schema.Favorite[];
+  position: RowPosition;
+  selecting: boolean;
+  selected: boolean;
+  onToggleSelect: (id: string) => void;
+  onSelectMultiple: (id: string) => void;
 }
 
-const FoodItemRow = ({ item, selectedMenu, location, date, db, favorites }: FoodItemRowProps) => {
+const FoodItemRow = ({
+  item,
+  selectedMenu,
+  location,
+  date,
+  db,
+  favorites,
+  position,
+  selecting,
+  selected,
+  onToggleSelect,
+  onSelectMultiple,
+}: FoodItemRowProps) => {
   const foodName = item.data.name;
-  // Use state for favorite status
   const [isFavorite, setIsFavorite] = useState(favorites.some((f) => f.name === foodName));
 
-  // Update local state when favorites change
   useEffect(() => {
     setIsFavorite(favorites.some((f) => f.name === foodName));
   }, [favorites, foodName]);
 
   return (
-    <View className="px-6">
-      <FoodComponent
-        food={item.data}
-        selectedMenu={selectedMenu}
-        categoryName={item.categoryId}
-        location={location}
-        date={date}
-        onFavorite={async (food) => {
-          // Update local state immediately for a responsive UI
-          const newFavoriteState = !isFavorite;
-
-          // Prepare notification content before showing
-          const title = newFavoriteState ? `${food.name} added!` : `${food.name} removed.`;
-
-          const description = newFavoriteState ? 'Added to Favorites.' : 'No longer in Favorites.';
-
-          // Use setTimeout to ensure UI updates before showing notification
-          setTimeout(() => {
-            Notifier.showNotification({
-              title,
-              description,
-              swipeEnabled: true,
-              Component: Alert,
-              duration: 3000,
-              queueMode: 'immediate',
-            });
-          }, 1);
-
-          // Update state after preparing the notification
-          setIsFavorite(newFavoriteState);
-
-          // Toggle in database
-          await toggleFavorites(db, food, location, selectedMenu, item.categoryId);
-        }}
-        isFavorite={isFavorite}
-      />
-    </View>
+    <FoodComponent
+      food={item.data}
+      selectedMenu={selectedMenu}
+      categoryName={item.categoryId}
+      location={location}
+      date={date}
+      position={position}
+      selection={{
+        selecting,
+        selected,
+        onToggleSelect: () => onToggleSelect(item.id),
+        onSelectMultiple: () => onSelectMultiple(item.id),
+      }}
+      onFavorite={async (food) => {
+        setIsFavorite(!isFavorite);
+        await toggleFavoriteForFood(db as DrizzleDB, food, {
+          location,
+          menu: selectedMenu,
+          category: item.categoryId,
+        });
+      }}
+      isFavorite={isFavorite}
+    />
   );
 };
 

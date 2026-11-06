@@ -38,8 +38,9 @@ It refuses to run unless `supabase status` reports a `http://127.0.0.1:` API URL
 | `onboarding.yaml` | Onboarding steps, Finish lands on Home, a relaunch skips onboarding |
 | `location-menu.yaml` | J2 menu shows categories and items, a category collapses and expands |
 | `menu-search.yaml` | Search narrows the menu, a miss shows the empty state, Cancel clears it |
-| `menu-meals-and-dates.yaml` | Meal chips switch menus, the date arrows load tomorrow's menu |
+| `menu-meals-and-dates.yaml` | The meal picker switches menus, and the week strip (`menu-day-<offset>`) loads tomorrow's menu |
 | `food-details.yaml` | A food opens nutrition and allergens |
+| `save-hold-and-select.yaml` | Press and hold on a food adds it to the meal plan, and Select Multiple adds several foods at once |
 | `favorites.yaml` | Heart on a food and a left swipe add favorites, left swipes remove them |
 | `meal-plan.yaml` | A right swipe and the chef hat add to the meal plan, right swipes remove |
 | `settings.yaml` | Dark mode switch, Sync Data, Favorites quick link |
@@ -51,7 +52,7 @@ Every flow except `onboarding.yaml` starts from a clean install on Home (`subflo
 
 ## Writing flows
 
-- Match on visible text when it is stable. For icon buttons, use the `testID` on the component (`back-button`, `location-favorites-button`, `food-favorite-button`, `food-meal-plan-button`, `date-next-button`, `menu-search-input`, `settings-dark-mode-switch` and others).
+- Match on visible text when it is stable. For icon buttons, use the `testID` on the component (`back-button`, `location-favorites-button`, `food-favorite-button`, `food-meal-plan-button`, `menu-day-1`, `select-done-button`, `select-add-meal-plan-button`, `menu-search-input`, `settings-dark-mode-switch` and others).
 - Use the fixture items, never scraped menus, so a flow does not depend on what UT serves that day.
 - Run one flow with `maestro test <file>` while you write it, and `maestro studio` to inspect the screen.
 

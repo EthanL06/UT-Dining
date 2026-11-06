@@ -1,11 +1,9 @@
 import { Search, X } from 'lucide-react-native';
 import type React from 'react';
 import { useRef } from 'react';
-import { Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Keyboard, Pressable, Text, TextInput, View } from 'react-native';
 
-import { useSettingsStore } from '~/store/useSettingsStore';
-import { COLORS } from '~/utils/colors';
-import { cn } from '~/utils/utils';
+import { useTheme } from '~/utils/theme';
 
 type Props = {
   query: string;
@@ -16,62 +14,48 @@ type Props = {
 };
 
 const SearchBar = ({ query, setQuery, onFocus, onBlur, isSearchFocused }: Props) => {
-  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+  const theme = useTheme();
   const inputRef = useRef<React.ComponentRef<typeof TextInput>>(null);
 
   const handleCancel = () => {
     Keyboard.dismiss();
     inputRef.current?.blur();
-    // Set query to empty string
     setQuery('');
     onBlur?.();
-  };
-
-  const handleFocus = () => {
-    onFocus?.();
   };
 
   return (
     <View className="flex-row items-center gap-x-3">
       <View
-        className={cn(
-          'flex-1 flex-row items-center rounded-lg border px-3 py-2.5',
-          isDarkMode ? 'border-neutral-800 bg-neutral-800' : 'border-ut-grey/15 bg-white',
-        )}
+        className="h-10 flex-1 flex-row items-center gap-x-2 rounded-full px-3"
+        style={{ backgroundColor: theme.fill }}
       >
-        <Search size={18} color={isDarkMode ? '#aaa' : COLORS['ut-grey']} />
+        <Search size={17} color={theme.secondaryLabel} />
         <TextInput
           testID="menu-search-input"
           ref={inputRef}
-          className={cn(
-            'ml-2 min-h-4 flex-1 text-base leading-tight',
-            isDarkMode ? 'text-white' : 'placeholder:text-gray-400',
-          )}
-          placeholder="Search for food name..."
+          className="flex-1 text-[16px]"
+          style={{ color: theme.label }}
+          placeholder="Search this menu"
+          placeholderTextColor={theme.secondaryLabel}
           value={query}
           onChangeText={setQuery}
-          onFocus={handleFocus}
-          placeholderTextColor={isDarkMode ? '#777' : undefined}
+          onFocus={onFocus}
+          returnKeyType="search"
+          clearButtonMode="never"
         />
         {query.length > 0 && (
-          <X
-            size={18}
-            color={isDarkMode ? '#aaa' : COLORS['ut-grey']}
-            onPress={() => setQuery('')}
-          />
+          <Pressable accessibilityLabel="Clear search" hitSlop={8} onPress={() => setQuery('')}>
+            <X size={16} color={theme.secondaryLabel} />
+          </Pressable>
         )}
       </View>
       {isSearchFocused && (
-        <TouchableOpacity onPress={handleCancel}>
-          <Text
-            className={cn(
-              'font-medium text-base',
-              isDarkMode ? 'text-white' : 'text-ut-burnt-orange',
-            )}
-          >
+        <Pressable accessibilityRole="button" onPress={handleCancel}>
+          <Text className="text-[16px]" style={{ color: theme.tint }}>
             Cancel
           </Text>
-        </TouchableOpacity>
+        </Pressable>
       )}
     </View>
   );

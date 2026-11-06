@@ -74,7 +74,7 @@ const Favorites = () => {
         <FlashList
           data={sortedFavorites}
           renderItem={({ item }) => (
-            <View className="px-6">
+            <View className="mb-2">
               <FoodComponent
                 categoryName={item.category_name}
                 food={{
