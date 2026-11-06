@@ -3,8 +3,6 @@ name: Mobile E2E
 on:
   pull_request:
     branches: [main, staging]
-  push:
-    branches: [ci-faster-e2e]
   workflow_dispatch:
 
 concurrency:
