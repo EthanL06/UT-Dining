@@ -1,0 +1,27 @@
+appId: com.ethanl06.ut-dining.dev
+name: Settings opens the changelog and a fresh install skips What's New
+tags:
+  - smoke
+---
+- runFlow: ../subflows/start.yaml
+- runFlow: ../subflows/relaunch.yaml
+- assertNotVisible:
+    id: changelog-modal
+- tapOn: Settings
+- scrollUntilVisible:
+    element: 'Changelog(,.*)?'
+    direction: DOWN
+- tapOn: 'Changelog(,.*)?'
+- extendedWaitUntil:
+    visible:
+      id: changelog-list
+    timeout: 5000
+- assertVisible: Version 1.3.0
+- takeScreenshot: changelog
+- scrollUntilVisible:
+    element:
+      id: changelog-entry-1.2.0
+    direction: DOWN
+- tapOn:
+    id: back-button
+- assertVisible: 'Changelog(,.*)?'
