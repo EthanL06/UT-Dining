@@ -9,9 +9,9 @@ tags:
     id: changelog-modal
 - tapOn: Settings
 - scrollUntilVisible:
-    element: Changelog
+    element: 'Changelog(,.*)?'
     direction: DOWN
-- tapOn: Changelog
+- tapOn: 'Changelog(,.*)?'
 - extendedWaitUntil:
     visible:
       id: changelog-list
@@ -24,4 +24,4 @@ tags:
     direction: DOWN
 - tapOn:
     id: back-button
-- assertVisible: Changelog
+- assertVisible: 'Changelog(,.*)?'
