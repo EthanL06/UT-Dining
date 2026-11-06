@@ -182,6 +182,7 @@ const FoodComponent = ({
             isMealPlan={isMealPlan}
             showExtraInfo={showExtraInfo}
             isDarkMode={isDarkMode}
+            subtitle={isFavoriteScreen ? [location, selectedMenu].filter(Boolean).join(' · ') : ''}
           />
         </Pressable>
       </ReanimatedSwipeable>
@@ -196,12 +197,14 @@ const FoodContent = ({
   isMealPlan,
   showExtraInfo,
   isDarkMode,
+  subtitle,
 }: {
   food: FoodItem;
   isFavorite: boolean;
   isMealPlan: boolean;
   showExtraInfo: boolean;
   isDarkMode: boolean;
+  subtitle: string;
 }) => (
   <>
     <View className="gap-1">
@@ -219,6 +222,12 @@ const FoodContent = ({
         )}
         {isMealPlan && showExtraInfo && <ChefHatIcon size={12} color={COLORS['ut-burnt-orange']} />}
       </View>
+
+      {subtitle ? (
+        <Text className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>
+          {subtitle}
+        </Text>
+      ) : null}
 
       {showExtraInfo && (
         <>

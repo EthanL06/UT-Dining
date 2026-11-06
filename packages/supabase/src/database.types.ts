@@ -498,6 +498,10 @@ export type Database = {
         Args: { arg_data_array: Json[] };
         Returns: boolean;
       };
+      prune_location_day_menus: {
+        Args: { arg_date: string; arg_location_name: string; arg_menu_names: string[] };
+        Returns: number;
+      };
     };
     Enums: {
       payment_method: 'Bevo Pay' | 'Cash' | 'Credit/Debit' | 'Dine In Dollars';
