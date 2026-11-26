@@ -1,9 +1,9 @@
 import Link from 'next/link';
+import { AppStoreButton } from '@/components/AppStoreButton';
 import { Phone } from '@/components/Phone';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
 import { getChangelog } from '@/lib/changelog';
-import { APP_STORE_URL } from '@/lib/site';
 
 type Tile = {
   title: string;
@@ -137,12 +137,7 @@ export default async function Home() {
           <p className="max-w-120 text-[19px] text-muted leading-normal">
             UT Dining shows every menu, hour and allergen at UT Austin in one fast, free iPhone app.
           </p>
-          <a
-            href={APP_STORE_URL}
-            className="rounded-2xl bg-strong px-6 py-4 font-semibold text-on-strong hover:opacity-90"
-          >
-            Download on the App Store
-          </a>
+          <AppStoreButton />
         </div>
       </section>
 

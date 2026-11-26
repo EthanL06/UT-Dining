@@ -1,3 +1,4 @@
+import { Moon, Sun } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { APP_STORE_URL, asset } from '@/lib/site';
@@ -16,6 +17,16 @@ export function SiteHeader() {
         UT Dining
       </Link>
       <nav className="flex items-center gap-1 rounded-full bg-tile p-1.5 text-[15px]">
+        <button
+          type="button"
+          data-theme-toggle
+          aria-label="Dark mode"
+          aria-pressed="false"
+          className="flex size-9 items-center justify-center rounded-full text-muted hover:text-ink"
+        >
+          <Moon size={18} strokeWidth={2} aria-hidden className="theme-icon-light" />
+          <Sun size={18} strokeWidth={2} aria-hidden className="theme-icon-dark" />
+        </button>
         <Link
           href="/#features"
           className="hidden rounded-full px-3.5 py-2 hover:text-accent-text sm:block"

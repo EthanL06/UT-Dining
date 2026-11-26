@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @plugin '@tailwindcss/typography';
 
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
 :root {
   --bg: #f2f2f7;
   --tile: #ffffff;
@@ -17,8 +19,24 @@
   --bezel: #0f1215;
 }
 
+:root[data-theme="dark"] {
+  --bg: #000000;
+  --tile: #1c1c1e;
+  --ink: #f2f2f7;
+  --muted: #a1a9b0;
+  --line: #2c2c2e;
+  --accent: #bf5700;
+  --accent-text: #f08a3c;
+  --accent-soft: #3a2414;
+  --on-accent-muted: #fbe3d1;
+  --strong: #2c2c2e;
+  --on-strong: #ffffff;
+  --on-strong-muted: #c5cdd3;
+  --bezel: #3a3a3c;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --bg: #000000;
     --tile: #1c1c1e;
     --ink: #f2f2f7;
@@ -53,8 +71,24 @@
 }
 
 html {
-  color-scheme: light dark;
+  color-scheme: light;
   scroll-behavior: smooth;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+.theme-icon-dark {
+  display: none;
+}
+
+[data-theme="dark"] .theme-icon-dark {
+  display: block;
+}
+
+[data-theme="dark"] .theme-icon-light {
+  display: none;
 }
 
 body {

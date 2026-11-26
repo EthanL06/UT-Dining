@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter_Tight } from 'next/font/google';
+import { asset } from '@/lib/site';
 import './globals.css';
 
 const interTight = Inter_Tight({
@@ -19,7 +20,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script src={asset('/theme.js')} />
+      </head>
       <body className={`${interTight.variable} font-sans antialiased`}>{children}</body>
     </html>
   );
