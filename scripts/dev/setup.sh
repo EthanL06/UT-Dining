@@ -95,8 +95,12 @@ case "$DB_MODE" in
     ok "apps already point at $current_url, kept. Switch with: make env-local"
     ;;
   none)
-    warn "no database configured: Docker is not installed and SUPABASE_DEV_URL is not set."
-    note "Install Docker Desktop or OrbStack, then run: make db-up"
+    if [[ "${DB:-auto}" == "none" ]]; then
+      note "skipped (DB=none)"
+    else
+      warn "no database configured: Docker is not installed and SUPABASE_DEV_URL is not set."
+      note "Install Docker Desktop or OrbStack, then run: make db-up"
+    fi
     ;;
 esac
 
