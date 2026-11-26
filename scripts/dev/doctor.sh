@@ -118,7 +118,7 @@ if is_mac; then
       note "no simulator booted. Boot one with: make sim"
     else
       for udid in $booted; do
-        name="$(xcrun simctl list devices booted | grep "$udid" | sed -E 's/^ *(.*) \(.*/\1/')"
+        name="$(xcrun simctl list devices booted | grep "$udid" | sed -E 's/^ *(.*) \([0-9A-F-]{36}\).*/\1/' | head -1)"
         if xcrun simctl get_app_container "$udid" com.ethanl06.ut-dining.dev >/dev/null 2>&1; then
           ok "$name has the UT Dining development build"
         else

@@ -9,11 +9,25 @@ UDID_RE='[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}'
 is_mac || die "the iOS Simulator needs macOS with Xcode."
 xcrun simctl help >/dev/null 2>&1 || die "xcrun simctl is not available. Install Xcode and run: sudo xcode-select -s /Applications/Xcode.app"
 
-has_app() { xcrun simctl get_app_container "$1" "$APP_ID" >/dev/null 2>&1; }
+has_app() {
+  xcrun simctl get_app_container "$1" "$APP_ID" >/dev/null 2>&1 && return 0
+  local plist
+  for plist in "$HOME/Library/Developer/CoreSimulator/Devices/$1/data/Containers/Bundle/Application/"*/*.app/Info.plist; do
+    [[ -f "$plist" ]] || continue
+    [[ "$(plutil -extract CFBundleIdentifier raw "$plist" 2>/dev/null)" == "$APP_ID" ]] && return 0
+  done
+  return 1
+}
+
+device_name() { xcrun simctl list devices | grep "$1" | head -1 | sed -E 's/^ *(.*) \([0-9A-F-]{36}\).*/\1/'; }
+
+ios_devices() {
+  xcrun simctl list devices available | awk '/^-- /{ios = ($0 ~ /-- iOS /)} ios && /\([0-9A-F-]{36}\)/'
+}
 
 list() {
   local line udid mark
-  xcrun simctl list devices available | grep -E "iPhone|iPad" | while IFS= read -r line; do
+  ios_devices | while IFS= read -r line; do
     udid="$(grep -oE "$UDID_RE" <<<"$line" || true)"
     [[ -n "$udid" ]] || continue
     mark=""
@@ -39,13 +53,13 @@ pick() {
     echo "$udid"
     return
   fi
-  for udid in $(xcrun simctl list devices available | grep iPhone | grep -oE "$UDID_RE"); do
+  for udid in $(ios_devices | grep -oE "$UDID_RE"); do
     if has_app "$udid"; then
       echo "$udid"
       return
     fi
   done
-  xcrun simctl list devices available | grep iPhone | tail -1 | grep -oE "$UDID_RE" || die "no iPhone simulator. Add one in Xcode > Window > Devices and Simulators."
+  ios_devices | grep iPhone | tail -1 | grep -oE "$UDID_RE" || die "no iPhone simulator. Add one in Xcode > Window > Devices and Simulators."
 }
 
 boot() {
@@ -54,9 +68,7 @@ boot() {
   xcrun simctl boot "$udid" 2>/dev/null || true
   xcrun simctl bootstatus "$udid" -b >/dev/null
   open -a Simulator --args -CurrentDeviceUDID "$udid"
-  local name
-  name="$(xcrun simctl list devices | grep "$udid" | sed -E 's/^ *(.*) \(.*/\1/' | head -1)"
-  ok "$name booted ($udid)"
+  ok "$(device_name "$udid") booted ($udid)"
   if has_app "$udid"; then
     note "UT Dining development build is installed. Start Metro with: make mobile"
   else
