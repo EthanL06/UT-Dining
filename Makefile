@@ -15,7 +15,7 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 	db-up db-down db-status db-reset db-migrate db-new db-types db-seed db-fixtures db-psql db-studio \
 	env-local env-dev \
 	check fix lint typecheck test build \
-	sim sims e2e e2e-fixtures \
+	sim sims e2e e2e-fixtures screenshots \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
 
@@ -63,6 +63,7 @@ help:
 	'  sims            List simulators and which have the development build' \
 	'  e2e             Maestro flows against local Supabase. ARGS="--shards 3 --retry-failed"' \
 	'  e2e-fixtures    Maestro flows against the fixture server, no Docker needed' \
+	'  screenshots     Every screen in apps/mobile/e2e/screenshots.txt, light and dark, into .context/screenshots' \
 	'' \
 	'Worktrees' \
 	'  worktree        New worktree in .worktrees/ from origin/staging, env files and deps included. NAME=feat-x' \
@@ -174,6 +175,9 @@ e2e:
 
 e2e-fixtures:
 	@scripts/qa/mobile-e2e.sh --fixture-server $(if $(SIM),--sim "$$($(DEV)/sim.sh pick)") $(ARGS)
+
+screenshots:
+	@scripts/qa/mobile-screenshots.sh $(if $(SIM),--sim "$$($(DEV)/sim.sh pick)") $(ARGS)
 
 worktree:
 	@$(DEV)/worktree.sh new "$(NAME)" $(BASE)
