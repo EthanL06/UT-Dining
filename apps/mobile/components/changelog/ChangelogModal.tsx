@@ -3,8 +3,7 @@ import { Sparkles } from 'lucide-react-native';
 import { useState } from 'react';
 import { Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
-import { getChangelogEntry } from '~/data/Changelog';
-import { useChangelogPromptStore } from '~/store/useChangelogStore';
+import { useChangelogPromptStore, useChangelogStore } from '~/store/useChangelogStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
 import { cn } from '~/utils/utils';
@@ -18,6 +17,9 @@ interface ChangelogModalProps {
 
 export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: ChangelogModalProps) => {
   const prompt = useChangelogPromptStore((state) => state.prompt);
+  const entry = useChangelogStore((state) =>
+    state.entries.find((item) => item.version === prompt?.version),
+  );
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
   const [listHeight, setListHeight] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
@@ -27,7 +29,6 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
 
   const canScroll = contentHeight > listHeight + 1;
 
-  const entry = getChangelogEntry(prompt.version);
   const isUpdate = prompt.kind === 'update';
   const canDismiss = !(isUpdate && prompt.required);
 

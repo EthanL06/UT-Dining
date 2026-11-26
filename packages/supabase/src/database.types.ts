@@ -10,12 +10,7 @@ export type Database = {
     };
     Functions: {
       graphql: {
-        Args: {
-          operationName?: string;
-          query?: string;
-          variables?: Json;
-          extensions?: Json;
-        };
+        Args: { extensions?: Json; operationName?: string; query?: string; variables?: Json };
         Returns: Json;
       };
     };
@@ -47,6 +42,7 @@ export type Database = {
           vegetarian: boolean | null;
           wheat: boolean | null;
         };
+        ComputedFields: never;
         Insert: {
           beef?: boolean | null;
           egg?: boolean | null;
@@ -104,6 +100,7 @@ export type Database = {
           support_links: Json | null;
           updated_at: string | null;
         };
+        ComputedFields: never;
         Insert: {
           about_description?: string | null;
           about_title?: string | null;
@@ -126,6 +123,40 @@ export type Database = {
         };
         Relationships: [];
       };
+      changelog: {
+        Row: {
+          changes: NonNullable<Json>;
+          created_at: string;
+          id: string;
+          is_published: boolean;
+          release_date: string | null;
+          summary: string | null;
+          updated_at: string;
+          version: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          changes?: NonNullable<Json>;
+          created_at?: string;
+          id?: string;
+          is_published?: boolean;
+          release_date?: string | null;
+          summary?: string | null;
+          updated_at?: string;
+          version: string;
+        };
+        Update: {
+          changes?: NonNullable<Json>;
+          created_at?: string;
+          id?: string;
+          is_published?: boolean;
+          release_date?: string | null;
+          summary?: string | null;
+          updated_at?: string;
+          version?: string;
+        };
+        Relationships: [];
+      };
       food_item: {
         Row: {
           allergens_id: number | null;
@@ -135,6 +166,7 @@ export type Database = {
           name: string | null;
           nutrition_id: number | null;
         };
+        ComputedFields: never;
         Insert: {
           allergens_id?: number | null;
           id?: number;
@@ -193,10 +225,11 @@ export type Database = {
           meal_times: Json[];
           methods_of_payment: Database['public']['Enums']['payment_method'][];
           name: string | null;
-          regular_service_hours: Json;
+          regular_service_hours: NonNullable<Json>;
           type_id: string;
           updated_at: string | null;
         };
+        ComputedFields: never;
         Insert: {
           address?: string;
           apple_maps_link?: string;
@@ -214,7 +247,7 @@ export type Database = {
           meal_times?: Json[];
           methods_of_payment?: Database['public']['Enums']['payment_method'][];
           name?: string | null;
-          regular_service_hours?: Json;
+          regular_service_hours?: NonNullable<Json>;
           type_id: string;
           updated_at?: string | null;
         };
@@ -235,7 +268,7 @@ export type Database = {
           meal_times?: Json[];
           methods_of_payment?: Database['public']['Enums']['payment_method'][];
           name?: string | null;
-          regular_service_hours?: Json;
+          regular_service_hours?: NonNullable<Json>;
           type_id?: string;
           updated_at?: string | null;
         };
@@ -257,6 +290,7 @@ export type Database = {
           name: string;
           updated_at: string | null;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string | null;
           display_order?: number;
@@ -281,6 +315,7 @@ export type Database = {
           name: string | null;
           updated_at: string | null;
         };
+        ComputedFields: never;
         Insert: {
           date: string;
           id?: number;
@@ -311,6 +346,7 @@ export type Database = {
           menu_id: number;
           title: string | null;
         };
+        ComputedFields: never;
         Insert: {
           id?: number;
           menu_id: number;
@@ -338,6 +374,7 @@ export type Database = {
           name: string;
           updated_at: string | null;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           id?: string;
@@ -363,6 +400,7 @@ export type Database = {
           title: string | null;
           type: string;
         };
+        ComputedFields: never;
         Insert: {
           body?: string | null;
           created_at?: string;
@@ -414,6 +452,7 @@ export type Database = {
           trans_fat: string | null;
           vitamin_d: string | null;
         };
+        ComputedFields: never;
         Insert: {
           calcium?: string | null;
           calories?: string | null;
@@ -471,6 +510,7 @@ export type Database = {
           push_token: string | null;
           updated_at: string | null;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string | null;
           device_id: string;
@@ -490,14 +530,8 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      insert_location_and_menus: {
-        Args: { arg_data: Json };
-        Returns: boolean;
-      };
-      insert_multiple_locations_and_menus: {
-        Args: { arg_data_array: Json[] };
-        Returns: boolean;
-      };
+      insert_location_and_menus: { Args: { arg_data: Json }; Returns: boolean };
+      insert_multiple_locations_and_menus: { Args: { arg_data_array: Json[] }; Returns: boolean };
     };
     Enums: {
       payment_method: 'Bevo Pay' | 'Cash' | 'Credit/Debit' | 'Dine In Dollars';
@@ -508,21 +542,23 @@ export type Database = {
   };
 };
 
-type DefaultSchema = Database[Extract<keyof Database, 'public'>];
+type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>;
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database;
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-        Database[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-      Database[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R;
     }
     ? R
@@ -538,14 +574,14 @@ export type Tables<
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema['Tables']
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database;
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Insert: infer I;
     }
     ? I
@@ -561,14 +597,14 @@ export type TablesInsert<
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema['Tables']
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database;
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Update: infer U;
     }
     ? U
@@ -582,14 +618,16 @@ export type TablesUpdate<
     : never;
 
 export type Enums<
-  DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums'] | { schema: keyof Database },
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema['Enums']
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database;
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
     ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
     : never;
@@ -597,14 +635,14 @@ export type Enums<
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema['CompositeTypes']
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database;
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
     ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
     : never;

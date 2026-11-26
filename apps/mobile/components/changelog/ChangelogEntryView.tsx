@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native';
 
-import type { ChangelogEntry } from '~/data/Changelog';
+import type { ChangelogEntry } from '~/services/changelog/types';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { cn } from '~/utils/utils';
 

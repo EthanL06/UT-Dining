@@ -27,7 +27,6 @@ import { Linking, ScrollView, Switch, Text, TouchableOpacity, View } from 'react
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 
 import { Container } from '~/components/Container';
-import { CHANGELOG } from '~/data/Changelog';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationPermissions } from '~/hooks/useLocationPermissions';
 import { forceMenuSync } from '~/hooks/useMenuSync';
@@ -504,6 +503,7 @@ const SettingsPage = () => {
   const { resetOnboarding } = useOnboardingStore();
   const { resetRatingPrompt } = useAppLaunchStore();
   const resetChangelog = useChangelogStore((state) => state.resetChangelog);
+  const changelogEntries = useChangelogStore((state) => state.entries);
   const showChangelogPrompt = useChangelogPromptStore((state) => state.showPrompt);
   const db = useDatabase();
   const [appInfo, setAppInfo] = React.useState<AppInformation | null>(null);
@@ -686,7 +686,7 @@ const SettingsPage = () => {
                 onPress={() =>
                   showChangelogPrompt({
                     kind: 'update',
-                    version: CHANGELOG[0].version,
+                    version: changelogEntries[0]?.version ?? '1.0.0',
                     required: false,
                     releaseNotes: null,
                   })
@@ -699,7 +699,10 @@ const SettingsPage = () => {
                 hasChevron
                 isDarkMode={isDarkMode}
                 onPress={() =>
-                  showChangelogPrompt({ kind: 'whats-new', version: CHANGELOG[0].version })
+                  showChangelogPrompt({
+                    kind: 'whats-new',
+                    version: changelogEntries[0]?.version ?? '1.0.0',
+                  })
                 }
               />
               <SettingItem

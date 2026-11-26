@@ -2,11 +2,15 @@ import * as Application from 'expo-application';
 import { usePostHog } from 'posthog-react-native';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { AppState, Linking, Platform } from 'react-native';
-import { getChangelogEntry } from '~/data/Changelog';
 import { getSafePostHog } from '~/services/analytics/posthog';
 import { APP_STORE_URL, fetchAppStoreRelease } from '~/services/appStore/appStore';
 import { getAppInformation } from '~/services/database/database';
-import { useChangelogPromptStore, useChangelogStore } from '~/store/useChangelogStore';
+import {
+  getChangelogEntry,
+  refreshChangelog,
+  useChangelogPromptStore,
+  useChangelogStore,
+} from '~/store/useChangelogStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { isNewerVersion } from '~/utils/version';
 import { useDatabase } from './useDatabase';
@@ -73,7 +77,7 @@ export const useVersionCheck = () => {
     }
   }, [db, posthog]);
 
-  const checkWhatsNew = useCallback(() => {
+  const checkWhatsNew = useCallback(async (changelogLoaded: boolean) => {
     const currentVersion = Application.nativeApplicationVersion;
     if (!currentVersion) return;
 
@@ -81,21 +85,32 @@ export const useVersionCheck = () => {
     if (lastSeenVersion === currentVersion) return;
 
     const isReturningUser = useOnboardingStore.getState().isOnboardingComplete;
-    if (!isReturningUser || !getChangelogEntry(currentVersion)) {
+    if (!isReturningUser) {
       markVersionSeen(currentVersion);
       return;
     }
+
+    if (!getChangelogEntry(currentVersion)) {
+      if (changelogLoaded) markVersionSeen(currentVersion);
+      return;
+    }
+
+    if (useChangelogPromptStore.getState().prompt) return;
 
     useChangelogPromptStore.getState().showPrompt({ kind: 'whats-new', version: currentVersion });
   }, []);
 
   useEffect(() => {
-    checkForUpdate().then((shown) => {
-      if (!shown) checkWhatsNew();
-    });
+    const runChecks = async () => {
+      const changelogLoaded = await refreshChangelog();
+      const shown = await checkForUpdate();
+      if (!shown) await checkWhatsNew(changelogLoaded);
+    };
+
+    runChecks();
 
     const subscription = AppState.addEventListener('change', (nextAppState) => {
-      if (nextAppState === 'active') checkForUpdate();
+      if (nextAppState === 'active') runChecks();
     });
     return () => subscription.remove();
   }, [checkForUpdate, checkWhatsNew]);
