@@ -157,7 +157,7 @@ export default async function Home() {
           <p className="mt-3 text-[22px] leading-[1.45] tracking-[-0.01em]">
             The official menus are hard to read on a phone and never say what's open. UT Dining puts
             every menu and every hour in one app that opens instantly, even on bad campus Wi-Fi.
-            It's built by a Longhorn, not the university.
+            It's built by UT students, not the university.
           </p>
         </div>
         {latest && (
