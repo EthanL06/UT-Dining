@@ -19,11 +19,21 @@
   media.addEventListener('change', (event) => {
     if (!stored()) apply(event.matches ? 'dark' : 'light');
   });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    for (const menu of document.querySelectorAll('details[data-menu][open]')) {
+      menu.removeAttribute('open');
+    }
+  });
   document.addEventListener('DOMContentLoaded', () => {
     apply(root.getAttribute('data-theme') || 'light');
   });
   document.addEventListener('click', (event) => {
-    if (!(event.target instanceof Element) || !event.target.closest('[data-theme-toggle]')) return;
+    if (!(event.target instanceof Element)) return;
+    for (const menu of document.querySelectorAll('details[data-menu][open]')) {
+      if (!menu.contains(event.target) || event.target.closest('a')) menu.removeAttribute('open');
+    }
+    if (!event.target.closest('[data-theme-toggle]')) return;
     const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     try {
       localStorage.setItem('theme', next);
