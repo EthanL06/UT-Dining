@@ -85,7 +85,7 @@ export default function Faq() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       <Navbar />
 
       <section className="px-4 pt-20 pb-12 md:pt-32 md:pb-20">
@@ -95,14 +95,14 @@ export default function Faq() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-8 space-y-4 text-center md:mb-16"
           >
-            <h1 className="mb-4 font-bold text-3xl md:text-4xl">Frequently Asked Questions</h1>
-            <p className="mx-auto max-w-2xl text-lg text-muted-foreground md:text-xl">
+            <h1 className="mb-4 text-3xl font-bold md:text-4xl">Frequently Asked Questions</h1>
+            <p className="text-muted-foreground mx-auto max-w-2xl text-lg md:text-xl">
               Find answers to common questions about UT Dining
             </p>
 
             {/* Search Input */}
             <div className="relative mx-auto max-w-md">
-              <SearchIcon className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
+              <SearchIcon className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
               <Input
                 type="text"
                 placeholder="Search FAQs..."
@@ -128,10 +128,10 @@ export default function Faq() {
                     className="overflow-hidden rounded-lg"
                   >
                     <AccordionItem value={`item-${index}`} className="glass">
-                      <AccordionTrigger className="px-4 py-4 text-base hover:bg-primary/5 hover:no-underline md:px-6 md:text-lg">
+                      <AccordionTrigger className="hover:bg-primary/5 px-4 py-4 text-base hover:no-underline md:px-6 md:text-lg">
                         {item.question}
                       </AccordionTrigger>
-                      <AccordionContent className="px-4 pb-4 text-muted-foreground text-sm md:px-6 md:text-base">
+                      <AccordionContent className="text-muted-foreground px-4 pb-4 text-sm md:px-6 md:text-base">
                         {item.answer}
                       </AccordionContent>
                     </AccordionItem>
@@ -140,7 +140,7 @@ export default function Faq() {
               ) : (
                 <motion.div
                   variants={itemVariants}
-                  className="py-8 text-center text-muted-foreground"
+                  className="text-muted-foreground py-8 text-center"
                 >
                   No FAQs found matching your search.
                 </motion.div>

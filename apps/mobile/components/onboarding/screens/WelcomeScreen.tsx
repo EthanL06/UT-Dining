@@ -28,7 +28,7 @@ const WelcomeScreen = ({ width }: Props) => {
         <View>
           <Text
             className={cn(
-              'my-4 text-center font-bold text-4xl',
+              'my-4 text-center text-4xl font-bold',
               isDark ? 'text-white' : 'text-gray-900',
             )}
           >

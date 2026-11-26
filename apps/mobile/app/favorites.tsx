@@ -50,7 +50,7 @@ const Favorites = () => {
           <View>
             <View className="flex-row items-center gap-x-2">
               <Text
-                className={cn('font-extrabold text-3xl', isDarkMode ? 'text-white' : 'text-black')}
+                className={cn('text-3xl font-extrabold', isDarkMode ? 'text-white' : 'text-black')}
               >
                 Your Favorites
               </Text>
@@ -106,13 +106,13 @@ const Favorites = () => {
           ListEmptyComponent={
             <View className="mt-12 flex items-center justify-center">
               {loading ? (
-                <Text className="font-bold text-ut-burnt-orange text-xl">Loading...</Text>
+                <Text className="text-ut-burnt-orange text-xl font-bold">Loading...</Text>
               ) : (
                 <>
                   {favorites.length === 0 && (
                     <Text
                       className={cn(
-                        'font-bold text-lg',
+                        'text-lg font-bold',
                         isDarkMode ? 'text-white' : 'text-ut-burnt-orange',
                       )}
                     >
@@ -132,7 +132,7 @@ const Favorites = () => {
                     onPress={() => {
                       router.dismissTo('/');
                     }}
-                    className="rounded-full bg-ut-burnt-orange px-4 py-2"
+                    className="bg-ut-burnt-orange rounded-full px-4 py-2"
                   >
                     <Text className="font-bold text-white">Browse Dining Locations</Text>
                   </TouchableOpacity>

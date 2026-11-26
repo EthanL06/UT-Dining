@@ -94,7 +94,7 @@ const LocationItem = ({ location, isOpen: open, currentTime }: LocationItemProps
         onPress={handlePress}
         className={cn(
           'mb-2 flex-row items-center justify-between rounded-lg p-4',
-          isDarkMode ? ' border-neutral-800 bg-neutral-800' : 'border border-ut-grey/15 bg-white',
+          isDarkMode ? 'border-neutral-800 bg-neutral-800' : 'border-ut-grey/15 border bg-white',
         )}
       >
         <View className="flex-row items-center justify-center gap-x-4">
@@ -147,7 +147,7 @@ const LocationItem = ({ location, isOpen: open, currentTime }: LocationItemProps
           <View>
             <Text
               className={cn(
-                'font-bold text-xl',
+                'text-xl font-bold',
                 open
                   ? isDarkMode
                     ? 'text-white'
@@ -161,7 +161,7 @@ const LocationItem = ({ location, isOpen: open, currentTime }: LocationItemProps
             </Text>
             <Text
               className={cn(
-                'font-medium text-xs',
+                'text-xs font-medium',
                 isDarkMode ? 'text-gray-400' : 'text-ut-grey/75',
               )}
             >

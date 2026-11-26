@@ -55,7 +55,7 @@ jobs:
           enable_jekyll: false
           user_name: github-actions[bot]
           user_email: 41898282+github-actions[bot]@users.noreply.github.com
-          full_commit_message: 'deploy: website from ${{ github.repository }}@${{ github.sha }}'
+          full_commit_message: "deploy: website from ${{ github.repository }}@${{ github.sha }}"
 
       - name: Deploy skipped
         if: ${{ env.HAS_DEPLOY_KEY != 'true' }}

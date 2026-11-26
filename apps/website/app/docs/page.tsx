@@ -124,7 +124,7 @@ const TableOfContents = ({ activeSection }: { activeSection: string }) => (
         className={cn(
           'block rounded-md px-2 py-1 text-sm transition-colors',
           'hover:bg-secondary',
-          activeSection === section.id ? 'font-medium text-primary' : 'text-muted-foreground',
+          activeSection === section.id ? 'text-primary font-medium' : 'text-muted-foreground',
         )}
       >
         {section.title}
@@ -162,7 +162,7 @@ export default function Docs() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       <Navbar />
 
       <section className="pt-20 pb-12 md:pt-32 md:pb-20">
@@ -172,8 +172,8 @@ export default function Docs() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-8 px-4 text-center md:mb-16"
           >
-            <h1 className="mb-4 font-bold text-3xl md:text-4xl">Documentation</h1>
-            <p className="mx-auto max-w-2xl text-lg text-muted-foreground md:text-xl">
+            <h1 className="mb-4 text-3xl font-bold md:text-4xl">Documentation</h1>
+            <p className="text-muted-foreground mx-auto max-w-2xl text-lg md:text-xl">
               Everything you need to know about UT Dining&apos;s technical implementation
             </p>
           </motion.div>
@@ -197,11 +197,11 @@ export default function Docs() {
                   className="glass scroll-mt-24 rounded-lg p-4 md:p-6"
                 >
                   <div className="mb-4 flex items-center gap-3 md:gap-4">
-                    <div className="rounded-lg bg-primary/10 p-2">{section.icon}</div>
-                    <h2 className="font-semibold text-xl md:text-2xl">{section.title}</h2>
+                    <div className="bg-primary/10 rounded-lg p-2">{section.icon}</div>
+                    <h2 className="text-xl font-semibold md:text-2xl">{section.title}</h2>
                   </div>
                   <div className="prose prose-neutral dark:prose-invert max-w-none">
-                    <div className="whitespace-pre-wrap text-muted-foreground text-sm md:text-base">
+                    <div className="text-muted-foreground text-sm whitespace-pre-wrap md:text-base">
                       {section.content}
                     </div>
                   </div>
@@ -226,7 +226,7 @@ export default function Docs() {
           !showBackToTop && 'pointer-events-none',
         )}
       >
-        <ChevronRight className="-rotate-90 h-5 w-5" />
+        <ChevronRight className="h-5 w-5 -rotate-90" />
       </motion.button>
 
       <Footer />

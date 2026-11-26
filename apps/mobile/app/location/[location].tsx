@@ -322,7 +322,7 @@ const Location = () => {
 
     return (
       <View className="mt-12 flex-1 items-center justify-center">
-        <Text className="font-bold text-ut-burnt-orange text-xl">{title}</Text>
+        <Text className="text-ut-burnt-orange text-xl font-bold">{title}</Text>
         <Text className={cn('text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>
           {subtitle()}
         </Text>

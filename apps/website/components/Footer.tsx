@@ -20,7 +20,7 @@ const FooterLink = ({ href, children, external = false }: FooterLinkProps) => {
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-2 text-muted-foreground text-sm transition-colors hover:text-primary"
+      className="text-muted-foreground hover:text-primary inline-flex items-center gap-2 text-sm transition-colors"
       {...linkProps}
     >
       {children}
@@ -31,7 +31,7 @@ const FooterLink = ({ href, children, external = false }: FooterLinkProps) => {
 const FooterColumn = ({ title, children }: FooterColumnProps) => {
   return (
     <div className="space-y-3">
-      <h3 className="font-bold text-base">{title}</h3>
+      <h3 className="text-base font-bold">{title}</h3>
       <ul className="space-y-2">{children}</ul>
     </div>
   );
@@ -57,7 +57,7 @@ export function Footer() {
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-2 md:grid-cols-4 md:gap-12">
           {/* About Column */}
           <div className="col-span-2 space-y-3 sm:col-span-2 md:col-span-1">
-            <h3 className="font-bold text-base">UT Dining</h3>
+            <h3 className="text-base font-bold">UT Dining</h3>
             <p className="text-muted-foreground text-sm">
               Making campus dining better for every Longhorn.
             </p>
@@ -93,7 +93,7 @@ export function Footer() {
         </div>
 
         {/* Copyright Section */}
-        <div className="mt-8 border-t pt-6 text-center text-muted-foreground text-sm">
+        <div className="text-muted-foreground mt-8 border-t pt-6 text-center text-sm">
           <p className="mx-auto max-w-lg">
             &copy; {new Date().getFullYear()} UT Dining. A Longhorn Developers Project.
           </p>

@@ -96,7 +96,7 @@ const SettingItem = ({
       )}
       <View>
         <Text
-          className={cn('font-medium text-base', isDarkMode ? 'text-gray-100' : 'text-gray-800')}
+          className={cn('text-base font-medium', isDarkMode ? 'text-gray-100' : 'text-gray-800')}
         >
           {title}
         </Text>
@@ -136,7 +136,7 @@ interface SectionHeaderProps {
 const SectionHeader = ({ title, className, isDarkMode }: SectionHeaderProps) => (
   <Text
     className={cn(
-      'py-2 font-semibold text-sm uppercase tracking-wider',
+      'py-2 text-sm font-semibold tracking-wider uppercase',
       isDarkMode ? 'text-gray-400' : 'text-gray-500',
       className,
     )}
@@ -155,7 +155,7 @@ const AboutSection = ({ appInfo, isDarkMode }: AboutSectionProps) => (
     className={cn('mt-2 rounded-lg p-4', isDarkMode ? 'bg-ut-grey-dark-mode/10' : 'bg-neutral-50')}
   >
     <Text
-      className={cn('mb-2 font-semibold text-lg', isDarkMode ? 'text-gray-100' : 'text-gray-800')}
+      className={cn('mb-2 text-lg font-semibold', isDarkMode ? 'text-gray-100' : 'text-gray-800')}
     >
       {appInfo.about_title}
     </Text>
@@ -191,7 +191,7 @@ const HelpSupportSection = ({
       )}
     >
       <Text
-        className={cn('mb-2 font-semibold text-lg', isDarkMode ? 'text-gray-100' : 'text-gray-800')}
+        className={cn('mb-2 text-lg font-semibold', isDarkMode ? 'text-gray-100' : 'text-gray-800')}
       >
         Help & Support
       </Text>
@@ -202,7 +202,7 @@ const HelpSupportSection = ({
           onPress={() => Linking.openURL(link.url)}
         >
           {LABEL_TO_ICON[link.label as keyof typeof LABEL_TO_ICON]}
-          <Text className="ml-2 text-ut-burnt-orange">{link.label}</Text>
+          <Text className="text-ut-burnt-orange ml-2">{link.label}</Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -221,13 +221,13 @@ const CreditsSection = ({ appInfo, isDarkMode }: CreditsSectionProps): React.JSX
       isDarkMode ? 'bg-ut-grey-dark-mode/10' : 'bg-neutral-50',
     )}
   >
-    <Text className={cn('font-semibold text-lg', isDarkMode ? 'text-gray-100' : 'text-gray-800')}>
+    <Text className={cn('text-lg font-semibold', isDarkMode ? 'text-gray-100' : 'text-gray-800')}>
       Credits
     </Text>
     <View>
       <Link
         href="https://ethanlanting.dev"
-        className={cn('font-medium text-base', isDarkMode ? 'text-gray-200' : 'text-black')}
+        className={cn('text-base font-medium', isDarkMode ? 'text-gray-200' : 'text-black')}
       >
         Ethan Lanting
       </Link>
@@ -236,7 +236,7 @@ const CreditsSection = ({ appInfo, isDarkMode }: CreditsSectionProps): React.JSX
       </Text>
     </View>
     <View>
-      <Text className={cn('font-medium text-base', isDarkMode ? 'text-gray-200' : 'text-black')}>
+      <Text className={cn('text-base font-medium', isDarkMode ? 'text-gray-200' : 'text-black')}>
         {appInfo.credits_contributors
           .sort((a, b) => a.order - b.order)
           .map((contributor) => contributor.name)
@@ -251,7 +251,7 @@ const CreditsSection = ({ appInfo, isDarkMode }: CreditsSectionProps): React.JSX
         Adopted by{' '}
         <Link
           href="https://github.com/Longhorn-Developers"
-          className="font-medium text-ut-burnt-orange not-italic underline"
+          className="text-ut-burnt-orange font-medium not-italic underline"
         >
           Longhorn Developers
         </Link>
@@ -312,7 +312,7 @@ const NotificationSettingsSection = ({
         </View>
         <View className="flex-1">
           <Text
-            className={cn('font-medium text-base', isDarkMode ? 'text-gray-100' : 'text-gray-800')}
+            className={cn('text-base font-medium', isDarkMode ? 'text-gray-100' : 'text-gray-800')}
           >
             {getStatusText()}
           </Text>
@@ -373,7 +373,7 @@ const LocationSettingsSection = ({ isDarkMode }: { isDarkMode: boolean }): React
         </View>
         <View className="flex-1">
           <Text
-            className={cn('font-medium text-base', isDarkMode ? 'text-gray-100' : 'text-gray-800')}
+            className={cn('text-base font-medium', isDarkMode ? 'text-gray-100' : 'text-gray-800')}
           >
             {getStatusText()}
           </Text>
@@ -455,7 +455,7 @@ const SyncDataSection = ({ isDarkMode }: { isDarkMode: boolean }): React.JSX.Ele
         </View>
         <View className="flex-1">
           <Text
-            className={cn('font-medium text-base', isDarkMode ? 'text-gray-100' : 'text-gray-800')}
+            className={cn('text-base font-medium', isDarkMode ? 'text-gray-100' : 'text-gray-800')}
           >
             Sync Data
           </Text>
@@ -530,7 +530,7 @@ const SettingsPage = () => {
           style={{ flex: 1, backgroundColor: isDarkMode ? '#171717' : 'white' }}
           contentContainerStyle={{ padding: 24 }}
         >
-          <Text className={cn('font-extrabold text-3xl', isDarkMode ? 'text-white' : 'text-black')}>
+          <Text className={cn('text-3xl font-extrabold', isDarkMode ? 'text-white' : 'text-black')}>
             Settings
           </Text>
           <SectionHeader title="Quick Links" className="mt-4" isDarkMode={isDarkMode} />

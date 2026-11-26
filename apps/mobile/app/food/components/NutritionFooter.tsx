@@ -17,7 +17,7 @@ const NutritionFooter = React.memo(
         <Text className={cn('font-bold', isDarkMode ? 'text-white' : 'text-black')}>
           Allergens:{' '}
           <Text
-            className={cn('font-normal text-xs', isDarkMode ? 'text-gray-300' : 'text-gray-700')}
+            className={cn('text-xs font-normal', isDarkMode ? 'text-gray-300' : 'text-gray-700')}
           >
             {allergens.join(', ') || 'None'}
           </Text>
@@ -32,7 +32,7 @@ const NutritionFooter = React.memo(
         <Text className={cn('font-bold', isDarkMode ? 'text-white' : 'text-black')}>
           Dietary:{' '}
           <Text
-            className={cn('font-normal text-xs', isDarkMode ? 'text-gray-300' : 'text-gray-700')}
+            className={cn('text-xs font-normal', isDarkMode ? 'text-gray-300' : 'text-gray-700')}
           >
             {dietary.join(', ') || 'None'}
           </Text>
@@ -47,7 +47,7 @@ const NutritionFooter = React.memo(
         <Text className={cn('font-bold', isDarkMode ? 'text-white' : 'text-black')}>
           Ingredients:{' '}
           <Text
-            className={cn('font-normal text-xs', isDarkMode ? 'text-gray-300' : 'text-gray-700')}
+            className={cn('text-xs font-normal', isDarkMode ? 'text-gray-300' : 'text-gray-700')}
           >
             {ingredients || 'N/A'}
           </Text>

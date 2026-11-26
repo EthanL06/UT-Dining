@@ -56,7 +56,7 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
           <View>
             <View className="mb-2 flex-row items-center gap-x-2">
               <InfoIcon color={COLORS['ut-burnt-orange']} />
-              <Text className={cn('font-bold text-3xl', isDarkMode ? 'text-white' : 'text-black')}>
+              <Text className={cn('text-3xl font-bold', isDarkMode ? 'text-white' : 'text-black')}>
                 Food Legend
               </Text>
             </View>
@@ -64,7 +64,7 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
 
           {/* Allergens Section */}
           <View>
-            <Text className={cn('font-semibold text-xl', isDarkMode ? 'text-white' : 'text-black')}>
+            <Text className={cn('text-xl font-semibold', isDarkMode ? 'text-white' : 'text-black')}>
               Allergens
             </Text>
             <Text className={cn('mb-3 text-sm', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}>
@@ -89,7 +89,7 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
                   </View>
                   <Text
                     className={cn(
-                      'text-center font-medium text-xs',
+                      'text-center text-xs font-medium',
                       isDarkMode ? 'text-gray-300' : 'text-ut-grey',
                     )}
                   >
@@ -110,7 +110,7 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
 
           {/* Dietary Section */}
           <View>
-            <Text className={cn('font-semibold text-xl', isDarkMode ? 'text-white' : 'text-black')}>
+            <Text className={cn('text-xl font-semibold', isDarkMode ? 'text-white' : 'text-black')}>
               Dietary Preferences
             </Text>
             <Text className={cn('mb-3 text-sm', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}>
@@ -131,7 +131,7 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
                   </View>
                   <Text
                     className={cn(
-                      'text-center font-medium text-xs',
+                      'text-center text-xs font-medium',
                       isDarkMode ? 'text-gray-300' : 'text-ut-grey',
                     )}
                   >

@@ -85,7 +85,7 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
               <View>
                 <InfoIcon color={COLORS['ut-burnt-orange']} />
               </View>
-              <Text className={cn('font-bold text-3xl', isDarkMode ? 'text-white' : 'text-black')}>
+              <Text className={cn('text-3xl font-bold', isDarkMode ? 'text-white' : 'text-black')}>
                 About {displayName}
               </Text>
             </View>
@@ -127,7 +127,7 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
             )}
           >
             <Text
-              className={cn('font-semibold text-2xl', isDarkMode ? 'text-white ' : 'text-black')}
+              className={cn('text-2xl font-semibold', isDarkMode ? 'text-white' : 'text-black')}
             >
               Regular Service Hours
             </Text>
@@ -150,7 +150,7 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
 
           <View className="flex-col gap-y-3">
             <Text
-              className={cn('font-semibold text-2xl', isDarkMode ? 'text-white' : 'text-black')}
+              className={cn('text-2xl font-semibold', isDarkMode ? 'text-white' : 'text-black')}
             >
               Methods of Payment
             </Text>

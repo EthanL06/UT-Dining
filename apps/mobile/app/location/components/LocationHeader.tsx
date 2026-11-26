@@ -88,7 +88,7 @@ const LocationHeader = React.memo(
               {/* Temporarily Closed Banner */}
               {locationData?.force_close && (
                 <View className="rounded-lg bg-red-600 px-4 py-2">
-                  <Text className="text-center font-extrabold text-lg text-white tracking-wider">
+                  <Text className="text-center text-lg font-extrabold tracking-wider text-white">
                     TEMPORARILY CLOSED
                   </Text>
                 </View>
@@ -99,7 +99,7 @@ const LocationHeader = React.memo(
                 <View className="mb-1 w-full flex-row flex-wrap items-center gap-x-3 gap-y-1">
                   <Text
                     className={cn(
-                      'font-extrabold font-sans text-3xl',
+                      'font-sans text-3xl font-extrabold',
                       isDarkMode ? 'text-white' : 'text-black',
                     )}
                   >
@@ -107,7 +107,7 @@ const LocationHeader = React.memo(
                   </Text>
                 </View>
                 <View className="flex-row items-center gap-x-3">
-                  <Text className="font-semibold text-lg text-ut-burnt-orange">
+                  <Text className="text-ut-burnt-orange text-lg font-semibold">
                     {open ? 'Open' : 'Closed'}
                   </Text>
 
@@ -128,7 +128,7 @@ const LocationHeader = React.memo(
                     >
                       <Text
                         className={cn(
-                          'font-bold text-xs uppercase',
+                          'text-xs font-bold uppercase',
                           isDarkMode ? 'text-white' : 'text-black/75',
                         )}
                       >

@@ -23,7 +23,7 @@ const suggestedLinks = [
 export default function NotFound() {
   useKC_DABR_WASM();
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       <Navbar />
 
       <main className="container px-4 pt-20 pb-12 md:pt-32 md:pb-20">
@@ -45,13 +45,13 @@ export default function NotFound() {
               }}
               className="flex justify-center"
             >
-              <Coffee className="h-20 w-20 text-primary md:h-24 md:w-24" />
+              <Coffee className="text-primary h-20 w-20 md:h-24 md:w-24" />
             </motion.div>
 
             {/* Error Message */}
             <div className="space-y-4">
-              <h1 className="font-bold text-4xl md:text-5xl">Oops! Page Not Found</h1>
-              <p className="text-lg text-muted-foreground md:text-xl">
+              <h1 className="text-4xl font-bold md:text-5xl">Oops! Page Not Found</h1>
+              <p className="text-muted-foreground text-lg md:text-xl">
                 Looks like this page took a coffee break. Let&apos;s get you back on track!
               </p>
             </div>
@@ -78,7 +78,7 @@ export default function NotFound() {
               transition={{ delay: 0.4 }}
               className="pt-12"
             >
-              <h2 className="mb-4 font-semibold text-lg">You might be looking for:</h2>
+              <h2 className="mb-4 text-lg font-semibold">You might be looking for:</h2>
               <div className="glass mx-auto max-w-md p-4 md:p-6">
                 <ul className="space-y-2">
                   {suggestedLinks.map((link, index) => (
@@ -90,10 +90,10 @@ export default function NotFound() {
                     >
                       <Link
                         href={link.href}
-                        className="group flex items-center justify-between rounded-lg p-2 transition-colors hover:bg-secondary"
+                        className="group hover:bg-secondary flex items-center justify-between rounded-lg p-2 transition-colors"
                       >
                         <span>{link.label}</span>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-primary" />
+                        <ChevronRight className="text-muted-foreground group-hover:text-primary h-4 w-4 transition-colors" />
                       </Link>
                     </motion.li>
                   ))}

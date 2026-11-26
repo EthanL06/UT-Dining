@@ -21,13 +21,13 @@ env:
     text: Open
     optional: true
 - extendedWaitUntil:
-    visible: '.*Your planned meals.*|.*Would Like to Send You Notifications.*|.*to use your location.*|Enjoying.*'
+    visible: ".*Your planned meals.*|.*Would Like to Send You Notifications.*|.*to use your location.*|Enjoying.*"
     timeout: 60000
 - runFlow:
     when:
-      notVisible: '.*Your planned meals.*'
+      notVisible: ".*Your planned meals.*"
     commands:
       - runFlow: dismiss-alerts.yaml
 - extendedWaitUntil:
-    visible: '.*Your planned meals.*'
+    visible: ".*Your planned meals.*"
     timeout: 30000

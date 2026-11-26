@@ -26,7 +26,7 @@ const ScrollToTopButton = ({ visible, animationValue, onPress }: ScrollToTopButt
     >
       <TouchableOpacity
         onPress={onPress}
-        className="size-12 items-center justify-center rounded-full bg-ut-burnt-orange shadow-md"
+        className="bg-ut-burnt-orange size-12 items-center justify-center rounded-full shadow-md"
         activeOpacity={0.8}
       >
         <ArrowUp size={24} color="white" />

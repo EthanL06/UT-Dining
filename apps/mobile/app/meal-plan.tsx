@@ -136,14 +136,14 @@ const MealPlanComponent = ({
         <View className="max-w-[16rem] gap-1">
           <Text
             className={cn(
-              'line-clamp-2 font-medium text-lg leading-6',
+              'line-clamp-2 text-lg leading-6 font-medium',
               isDarkMode ? 'text-white' : 'text-black',
             )}
           >
             {food.name}
           </Text>
           <Text
-            className={cn('font-medium text-sm', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}
+            className={cn('text-sm font-medium', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}
           >
             {description}
           </Text>
@@ -151,7 +151,7 @@ const MealPlanComponent = ({
             <View className="flex-row items-center gap-x-0.5">
               <Flame fill={COLORS['ut-burnt-orange']} size={10} color={COLORS['ut-burnt-orange']} />
               <Text
-                className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-black')}
+                className={cn('text-xs font-medium', isDarkMode ? 'text-gray-300' : 'text-black')}
               >
                 {displayNutrient(food.nutrition?.calories)} kcal
               </Text>
@@ -163,7 +163,7 @@ const MealPlanComponent = ({
                 color={COLORS['ut-burnt-orange']}
               />
               <Text
-                className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-black')}
+                className={cn('text-xs font-medium', isDarkMode ? 'text-gray-300' : 'text-black')}
               >
                 {displayNutrient(food.nutrition?.protein)} Protein
               </Text>
@@ -171,7 +171,7 @@ const MealPlanComponent = ({
             <View className="flex-row items-center gap-x-0.5">
               <Wheat fill={COLORS['ut-burnt-orange']} size={10} color={COLORS['ut-burnt-orange']} />
               <Text
-                className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-black')}
+                className={cn('text-xs font-medium', isDarkMode ? 'text-gray-300' : 'text-black')}
               >
                 {displayNutrient(food.nutrition?.total_carbohydrates)} Carbs
               </Text>
@@ -195,7 +195,7 @@ const MealPlanComponent = ({
         <View className="relative items-center gap-1">
           {editable ? (
             <TextInput
-              className="h-8 w-12 rounded-lg border border-ut-burnt-orange text-center font-bold text-ut-burnt-orange"
+              className="border-ut-burnt-orange text-ut-burnt-orange h-8 w-12 rounded-lg border text-center font-bold"
               keyboardType="decimal-pad"
               value={quantityInput}
               onChangeText={setQuantityInput}
@@ -216,12 +216,12 @@ const MealPlanComponent = ({
               }}
             />
           ) : (
-            <Text className="h-8 w-12 text-center font-bold text-ut-burnt-orange leading-8">
+            <Text className="text-ut-burnt-orange h-8 w-12 text-center leading-8 font-bold">
               {quantity}
             </Text>
           )}
           <Text
-            className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}
+            className={cn('text-xs font-medium', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}
           >
             Quantity
           </Text>
@@ -278,7 +278,7 @@ const MealPlan = () => {
               <View className="flex-row items-center gap-x-2">
                 <Text
                   className={cn(
-                    'font-extrabold text-3xl',
+                    'text-3xl font-extrabold',
                     isDarkMode ? 'text-white' : 'text-black',
                   )}
                 >
@@ -307,11 +307,11 @@ const MealPlan = () => {
                 onPress={() => goTo(today)}
                 className="items-center"
               >
-                <Text className={cn('font-bold text-lg', isDarkMode ? 'text-white' : 'text-black')}>
+                <Text className={cn('text-lg font-bold', isDarkMode ? 'text-white' : 'text-black')}>
                   {formatPlanDay(selectedDate)}
                 </Text>
                 {selectedDate !== today && (
-                  <Text className="font-medium text-ut-burnt-orange text-xs">Back to today</Text>
+                  <Text className="text-ut-burnt-orange text-xs font-medium">Back to today</Text>
                 )}
               </TouchableOpacity>
               <TouchableOpacity
@@ -332,12 +332,12 @@ const MealPlan = () => {
               )}
             >
               <View className="flex-1 items-center">
-                <Text className="text-center font-bold text-lg text-ut-burnt-orange">
+                <Text className="text-ut-burnt-orange text-center text-lg font-bold">
                   {totalCalories.toFixed(1)} kcal
                 </Text>
                 <Text
                   className={cn(
-                    'font-medium text-xs',
+                    'text-xs font-medium',
                     isDarkMode ? 'text-gray-300' : 'text-ut-grey',
                   )}
                 >
@@ -345,12 +345,12 @@ const MealPlan = () => {
                 </Text>
               </View>
               <View className="flex-1 items-center">
-                <Text className="text-center font-bold text-lg text-ut-burnt-orange">
+                <Text className="text-ut-burnt-orange text-center text-lg font-bold">
                   {totalProtein.toFixed(1)}g
                 </Text>
                 <Text
                   className={cn(
-                    'font-medium text-xs',
+                    'text-xs font-medium',
                     isDarkMode ? 'text-gray-300' : 'text-ut-grey',
                   )}
                 >
@@ -358,12 +358,12 @@ const MealPlan = () => {
                 </Text>
               </View>
               <View className="flex-1 items-center">
-                <Text className="text-center font-bold text-lg text-ut-burnt-orange">
+                <Text className="text-ut-burnt-orange text-center text-lg font-bold">
                   {totalCarbs.toFixed(1)}g
                 </Text>
                 <Text
                   className={cn(
-                    'font-medium text-xs',
+                    'text-xs font-medium',
                     isDarkMode ? 'text-gray-300' : 'text-ut-grey',
                   )}
                 >
@@ -397,7 +397,7 @@ const MealPlan = () => {
           <View className="mt-12 flex items-center justify-center">
             <Text
               className={cn(
-                'font-bold text-lg',
+                'text-lg font-bold',
                 isDarkMode ? 'text-white' : 'text-ut-burnt-orange',
               )}
             >

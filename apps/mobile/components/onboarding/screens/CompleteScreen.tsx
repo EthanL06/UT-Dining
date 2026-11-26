@@ -38,7 +38,7 @@ const CompleteScreen = ({ width, isCurrentScreen }: Props) => {
               marginTop: -48,
             }}
             className={cn(
-              'mb-4 text-center font-bold text-3xl',
+              'mb-4 text-center text-3xl font-bold',
               isDark ? 'text-white' : 'text-gray-900',
             )}
           >

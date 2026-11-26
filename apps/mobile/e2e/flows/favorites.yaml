@@ -4,10 +4,10 @@ name: Favorites can be added from a food and removed with a swipe
 - runFlow: ../subflows/start.yaml
 - runFlow: ../subflows/open-j2.yaml
 - scrollUntilVisible:
-    element: 'Maestro Veggie Burger(,.*)?'
+    element: "Maestro Veggie Burger(,.*)?"
     direction: DOWN
     visibilityPercentage: 100
-- tapOn: 'Maestro Veggie Burger(,.*)?'
+- tapOn: "Maestro Veggie Burger(,.*)?"
 - extendedWaitUntil:
     visible:
       id: food-favorite-button
@@ -24,7 +24,7 @@ name: Favorites can be added from a food and removed with a swipe
           id: back-button
       - waitForAnimationToEnd
 - swipe:
-    from: 'Maestro Grilled Chicken(,.*)?'
+    from: "Maestro Grilled Chicken(,.*)?"
     direction: LEFT
 - repeat:
     while:
@@ -35,17 +35,17 @@ name: Favorites can be added from a food and removed with a swipe
           id: location-favorites-button
       - waitForAnimationToEnd
 - assertVisible: Your Favorites
-- assertVisible: 'Maestro Veggie Burger(,.*)?'
-- assertVisible: 'Maestro Grilled Chicken(,.*)?'
+- assertVisible: "Maestro Veggie Burger(,.*)?"
+- assertVisible: "Maestro Grilled Chicken(,.*)?"
 - takeScreenshot: favorites
 - swipe:
-    from: 'Maestro Veggie Burger(,.*)?'
+    from: "Maestro Veggie Burger(,.*)?"
     direction: LEFT
 - extendedWaitUntil:
-    notVisible: 'Maestro Veggie Burger(,.*)?'
+    notVisible: "Maestro Veggie Burger(,.*)?"
     timeout: 5000
 - swipe:
-    from: 'Maestro Grilled Chicken(,.*)?'
+    from: "Maestro Grilled Chicken(,.*)?"
     direction: LEFT
 - extendedWaitUntil:
     visible: No Favorites Yet!

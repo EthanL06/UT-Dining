@@ -65,7 +65,7 @@ const SearchBar = ({ query, setQuery, onFocus, onBlur, isSearchFocused }: Props)
         <TouchableOpacity onPress={handleCancel}>
           <Text
             className={cn(
-              'font-medium text-base',
+              'text-base font-medium',
               isDarkMode ? 'text-white' : 'text-ut-burnt-orange',
             )}
           >

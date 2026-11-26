@@ -48,7 +48,7 @@ const DataCollectionScreen = ({ width, onSelectionChange, onSelectionUpdate }: P
       <View className="mb-8">
         <Text
           className={cn(
-            'mb-1 text-center font-bold text-3xl',
+            'mb-1 text-center text-3xl font-bold',
             isDark ? 'text-white' : 'text-gray-900',
           )}
         >
@@ -71,7 +71,7 @@ const DataCollectionScreen = ({ width, onSelectionChange, onSelectionUpdate }: P
                 selectedTags.includes(tag.id)
                   ? 'border-ut-burnt-orange bg-ut-burnt-orange/10'
                   : isDark
-                    ? ' bg-neutral-800'
+                    ? 'bg-neutral-800'
                     : 'border border-gray-200 bg-white',
               )}
             >
@@ -88,7 +88,7 @@ const DataCollectionScreen = ({ width, onSelectionChange, onSelectionUpdate }: P
                 />
                 <Text
                   className={cn(
-                    'mt-2 text-center font-medium text-sm',
+                    'mt-2 text-center text-sm font-medium',
                     selectedTags.includes(tag.id)
                       ? 'text-ut-burnt-orange'
                       : isDark

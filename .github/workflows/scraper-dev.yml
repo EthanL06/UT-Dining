@@ -2,7 +2,7 @@ name: Scrape menus (dev)
 
 on:
   schedule:
-    - cron: '30 7 * * *'
+    - cron: "30 7 * * *"
   push:
     branches: [staging]
     paths:
@@ -61,7 +61,7 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_DEV_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_DEV_SERVICE_KEY }}
-          ENABLE_SUPABASE: 'true'
+          ENABLE_SUPABASE: "true"
           DAYS_TO_SCRAPE: ${{ inputs.days_to_scrape || vars.DAYS_TO_SCRAPE }}
           TZ: America/Chicago
         run: pnpm --filter @ut-dining/scraper start

@@ -55,7 +55,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
           <View className="mb-4 flex-row items-center justify-between">
             <View className="flex-row items-center gap-x-2">
               <Filter color={COLORS['ut-burnt-orange']} size={20} />
-              <Text className={cn('font-bold text-3xl', isDarkMode ? 'text-white' : 'text-black')}>
+              <Text className={cn('text-3xl font-bold', isDarkMode ? 'text-white' : 'text-black')}>
                 Filters
               </Text>
             </View>
@@ -72,7 +72,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
             >
               <RotateCwIcon size={16} color={isDarkMode ? '#ccc' : COLORS['ut-grey']} />
               <Text
-                className={cn('font-medium text-sm', isDarkMode ? 'text-gray-200' : 'text-ut-grey')}
+                className={cn('text-sm font-medium', isDarkMode ? 'text-gray-200' : 'text-ut-grey')}
               >
                 Reset
               </Text>
@@ -80,7 +80,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
           </View>
 
           {/* Special Filters */}
-          <Text className={cn('mb-2 font-semibold text-xl', isDarkMode ? 'text-gray-100' : '')}>
+          <Text className={cn('mb-2 text-xl font-semibold', isDarkMode ? 'text-gray-100' : '')}>
             My Items
           </Text>
           <View className="mb-4 flex-row flex-wrap gap-2">
@@ -102,7 +102,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
               />
               <Text
                 className={cn(
-                  'font-medium text-sm',
+                  'text-sm font-medium',
                   filters.favorites ? 'text-white' : isDarkMode ? 'text-gray-200' : 'text-ut-grey',
                 )}
               >
@@ -127,7 +127,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
               />
               <Text
                 className={cn(
-                  'font-medium text-sm',
+                  'text-sm font-medium',
                   filters.mealPlan ? 'text-white' : isDarkMode ? 'text-gray-200' : 'text-ut-grey',
                 )}
               >
@@ -137,7 +137,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
           </View>
 
           {/* Allergen Filters */}
-          <Text className={cn('font-semibold text-xl', isDarkMode ? 'text-gray-100' : '')}>
+          <Text className={cn('text-xl font-semibold', isDarkMode ? 'text-gray-100' : '')}>
             Allergens
           </Text>
           <Text className={cn('mb-2 text-sm', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}>
@@ -163,7 +163,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
                 <Image source={iconSource} className="size-4 rounded-full" resizeMode="contain" />
                 <Text
                   className={cn(
-                    'font-medium text-sm',
+                    'text-sm font-medium',
                     filters.allergens[key]
                       ? 'text-white'
                       : isDarkMode
@@ -178,7 +178,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
           </View>
 
           {/* Dietary Preferences */}
-          <Text className={cn('font-semibold text-xl', isDarkMode ? 'text-gray-100' : '')}>
+          <Text className={cn('text-xl font-semibold', isDarkMode ? 'text-gray-100' : '')}>
             Dietary Preferences
           </Text>
           <Text className={cn('mb-2 text-sm', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}>
@@ -204,7 +204,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
                 <Image source={iconSource} className="size-4 rounded-full" resizeMode="contain" />
                 <Text
                   className={cn(
-                    'font-medium text-sm',
+                    'text-sm font-medium',
                     filters.dietary[key]
                       ? 'text-white'
                       : isDarkMode

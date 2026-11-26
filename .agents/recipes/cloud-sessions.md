@@ -32,11 +32,11 @@ The container has no iOS Simulator. Screenshots of the iOS app come from Ethan's
 
 ## Which Supabase
 
-| Project | Used by | Rule |
-|---|---|---|
-| Local (Docker) | Every verifier, tests, `make dev` | The default. `make db-up` starts `dockerd` itself when the session runs as root |
-| Hosted dev (`ut-dining-dev`) | Cloud sessions when `SUPABASE_DEV_*` vars are set (the SessionStart hook runs `scripts/env.ts --dev`), Vercel previews, `scraper-dev.yml` | Read only from a session. Never write to it from a build or a verifier |
-| Production | The shipped app, Vercel production, the daily scraper on `main` | Never. `scripts/env.ts` refuses its ref and `make doctor` fails on it |
+| Project                      | Used by                                                                                                                                   | Rule                                                                            |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Local (Docker)               | Every verifier, tests, `make dev`                                                                                                         | The default. `make db-up` starts `dockerd` itself when the session runs as root |
+| Hosted dev (`ut-dining-dev`) | Cloud sessions when `SUPABASE_DEV_*` vars are set (the SessionStart hook runs `scripts/env.ts --dev`), Vercel previews, `scraper-dev.yml` | Read only from a session. Never write to it from a build or a verifier          |
+| Production                   | The shipped app, Vercel production, the daily scraper on `main`                                                                           | Never. `scripts/env.ts` refuses its ref and `make doctor` fails on it           |
 
 `make doctor` prints which project each app's `.env.local` points at. After the SessionStart hook, run `make env-local` before any verifier so the apps use local Supabase.
 

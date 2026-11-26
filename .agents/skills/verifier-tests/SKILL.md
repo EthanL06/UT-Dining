@@ -1,4 +1,5 @@
 ---
+
 name: verifier-tests
 description: Run UT Dining's static checks and automated tests on the worktree under test - Biome lint and format, TypeScript 7 typecheck of every package, Vitest in packages/core, apps/scraper and apps/mobile, and the dashboard and website builds that CI runs - and check that new behavior has a test. Use for every change.
 ---
@@ -14,7 +15,7 @@ description: Run UT Dining's static checks and automated tests on the worktree u
 5. A failure that also happens on the base branch is not this change's fault. Prove it: run the same command in a scratch worktree of `origin/staging`. Report it as "already broken on base", not as FAIL.
 6. New behavior needs a test. `packages/core`, `apps/scraper` and `apps/mobile` have Vitest; tests sit next to the source as `*.test.ts`. In `apps/mobile` only pure helpers can be tested (nothing that imports React Native, Expo or MMKV), so move new logic into a pure helper or into `packages/core`. When the diff adds or changes such logic and no test covers it, the claim "has a test" is FAIL. `apps/dashboard` and `apps/website` have no test runner yet, so say so and lean on the other verifiers.
 7. Added code comments are a FAIL: `make check-comments ARGS="--base origin/staging"`. Write the missing test only if the task allows it.
-7. Never skip, delete or loosen a test or a lint rule to get a pass, and never commit with `--no-verify`.
+8. Never skip, delete or loosen a test or a lint rule to get a pass, and never commit with `--no-verify`.
 
 ## Result
 

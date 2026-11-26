@@ -123,7 +123,7 @@ export default function LocationGenericScreen() {
 
               {locationData.force_close && (
                 <View className="mb-3 rounded-lg bg-red-600 px-4 py-2">
-                  <Text className="text-center font-extrabold text-lg text-white tracking-wider">
+                  <Text className="text-center text-lg font-extrabold tracking-wider text-white">
                     TEMPORARILY CLOSED
                   </Text>
                 </View>
@@ -133,7 +133,7 @@ export default function LocationGenericScreen() {
                 <View className="flex-row items-center gap-x-2">
                   <View>
                     <Text
-                      className={cn('font-bold text-3xl', isDarkMode ? 'text-white' : 'text-black')}
+                      className={cn('text-3xl font-bold', isDarkMode ? 'text-white' : 'text-black')}
                     >
                       {displayName}
                     </Text>
@@ -143,7 +143,7 @@ export default function LocationGenericScreen() {
                 <View className="flex-row items-center gap-x-3">
                   <View className="flex-row items-center gap-x-1">
                     <Clock size={16} color={COLORS['ut-burnt-orange']} />
-                    <Text className="font-semibold text-lg text-ut-burnt-orange">
+                    <Text className="text-ut-burnt-orange text-lg font-semibold">
                       {isOpen ? 'Open' : 'Closed'}
                     </Text>
                   </View>
@@ -159,13 +159,13 @@ export default function LocationGenericScreen() {
                     <View>
                       <View
                         className={cn(
-                          'self-start rounded-full px-3 py-1 ',
+                          'self-start rounded-full px-3 py-1',
                           isDarkMode ? 'bg-ut-grey-dark-mode/10' : 'bg-ut-grey/5',
                         )}
                       >
                         <Text
                           className={cn(
-                            'font-bold text-xs uppercase',
+                            'text-xs font-bold uppercase',
                             isDarkMode ? 'text-white' : 'text-black/75',
                           )}
                         >
@@ -220,7 +220,7 @@ export default function LocationGenericScreen() {
               >
                 <Text
                   className={cn(
-                    'font-semibold text-2xl',
+                    'text-2xl font-semibold',
                     isDarkMode ? 'text-white' : 'text-gray-800',
                   )}
                 >
@@ -247,7 +247,7 @@ export default function LocationGenericScreen() {
 
               <View className="flex-col gap-y-3">
                 <Text
-                  className={cn('font-semibold text-2xl', isDarkMode ? 'text-white' : 'text-black')}
+                  className={cn('text-2xl font-semibold', isDarkMode ? 'text-white' : 'text-black')}
                 >
                   Methods of Payment
                 </Text>
@@ -279,7 +279,7 @@ export default function LocationGenericScreen() {
               {isTablet && (
                 <TouchableOpacity
                   activeOpacity={0.7}
-                  className="mt-4 rounded-full bg-ut-burnt-orange px-4 py-4"
+                  className="bg-ut-burnt-orange mt-4 rounded-full px-4 py-4"
                   onPress={() => {
                     router.dismissTo('/');
                   }}

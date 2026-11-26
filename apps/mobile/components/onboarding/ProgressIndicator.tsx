@@ -37,7 +37,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
         className,
       )}
     >
-      <Animated.View className="h-full rounded-full bg-ut-burnt-orange/75" style={progressStyle} />
+      <Animated.View className="bg-ut-burnt-orange/75 h-full rounded-full" style={progressStyle} />
     </View>
   );
 };

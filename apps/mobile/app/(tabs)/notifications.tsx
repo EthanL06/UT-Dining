@@ -88,7 +88,7 @@ const NotificationItem = ({
 
         <View className="flex-1">
           <View className="flex-row items-center justify-between">
-            <Text className={cn('font-bold text-base', isDarkMode ? 'text-white' : 'text-black')}>
+            <Text className={cn('text-base font-bold', isDarkMode ? 'text-white' : 'text-black')}>
               {notification.title}
             </Text>
             <View className="flex-row items-center gap-x-2">
@@ -112,8 +112,8 @@ const NotificationItem = ({
 
           {!notification.isRead && (
             <View className="mt-2 flex-row">
-              <View className="rounded-full bg-ut-burnt-orange px-2 py-1">
-                <Text className="font-bold text-white text-xs">NEW</Text>
+              <View className="bg-ut-burnt-orange rounded-full px-2 py-1">
+                <Text className="text-xs font-bold text-white">NEW</Text>
               </View>
             </View>
           )}
@@ -213,7 +213,7 @@ const Notifications = () => {
                   <View className="flex-row items-center gap-x-2">
                     <Text
                       className={cn(
-                        'font-extrabold text-3xl',
+                        'text-3xl font-extrabold',
                         isDarkMode ? 'text-white' : 'text-black',
                       )}
                     >
@@ -224,12 +224,12 @@ const Notifications = () => {
                     <View className="flex-row items-center gap-x-3">
                       <TouchableOpacity
                         onPress={handleReadAll}
-                        className="rounded-lg bg-ut-burnt-orange px-3 py-1"
+                        className="bg-ut-burnt-orange rounded-lg px-3 py-1"
                       >
-                        <Text className="font-semibold text-white text-xs">Read All</Text>
+                        <Text className="text-xs font-semibold text-white">Read All</Text>
                       </TouchableOpacity>
-                      <View className="rounded-full bg-ut-burnt-orange px-3 py-1">
-                        <Text className="font-bold text-sm text-white">{unreadCount}</Text>
+                      <View className="bg-ut-burnt-orange rounded-full px-3 py-1">
+                        <Text className="text-sm font-bold text-white">{unreadCount}</Text>
                       </View>
                     </View>
                   )}
@@ -255,7 +255,7 @@ const Notifications = () => {
           ItemSeparatorComponent={() => <View className="h-3" />}
           ListEmptyComponent={
             <View className="mt-12 flex items-center justify-center px-6">
-              <Text className="mt-4 font-bold text-lg text-ut-burnt-orange">
+              <Text className="text-ut-burnt-orange mt-4 text-lg font-bold">
                 No Notifications Yet!
               </Text>
               <Text

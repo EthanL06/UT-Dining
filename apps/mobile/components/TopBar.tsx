@@ -18,7 +18,7 @@ const HomeTopBar = () => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
 
   return (
-    <View className="flex w-full flex-row items-center justify-between ">
+    <View className="flex w-full flex-row items-center justify-between">
       <Image className="size-12" source={icon} />
 
       <View className="flex flex-row gap-x-5">
@@ -41,7 +41,7 @@ const LocationTopBar = () => {
   const { locationData } = useLocationDetails(location);
 
   return (
-    <View className="flex w-full flex-row items-center justify-between ">
+    <View className="flex w-full flex-row items-center justify-between">
       <TouchableOpacity
         testID="back-button"
         className="flex flex-row items-center"
@@ -51,7 +51,7 @@ const LocationTopBar = () => {
         }}
       >
         <ChevronLeft size={24} color={COLORS['ut-burnt-orange']} />
-        <Text className="font-semibold text-lg text-ut-burnt-orange">Back</Text>
+        <Text className="text-ut-burnt-orange text-lg font-semibold">Back</Text>
       </TouchableOpacity>
 
       <View className="flex flex-row gap-x-5">
@@ -139,7 +139,7 @@ const FoodTopBar = () => {
   };
 
   return (
-    <View className="flex w-full flex-row items-center justify-between ">
+    <View className="flex w-full flex-row items-center justify-between">
       <TouchableOpacity
         testID="back-button"
         className="flex flex-row items-center"
@@ -150,7 +150,7 @@ const FoodTopBar = () => {
       >
         <ChevronLeft size={24} color={COLORS['ut-burnt-orange']} />
 
-        <Text className="font-semibold text-lg text-ut-burnt-orange">Back</Text>
+        <Text className="text-ut-burnt-orange text-lg font-semibold">Back</Text>
       </TouchableOpacity>
 
       <View className="flex-row gap-x-5">
@@ -228,7 +228,7 @@ const FoodTopBar = () => {
 
 const BackTopBar = () => {
   return (
-    <View className="flex w-full flex-row items-center justify-between ">
+    <View className="flex w-full flex-row items-center justify-between">
       <TouchableOpacity
         testID="back-button"
         className="flex flex-row items-center"
@@ -239,7 +239,7 @@ const BackTopBar = () => {
       >
         <ChevronLeft size={24} color={COLORS['ut-burnt-orange']} />
 
-        <Text className="font-semibold text-lg text-ut-burnt-orange">Back</Text>
+        <Text className="text-ut-burnt-orange text-lg font-semibold">Back</Text>
       </TouchableOpacity>
     </View>
   );

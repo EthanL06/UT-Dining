@@ -138,7 +138,7 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({ selectedDate, onDateChang
       <View className="flex-1 items-center">
         <Text
           testID="selected-date"
-          className={cn('font-semibold text-lg', isDarkMode ? 'text-white' : 'text-black')}
+          className={cn('text-lg font-semibold', isDarkMode ? 'text-white' : 'text-black')}
         >
           {displayDate}
         </Text>

@@ -209,7 +209,7 @@ const FoodContent = ({
       <View className="flex-row items-center gap-2">
         <Text
           className={cn(
-            'line-clamp-2 max-w-[16rem] font-medium text-lg leading-6',
+            'line-clamp-2 max-w-[16rem] text-lg leading-6 font-medium',
             isDarkMode ? 'text-white' : 'text-black',
           )}
         >
@@ -222,7 +222,7 @@ const FoodContent = ({
       </View>
 
       {subtitle ? (
-        <Text className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>
+        <Text className={cn('text-xs font-medium', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>
           {subtitle}
         </Text>
       ) : null}
@@ -234,7 +234,7 @@ const FoodContent = ({
               <Flame fill={COLORS['ut-burnt-orange']} size={10} color={COLORS['ut-burnt-orange']} />
               <Text
                 className={cn(
-                  'font-medium text-xs',
+                  'text-xs font-medium',
                   isDarkMode ? 'text-gray-300' : 'text-gray-700',
                 )}
               >
@@ -249,7 +249,7 @@ const FoodContent = ({
               />
               <Text
                 className={cn(
-                  'font-medium text-xs',
+                  'text-xs font-medium',
                   isDarkMode ? 'text-gray-300' : 'text-gray-700',
                 )}
               >
@@ -260,7 +260,7 @@ const FoodContent = ({
               <Wheat fill={COLORS['ut-burnt-orange']} size={10} color={COLORS['ut-burnt-orange']} />
               <Text
                 className={cn(
-                  'font-medium text-xs',
+                  'text-xs font-medium',
                   isDarkMode ? 'text-gray-300' : 'text-gray-700',
                 )}
               >

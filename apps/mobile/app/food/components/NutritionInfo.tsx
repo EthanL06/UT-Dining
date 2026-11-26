@@ -12,7 +12,7 @@ interface NutritionInfoProps {
 const NutritionInfo = React.memo(({ icon, value, isDarkMode }: NutritionInfoProps) => (
   <View className="flex-row items-center gap-x-1">
     {icon}
-    <Text className={cn('font-semibold text-base', isDarkMode ? 'text-gray-300' : 'text-black')}>
+    <Text className={cn('text-base font-semibold', isDarkMode ? 'text-gray-300' : 'text-black')}>
       {value}
     </Text>
   </View>

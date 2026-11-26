@@ -6,7 +6,7 @@ export default async function PrivacyPolicy() {
   const content = await getMarkdownContent('privacy-policy.md');
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       <Navbar />
 
       <section className="px-4 pt-20 pb-12 md:pt-32 md:pb-20">

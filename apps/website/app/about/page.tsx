@@ -21,22 +21,22 @@ interface Milestone {
 
 const teamValues = [
   {
-    icon: <Users className="h-6 w-6 text-primary md:h-8 md:w-8" />,
+    icon: <Users className="text-primary h-6 w-6 md:h-8 md:w-8" />,
     title: 'Community First',
     description: 'Built by students, for students',
   },
   {
-    icon: <Github className="h-6 w-6 text-primary md:h-8 md:w-8" />,
+    icon: <Github className="text-primary h-6 w-6 md:h-8 md:w-8" />,
     title: 'Open Source',
     description: 'Committed to open source, collaboration, and quality',
   },
   {
-    icon: <Coffee className="h-6 w-6 text-primary md:h-8 md:w-8" />,
+    icon: <Coffee className="text-primary h-6 w-6 md:h-8 md:w-8" />,
     title: 'Innovation',
     description: 'Constantly improving the experience',
   },
   {
-    icon: <BookOpen className="h-6 w-6 text-primary md:h-8 md:w-8" />,
+    icon: <BookOpen className="text-primary h-6 w-6 md:h-8 md:w-8" />,
     title: 'Education',
     description: 'Helping make informed choices',
   },
@@ -76,7 +76,7 @@ const itemVariants = {
 export default function About() {
   useKC_DABR_WASM();
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       <Navbar />
 
       <main className="pt-20 pb-12 md:pt-24 md:pb-20">
@@ -87,8 +87,8 @@ export default function About() {
             animate={{ opacity: 1, y: 0 }}
             className="mx-auto mb-12 max-w-3xl space-y-4 text-center md:mb-20"
           >
-            <h1 className="font-bold text-3xl md:text-4xl">About UT Dining Experience</h1>
-            <p className="text-lg text-muted-foreground md:text-xl">
+            <h1 className="text-3xl font-bold md:text-4xl">About UT Dining Experience</h1>
+            <p className="text-muted-foreground text-lg md:text-xl">
               We&apos;re a team of UT students passionate about making campus dining better for
               everyone.
             </p>
@@ -112,8 +112,8 @@ export default function About() {
                 variants={itemVariants}
                 className="glass space-y-2 p-4 text-center"
               >
-                <div className="flex justify-center text-primary">{stat.icon}</div>
-                <div className="font-bold text-xl md:text-2xl">{stat.value}</div>
+                <div className="text-primary flex justify-center">{stat.icon}</div>
+                <div className="text-xl font-bold md:text-2xl">{stat.value}</div>
                 <div className="text-muted-foreground text-sm">{stat.label}</div>
               </motion.div>
             ))}
@@ -127,7 +127,7 @@ export default function About() {
             transition={{ delay: 0.2 }}
             className="glass mx-auto mb-12 max-w-4xl rounded-2xl p-6 md:mb-20 md:p-8"
           >
-            <h2 className="mb-4 font-semibold text-xl md:text-2xl">Our Mission</h2>
+            <h2 className="mb-4 text-xl font-semibold md:text-2xl">Our Mission</h2>
             <p className="text-muted-foreground text-sm md:text-base">
               To revolutionize the campus dining experience by providing students with real-time
               information, honest reviews, and a platform to make informed dining choices. We
@@ -164,7 +164,7 @@ export default function About() {
             viewport={{ once: true }}
             className="mx-auto max-w-4xl"
           >
-            <h2 className="mb-6 text-center font-semibold text-xl md:text-2xl">Our Journey</h2>
+            <h2 className="mb-6 text-center text-xl font-semibold md:text-2xl">Our Journey</h2>
             <div className="space-y-6">
               {milestones.map((milestone, index) => (
                 <motion.div
@@ -175,7 +175,7 @@ export default function About() {
                   transition={{ delay: index * 0.2 }}
                   className="glass flex items-start gap-4 p-4 md:p-6"
                 >
-                  <div className="font-bold text-primary">{milestone.year}</div>
+                  <div className="text-primary font-bold">{milestone.year}</div>
                   <div>
                     <h3 className="mb-1 font-semibold">{milestone.title}</h3>
                     <p className="text-muted-foreground text-sm">{milestone.description}</p>

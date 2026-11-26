@@ -80,7 +80,7 @@ const MapLocationSheet = ({ payload, sheetId }: MapLocationProps) => {
         {/* Location header */}
         <View className="mb-4 flex-row items-start justify-between">
           <View className="flex-1">
-            <Text className={cn('font-bold text-3xl', isDarkMode && 'text-white')}>{name}</Text>
+            <Text className={cn('text-3xl font-bold', isDarkMode && 'text-white')}>{name}</Text>
             <View className="mt-2 flex-col gap-y-2">
               <View className="flex-row items-center gap-x-3">
                 {/* Location Type Pill */}
@@ -94,7 +94,7 @@ const MapLocationSheet = ({ payload, sheetId }: MapLocationProps) => {
                     >
                       <Text
                         className={cn(
-                          'font-bold text-xs uppercase',
+                          'text-xs font-bold uppercase',
                           isDarkMode ? 'text-white' : 'text-black/75',
                         )}
                       >
@@ -139,16 +139,16 @@ const MapLocationSheet = ({ payload, sheetId }: MapLocationProps) => {
 
         {/* Special note */}
         {note && (
-          <View className="mb-4 flex-row items-center gap-x-3 self-start rounded-xl bg-ut-burnt-orange/10 px-4 py-2.5">
+          <View className="bg-ut-burnt-orange/10 mb-4 flex-row items-center gap-x-3 self-start rounded-xl px-4 py-2.5">
             <CircleAlert color={getColor('ut-burnt-orange', isColorBlindMode)} size={18} />
-            <Text className="font-medium text-sm text-ut-burnt-orange">{note}</Text>
+            <Text className="text-ut-burnt-orange text-sm font-medium">{note}</Text>
           </View>
         )}
 
         {/* Navigation button */}
         <TouchableOpacity
           activeOpacity={0.8}
-          className="mt-2 rounded-xl bg-ut-burnt-orange py-3.5 shadow-sm"
+          className="bg-ut-burnt-orange mt-2 rounded-xl py-3.5 shadow-sm"
           style={{
             backgroundColor: getColor('ut-burnt-orange', isColorBlindMode),
           }}

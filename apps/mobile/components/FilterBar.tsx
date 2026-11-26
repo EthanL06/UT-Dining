@@ -99,7 +99,7 @@ const FilterBar = ({
                   ? 'border-ut-burnt-orange bg-ut-burnt-orange text-white'
                   : isDarkMode
                     ? 'border-neutral-800 bg-neutral-800 text-gray-200'
-                    : 'border border-gray-200 bg-white text-ut-grey',
+                    : 'text-ut-grey border border-gray-200 bg-white',
               )}
             >
               <Text
@@ -109,7 +109,7 @@ const FilterBar = ({
                     ? 'font-bold text-white'
                     : isDarkMode
                       ? 'font-medium text-gray-200'
-                      : 'font-medium text-ut-grey/75',
+                      : 'text-ut-grey/75 font-medium',
                 )}
               >
                 {item.title}
@@ -154,8 +154,8 @@ const FilterButton = () => {
       <Filter size={18} color={isDarkMode ? COLORS['ut-grey-dark-mode'] : COLORS['ut-grey']} />
 
       {hasFilters() && (
-        <View className="-mr-2 -mt-2 absolute top-0 right-0">
-          <View className="size-2 rounded-full bg-ut-burnt-orange" />
+        <View className="absolute top-0 right-0 -mt-2 -mr-2">
+          <View className="bg-ut-burnt-orange size-2 rounded-full" />
         </View>
       )}
     </TouchableOpacity>

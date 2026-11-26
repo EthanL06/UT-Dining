@@ -94,7 +94,7 @@ const PermissionsScreen = ({ width, onPermissionsChange }: Props) => {
       <View className="flex-1 items-center justify-center">
         <Text
           className={cn(
-            'mb-1 text-center font-bold text-3xl',
+            'mb-1 text-center text-3xl font-bold',
             isDark ? 'text-white' : 'text-gray-900',
           )}
         >
@@ -116,16 +116,16 @@ const PermissionsScreen = ({ width, onPermissionsChange }: Props) => {
             onPress={permissions.location === 'denied' ? openSettings : undefined}
             className={cn(
               'mb-2 rounded-2xl p-6',
-              isDark ? ' bg-neutral-800' : 'border border-gray-200 bg-white',
+              isDark ? 'bg-neutral-800' : 'border border-gray-200 bg-white',
             )}
           >
             <View className="flex-row items-center">
-              <View className="mr-4 h-12 w-12 items-center justify-center rounded-full bg-ut-burnt-orange/10">
+              <View className="bg-ut-burnt-orange/10 mr-4 h-12 w-12 items-center justify-center rounded-full">
                 <MapPin size={24} color={COLORS['ut-burnt-orange']} />
               </View>
               <View className="flex-1">
                 <Text
-                  className={cn('font-semibold text-lg', isDark ? 'text-white' : 'text-gray-900')}
+                  className={cn('text-lg font-semibold', isDark ? 'text-white' : 'text-gray-900')}
                 >
                   Location Services
                 </Text>
@@ -147,16 +147,16 @@ const PermissionsScreen = ({ width, onPermissionsChange }: Props) => {
             onPress={openSettings}
             className={cn(
               'rounded-2xl p-6',
-              isDark ? ' bg-neutral-800' : 'border border-gray-200 bg-white',
+              isDark ? 'bg-neutral-800' : 'border border-gray-200 bg-white',
             )}
           >
             <View className="flex-row items-center">
-              <View className="mr-4 h-12 w-12 items-center justify-center rounded-full bg-ut-burnt-orange/10">
+              <View className="bg-ut-burnt-orange/10 mr-4 h-12 w-12 items-center justify-center rounded-full">
                 <Bell size={24} color={COLORS['ut-burnt-orange']} />
               </View>
               <View className="flex-1">
                 <Text
-                  className={cn('font-semibold text-lg', isDark ? 'text-white' : 'text-gray-900')}
+                  className={cn('text-lg font-semibold', isDark ? 'text-white' : 'text-gray-900')}
                 >
                   Push Notifications
                 </Text>

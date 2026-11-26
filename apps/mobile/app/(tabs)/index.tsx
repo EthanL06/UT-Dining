@@ -156,7 +156,7 @@ export default function Home() {
         }}
       >
         <Text
-          className={cn('font-bold text-lg', isDarkMode ? 'text-white' : 'text-ut-burnt-orange')}
+          className={cn('text-lg font-bold', isDarkMode ? 'text-white' : 'text-ut-burnt-orange')}
         >
           Failed to load data!
         </Text>
@@ -169,7 +169,7 @@ export default function Home() {
 
         <TouchableOpacity
           onPress={handleRefresh}
-          className="rounded-full bg-ut-burnt-orange px-4 py-2"
+          className="bg-ut-burnt-orange rounded-full px-4 py-2"
         >
           <Text className="font-bold text-white">Reload</Text>
         </TouchableOpacity>
@@ -212,7 +212,7 @@ export default function Home() {
         ) : locations.length === 0 && syncUnavailable ? (
           <View className="flex-1 items-center justify-center px-8">
             <Text
-              className={cn('mb-1 font-bold text-lg', isDarkMode ? 'text-white' : 'text-ut-grey')}
+              className={cn('mb-1 text-lg font-bold', isDarkMode ? 'text-white' : 'text-ut-grey')}
             >
               Can't load menus yet
             </Text>
@@ -221,7 +221,7 @@ export default function Home() {
             </Text>
             <TouchableOpacity
               onPress={() => menuSync.refetch()}
-              className="rounded-full bg-ut-burnt-orange px-4 py-2"
+              className="bg-ut-burnt-orange rounded-full px-4 py-2"
             >
               <Text className="font-bold text-white">Try again</Text>
             </TouchableOpacity>

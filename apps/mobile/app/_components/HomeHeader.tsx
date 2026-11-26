@@ -73,7 +73,7 @@ const QuickLinksCard = ({ title, description, Icon, onPress, isDarkMode }: Quick
           <Icon size={20} color={getColor('ut-burnt-orange', false)} />
         </View>
         <View className="flex-1">
-          <Text className={cn('font-bold text-sm', isDarkMode ? 'text-gray-100' : 'text-gray-800')}>
+          <Text className={cn('text-sm font-bold', isDarkMode ? 'text-gray-100' : 'text-gray-800')}>
             {title}
           </Text>
           <Text className={cn('text-xs', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
@@ -136,7 +136,7 @@ const HomeHeader = ({
         <View>
           <Text
             className={cn(
-              'font-extrabold font-sans text-3xl',
+              'font-sans text-3xl font-extrabold',
               isDarkMode ? 'text-white' : 'text-gray-900',
             )}
           >

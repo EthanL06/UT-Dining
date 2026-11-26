@@ -26,8 +26,8 @@ const NavItem = ({ href, children, className, onClick }: NavItemProps) => {
       href={href}
       onClick={onClick}
       className={cn(
-        'transition-colors hover:text-primary',
-        isActive && 'font-medium text-primary',
+        'hover:text-primary transition-colors',
+        isActive && 'text-primary font-medium',
         className,
       )}
     >
@@ -48,9 +48,9 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 right-0 left-0 z-50 border-b bg-background/80 backdrop-blur-lg">
+    <nav className="bg-background/80 fixed top-0 right-0 left-0 z-50 border-b backdrop-blur-lg">
       <div className="container flex h-16 items-center justify-between px-4">
-        <Link href="/" className="font-bold text-xl">
+        <Link href="/" className="text-xl font-bold">
           UT Dining
         </Link>
 

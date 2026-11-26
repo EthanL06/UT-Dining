@@ -88,7 +88,7 @@ const FoodScreen = () => {
                   <View>
                     <Text
                       className={cn(
-                        'font-extrabold font-sans text-3xl',
+                        'font-sans text-3xl font-extrabold',
                         isDarkMode ? 'text-white' : 'text-black',
                       )}
                     >
@@ -157,7 +157,7 @@ const FoodScreen = () => {
 
                     <Text
                       className={cn(
-                        'mb-2 font-bold text-2xl',
+                        'mb-2 text-2xl font-bold',
                         isDarkMode ? 'text-white' : 'text-black',
                       )}
                     >

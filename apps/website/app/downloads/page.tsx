@@ -64,8 +64,8 @@ const DownloadCard = ({ option }: { option: DownloadOption }) => (
     href={option.href}
     className={cn(
       'flex items-center gap-4 rounded-lg border p-4 md:p-6',
-      'transition-colors hover:bg-secondary',
-      'focus:outline-hidden focus:ring-2 focus:ring-primary focus:ring-offset-2',
+      'hover:bg-secondary transition-colors',
+      'focus:ring-primary focus:ring-2 focus:ring-offset-2 focus:outline-hidden',
       'active:bg-secondary/80',
     )}
   >
@@ -101,7 +101,7 @@ const itemVariants = {
 export default function Downloads() {
   useKC_DABR_WASM();
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       <Navbar />
 
       <section className="px-4 pt-20 pb-12 md:pt-32 md:pb-20">
@@ -112,10 +112,10 @@ export default function Downloads() {
             transition={{ duration: 0.5 }}
             className="mx-auto max-w-3xl space-y-4 text-center md:space-y-6"
           >
-            <h1 className="font-bold text-3xl leading-tight md:text-4xl md:leading-10">
+            <h1 className="text-3xl leading-tight font-bold md:text-4xl md:leading-10">
               Download UT Dining
             </h1>
-            <p className="text-lg text-muted-foreground md:text-xl">
+            <p className="text-muted-foreground text-lg md:text-xl">
               Available for all your devices. Start exploring campus dining options today.
             </p>
           </motion.div>
@@ -128,7 +128,7 @@ export default function Downloads() {
           >
             {/* Mobile Section */}
             <motion.div variants={itemVariants} className="glass p-6 md:p-8">
-              <h2 className="mb-4 font-semibold text-xl md:mb-6 md:text-2xl">Mobile Apps</h2>
+              <h2 className="mb-4 text-xl font-semibold md:mb-6 md:text-2xl">Mobile Apps</h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
                 {mobileApps.map((app) => (
                   <DownloadCard key={app.id} option={app} />
@@ -138,7 +138,7 @@ export default function Downloads() {
 
             {/* Desktop Section */}
             <motion.div variants={itemVariants} className="glass p-6 md:p-8">
-              <h2 className="mb-4 font-semibold text-xl md:mb-6 md:text-2xl">Desktop Apps</h2>
+              <h2 className="mb-4 text-xl font-semibold md:mb-6 md:text-2xl">Desktop Apps</h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8 lg:grid-cols-3">
                 {desktopApps.map((app) => (
                   <DownloadCard key={app.id} option={app} />
@@ -148,7 +148,7 @@ export default function Downloads() {
 
             {/* Web Version */}
             <motion.div variants={itemVariants} className="glass p-6 md:p-8">
-              <h2 className="mb-4 font-semibold text-xl md:mb-6 md:text-2xl">Web Version</h2>
+              <h2 className="mb-4 text-xl font-semibold md:mb-6 md:text-2xl">Web Version</h2>
               <div className="max-w-md">
                 <DownloadCard
                   option={{

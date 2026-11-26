@@ -20,7 +20,7 @@ const CategoryHeader = React.memo(({ title, isExpanded, onToggle }: CategoryHead
       onPress={onToggle}
       className="mb-3 flex-row items-center justify-between overflow-hidden"
     >
-      <Text className={cn('font-bold text-2xl', isDarkMode ? 'text-white' : 'text-black')}>
+      <Text className={cn('text-2xl font-bold', isDarkMode ? 'text-white' : 'text-black')}>
         {title}
       </Text>
       <View
