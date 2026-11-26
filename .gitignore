@@ -34,3 +34,5 @@ apps/*/AGENTS.md
 
 .context/
 .lavish/
+.worktrees/
+.claude/worktrees/
