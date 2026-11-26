@@ -155,9 +155,9 @@ export default async function Home() {
         <div className="rounded-[28px] bg-tile p-10">
           <h2 className="font-semibold text-accent-text text-sm">Why it exists</h2>
           <p className="mt-3 text-[22px] leading-[1.45] tracking-[-0.01em]">
-            The official menus are hard to read on a phone and never say what's open. UT Dining puts
-            every menu and every hour in one app that opens instantly, even on bad campus Wi-Fi.
-            It's built by UT students, not the university.
+            Figuring out where to eat on campus shouldn't be a chore. UT Dining gathers every spot,
+            from dining halls to cafés and markets, into one simple app, built by students, for
+            students.
           </p>
         </div>
         {latest && (
