@@ -1,5 +1,4 @@
 import * as Device from 'expo-device';
-import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { MapPin, Navigation, X } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
@@ -7,8 +6,6 @@ import { useEffect, useEffectEvent, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
-  Linking,
-  Platform,
   Pressable,
   ScrollView,
   Text,
@@ -18,15 +15,14 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PLACE_ICONS, usePlaceColor } from '~/components/map/MapSheet';
-import { GroupedRow, GroupedSection } from '~/components/ui/Grouped';
-import { PAYMENT_INFO_ICONS } from '~/data/PaymentInfo';
+import PlaceDetails, { openPlaceDirections } from '~/components/PlaceDetails';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { getSafePostHog } from '~/services/analytics/posthog';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getLocationName } from '~/utils/locations';
 import { useTheme } from '~/utils/theme';
-import { generateSchedule, getLocationStatusText, isLocationOpen } from '~/utils/time';
+import { getLocationStatusText, isLocationOpen } from '~/utils/time';
 
 const COVER_HEIGHT = 240;
 
@@ -66,18 +62,9 @@ export default function LocationGenericScreen() {
   const displayName = getLocationName(db, location, useColloquialNames);
   const isOpen = isLocationOpen(locationData);
   const status = getLocationStatusText(locationData, isOpen);
-  const schedule = generateSchedule(locationData, false);
-  const paymentMethods = Array.isArray(locationData.methods_of_payment)
-    ? (locationData.methods_of_payment as string[])
-    : [];
   const showImage = !!locationData.image && !imageFailed;
 
-  const openDirections = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Linking.openURL(
-      Platform.OS === 'ios' ? locationData.apple_maps_link : locationData.google_maps_link,
-    );
-  };
+  const openDirections = () => openPlaceDirections(locationData);
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
@@ -143,65 +130,7 @@ export default function LocationGenericScreen() {
           </Pressable>
         </View>
 
-        {locationData.description !== '' && (
-          <GroupedSection header="About">
-            <View className="px-4 py-3">
-              <Text className="text-[15px] leading-[22px]" style={{ color: theme.label }}>
-                {locationData.description}
-              </Text>
-            </View>
-          </GroupedSection>
-        )}
-
-        {schedule.length > 0 && (
-          <GroupedSection header="Hours">
-            {schedule.map((entry, index) => (
-              <GroupedRow
-                key={`${entry.dayRange}-${entry.time}`}
-                isFirst={index === 0}
-                title={entry.dayRange}
-                trailing={
-                  <Text className="text-right text-[15px]" style={{ color: theme.secondaryLabel }}>
-                    {entry.time.replace(/, /g, '\n')}
-                  </Text>
-                }
-              />
-            ))}
-          </GroupedSection>
-        )}
-
-        {paymentMethods.length > 0 && (
-          <GroupedSection header="Payment">
-            {paymentMethods.map((method, index) => (
-              <GroupedRow
-                key={method}
-                isFirst={index === 0}
-                separatorInset={56}
-                leading={
-                  method in PAYMENT_INFO_ICONS ? (
-                    <Image
-                      source={PAYMENT_INFO_ICONS[method as keyof typeof PAYMENT_INFO_ICONS]}
-                      className="size-7"
-                      resizeMode="contain"
-                    />
-                  ) : undefined
-                }
-                title={method}
-              />
-            ))}
-          </GroupedSection>
-        )}
-
-        <GroupedSection header="Address">
-          <GroupedRow
-            isFirst
-            separatorInset={56}
-            leading={<MapPin size={20} color={theme.tint} />}
-            title={locationData.address}
-            showChevron
-            onPress={openDirections}
-          />
-        </GroupedSection>
+        <PlaceDetails place={locationData} />
 
         {isTablet && (
           <Pressable
