@@ -352,7 +352,7 @@ export const MapSheet = ({
       runOnJS(settle)(-event.velocityY);
     });
 
-  const style = useAnimatedStyle(() => ({ height: height.value }));
+  const style = useAnimatedStyle(() => ({ height: height.value + bottomOffset }));
 
   const visible = places
     .map((place) => ({
@@ -369,11 +369,16 @@ export const MapSheet = ({
   let content: ReactNode;
   if (selectedPlace) {
     content = (
-      <PlaceCard place={selectedPlace} userCoordinates={userCoordinates} onClose={onClosePlace} />
+      <View style={{ paddingBottom: bottomOffset }}>
+        <PlaceCard place={selectedPlace} userCoordinates={userCoordinates} onClose={onClosePlace} />
+      </View>
     );
   } else {
     content = (
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-6">
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: bottomOffset + 24 }}
+      >
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -435,10 +440,11 @@ export const MapSheet = ({
         style,
         {
           position: 'absolute',
-          left: 8,
-          right: 8,
-          bottom: bottomOffset,
-          borderRadius: 34,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          borderTopLeftRadius: 34,
+          borderTopRightRadius: 34,
           borderCurve: 'continuous',
           backgroundColor: theme.background,
           shadowColor: '#000',
