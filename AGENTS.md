@@ -37,11 +37,12 @@ The `Makefile` is the front door. `make` prints every target. Every target is no
 - Worktrees: `make worktree NAME=feat-x` creates `.worktrees/feat-x` from `origin/staging` with env files and deps. All worktrees share one local Supabase.
 - Cleanup when you are done: `make clean` (Metro, E2E simulator clones, clean and pushed worktrees, caches) and `make stop` (also local Supabase and every booted simulator). On Ethan's Mac, shut down only simulators you booted.
 - `pnpm --filter @ut-dining/<app> <script>`: run one package's script. The root `pnpm` scripts still work.
-- New dev scripts go in `scripts/dev/` and get a Makefile target plus a line in `make help`. They must run on macOS bash 3.2.
+- New dev scripts go in `scripts/dev/` and get a Makefile target plus a line in `make help`. They must run on macOS bash 3.2. Every script a person or agent runs has a target; only `scripts/claude-session-start.sh` (the SessionStart hook) and `scripts/dev/lib.sh` do not.
 
 ## Conventions
 
-- No code comments in code you write, workflow YAML and shell included (`biome-ignore` and `@ts-expect-error` directives are fine). Lefthook blocks a commit that adds one.
+- No code comments in code you write, workflow YAML and shell included (`biome-ignore` and `@ts-expect-error` directives are fine). Lefthook blocks a commit that adds one, and CI fails a PR that adds one.
+- Biome rules that are errors on purpose, so agents get a clear failure instead of a review comment: no `any` (explicit or implicit `let`), no non-null `!`, no unused imports or variables, `===` only, `const` when never reassigned, no reassigned parameters, throw only `Error`s. Fix the code; do not add a `biome-ignore` unless the rule is wrong for that line, and say why in the ignore.
 - No AI attribution in commits, PR bodies or comments.
 - PRs target `staging` and are squash merged. Only Ethan promotes `staging` to `main`, which ships production.
 - Conventional commits (enforced by commitlint through Lefthook). Branches are `<type>-<kebab-description>`, e.g. `feat-meal-reminders`.
