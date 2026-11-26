@@ -1,5 +1,6 @@
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { useIsFetching } from '@tanstack/react-query';
+import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams } from 'expo-router';
@@ -16,6 +17,7 @@ import { MENU_SYNC_QUERY_KEY } from '~/hooks/useMenuSync';
 import { useScrollToTop } from '~/hooks/useScrollToTop';
 import * as schema from '~/services/database/schema';
 import { type FiltersState, useFiltersStore } from '~/store/useFiltersStore';
+import { mealPlanItemId, useMealPlanItems } from '~/store/useMealPlanStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { filterFoodItems } from '~/utils/filter';
@@ -34,8 +36,12 @@ const useFilteredItems = (
   debouncedSearchQuery: string,
   filters: FiltersState['filters'],
   favorites: schema.Favorite[],
+  mealPlan: { location: string; menu: string; date: string },
 ) => {
+  const mealPlanItems = useMealPlanItems(mealPlan.date);
   return React.useMemo(() => {
+    const mealPlanIds = new Set(mealPlanItems.map((planItem) => planItem.id));
+
     // First, filter by search query
     let result = flattenedItems;
 
@@ -90,7 +96,17 @@ const useFilteredItems = (
           const foodItem = item.data;
 
           // Use our utility function to check if this item passes all filters
-          if (filterFoodItems([foodItem], filters, favorites).length > 0) {
+          const categoryName = item.categoryId;
+          const isInMealPlan = (food: typeof foodItem) =>
+            mealPlanIds.has(
+              mealPlanItemId({
+                name: food.name as string,
+                locationName: mealPlan.location,
+                menuName: mealPlan.menu,
+                categoryName,
+              }),
+            );
+          if (filterFoodItems([foodItem], filters, favorites, isInMealPlan).length > 0) {
             // Item passed all filters, so add its category header if not already added
             if (currentCategory && !filteredCategories.has(currentCategory.id)) {
               filteredResult.push(currentCategory);
@@ -109,7 +125,15 @@ const useFilteredItems = (
     }
 
     return result;
-  }, [flattenedItems, debouncedSearchQuery, filters, favorites]);
+  }, [
+    flattenedItems,
+    debouncedSearchQuery,
+    filters,
+    favorites,
+    mealPlanItems,
+    mealPlan.location,
+    mealPlan.menu,
+  ]);
 };
 
 /**
@@ -148,7 +172,10 @@ const Location = () => {
 
   const posthog = usePostHog();
 
-  const { data: favorites } = useLiveQuery(db.select().from(schema.favorites));
+  const { data: favorites } = useLiveQuery(
+    db.select().from(schema.favorites).where(eq(schema.favorites.location_name, location)),
+    [location],
+  );
 
   // Get active filters from filters store
   const activeFilters = useFiltersStore((state) => state.filters);
@@ -163,6 +190,7 @@ const Location = () => {
     debouncedSearchQuery,
     activeFilters,
     favorites,
+    { location: location as string, menu: selectedMenu ?? '', date: selectedDate },
   );
   const skeletonItems = useSkeletonItems();
 

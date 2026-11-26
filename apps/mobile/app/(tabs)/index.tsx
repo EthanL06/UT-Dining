@@ -1,6 +1,7 @@
 import { onlineManager, useQuery, useQueryClient } from '@tanstack/react-query';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
+import * as Haptics from 'expo-haptics';
 import * as Network from 'expo-network';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -14,8 +15,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Notifier } from 'react-native-notifier';
-import Alert from '~/components/Alert';
 import { Container } from '~/components/Container';
 import OnboardingScreen from '~/components/onboarding/OnboardingScreen';
 import { forceMenuSync, useMenuSync } from '~/hooks/useMenuSync';
@@ -35,7 +34,6 @@ import LocationItem from '../_components/LocationItem';
 
 // Constants
 const SPLASH_SCREEN_DURATION = 200;
-const NOTIFICATION_DURATION = 3000;
 
 // Configure splash screen
 SplashScreen.preventAutoHideAsync();
@@ -107,12 +105,7 @@ export default function Home() {
       // Check if user is online before attempting to refetch
       const networkState = await Network.getNetworkStateAsync();
       if (!networkState.isConnected) {
-        Notifier.showNotification({
-          title: 'No Internet Connection',
-          description: 'Please check your connection and try again.',
-          duration: NOTIFICATION_DURATION,
-          Component: Alert,
-        });
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         return;
       }
 
@@ -123,26 +116,9 @@ export default function Home() {
 
       // Force sync with Supabase and then refetch the query
       await Promise.race([forceMenuSync(drizzleDb, queryClient), timeoutPromise]);
-
-      Notifier.showNotification({
-        title: 'Refreshed!',
-        description: 'Menu data is up to date.',
-        duration: NOTIFICATION_DURATION,
-        Component: Alert,
-      });
     } catch (error) {
       console.error('Error refreshing data:', error);
-      const errorMessage =
-        error instanceof Error && error.message === 'Request timeout'
-          ? 'Request timed out. Please try again.'
-          : 'Unable to update data. Please try again.';
-
-      Notifier.showNotification({
-        title: 'Refresh Failed',
-        description: errorMessage,
-        duration: NOTIFICATION_DURATION,
-        Component: Alert,
-      });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       clearTimeout(timeoutId);
       setRefreshing(false);

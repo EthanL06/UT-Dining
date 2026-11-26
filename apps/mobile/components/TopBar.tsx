@@ -4,15 +4,13 @@ import { ChefHat, ChevronLeft, Heart, Info, MessageSquare } from 'lucide-react-n
 import { useEffect, useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import { SheetManager } from 'react-native-actions-sheet';
-import { Notifier } from 'react-native-notifier';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useFoodData } from '~/hooks/useFoodData';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { isFavoriteItem, toggleFavorites } from '~/services/database/database';
-import { useMealPlanStore } from '~/store/useMealPlanStore';
+import { todayKey, useIsMealPlanItem, useMealPlanStore } from '~/store/useMealPlanStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
-import Alert from './Alert';
 
 const icon = require('../assets/image.png');
 
@@ -116,16 +114,20 @@ const FoodTopBar = () => {
 
   const { foodItem } = useFoodData(location, menu, category, food, favorite === 'true', date);
   const toggleMealPlanItem = useMealPlanStore((state) => state.toggleMealPlanItem);
-  const isMealPlanItem = useMealPlanStore((state) => state.isMealPlanItem(food));
+  const planDate = date || todayKey();
+  const isMealPlanItem = useIsMealPlanItem(
+    { name: food, locationName: location, menuName: menu, categoryName: category },
+    planDate,
+  );
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
   const db = useDatabase();
   const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
-    const result = isFavoriteItem(db, foodItem?.name as string);
+    const result = isFavoriteItem(db, foodItem?.name as string, location);
 
     setIsFavorite(result);
-  }, [foodItem, db]);
+  }, [foodItem, location, db]);
 
   if (!foodItem) {
     return null;
@@ -158,26 +160,6 @@ const FoodTopBar = () => {
           accessibilityRole="button"
           onPress={async () => {
             if (foodItem) {
-              if (isFavorite) {
-                Notifier.showNotification({
-                  title: `${foodItem.name} removed.`,
-                  description: `No longer in Favorites.`,
-                  swipeEnabled: true,
-                  Component: Alert,
-                  duration: 3000,
-                  queueMode: 'immediate',
-                });
-              } else {
-                Notifier.showNotification({
-                  title: `${foodItem.name} added!`,
-                  description: `Added to Favorites.`,
-                  swipeEnabled: true,
-                  Component: Alert,
-                  duration: 3000,
-                  queueMode: 'immediate',
-                });
-              }
-
               const isFavorited = await toggleFavorites(db, foodItem, location, menu, category);
               setIsFavorite(isFavorited);
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -197,40 +179,24 @@ const FoodTopBar = () => {
           accessibilityRole="button"
           onPress={() => {
             if (foodItem) {
-              toggleMealPlanItem({
-                name: foodItem.name as string,
-                locationName: location,
-                categoryName: category,
-                menuName: menu,
-                allergens: Object.fromEntries(
-                  Object.entries(foodItem.allergens || {}).filter(([key]) => key !== 'id'),
-                ) as Record<string, boolean>,
-                nutrition: {
-                  calories: foodItem.nutrition?.calories || '',
-                  protein: foodItem.nutrition?.protein || '',
-                  total_carbohydrates: foodItem.nutrition?.total_carbohydrates || '',
+              toggleMealPlanItem(
+                {
+                  name: foodItem.name as string,
+                  locationName: location,
+                  categoryName: category,
+                  menuName: menu,
+                  allergens: Object.fromEntries(
+                    Object.entries(foodItem.allergens || {}).filter(([key]) => key !== 'id'),
+                  ) as Record<string, boolean>,
+                  nutrition: {
+                    calories: foodItem.nutrition?.calories || '',
+                    protein: foodItem.nutrition?.protein || '',
+                    total_carbohydrates: foodItem.nutrition?.total_carbohydrates || '',
+                    total_fat: foodItem.nutrition?.total_fat || '',
+                  },
                 },
-              });
-
-              if (isMealPlanItem) {
-                Notifier.showNotification({
-                  title: `${foodItem.name} removed from today.`,
-                  description: `You've updated your meal plan.`,
-                  swipeEnabled: true,
-                  Component: Alert,
-                  duration: 3000,
-                  queueMode: 'immediate',
-                });
-              } else {
-                Notifier.showNotification({
-                  title: `${foodItem.name} saved for today!`,
-                  description: `Added to today's meal plan.`,
-                  swipeEnabled: true,
-                  Component: Alert,
-                  duration: 3000,
-                  queueMode: 'immediate',
-                });
-              }
+                planDate,
+              );
             }
 
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

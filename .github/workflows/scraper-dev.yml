@@ -1,0 +1,88 @@
+name: Scrape menus (dev)
+
+on:
+  schedule:
+    - cron: '30 7 * * *'
+  push:
+    branches: [staging]
+    paths:
+      - apps/scraper/**
+      - packages/supabase/**
+      - pnpm-lock.yaml
+      - .github/workflows/scraper-dev.yml
+  workflow_dispatch:
+    inputs:
+      days_to_scrape:
+        description: Days to scrape, starting today (blank uses the DAYS_TO_SCRAPE variable)
+        required: false
+
+concurrency:
+  group: scrape-menus-dev
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  scrape:
+    name: Scrape and upload to dev
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'schedule' && 'staging' || github.ref }}
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile --filter @ut-dining/scraper...
+
+      - name: Check secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_DEV_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_DEV_SERVICE_KEY }}
+          PROD_URL: ${{ secrets.SUPABASE_URL }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "::error::Add the SUPABASE_DEV_URL and SUPABASE_DEV_SERVICE_KEY repository secrets."
+            exit 1
+          fi
+          if [ -n "$PROD_URL" ] && [ "$SUPABASE_URL" = "$PROD_URL" ]; then
+            echo "::error::SUPABASE_DEV_URL points at production."
+            exit 1
+          fi
+
+      - name: Scrape
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_DEV_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_DEV_SERVICE_KEY }}
+          ENABLE_SUPABASE: 'true'
+          DAYS_TO_SCRAPE: ${{ inputs.days_to_scrape || vars.DAYS_TO_SCRAPE }}
+          TZ: America/Chicago
+        run: pnpm --filter @ut-dining/scraper start
+
+      - name: Upload scraped JSON
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: menus-dev-${{ github.run_id }}
+          path: apps/scraper/data/*.json
+          retention-days: 7
+          if-no-files-found: ignore
+
+  keepalive:
+    name: Keep schedule enabled
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Re-enable this workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/scraper-dev.yml/enable"

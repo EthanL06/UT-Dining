@@ -14,15 +14,13 @@ import ReanimatedSwipeable, {
   type SwipeableMethods,
   SwipeDirection,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
-import { Notifier } from 'react-native-notifier';
 import Reanimated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import type { FoodItem } from '~/services/database/database';
-import { useMealPlanStore } from '~/store/useMealPlanStore';
+import { todayKey, useIsMealPlanItem, useMealPlanStore } from '~/store/useMealPlanStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
 import { cn, displayNutrient } from '~/utils/utils';
-import Alert from './Alert';
 import { AddMealPlanAction, FavoriteAction, RemoveAction } from './AnimatedActions';
 
 const FoodComponent = ({
@@ -48,7 +46,16 @@ const FoodComponent = ({
   showExtraInfo?: boolean;
   canMealPlan?: boolean;
 }) => {
-  const isMealPlan = useMealPlanStore((state) => state.isMealPlanItem(food.name as string));
+  const planDate = date || todayKey();
+  const isMealPlan = useIsMealPlanItem(
+    {
+      name: food.name as string,
+      locationName: location,
+      menuName: selectedMenu,
+      categoryName,
+    },
+    planDate,
+  );
   const toggleMealPlanItem = useMealPlanStore((state) => state.toggleMealPlanItem);
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
   const scale = useSharedValue(1);
@@ -117,33 +124,24 @@ const FoodComponent = ({
           swipeableRef.current?.close();
 
           if (direction === SwipeDirection.RIGHT && canMealPlan) {
-            toggleMealPlanItem({
-              name: food.name as string,
-              locationName: location,
-              categoryName,
-              menuName: selectedMenu,
-              allergens: Object.fromEntries(
-                Object.entries(food.allergens || {}).filter(([key]) => key !== 'id'),
-              ) as Record<string, boolean>,
-              nutrition: {
-                calories: food.nutrition?.calories || '',
-                protein: food.nutrition?.protein || '',
-                total_carbohydrates: food.nutrition?.total_carbohydrates || '',
+            toggleMealPlanItem(
+              {
+                name: food.name as string,
+                locationName: location,
+                categoryName,
+                menuName: selectedMenu,
+                allergens: Object.fromEntries(
+                  Object.entries(food.allergens || {}).filter(([key]) => key !== 'id'),
+                ) as Record<string, boolean>,
+                nutrition: {
+                  calories: food.nutrition?.calories || '',
+                  protein: food.nutrition?.protein || '',
+                  total_carbohydrates: food.nutrition?.total_carbohydrates || '',
+                  total_fat: food.nutrition?.total_fat || '',
+                },
               },
-            });
-
-            Notifier.showNotification({
-              title: isMealPlan
-                ? `${food.name} removed from today.`
-                : `${food.name} saved for today!`,
-              description: isMealPlan
-                ? `You've updated your meal plan.`
-                : `Added to today's meal plan.`,
-              swipeEnabled: true,
-              Component: Alert,
-              duration: 3000,
-              queueMode: 'immediate',
-            });
+              planDate,
+            );
           } else if (direction === SwipeDirection.LEFT) {
             await onFavorite(food);
           }
@@ -182,6 +180,7 @@ const FoodComponent = ({
             isMealPlan={isMealPlan}
             showExtraInfo={showExtraInfo}
             isDarkMode={isDarkMode}
+            subtitle={isFavoriteScreen ? [location, selectedMenu].filter(Boolean).join(' · ') : ''}
           />
         </Pressable>
       </ReanimatedSwipeable>
@@ -196,12 +195,14 @@ const FoodContent = ({
   isMealPlan,
   showExtraInfo,
   isDarkMode,
+  subtitle,
 }: {
   food: FoodItem;
   isFavorite: boolean;
   isMealPlan: boolean;
   showExtraInfo: boolean;
   isDarkMode: boolean;
+  subtitle: string;
 }) => (
   <>
     <View className="gap-1">
@@ -219,6 +220,12 @@ const FoodContent = ({
         )}
         {isMealPlan && showExtraInfo && <ChefHatIcon size={12} color={COLORS['ut-burnt-orange']} />}
       </View>
+
+      {subtitle ? (
+        <Text className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>
+          {subtitle}
+        </Text>
+      ) : null}
 
       {showExtraInfo && (
         <>
