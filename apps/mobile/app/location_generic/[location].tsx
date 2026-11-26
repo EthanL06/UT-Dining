@@ -146,7 +146,7 @@ export default function LocationGenericScreen() {
         {locationData.description !== '' && (
           <GroupedSection header="About">
             <View className="px-4 py-3">
-              <Text className="text-[15px] leading-5" style={{ color: theme.label }}>
+              <Text className="text-[15px] leading-[22px]" style={{ color: theme.label }}>
                 {locationData.description}
               </Text>
             </View>
