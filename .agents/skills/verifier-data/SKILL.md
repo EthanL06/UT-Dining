@@ -1,5 +1,4 @@
 ---
-
 name: verifier-data
 description: Verify UT Dining's Supabase migrations, database functions and the menu scraper against a local Supabase - migrations apply from scratch, the schema is what the change says, seed rows survive, and one scraper run writes the expected menus. Use for changes to supabase/migrations/**, supabase/seed.sql, packages/supabase or apps/scraper/**.
 ---

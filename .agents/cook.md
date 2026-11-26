@@ -1,5 +1,4 @@
 ---
-
 base: staging
 tracker: github
 branch: "{type}-{slug}"
@@ -10,45 +9,43 @@ specs: local
 notify: on
 ui_refs: mobbin
 commands:
-install: make install
-setup: make setup
-doctor: make doctor
-check: make check
-verify: make verify
-lint: make lint
-fix: make fix
-typecheck: make typecheck
-test: make test
-build: make build
-dev: make dev
-dev_mobile: make mobile
-dev_ios: make ios
-e2e_ios: make e2e
-dev_dashboard: make dashboard
-dev_website: make website
-scrape: make scrape
-db_start: make db-up
-db_stop: make db-down
-db_reset: make db-reset
-db_migrate: make db-migrate
-db_seed: make db-seed
-db_types: make db-types
-env_local: make env-local
-cleanup: make clean
+  install: make install
+  setup: make setup
+  doctor: make doctor
+  check: make check
+  verify: make verify
+  lint: make lint
+  fix: make fix
+  typecheck: make typecheck
+  test: make test
+  build: make build
+  dev: make dev
+  dev_mobile: make mobile
+  dev_ios: make ios
+  e2e_ios: make e2e
+  dev_dashboard: make dashboard
+  dev_website: make website
+  scrape: make scrape
+  db_start: make db-up
+  db_stop: make db-down
+  db_reset: make db-reset
+  db_migrate: make db-migrate
+  db_seed: make db-seed
+  db_types: make db-types
+  env_local: make env-local
+  cleanup: make clean
 deploy_steps:
-
-- supabase/migrations/**
-- supabase/functions/**
-- supabase/config.toml
-- apps/mobile/app.config.js
-- apps/mobile/eas.json
-- apps/mobile/package.json
-- apps/scraper/src/config.ts
-- .github/workflows/scraper.yml
-- .github/workflows/website-deploy.yml
-- apps/*/.env.example
-  verifiers: [tests, browser, data, mobile]
-
+  - supabase/migrations/**
+  - supabase/functions/**
+  - supabase/config.toml
+  - apps/mobile/app.config.js
+  - apps/mobile/eas.json
+  - apps/mobile/package.json
+  - apps/scraper/src/config.ts
+  - .github/workflows/scraper.yml
+  - .github/workflows/website-deploy.yml
+  - apps/*/.env.example
+verifiers: [tests, browser, data, mobile]
 ---
 
 # UT Dining

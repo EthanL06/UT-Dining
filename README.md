@@ -93,11 +93,11 @@ make dev     # dashboard, website and Metro together
 
 Pick the database with `DB=`:
 
-| Command                                      | Database                                                                                                                                                                                                                        |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `make setup`                                 | Local Supabase when Docker is installed, otherwise the hosted dev project when `SUPABASE_DEV_URL`, `SUPABASE_DEV_ANON_KEY` and `SUPABASE_DEV_SERVICE_KEY` are set. If the apps already point at a hosted project, they keep it. |
-| `make setup DB=local` / `DB=dev` / `DB=none` | Force one                                                                                                                                                                                                                       |
-| `make setup SEED=0`                          | Skip scraping menus                                                                                                                                                                                                             |
+| Command | Database |
+| --- | --- |
+| `make setup` | Local Supabase when Docker is installed, otherwise the hosted dev project when `SUPABASE_DEV_URL`, `SUPABASE_DEV_ANON_KEY` and `SUPABASE_DEV_SERVICE_KEY` are set. If the apps already point at a hosted project, they keep it. |
+| `make setup DB=local` / `DB=dev` / `DB=none` | Force one |
+| `make setup SEED=0` | Skip scraping menus |
 
 Nothing ever points at the production Supabase project: `scripts/env.ts` refuses to write it, `make setup` switches away from it, and `make doctor` fails when an app uses it.
 
@@ -124,28 +124,28 @@ While Metro runs, press `Shift + M` and pick `expo-drizzle-studio-plugin` to ins
 
 Run `make` (or `make help`) for the full list. Variables go after the target, for example `make db-seed DAYS=5`.
 
-| Command                                           | What it does                                                                                            |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `make dev`                                        | Start local Supabase if the apps use it, then the dashboard (:3000), website (:3001) and Metro (:8081)  |
-| `make dashboard` / `make website` / `make mobile` | Start one of them                                                                                       |
-| `make scrape`                                     | Run the scraper once with `apps/scraper/.env.local`                                                     |
-| `make check`                                      | Lint, format check, typecheck and tests for everything. Run it before you push.                         |
-| `make fix`                                        | Apply Biome's safe lint and format fixes                                                                |
-| `make typecheck` / `make test` / `make build`     | One step of the checks                                                                                  |
-| `make db-up` / `make db-down`                     | Start or stop local Supabase (data is kept), and point the apps at it                                   |
-| `make db-status`                                  | Local URLs and how many locations and menus are loaded                                                  |
-| `make db-seed DAYS=3`                             | Scrape real UT menus into the local database                                                            |
-| `make db-fixtures`                                | Load the fixed E2E test menus instead                                                                   |
-| `make db-reset`                                   | Rebuild the local database from migrations and `supabase/seed.sql`                                      |
-| `make db-new NAME=add_meal_notes`                 | Create a migration in `supabase/migrations`                                                             |
-| `make db-migrate`                                 | Apply new migrations without dropping data                                                              |
-| `make db-types`                                   | Regenerate `@ut-dining/supabase` from the local database                                                |
-| `make db-psql` / `make db-studio`                 | Open psql or Supabase Studio on the local database                                                      |
-| `make env-local` / `make env-dev`                 | Point every app at local Supabase or the hosted dev project                                             |
-| `make e2e SIM=<UDID>`                             | Run the Maestro flows (see [apps/mobile/e2e](apps/mobile/e2e/README.md))                                |
-| `make worktree NAME=feat-x`                       | New git worktree in `.worktrees/feat-x` from `origin/staging`, with env files and dependencies          |
-| `make clean`                                      | Stop Metro, delete leftover E2E simulator clones, remove clean and pushed worktrees, clear build caches |
-| `make stop`                                       | End of the day: stop Metro and local Supabase and shut down every simulator                             |
+| Command | What it does |
+| --- | --- |
+| `make dev` | Start local Supabase if the apps use it, then the dashboard (:3000), website (:3001) and Metro (:8081) |
+| `make dashboard` / `make website` / `make mobile` | Start one of them |
+| `make scrape` | Run the scraper once with `apps/scraper/.env.local` |
+| `make check` | Lint, format check, typecheck and tests for everything. Run it before you push. |
+| `make fix` | Apply Biome's safe lint and format fixes |
+| `make typecheck` / `make test` / `make build` | One step of the checks |
+| `make db-up` / `make db-down` | Start or stop local Supabase (data is kept), and point the apps at it |
+| `make db-status` | Local URLs and how many locations and menus are loaded |
+| `make db-seed DAYS=3` | Scrape real UT menus into the local database |
+| `make db-fixtures` | Load the fixed E2E test menus instead |
+| `make db-reset` | Rebuild the local database from migrations and `supabase/seed.sql` |
+| `make db-new NAME=add_meal_notes` | Create a migration in `supabase/migrations` |
+| `make db-migrate` | Apply new migrations without dropping data |
+| `make db-types` | Regenerate `@ut-dining/supabase` from the local database |
+| `make db-psql` / `make db-studio` | Open psql or Supabase Studio on the local database |
+| `make env-local` / `make env-dev` | Point every app at local Supabase or the hosted dev project |
+| `make e2e SIM=<UDID>` | Run the Maestro flows (see [apps/mobile/e2e](apps/mobile/e2e/README.md)) |
+| `make worktree NAME=feat-x` | New git worktree in `.worktrees/feat-x` from `origin/staging`, with env files and dependencies |
+| `make clean` | Stop Metro, delete leftover E2E simulator clones, remove clean and pushed worktrees, clear build caches |
+| `make stop` | End of the day: stop Metro and local Supabase and shut down every simulator |
 
 The `pnpm` scripts in `package.json` (`pnpm check`, `pnpm db:reset` and so on) still work; the Makefile is a front door over them.
 
@@ -227,7 +227,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 1. Fork the repository
 2. Create a branch named `<type>-<description>` using a conventional commit type (`git checkout -b feat-meal-reminders`)
 3. Commit your changes using [conventional commit messages](https://www.conventionalcommits.org/):
-
    ```sh
    feat: add new feature
    fix: resolve issue with X

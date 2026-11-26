@@ -28,26 +28,26 @@ It refuses to run unless `supabase status` reports a `http://127.0.0.1:` API URL
 
 `fixtures/base.json` is a snapshot of what the anon role reads from the seeded tables (locations, location types, app information, notifications). Refresh it after a change to `supabase/seed.sql` or to those tables' columns.
 
-| Item                                           | Where                              |
-| ---------------------------------------------- | ---------------------------------- |
-| Maestro Veggie Burger, Maestro Grilled Chicken | Maestro Grill, every meal and day  |
-| Maestro Garden Salad, Maestro Tofu Bowl        | Maestro Greens, every meal and day |
-| Maestro Breakfast Tacos                        | Maestro Grill, Breakfast only      |
-| Maestro Tomorrow Special                       | Maestro Grill, tomorrow only       |
+| Item | Where |
+| --- | --- |
+| Maestro Veggie Burger, Maestro Grilled Chicken | Maestro Grill, every meal and day |
+| Maestro Garden Salad, Maestro Tofu Bowl | Maestro Greens, every meal and day |
+| Maestro Breakfast Tacos | Maestro Grill, Breakfast only |
+| Maestro Tomorrow Special | Maestro Grill, tomorrow only |
 
 ## Flows
 
-| Flow                        | Checks                                                                   |
-| --------------------------- | ------------------------------------------------------------------------ |
-| `onboarding.yaml`           | Onboarding steps, Finish lands on Home, a relaunch skips onboarding      |
-| `location-menu.yaml`        | J2 menu shows categories and items, a category collapses and expands     |
-| `menu-search.yaml`          | Search narrows the menu, a miss shows the empty state, Cancel clears it  |
-| `menu-meals-and-dates.yaml` | Meal chips switch menus, the date arrows load tomorrow's menu            |
-| `food-details.yaml`         | A food opens nutrition and allergens                                     |
-| `favorites.yaml`            | Heart on a food and a left swipe add favorites, left swipes remove them  |
-| `meal-plan.yaml`            | A right swipe and the chef hat add to the meal plan, right swipes remove |
-| `settings.yaml`             | Dark mode switch, Sync Data, Favorites quick link                        |
-| `tabs.yaml`                 | Map, Notifications (seeded notifications) and Home tabs                  |
+| Flow | Checks |
+| --- | --- |
+| `onboarding.yaml` | Onboarding steps, Finish lands on Home, a relaunch skips onboarding |
+| `location-menu.yaml` | J2 menu shows categories and items, a category collapses and expands |
+| `menu-search.yaml` | Search narrows the menu, a miss shows the empty state, Cancel clears it |
+| `menu-meals-and-dates.yaml` | Meal chips switch menus, the date arrows load tomorrow's menu |
+| `food-details.yaml` | A food opens nutrition and allergens |
+| `favorites.yaml` | Heart on a food and a left swipe add favorites, left swipes remove them |
+| `meal-plan.yaml` | A right swipe and the chef hat add to the meal plan, right swipes remove |
+| `settings.yaml` | Dark mode switch, Sync Data, Favorites quick link |
+| `tabs.yaml` | Map, Notifications (seeded notifications) and Home tabs |
 
 Every flow except `onboarding.yaml` starts from a clean install on Home (`subflows/start.yaml`: clear state, open Metro, skip onboarding). It opens `ut-dining://e2e-setup`, which marks onboarding done only in the dev bundle id (`com.ethanl06.ut-dining.dev`) and then goes Home. Flows tagged `smoke` are the short set.
 

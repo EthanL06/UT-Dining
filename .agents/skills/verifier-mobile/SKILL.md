@@ -1,5 +1,4 @@
 ---
-
 name: verifier-mobile
 description: Verify changes to the UT Dining iOS app (apps/mobile, Expo SDK 58 development build) on the iOS Simulator - screens render in light and dark mode, flows work, no red screens or crashes. Use for changes under apps/mobile/** or packages/core/** that a user can see or touch. Needs macOS with Xcode.
 ---

@@ -1,5 +1,4 @@
 ---
-
 name: verifier-browser
 description: Verify changes to UT Dining's web apps in a real browser, the way a user uses them - the admin dashboard (apps/dashboard, Next.js + Mantine + Supabase auth) and the public website (apps/website, static Next.js export) - pages load, flows work, no console errors. Use for any change under apps/dashboard/** or apps/website/** that a user can see or click.
 ---
@@ -8,10 +7,10 @@ description: Verify changes to UT Dining's web apps in a real browser, the way a
 
 Drives the dashboard and the website with agent-browser against the dev servers of the worktree under test.
 
-| App       | Start                                                                 | URL                                          | Needs                           |
-| --------- | --------------------------------------------------------------------- | -------------------------------------------- | ------------------------------- |
-| Dashboard | `pnpm --filter @ut-dining/dashboard dev --port <port>` (default 3000) | `http://localhost:<port>/login`              | Local Supabase and a local user |
-| Website   | `pnpm --filter @ut-dining/website dev --port <port>` (default 3001)   | `http://localhost:<port>/ut-dining-website/` | Nothing                         |
+| App | Start | URL | Needs |
+|---|---|---|---|
+| Dashboard | `pnpm --filter @ut-dining/dashboard dev --port <port>` (default 3000) | `http://localhost:<port>/login` | Local Supabase and a local user |
+| Website | `pnpm --filter @ut-dining/website dev --port <port>` (default 3001) | `http://localhost:<port>/ut-dining-website/` | Nothing |
 
 ## Setup
 
