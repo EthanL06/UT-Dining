@@ -123,6 +123,40 @@ export type Database = {
         };
         Relationships: [];
       };
+      changelog: {
+        Row: {
+          changes: NonNullable<Json>;
+          created_at: string;
+          id: string;
+          is_published: boolean;
+          release_date: string | null;
+          summary: string | null;
+          updated_at: string;
+          version: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          changes?: NonNullable<Json>;
+          created_at?: string;
+          id?: string;
+          is_published?: boolean;
+          release_date?: string | null;
+          summary?: string | null;
+          updated_at?: string;
+          version: string;
+        };
+        Update: {
+          changes?: NonNullable<Json>;
+          created_at?: string;
+          id?: string;
+          is_published?: boolean;
+          release_date?: string | null;
+          summary?: string | null;
+          updated_at?: string;
+          version?: string;
+        };
+        Relationships: [];
+      };
       dashboard_admins: {
         Row: {
           created_at: string;

@@ -7,6 +7,7 @@
     "android": "APP_VARIANT=development expo run:android",
     "ios": "APP_VARIANT=development expo run:ios",
     "start": "APP_VARIANT=development expo start --dev-client",
+    "dev": "APP_VARIANT=development expo start --dev-client",
     "prebuild": "expo prebuild",
     "web": "expo start --web",
     "typecheck": "node ../../node_modules/tsgo/bin/tsc --noEmit"
@@ -64,7 +65,6 @@
     "react-native-maps": "1.29.11",
     "react-native-mmkv": "^4.3.2",
     "react-native-nitro-modules": "^0.37.1",
-    "react-native-notifier": "^2.0.0",
     "react-native-reanimated": "4.7.1",
     "react-native-safe-area-context": "5.10.1",
     "react-native-screens": "~4.30.0",

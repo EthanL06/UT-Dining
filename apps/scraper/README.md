@@ -3,11 +3,11 @@
 Scrapes UT Austin's FoodPro menus, nutrition labels and allergens for the seven UHD locations and writes them to Supabase through the `insert_multiple_locations_and_menus` function.
 
 ```sh
-pnpm --filter @ut-dining/scraper start   # or ./dev.sh scrape from the repo root
+pnpm --filter @ut-dining/scraper start   # or make scrape from the repo root
 pnpm --filter @ut-dining/scraper test
 ```
 
-Node runs the TypeScript directly. Environment variables come from `.env` or `.env.local` (written by `./setup.sh` / `pnpm env:local`). In production it runs daily from `.github/workflows/scraper.yml`.
+Node runs the TypeScript directly. Environment variables come from `.env` or `.env.local` (written by `make setup` / `make env-local`). `make db-seed DAYS=3` scrapes into local Supabase without touching `.env.local`. In production it runs daily from `.github/workflows/scraper.yml`.
 
 ## Configuration
 

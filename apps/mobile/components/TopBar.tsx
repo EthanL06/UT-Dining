@@ -4,20 +4,13 @@ import { ChefHat, ChevronLeft, Heart, Info, MessageSquare } from 'lucide-react-n
 import { useEffect, useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import { SheetManager } from 'react-native-actions-sheet';
-import { Notifier } from 'react-native-notifier';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useFoodData } from '~/hooks/useFoodData';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { isFavoriteItem, toggleFavorites } from '~/services/database/database';
-import {
-  planDayPhrase,
-  todayKey,
-  useIsMealPlanItem,
-  useMealPlanStore,
-} from '~/store/useMealPlanStore';
+import { todayKey, useIsMealPlanItem, useMealPlanStore } from '~/store/useMealPlanStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
-import Alert from './Alert';
 
 const icon = require('../assets/image.png');
 
@@ -167,26 +160,6 @@ const FoodTopBar = () => {
           accessibilityRole="button"
           onPress={async () => {
             if (foodItem) {
-              if (isFavorite) {
-                Notifier.showNotification({
-                  title: `${foodItem.name} removed.`,
-                  description: `No longer in Favorites.`,
-                  swipeEnabled: true,
-                  Component: Alert,
-                  duration: 3000,
-                  queueMode: 'immediate',
-                });
-              } else {
-                Notifier.showNotification({
-                  title: `${foodItem.name} added!`,
-                  description: `Added to Favorites.`,
-                  swipeEnabled: true,
-                  Component: Alert,
-                  duration: 3000,
-                  queueMode: 'immediate',
-                });
-              }
-
               const isFavorited = await toggleFavorites(db, foodItem, location, menu, category);
               setIsFavorite(isFavorited);
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -224,26 +197,6 @@ const FoodTopBar = () => {
                 },
                 planDate,
               );
-
-              if (isMealPlanItem) {
-                Notifier.showNotification({
-                  title: `${foodItem.name} removed from ${planDayPhrase(planDate)}.`,
-                  description: `You've updated your meal plan.`,
-                  swipeEnabled: true,
-                  Component: Alert,
-                  duration: 3000,
-                  queueMode: 'immediate',
-                });
-              } else {
-                Notifier.showNotification({
-                  title: `${foodItem.name} saved for ${planDayPhrase(planDate)}!`,
-                  description: `Added to your meal plan for ${planDayPhrase(planDate)}.`,
-                  swipeEnabled: true,
-                  Component: Alert,
-                  duration: 3000,
-                  queueMode: 'immediate',
-                });
-              }
             }
 
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

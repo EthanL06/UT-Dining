@@ -8,7 +8,7 @@
   },
   "scripts": {
     "prepare": "lefthook install",
-    "dev": "./dev.sh",
+    "dev": "make dev",
     "dev:mobile": "pnpm --filter @ut-dining/mobile start",
     "dev:ios": "pnpm --filter @ut-dining/mobile ios",
     "dev:android": "pnpm --filter @ut-dining/mobile android",

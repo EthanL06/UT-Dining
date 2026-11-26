@@ -8,8 +8,8 @@ Discover, rate, and explore dining options across campus. Join thousands of Long
 The website is part of the UT Dining monorepo. From the repo root:
 
 ```bash
-./setup.sh
-./dev.sh website      # http://localhost:3001/ut-dining-website
+make setup
+make website          # http://localhost:3001/ut-dining-website
 pnpm --filter @ut-dining/website build   # static export in apps/website/out
 ```
 

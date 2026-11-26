@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { createDateFromString, formatDateForDisplay, getTodayInCentralTime } from '~/utils/date';
+import { getTodayInCentralTime } from '~/utils/date';
 import { zustandStorage } from './rnmmkv-storage';
 
 const STORAGE_KEY_MEALPLAN = 'mealPlanItems';
@@ -178,9 +178,3 @@ export const sumNutrient = (
       sum + (parseFloat(String(item.nutrition?.[key] || 0)) || 0) * (item.quantity || 1),
     0,
   );
-
-export const planDayPhrase = (date: string) => {
-  const label = formatDateForDisplay(createDateFromString(date));
-  if (date === todayKey()) return 'today';
-  return ['Yesterday', 'Tomorrow', 'Today'].includes(label) ? label.toLowerCase() : label;
-};

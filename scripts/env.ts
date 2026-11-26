@@ -23,7 +23,7 @@ const readLocal = (): Supabase => {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
   } catch {
-    throw new Error('Local Supabase is not running. Start it with `pnpm db:start` first.');
+    throw new Error('Local Supabase is not running. Start it with `make db-up` first.');
   }
   const status = parseEnv(output);
   return {
@@ -76,8 +76,15 @@ if (mode !== '--local' && mode !== '--dev') {
   process.exit(1);
 }
 
+const PRODUCTION_REF = 'yrmylgizphirqqkzgbth';
+
 try {
   const supabase = mode === '--local' ? readLocal() : readDev();
+  if (supabase.url.includes(PRODUCTION_REF)) {
+    throw new Error(
+      `${supabase.url} is the production Supabase project. Refusing to point apps at it.`,
+    );
+  }
   console.log(`Pointing apps at ${supabase.url}`);
   writeEnv('mobile', {
     EXPO_PUBLIC_SUPABASE_URL: supabase.url,

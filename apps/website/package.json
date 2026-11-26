@@ -6,7 +6,7 @@
   "author": "Longhorn-Developers",
   "license": "MIT",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 3001",
     "build": "next build",
     "typecheck": "next typegen && node ../../node_modules/tsgo/bin/tsc --noEmit"
   },

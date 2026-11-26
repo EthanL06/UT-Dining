@@ -14,6 +14,3 @@ overrides:
   esbuild: ^0.25.6
   tanstack-query-dev-tools-expo-plugin>@expo/metro-runtime: ~58.0.15
   tanstack-query-dev-tools-expo-plugin>expo-device: ~58.0.5
-
-patchedDependencies:
-  react-native-notifier@2.0.0: patches/react-native-notifier@2.0.0.patch
