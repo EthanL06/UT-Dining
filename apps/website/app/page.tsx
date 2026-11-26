@@ -135,7 +135,8 @@ export default async function Home() {
         </h1>
         <div className="mt-7 flex flex-wrap items-end justify-between gap-6">
           <p className="max-w-120 text-[19px] text-muted leading-normal">
-            UT Dining shows every menu, hour and allergen at UT Austin in one fast, free iPhone app.
+            Your companion for dining at UT Austin. Browse menus, check hours, and find your next
+            meal.
           </p>
           <AppStoreButton />
         </div>
