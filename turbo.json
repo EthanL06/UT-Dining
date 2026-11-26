@@ -15,7 +15,12 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**", "out/**"],
-      "env": ["NEXT_PUBLIC_*", "WEBSITE_BASE_PATH"]
+      "env": [
+        "NEXT_PUBLIC_*",
+        "WEBSITE_BASE_PATH",
+        "WEBSITE_SUPABASE_URL",
+        "WEBSITE_SUPABASE_ANON_KEY"
+      ]
     },
     "dev": {
       "cache": false,

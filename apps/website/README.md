@@ -1,7 +1,6 @@
 # UT Dining Website
 
-The Ultimate Dining Experience for UT Students.
-Discover, rate, and explore dining options across campus. Join thousands of Longhorns making informed dining choices.
+The marketing site for UT Dining: a feature overview, the changelog and the privacy policy.
 
 ## Getting Started
 
@@ -12,6 +11,10 @@ The website is part of the UT Dining monorepo. From the repo root:
 ./dev.sh website      # http://localhost:3001/ut-dining-website
 pnpm --filter @ut-dining/website build   # static export in apps/website/out
 ```
+
+## Changelog
+
+`/changelog/` reads published rows from the Supabase `changelog` table at build time when `WEBSITE_SUPABASE_URL` and `WEBSITE_SUPABASE_ANON_KEY` are set. Without them, or if the request fails, it uses `content/changelog.json`.
 
 ## Deployment
 

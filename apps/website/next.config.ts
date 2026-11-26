@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
   // Emit about/index.html instead of about.html: Next 16 also writes an about/ folder of RSC data,
   // which would shadow about.html on a static host.
   trailingSlash: true,
+  env: { NEXT_PUBLIC_BASE_PATH: basePath },
 };
 
 export default nextConfig;
