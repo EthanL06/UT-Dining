@@ -1,0 +1,49 @@
+diff --git a/lib/commonjs/components/FullWindowOverlay.js b/lib/commonjs/components/FullWindowOverlay.js
+index 87d552355bd53a93af49c3a6f5777bd24066772b..dcf474e5c6437f87afeac47edf6609c31a34a52c 100644
+--- a/lib/commonjs/components/FullWindowOverlay.js
++++ b/lib/commonjs/components/FullWindowOverlay.js
+@@ -17,6 +17,7 @@ const FullWindowOverlay = ({
+ }) => {
+   if (_reactNative.Platform.OS !== 'ios' || !useOverlay || !RNScreenFullWindowOverlay) return children;
+   return /*#__PURE__*/(0, _jsxRuntime.jsx)(RNScreenFullWindowOverlay, {
++    unstable_accessibilityContainerViewIsModal: false,
+     children: /*#__PURE__*/(0, _jsxRuntime.jsx)(_reactNative.View, {
+       style: viewStyle,
+       children: children
+diff --git a/lib/module/components/FullWindowOverlay.js b/lib/module/components/FullWindowOverlay.js
+index 300d69b2dca8728b404c9cbcbde3d1603971b2d2..54dee169e8d98bfa38652f138326b67bc5ad45e9 100644
+--- a/lib/module/components/FullWindowOverlay.js
++++ b/lib/module/components/FullWindowOverlay.js
+@@ -11,6 +11,7 @@ export const FullWindowOverlay = ({
+ }) => {
+   if (Platform.OS !== 'ios' || !useOverlay || !RNScreenFullWindowOverlay) return children;
+   return /*#__PURE__*/_jsx(RNScreenFullWindowOverlay, {
++    unstable_accessibilityContainerViewIsModal: false,
+     children: /*#__PURE__*/_jsx(View, {
+       style: viewStyle,
+       children: children
+diff --git a/src/components/FullWindowOverlay.tsx b/src/components/FullWindowOverlay.tsx
+index 66a9a948f880cc2fbd4545f194ef9f166cce6070..4de113b0ae5cb11256644333c2602e43ac58866a 100644
+--- a/src/components/FullWindowOverlay.tsx
++++ b/src/components/FullWindowOverlay.tsx
+@@ -2,7 +2,10 @@ import type { ReactNode } from 'react';
+ import { Platform, View, type StyleProp, type ViewStyle } from 'react-native';
+ 
+ let RNScreenFullWindowOverlay:
+-  | ((props: { children: React.ReactNode }) => React.JSX.Element)
++  | ((props: {
++      children: React.ReactNode;
++      unstable_accessibilityContainerViewIsModal?: boolean;
++    }) => React.JSX.Element)
+   | undefined;
+ try {
+   RNScreenFullWindowOverlay = require('react-native-screens').FullWindowOverlay;
+@@ -21,7 +24,7 @@ export const FullWindowOverlay = ({
+   if (Platform.OS !== 'ios' || !useOverlay || !RNScreenFullWindowOverlay)
+     return children;
+   return (
+-    <RNScreenFullWindowOverlay>
++    <RNScreenFullWindowOverlay unstable_accessibilityContainerViewIsModal={false}>
+       <View style={viewStyle}>{children}</View>
+     </RNScreenFullWindowOverlay>
+   );

@@ -248,6 +248,7 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
 
           <View className="px-4 pb-4">
             <AnimatedPressable
+              testID="onboarding-next-button"
               onPressIn={handlePressIn}
               onPressOut={handlePressOut}
               onPress={handlePress}

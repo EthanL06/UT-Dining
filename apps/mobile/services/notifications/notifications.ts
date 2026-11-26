@@ -42,7 +42,7 @@ export function PushNotificationsInitializer() {
       }
 
       if (!Device.isDevice) {
-        alert('Must use physical device for push notifications.');
+        console.log('Must use physical device for push notifications.');
         return;
       }
 

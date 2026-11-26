@@ -2,7 +2,7 @@ import * as Device from 'expo-device';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Clock, MapPin } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -45,9 +45,12 @@ export default function LocationGenericScreen() {
 
   const isTablet = Device.deviceType === Device.DeviceType.TABLET;
   // Only track screen view if PostHog is enabled
-  // biome-ignorelint/correctness/useExhaustiveDependencies: analytics only
-  useEffect(() => {
+  const trackScreen = useEffectEvent(() => {
     analytics.screen(location);
+  });
+
+  useEffect(() => {
+    trackScreen();
   }, []);
 
   if (!location || !locationData) {

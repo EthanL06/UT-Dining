@@ -1,0 +1,54 @@
+appId: com.ethanl06.ut-dining.dev
+name: Meal plan items can be added and removed
+---
+- runFlow: ../subflows/start.yaml
+- runFlow: ../subflows/open-j2.yaml
+- scrollUntilVisible:
+    element: 'Maestro Veggie Burger(,.*)?'
+    direction: DOWN
+    visibilityPercentage: 100
+- swipe:
+    from: 'Maestro Grilled Chicken(,.*)?'
+    direction: RIGHT
+- tapOn: 'Maestro Veggie Burger(,.*)?'
+- extendedWaitUntil:
+    visible:
+      id: food-meal-plan-button
+    timeout: 10000
+- tapOn:
+    id: food-meal-plan-button
+- repeat:
+    while:
+      visible:
+        id: food-meal-plan-button
+    times: 3
+    commands:
+      - tapOn:
+          id: back-button
+      - waitForAnimationToEnd
+- repeat:
+    while:
+      notVisible: Your Meal Plan
+    times: 3
+    commands:
+      - tapOn:
+          id: location-meal-plan-button
+      - waitForAnimationToEnd
+- assertVisible: Your Meal Plan
+- extendedWaitUntil:
+    visible: 'Maestro Grilled Chicken(,.*)?'
+    timeout: 5000
+- assertVisible: 'Maestro Veggie Burger(,.*)?'
+- takeScreenshot: meal-plan
+- swipe:
+    from: 'Maestro Grilled Chicken(,.*)?'
+    direction: RIGHT
+- extendedWaitUntil:
+    notVisible: 'Maestro Grilled Chicken(,.*)?'
+    timeout: 5000
+- swipe:
+    from: 'Maestro Veggie Burger(,.*)?'
+    direction: RIGHT
+- extendedWaitUntil:
+    visible: Empty Meal Plan!
+    timeout: 5000

@@ -1,0 +1,4857 @@
+{
+  "location": [
+    {
+      "id": "0c02c007-df8f-489c-86bb-9341fdcd5e10",
+      "name": "Gabriel's Café",
+      "colloquial_name": null,
+      "description": "Enjoy popular food in a more relaxed environment. Gabriel’s Café serves lunch, dinner, and happy hour, and is a perfect spot to watch a game or socialize after a productive day. \n\nLocated on the hotel side lower lobby (Level LL), inside the University Avenue entrance. Patio dining is available.",
+      "address": "1900 University Ave. Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2359
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2300
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2300
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2300
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2359
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2300
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2300
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Cash", "Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/dir//30.28197821,-97.74045003/@30.28197821,-97.74045003,17z",
+      "apple_maps_link": "https://maps.apple.com/?q=30.28197821,-97.74045003",
+      "image": "https://meetattexas.com/assets/images/_1560x1040_crop_center-center_none/Gabriels-Patio-Austin-Dining.jpg",
+      "created_at": "2025-07-13T04:07:23.744826+00:00",
+      "updated_at": "2025-07-13T05:35:58.859+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 11,
+      "latitude": 30.2823198109138,
+      "longitude": -97.7399789840854
+    },
+    {
+      "id": "1707eb50-3d85-47ec-b04f-397c6a872614",
+      "name": "Jester City Market",
+      "colloquial_name": "Jarket",
+      "description": "Grab a bite on the go, shop for the essentials or stop in for a beverage on the ground floor of Jester Center.\n\nJester City Market has all your convenience store needs including school supplies, snacks and other goods. Stop in to see all we have to offer.",
+      "address": "201 E 21st St Austin, TX 78705",
+      "type_id": "131bb0cb-a083-40e2-bbe2-4bc6044dd8a7",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 2200
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 2300
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1200,
+              "close": 2300
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 2300
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1200,
+              "close": 2000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 2300
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 2300
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Cash", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [
+        {
+          "name": "Lunch",
+          "end_time": 1800,
+          "start_time": 1000
+        },
+        {
+          "name": "Dinner",
+          "end_time": 2200,
+          "start_time": 1900
+        }
+      ],
+      "google_maps_link": "https://maps.app.goo.gl/PrsZA1x88GUqdhhx6",
+      "apple_maps_link": "https://maps.apple.com/?address=201%20E%2021st%20St,%20Austin,%20TX%20%2078705,%20United%20States&auid=8818684010108699137&ll=30.282849,-97.736878&lsp=9902&q=Jester%20City%20Market",
+      "image": "",
+      "created_at": "2025-06-20T17:48:09.272069+00:00",
+      "updated_at": "2025-07-13T05:35:58.633+00:00",
+      "force_close": false,
+      "has_menus": true,
+      "display_order": 5,
+      "latitude": 30.2829128614206,
+      "longitude": -97.7368820838203
+    },
+    {
+      "id": "189c9621-f32c-4b17-8745-3ac3e3259692",
+      "name": "Yapa Artisan Empanadas",
+      "colloquial_name": null,
+      "description": "Yapa Artisan Empanadas is a UT Austin food truck serving fresh-baked Chilean and fusion empanadas, including fillings like brisket, chana masala, and Al Pastor. Founded by a Chilean owner, it aims to make empanadas as popular as burgers on campus. \n\nThe truck is open weekdays near the Perry-Castañeda Library.",
+      "address": "21st and Speedway Austin, TX 78712",
+      "type_id": "a82aa62e-9860-46e3-991b-cf6ba41fdb4d",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Cash", "Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/place/Perry-Casta%C3%B1eda+Library/@30.2826546,-97.7391758,18.17z/data=!3m1!5s0x8644b59c30a212f1:0x44c897a4234f49d0!4m6!3m5!1s0x8644b59c6ae1bb7f:0xd251ac1bf2d1388e!8m2!3d30.2826575!4d-97.7382079!16s%2Fg%2F1tgd6y31?entry=ttu&g_ep=EgoyMDI1MDExNS4wIKXMDSoASAFQAw%3D%3D",
+      "apple_maps_link": "https://maps.apple.com/?q=30.2826546,-97.7391758",
+      "image": "https://universityunions.utexas.edu/sites/default/files/styles/utexas_image_style_450w_300h/public/2023-08/yapa-empanadas.png?itok=1z5GwHvm",
+      "created_at": "2025-07-13T00:45:38.93369+00:00",
+      "updated_at": "2025-07-13T05:35:59.894+00:00",
+      "force_close": true,
+      "has_menus": false,
+      "display_order": 38,
+      "latitude": 30.2833334275819,
+      "longitude": -97.737634956976
+    },
+    {
+      "id": "1ab2febc-26fc-4249-aeed-e96b199f398f",
+      "name": "Longhorn Coffee Co.",
+      "colloquial_name": "Longhorn Coffee",
+      "description": "Check out this coffee shop proudly serving Starbucks coffee and other on the go options in the WCP Student Activity Center.\n\nLocated at WCP 1.302.",
+      "address": "2201 Speedway, Austin, TX 78712",
+      "type_id": "1193411e-6aba-4941-a611-fc9eb7546757",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1400
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1400
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1400
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1400
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1400
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": ".",
+      "apple_maps_link": "https://maps.apple.com/?address=2201%20Speedway,%20Austin,%20TX%2078712",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_450w_300h/public/2021-07/Longhorn_Coffee_Co_Logo_680x454.png.webp?itok=Peq67Hth",
+      "created_at": "2025-06-24T06:27:59.142427+00:00",
+      "updated_at": "2025-07-13T05:35:59.957+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 40,
+      "latitude": 30.2847314966772,
+      "longitude": -97.736313709286
+    },
+    {
+      "id": "266222aa-046a-41a8-96b4-5b614665c17e",
+      "name": "One Twenty 5 Cafè",
+      "colloquial_name": null,
+      "description": " One Twenty 5 Café offers made-to-order coffee drinks and grab-and-go staples that will keep you fueled and caffeinated while you’re on the go. Items in the refrigerators are available for purchase at the Spirit Gift Shop or Front Desk when the café is closed.\n\nLocated on the hotel side lobby level (Level L), across from The Spirit Gift Shop.",
+      "address": "1900 University Ave. Austin, TX 78705",
+      "type_id": "1193411e-6aba-4941-a611-fc9eb7546757",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 630,
+              "close": 1300
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 630,
+              "close": 1300
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 630,
+              "close": 1300
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 630,
+              "close": 1300
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 630,
+              "close": 1300
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 630,
+              "close": 1300
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 630,
+              "close": 1300
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Credit/Debit", "Cash"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/dir//30.28197821,-97.74045003/@30.28197821,-97.74045003,17z",
+      "apple_maps_link": "https://maps.apple.com/?q=30.28197821,-97.74045003",
+      "image": "https://meetattexas.com/assets/images/_imageTextModuleTransform2x/OneTwenty5Cafe-Austin.jpg",
+      "created_at": "2025-07-13T05:08:37.084164+00:00",
+      "updated_at": "2025-07-13T05:36:00.091+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 43,
+      "latitude": 30.2820778015715,
+      "longitude": -97.7405944727068
+    },
+    {
+      "id": "2828735d-a58d-4505-b781-13b4c72c4515",
+      "name": "Littlefield Patio Cafe",
+      "colloquial_name": "Littlefield Cafe",
+      "description": "Discover bistro-style dining, grab and go offerings and coffee options on the northwest side of campus, adjacent to Littlefield Hall.\n\nLittlefield Patio Cafe offers a la carte meal options in addition to Starbucks coffee and drinks, bakery selections and other selections.Enjoy your meal on the namesake patio dining area or inside the cafe.",
+      "address": "2503 Whitis Ave Austin, TX 78705",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1500
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1500
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1500
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1500
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1500
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [
+        {
+          "name": "Breakfast",
+          "end_time": 1200,
+          "start_time": 700
+        },
+        {
+          "name": "Lunch",
+          "end_time": 1900,
+          "start_time": 1200
+        }
+      ],
+      "google_maps_link": "https://maps.app.goo.gl/CtBnkvwy6qCDNtyi9",
+      "apple_maps_link": "https://maps.apple.com/?address=2503%20Whitis%20Ave,%20Austin,%20TX%20%2078705,%20United%20States&auid=12052977383648341965&ll=30.289327,-97.739752&lsp=9902&q=Littlefield%20Patio%20Cafe",
+      "image": "",
+      "created_at": "2025-06-20T17:53:49.387869+00:00",
+      "updated_at": "2025-07-13T05:35:58.668+00:00",
+      "force_close": false,
+      "has_menus": true,
+      "display_order": 6,
+      "latitude": 30.2892184653296,
+      "longitude": -97.7395092109619
+    },
+    {
+      "id": "29708e40-624a-4ae2-b391-43855055a880",
+      "name": "Cypress Bend Cafe",
+      "colloquial_name": null,
+      "description": "Explore this grill and coffee shop all in one located in San Jacinto Residence Hall. Cypress Bend Cafe serves Starbucks coffee and beverages, bakery items and other grab and go options.\n\nIn addition, you can choose from a variety of meal options at the grill.",
+      "address": "309 E 21st St Austin, TX 78705",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1800
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1900
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1900
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1900
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1900
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [
+        {
+          "name": "Breakfast",
+          "end_time": 1200,
+          "start_time": 700
+        },
+        {
+          "name": "Lunch",
+          "end_time": 1700,
+          "start_time": 1200
+        }
+      ],
+      "google_maps_link": "https://maps.app.goo.gl/h3T5ZbVH86rnNfp26",
+      "apple_maps_link": "https://maps.apple.com/?address=309%20E%2021st%20St,%20Austin,%20TX%2078705,%20United%20States&auid=16696211541944805550&ll=30.283025,-97.734464&lsp=9902&q=Cypress%20Bend%20Cafe",
+      "image": "",
+      "created_at": "2025-06-20T17:44:58.6854+00:00",
+      "updated_at": "2025-07-13T05:35:58.587+00:00",
+      "force_close": true,
+      "has_menus": true,
+      "display_order": 4,
+      "latitude": 30.2827277946717,
+      "longitude": -97.7344069671782
+    },
+    {
+      "id": "38b2f5fa-32ca-4bec-a0c1-0a066543e61f",
+      "name": "512 Brew Bus",
+      "colloquial_name": null,
+      "description": "512 Brew Bus is a student-run coffee truck at UT Austin offering locally roasted coffee, espresso drinks, and pastries right on campus. It’s a go-to spot for students and staff to grab a fresh brew between classes or unwind with a snack. \n\nWith friendly service and a focus on quality, it brings a cozy café experience on wheels.",
+      "address": "San Jacinto Blvd and E 23rd/Deloss Dodds Way Austin, TX 78712",
+      "type_id": "a82aa62e-9860-46e3-991b-cf6ba41fdb4d",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Credit/Debit", "Cash"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/search/%2B%2BSan%2BJacinto%2BBlvd%2Band%2BE%2B23rd%252FDeloss%2BDodds%2BWay%2BAustin,%2BTX%2B78712%2BUnited%2BStates/@30.2853519,-97.7337425,20z?entry=ttu&g_ep=EgoyMDI1MDExNS4wIKXMDSoASAFQAw%3D%3D",
+      "apple_maps_link": "https://maps.apple.com/?q=San%20Jacinto%20and%2023rd&ll=30.2853519,-97.7337425",
+      "image": "https://universityunions.utexas.edu/sites/default/files/styles/utexas_image_style_450w_300h/public/2023-04/512brewbus_web_450x300.png.webp?itok=jCspaxTL",
+      "created_at": "2025-07-13T00:18:14.285696+00:00",
+      "updated_at": "2025-07-13T05:35:59.581+00:00",
+      "force_close": true,
+      "has_menus": false,
+      "display_order": 30,
+      "latitude": 30.285267,
+      "longitude": -97.7336638
+    },
+    {
+      "id": "41986c25-08cd-4574-af2f-6a267916cd4a",
+      "name": "Lucky Lab Coffee",
+      "colloquial_name": "Lucky Lab",
+      "description": "Located in the heart of UT's campus! Online ordering is available when you're on-the-go or take a seat in the GDC lobby for a study session with your favorite treats.",
+      "address": "300 W Dean Keeton St. Austin, TX 78712",
+      "type_id": "1193411e-6aba-4941-a611-fc9eb7546757",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1700
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1700
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1700
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1700
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1700
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Cash", "Credit/Debit", "Bevo Pay"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/place/Gates+Dell+Complex,+2317+Speedway,+Austin,+TX+78712/@30.2862723,-97.7365931,584m/data=!3m2!1e3!4b1!4m6!3m5!1s0x8644b59c98544379:0x1a0c2b90248ca2ed!8m2!3d30.2862723!4d-97.7365931!16s%2Fg%2F1s04fpwff?entry=ttu&g_ep=EgoyMDI1MDEwOC4wIKXMDSoASAFQAw%3D%3D",
+      "apple_maps_link": "https://maps.apple.com/?q=30.2862723,-97.7365931",
+      "image": "https://d1w7312wesee68.cloudfront.net/fa9ibVRuqupFdRm57KW-vq-cXSQVH6ob5gVav_qv-SY/ext:webp/quality:50/plain/s3://toast-sites-resources-prod/restaurantImages/0602cee3-4893-4c39-94ba-2c8ea4ef05b9/013-2297.jpg",
+      "created_at": "2025-07-13T04:36:29.228899+00:00",
+      "updated_at": "2025-07-13T05:36:00.008+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 41,
+      "latitude": 30.2859903633945,
+      "longitude": -97.7363448702623
+    },
+    {
+      "id": "4300d1f4-449b-4e7b-8784-1aee0756bf08",
+      "name": "Guatemala Love",
+      "colloquial_name": null,
+      "description": "Guatemala Love is a food truck at UT Austin serving authentic Guatemalan street food like pupusas, tamales, and fresh fruit smoothies. Founded to celebrate and share Guatemalan culture, it offers homestyle recipes made with fresh, high-quality ingredients. \n\nIt’s a welcoming spot for students and locals to enjoy comforting, traditional flavors right on campus.\n",
+      "address": "Speedway and E Dean Keeton St. Austin, TX 78712",
+      "type_id": "a82aa62e-9860-46e3-991b-cf6ba41fdb4d",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Cash", "Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/place/Physics,+Math,+and+Astronomy+Building+(PMA)/@30.2891046,-97.7366319,19.04z/data=!3m1!5s0x8644b5835e56ed09:0x44c897a4af8002b7!4m10!1m2!2m1!1zK1BNQStidWlsZGluZyslMjhuZWFyK1NwZWVkd2F5JTJDK2p1c3Qrc291dGgrb2YrRGVhbitLZWV0b24rU3RyZWV0JTI5K0F1c3RpbiwrVFgrNzg3MTIrVW5pdGVkK1N0YXRlcw!3m6!1s0x8644b5835f0c5309:0xd8baf3a8ad82bf6c!8m2!3d30.2890098!4d-97.7364339!15sCmQrUE1BK2J1a",
+      "apple_maps_link": "https://maps.apple.com/?q=30.2891046,-97.7366319",
+      "image": "https://universityunions.utexas.edu/sites/default/files/styles/utexas_image_style_450w_300h/public/2023-02/guatemala-love-logo.png?itok=hUTU8IZs",
+      "created_at": "2025-07-13T00:31:13.95433+00:00",
+      "updated_at": "2025-07-13T05:35:59.65+00:00",
+      "force_close": true,
+      "has_menus": false,
+      "display_order": 32,
+      "latitude": 30.2893044095322,
+      "longitude": -97.7366893735499
+    },
+    {
+      "id": "45fc4404-6b43-4523-8bce-4d9d3fc600e5",
+      "name": "Sabor Tacos y Más",
+      "colloquial_name": null,
+      "description": "Find an assortment of build your own Tex-Mex options off Speedway at the WCP Student Activity Center.\n\nSabor Tacos y Más offers a la carte dining items including tacos, burritos, salads, rice bowls and more.",
+      "address": "2201 Speedway Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": ".",
+      "apple_maps_link": "https://maps.apple.com/?address=2201%20Speedway,%20Austin,%20TX%20%2078712,%20United%20States&ll=30.284859,-97.736611&q=2201%20Speedway",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_450w_300h/public/2022-10/sabor_logo_680x454.png.webp?itok=o895PH2t",
+      "created_at": "2025-06-25T05:33:57.926275+00:00",
+      "updated_at": "2025-07-13T05:35:59.221+00:00",
+      "force_close": true,
+      "has_menus": false,
+      "display_order": 22,
+      "latitude": 30.2851311113018,
+      "longitude": -97.7359745640015
+    },
+    {
+      "id": "4b326f4a-f53b-450e-b7ad-1e7dd619c984",
+      "name": "Hook ’em Hut – Texas Union",
+      "colloquial_name": null,
+      "description": "Stop by and grab refreshments at this mini convenience store located in the Texas Union. Hook ‘em Hut offers grab and go food, beverages and sundries to satisfy your needs and busy schedule.",
+      "address": "2308 Whitis Ave Austin, TX 78712",
+      "type_id": "131bb0cb-a083-40e2-bbe2-4bc6044dd8a7",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": ".",
+      "apple_maps_link": "https://maps.apple.com/?address=2308%20Whitis%20Ave,%20Austin,%20TX%20%2078712,%20United%20States&ll=30.286619,-97.741141&q=2308%20Whitis%20Ave",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_1000w/public/2021-09/HookEm_Hut_680x454.png.webp?itok=59TSePP8",
+      "created_at": "2025-06-25T05:36:19.080055+00:00",
+      "updated_at": "2025-07-13T05:36:00.326+00:00",
+      "force_close": true,
+      "has_menus": false,
+      "display_order": 50,
+      "latitude": 30.2866374615273,
+      "longitude": -97.7410159886338
+    },
+    {
+      "id": "4ccea6df-abbb-459d-94bf-1d984bd721cf",
+      "name": "Shake Smart",
+      "colloquial_name": null,
+      "description": "Make Shake Smart your one-stop shop for pre- and post-gym fuel and a regular destination for when you’re on the go. \n\nLocated in the lobby of Gregory Gym, Shake Smart offers freshly blended protein shakes, cold brew coffee, and healthy on-the-go foods for any lifestyle.",
+      "address": "2101 Speedway Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 2000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 2100
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 2100
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 2000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 2100
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 2100
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Cash", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": ".",
+      "apple_maps_link": "https://maps.apple.com/?address=2308%20Whitis%20Ave,%20Austin,%20TX%2078712ahttps://maps.apple.com/?address=2101%20Speedway,%20Austin,%20TX%20%2078712,%20United%20States&ll=30.284234,-97.736387&q=2101%20Speedway",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_1800w/public/2022-02/smart.png.webp?itok=YtA0utb9",
+      "created_at": "2025-06-24T06:36:47.046073+00:00",
+      "updated_at": "2025-07-13T05:40:51.338+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 23,
+      "latitude": 30.2839526,
+      "longitude": -97.7367608
+    },
+    {
+      "id": "54b15785-b754-44e5-a4a9-10292471fd76",
+      "name": "Chick-fil-A – WCP",
+      "colloquial_name": null,
+      "description": "Find chicken sandwiches, waffle fries and more at this WCP Student Activity Center location of the international chain.\n\nThis convenient stop near Gregory Gym is perfect for a quick yet substantial bite on the go.",
+      "address": "2201 Speedway Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1400
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1400
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1400
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1400
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Cash", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": ".",
+      "apple_maps_link": "https://maps.apple.com/?address=2201%20Speedway,%20Austin,%20TX%20%2078712,%20United%20States&ll=30.284859,-97.736611&q=2201%20Speedway",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_1000w/public/2022-01/chick_fil_a_680x454.png.webp?itok=xweNJS3y",
+      "created_at": "2025-06-25T05:25:26.391479+00:00",
+      "updated_at": "2025-07-13T05:35:58.79+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 9,
+      "latitude": 30.2850711493649,
+      "longitude": -97.7359813168658
+    },
+    {
+      "id": "5df9c13d-0340-4e78-81cb-92585ac9713e",
+      "name": "O's Campus Cafè — POB",
+      "colloquial_name": null,
+      "description": "O’s Campus Café is a multi-location dining spot on UT Austin’s campus, with cafés inside the Engineering Education & Research Center (EER) and the Peter O’Donnell Building. \n\nIt serves from-scratch breakfast and lunch options like pizza, ramen, made-to-order banh mi, soups, salads, stir-fry, smoothies, and specialty coffee.",
+      "address": "201 E 24th St. Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1330
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1330
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1330
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1330
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Cash", "Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/place/O's+Campus+Cafe+and+Catering/@30.2866882,-97.738984,584m/data=!3m2!1e3!4b1!4m6!3m5!1s0x8644b59ca76ab5b7:0x2a4fc30c36cec54a!8m2!3d30.2866836!4d-97.7364091!16s%2Fg%2F1tq8jyv1?entry=ttu&g_ep=EgoyMDI1MDEwOC4wIKXMDSoASAFQAw%3D%3D",
+      "apple_maps_link": "https://maps.apple.com/?q=30.2866882,-97.738984",
+      "image": "https://www.oscampuscafe.com/wp-content/uploads/2019/11/os-campus-cafe-logo-footer.png",
+      "created_at": "2025-07-13T02:29:27.18179+00:00",
+      "updated_at": "2025-07-13T05:35:59.073+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 18,
+      "latitude": 30.2869021624099,
+      "longitude": -97.736548757671
+    },
+    {
+      "id": "5f6df292-3e7e-41df-bec3-701c674a9c44",
+      "name": "Up and Atom",
+      "colloquial_name": "Up & Atom",
+      "description": "Power your day with quick bites and Ruta Maya coffee at this conveniently located coffee shop in Welch Hall.\n\nPair a beverage made from shade-grown Arabica beans with a grab and go item to fuel up for your next class or study session.",
+      "address": "105 E 24th St, Austin, TX 78712",
+      "type_id": "1193411e-6aba-4941-a611-fc9eb7546757",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1700
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1700
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 2300
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1700
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 2300
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1700
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1700
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": "https://maps.app.goo.gl/",
+      "apple_maps_link": "https://maps.apple.com/?address=105%20E%2024th%20St,%20Austin,%20TX%2078712",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_450w_300h/public/2022-10/878_up_and_atom_680x454.png.webp?itok=Wkka8edw'",
+      "created_at": "2025-06-24T06:35:23.06363+00:00",
+      "updated_at": "2025-07-13T05:36:00.259+00:00",
+      "force_close": true,
+      "has_menus": false,
+      "display_order": 48,
+      "latitude": 30.2865437575541,
+      "longitude": -97.7375021808865
+    },
+    {
+      "id": "63185370-424f-4bce-943b-2ee85220547e",
+      "name": "Wetzel's Pretzels",
+      "colloquial_name": null,
+      "description": "Wetzel’s Pretzels is a mobile snack stand stationed at the intersection of East Mall and Speedway, just inside the University Unions area on UT Austin’s campus. It offers a variety of freshly baked pretzels—including classic salted originals, flavored “Bitz,” cheesy pretzel dogs—and cold drinks like lemonade and granitas. \n\nStudents frequent it for quick, warm bites and refreshing beverages between classes.",
+      "address": "East Mall and Speedway",
+      "type_id": "a82aa62e-9860-46e3-991b-cf6ba41fdb4d",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Cash", "Credit/Debit", "Bevo Pay"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/dir//30.2855439,-97.7372084/@30.2855494,-97.7378492,19z/data=!4m2!4m1!3e0?entry=ttu&g_ep=EgoyMDI1MDExNS4wIKXMDSoASAFQAw%3D%3D",
+      "apple_maps_link": "https://maps.apple.com/?q=30.2855494,-97.7378492",
+      "image": "https://universityunions.utexas.edu/sites/default/files/styles/utexas_image_style_450w_300h/public/2022-08/wetzels.jpg?itok=cF8Yav7Y",
+      "created_at": "2025-07-13T00:54:54.480144+00:00",
+      "updated_at": "2025-07-13T05:35:59.862+00:00",
+      "force_close": true,
+      "has_menus": false,
+      "display_order": 37,
+      "latitude": 30.2855744312348,
+      "longitude": -97.7371749025076
+    },
+    {
+      "id": "640f2995-7a36-44e0-9962-2114596470f8",
+      "name": "Jesta' Pizza",
+      "colloquial_name": "Jizza's",
+      "description": "Build your own pizza with an array of sauces and toppings and find other quick bites on the south side of campus inside Jester Center.\n\nJesta’ Pizza offers an assortment of options for you to create your ideal pie. Other snacks and beverages are also available for purchase.",
+      "address": "201 E 21st St Austin, TX 78705",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2200
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2200
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1600,
+              "close": 2200
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2200
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2200
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2200
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": "https://maps.app.goo.gl/918gcsqhiFcq2CYS6",
+      "apple_maps_link": "ttps://maps.apple.com/?address=201%20E%2021st%20St,%20Austin,%20TX%20%2078705,%20United%20States&auid=17503097336762474961&ll=30.282849,-97.736878&lsp=9902&q=Jesta%E2%80%99%20Pizza",
+      "image": "",
+      "created_at": "2025-06-20T17:42:50.841035+00:00",
+      "updated_at": "2025-07-13T05:35:58.554+00:00",
+      "force_close": false,
+      "has_menus": true,
+      "display_order": 3,
+      "latitude": 30.2829359891263,
+      "longitude": -97.7366563701535
+    },
+    {
+      "id": "67ed5465-34a9-4757-a212-6f914e5aecb8",
+      "name": "O's Campus Cafè — LBJ",
+      "colloquial_name": null,
+      "description": "O’s Campus Café is a multi-location dining spot on UT Austin’s campus, with cafés inside the Engineering Education & Research Center (EER) and the Peter O’Donnell Building. \n\nIt serves from-scratch breakfast and lunch options like pizza, ramen, made-to-order banh mi, soups, salads, stir-fry, smoothies, and specialty coffee.",
+      "address": "2315 Red River St. Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1330
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1500
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1500
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1500
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1500
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Cash", "Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/place/2315+Red+River+St,+Austin,+TX+78712/@30.2855006,-97.7295897,207m/data=!3m1!1e3!4m6!3m5!1s0x8644b5905400806d:0xa2a14dba865a2280!8m2!3d30.285707!4d-97.7285035!16s%2Fg%2F11c28fy2ky?entry=ttu&g_ep=EgoyMDI1MDEwOC4wIKXMDSoASAFQAw%3D%3D",
+      "apple_maps_link": "https://maps.apple.com/?q=30.2855006,-97.7295897",
+      "image": "https://www.oscampuscafe.com/wp-content/uploads/2019/11/LBJ-IMG_0558.jpg",
+      "created_at": "2025-07-13T02:27:00.647399+00:00",
+      "updated_at": "2025-07-13T05:35:59.034+00:00",
+      "force_close": true,
+      "has_menus": false,
+      "display_order": 17,
+      "latitude": 30.2842408913606,
+      "longitude": -97.7291117316317
+    },
+    {
+      "id": "6b33b45f-91b5-4460-bf87-ed1fca65c06f",
+      "name": "Prufrock's Coffee",
+      "colloquial_name": "Prufrock's",
+      "description": "Order Starbucks beverages and quick food options on the ground floor of the Perry-Castañeda Library.\n\nPrufrock’s offers hot and cold drink options, pastries and grab and go selections. Give your studying at the library a boost with a trip to Prufrock’s.",
+      "address": "101 E 21st St, Austin, TX 78705",
+      "type_id": "1193411e-6aba-4941-a611-fc9eb7546757",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 2000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 2000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1200,
+              "close": 2000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 2000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 1700
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 2000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 2000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Cash", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": "https://maps.app.goo.gl/",
+      "apple_maps_link": "https://maps.apple.com/?address=101%20E%2021st%20St,%20Austin,%20TX%2078705",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_450w_300h/public/2021-10/prufrocks_logo.png.webp?itok=0t3Crktg",
+      "created_at": "2025-06-24T06:30:20.375628+00:00",
+      "updated_at": "2025-07-13T05:36:00.124+00:00",
+      "force_close": true,
+      "has_menus": false,
+      "display_order": 44,
+      "latitude": 30.2829344611711,
+      "longitude": -97.7377933878094
+    },
+    {
+      "id": "6d01dc1e-ec37-405d-b53f-0f9a86cf8848",
+      "name": "Chick-fil-A – Texas Union",
+      "colloquial_name": null,
+      "description": "Find chicken sandwiches, waffle fries and more at this Texas Union location of the international chain. \n\nThis convenient stop in the heart of campus is perfect for a quick yet substantial bite on the go.",
+      "address": "2308 Whitis Ave Austin, TX 78712 ",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 1600
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 1600
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 1600
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Cash", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": ".",
+      "apple_maps_link": "https://maps.apple.com/?address=2308%20Whitis%20Ave,%20Austin,%20TX%20%2078712,%20United%20States&ll=30.286619,-97.741141&q=2308%20Whitis%20Ave",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_1000w/public/2022-01/chick_fil_a_680x454.png.webp?itok=xweNJS3y",
+      "created_at": "2025-06-25T05:23:52.698368+00:00",
+      "updated_at": "2025-07-13T05:35:58.752+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 8,
+      "latitude": 30.2866091831948,
+      "longitude": -97.7411437172006
+    },
+    {
+      "id": "7043d5d5-0e50-4944-83c9-5aa1ee0374b1",
+      "name": "Varsity Grounds",
+      "colloquial_name": null,
+      "description": "Find premium coffee, freshly brewed teas, pastries, grab and go options and more at this coffee shop located in East Campus Graduate Apartments.\n\nWhether you need a latte to-go between classes or a spot to connect with friends, Varsity Grounds offers the perfect blend of convenience and community.",
+      "address": "2105 Comal St. Austin, TX 78712",
+      "type_id": "1193411e-6aba-4941-a611-fc9eb7546757",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 2000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 2000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 2000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1400
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 2000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 2000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": "https://maps.app.goo.gl/",
+      "apple_maps_link": "https://maps.apple.com/?address=2308%20Whitis%20Ave,%20Austin,%20TX%2078712",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_1000w/public/2025-01/Varsity_Grounds_680x454.png.webp?itok=N5WphCHt",
+      "created_at": "2025-06-24T06:38:33.576586+00:00",
+      "updated_at": "2025-07-13T05:36:00.292+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 49,
+      "latitude": 30.2812637712447,
+      "longitude": -97.7254931494282
+    },
+    {
+      "id": "79da0622-d643-4734-ad81-eca2c495200a",
+      "name": "George's Café",
+      "colloquial_name": null,
+      "description": "George's Cafe is a great place for UT Law students and others on the north side of campus to grab a delicious grab-and-go or sit-down meal.\n\nThe café features a made‑to‑order menu with fresh breakfast and lunch options—including tacos, burgers, wraps, soups, and salads—with vegetarian, dairy‑free, and gluten‑free choices.",
+      "address": "727 E Dean Keeton St. Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 2000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 2100
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 900,
+              "close": 2100
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 2100
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 900,
+              "close": 2000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 2100
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 2100
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Cash", "Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/place/George's+Cafe/@30.2885493,-97.7314024,142m/data=!3m2!1e3!5s0x8644b58556e59249:0x4726cb09b0fc147!4m6!3m5!1s0x8644b58ade430d01:0x3f954fea2142f0c!8m2!3d30.2884104!4d-97.7307835!16s%2Fg%2F11fphq17f2?entry=ttu&g_ep=EgoyMDI1MDEwOC4wIKXMDSoASAFQAw%3D%3D",
+      "apple_maps_link": "https://maps.apple.com/?q=30.2885493,-97.7314024",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_1800w/public/2021-07/Georges_Cafe_Logo_680x454.png.webp?itok=tSti_-h2",
+      "created_at": "2025-07-13T01:08:38.104723+00:00",
+      "updated_at": "2025-07-13T05:35:58.891+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 12,
+      "latitude": 30.2884453824441,
+      "longitude": -97.7308099561837
+    },
+    {
+      "id": "7a020251-a284-4040-8cc5-b0d583d47fe0",
+      "name": "One Two Three Sushi",
+      "colloquial_name": null,
+      "description": "Stop by the WCP Student Activity Center for customizable sushi and other made-to-order Japanese specials. \n\nRoll your own way to a fresh and filling meal at this convenient location in the center of campus.",
+      "address": "2201 Speedway Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 1500
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 1500
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": ".",
+      "apple_maps_link": "https://maps.apple.com/?address=2201%20Speedway,%20Austin,%20TX%20%2078712,%20United%20States&ll=30.284859,-97.736611&q=2201%20Speedway",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_1000w/public/2022-01/one_two_three_sushi_680x454.png.webp?itok=VpKM8CjL",
+      "created_at": "2025-06-25T05:28:03.513666+00:00",
+      "updated_at": "2025-07-13T05:35:59.139+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 20,
+      "latitude": 30.2850083269013,
+      "longitude": -97.7359894006035
+    },
+    {
+      "id": "7f6b1fbc-33ee-4fb5-b00f-82351dcb870e",
+      "name": "Under the Oaks Café",
+      "colloquial_name": null,
+      "description": "With its floor-to-ceiling windows shaded by a dozen of the university’s majestic oak trees, Under the Oaks offers a scenic setting for your next event.\n\nUnder The Oaks is located on the ground level of TCC. The café at Under the Oaks is open to the public for breakfast, lunch and snack.",
+      "address": "2405 Robert Dedman Dr. Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1400
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1400
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1400
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1400
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1400
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/place/Joe+C+Thompson+Conference+Center/@30.2870742,-97.7317403,584m/data=!3m2!1e3!4b1!4m6!3m5!1s0x8644b59e4153a10b:0x161ca973b8dd8ee9!8m2!3d30.2870696!4d-97.7291654!16s%2Fg%2F1td8zhzz?entry=ttu&g_ep=EgoyMDI1MDEwOC4wIKXMDSoASAFQAw%3D%3D",
+      "apple_maps_link": "https://maps.apple.com/?q=30.2870742,-97.7317403",
+      "image": "https://thompsoncenter.utexas.edu/sites/default/files/styles/utexas_image_style_1000w/public/UnderTheOaksCafe-0070.jpg?itok=xsCcVrp7",
+      "created_at": "2025-07-13T01:12:07.059459+00:00",
+      "updated_at": "2025-07-13T05:35:59.401+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 27,
+      "latitude": 30.2870562039227,
+      "longitude": -97.7291333351897
+    },
+    {
+      "id": "854ebb41-c687-4329-8f28-e71681037160",
+      "name": "Panda Express",
+      "colloquial_name": null,
+      "description": "Find American Chinese food fresh from the wok at this Texas Union location of the international chain. \n\nThis quick and easy campus favorite offers a centrally located spot to fuel up throughout the day. ",
+      "address": "2308 Whitis Ave Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 1600
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 1600
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 1600
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 1600
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": ".",
+      "apple_maps_link": "https://maps.apple.com/?address=2308%20Whitis%20Ave,%20Austin,%20TX%20%2078712,%20United%20States&ll=30.286619,-97.741141&q=2308%20Whitis%20Ave",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_1000w/public/2022-03/Panda_Express_680x454.png.webp?itok=2d5OUdqG",
+      "created_at": "2025-06-25T05:32:14.466761+00:00",
+      "updated_at": "2025-07-13T05:35:59.176+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 21,
+      "latitude": 30.2867626954775,
+      "longitude": -97.7411207127982
+    },
+    {
+      "id": "8b1fa9ac-0397-4622-a611-0704fb3c27b0",
+      "name": "Papua Coffee",
+      "colloquial_name": null,
+      "description": "Papua Mobile Café (Papua Coffee) is a plant-based mobile coffee truck located at Gregory Gym on UT Austin’s campus—just north of 21st Street and east of Speedway. \n\nIt offers nitro cold brew, functional cold-brew blends, wraps, and vegan snacks.",
+      "address": "North of 21st and East of Speedway",
+      "type_id": "a82aa62e-9860-46e3-991b-cf6ba41fdb4d",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Credit/Debit", "Cash"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/place/Gregory+Gymnasium/@30.2840514,-97.737294,18.46z/data=!4m6!3m5!1s0x8644b59bc0000001:0x65ba35ca765b4cd1!8m2!3d30.2842496!4d-97.7368011!16zL20vMDg1eGRx?entry=ttu&g_ep=EgoyMDI1MDExNS4wIKXMDSoASAFQAw%3D%3D",
+      "apple_maps_link": "https://maps.apple.com/?q=30.2840514,-97.737294",
+      "image": "https://universityunions.utexas.edu/sites/default/files/styles/utexas_image_style_450w_300h/public/2024-01/papua-logo_0.png?itok=35-OLefd",
+      "created_at": "2025-07-13T00:51:00.759147+00:00",
+      "updated_at": "2025-07-13T05:35:59.747+00:00",
+      "force_close": true,
+      "has_menus": false,
+      "display_order": 34,
+      "latitude": 30.2838520104686,
+      "longitude": -97.7371799582281
+    },
+    {
+      "id": "8ec72ec7-ff77-47fe-b12f-4051d8f11743",
+      "name": "Texas EXpresso",
+      "colloquial_name": null,
+      "description": "Texas Expresso is a cozy full-service café inside the UT Alumni (Exes) Center, offering a quiet study environment with comfy leather chairs. It serves locally roasted coffee, paninis, sandwiches, soups, salads, baked goods, and smoothies. \n\nPopular with students for its breakfast and lunch options, it’s often praised for fast friendly service and reasonable prices.",
+      "address": "2110 San Jacinto Blvd. Austin, TX 78712",
+      "type_id": "1193411e-6aba-4941-a611-fc9eb7546757",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1500
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1500
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1500
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1500
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1500
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Cash", "Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/place/Texas+Expresso/@30.2842282,-97.7350703,174m/data=!3m1!1e3!4m6!3m5!1s0x8644b59bbc5e214f:0xa922bca4043c5c4a!8m2!3d30.2840009!4d-97.7345946!16s%2Fg%2F1vhq42m9?entry=ttu&g_ep=EgoyMDI1MDEwOC4wIKXMDSoASAFQAw%3D%3D",
+      "apple_maps_link": "https://maps.apple.com/?q=30.2842282,-97.7350703",
+      "image": "https://static.bevopay.utexas.edu/bevobucks/images/TxExpresso.png",
+      "created_at": "2025-07-13T04:40:26.2735+00:00",
+      "updated_at": "2025-07-13T05:36:00.192+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 46,
+      "latitude": 30.2843650477589,
+      "longitude": -97.734422789004
+    },
+    {
+      "id": "91ab1867-aaa3-4a5b-a854-08826583a99b",
+      "name": "Kin's Market",
+      "colloquial_name": null,
+      "description": "Shop for groceries, pick up meals on the go and discover other sundries inside the Kinsolving Hall lobby. Kin’s Market has all the essentials so make it your one-stop shop for school supplies, snacks, fresh produce and other necessities. \n\nWhen you’re on the northwest side of campus, Kin’s Market is your convenience solution.",
+      "address": "2605 Whitis Ave Austin, TX 78705",
+      "type_id": "131bb0cb-a083-40e2-bbe2-4bc6044dd8a7",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Cash", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": ".",
+      "apple_maps_link": "https://maps.apple.com/?address=2605%20Whitis%20Ave,%20Austin,%20TX%20%2078705,%20United%20States&ll=30.290334,-97.739766&q=2605%20Whitis%20Ave",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_1000w/public/2021-11/kins_market_680x454.png.webp?itok=eFL02Rl_",
+      "created_at": "2025-06-25T05:39:02.906811+00:00",
+      "updated_at": "2025-07-13T05:36:00.391+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 52,
+      "latitude": 30.2903894053957,
+      "longitude": -97.739832462426
+    },
+    {
+      "id": "9571a33b-de57-47b0-a1df-cd9886968563",
+      "name": "Four Brothers Venezuelan Kitchen",
+      "colloquial_name": null,
+      "description": "Four Brothers is a Venezuelan food truck parked near the Perry-Castañeda Library at UT Austin. It serves arepas, empanadas, cachapas, and other traditional Venezuelan dishes. \n\nThe truck is known for fresh ingredients, friendly service, and plenty of vegan and gluten-free options.",
+      "address": "E 21st St. Austin, TX 78712",
+      "type_id": "a82aa62e-9860-46e3-991b-cf6ba41fdb4d",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Credit/Debit", "Cash"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/place/Perry-Casta%C3%B1eda+Library/@30.2826546,-97.7391758,18.17z/data=!3m1!5s0x8644b59c30a212f1:0x44c897a4234f49d0!4m6!3m5!1s0x8644b59c6ae1bb7f:0xd251ac1bf2d1388e!8m2!3d30.2826575!4d-97.7382079!16s%2Fg%2F1tgd6y31?entry=ttu&g_ep=EgoyMDI1MDExNS4wIKXMDSoASAFQAw%3D%3D",
+      "apple_maps_link": "https://maps.apple.com/?q=30.2826546,-97.7391758",
+      "image": "https://universityunions.utexas.edu/sites/default/files/styles/utexas_image_style_450w_300h/public/2022-08/four%20bros_0.png?itok=lFi1ODQp",
+      "created_at": "2025-07-13T00:48:43.17379+00:00",
+      "updated_at": "2025-07-13T05:35:59.617+00:00",
+      "force_close": true,
+      "has_menus": false,
+      "display_order": 31,
+      "latitude": 30.2834821987888,
+      "longitude": -97.7386268236492
+    },
+    {
+      "id": "98c3ad4e-4614-44ac-b03a-83188fcc68fa",
+      "name": "The Big Taquito",
+      "colloquial_name": null,
+      "description": "The Big Taquito is a Mexican food truck parked at the corner of West Dean Keeton Street and University Avenue, beside the UT Austin Student Services Building. It serves crispy taquitos stuffed with fillings like chicken, steak, pastor, and potato-bacon-cheese. \n\nThe truck is known for generous portions and quick service, making it a popular stop for students.",
+      "address": "W Dean Keeton St and University Ave Austin, TX 78712",
+      "type_id": "a82aa62e-9860-46e3-991b-cf6ba41fdb4d",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Cash", "Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/place/University+of+Texas+Student+Services+Building+(SSB)/@30.289788,-97.7410625,17z/data=!3m2!4b1!5s0x8644b58305becd45:0x76dcbd6713f251e1!4m6!3m5!1s0x8644b58304dd8e05:0xe2e47b708f5762f7!8m2!3d30.289788!4d-97.7384876!16s%2Fg%2F1thz2163?entry=ttu&g_ep=EgoyMDI1MDExNS4wIKXMDSoASAFQAw%3D%3D",
+      "apple_maps_link": "https://maps.apple.com/?q=30.289788,-97.7410625",
+      "image": "https://s3-media0.fl.yelpcdn.com/bphoto/ojKIzA4-ho4QkHStbZEBvA/348s.jpg",
+      "created_at": "2025-07-13T00:53:30.50437+00:00",
+      "updated_at": "2025-07-13T05:35:59.812+00:00",
+      "force_close": true,
+      "has_menus": false,
+      "display_order": 36,
+      "latitude": 30.2897816129905,
+      "longitude": -97.7389613083963
+    },
+    {
+      "id": "9bffb108-a12b-491c-8c05-596a6a4d3119",
+      "name": "O's Campus Café — EER",
+      "colloquial_name": null,
+      "description": "O’s Campus Café is a full-service dining spot located inside UT Austin’s Engineering Education & Research Center (EER) at 2500 Speedway. \n\nIt serves a wide range of fresh-made breakfast and lunch options, including pizza, ramen, banh mi, soups, salads, stir-fry, smoothies, and specialty coffee.",
+      "address": "2501 Speedway Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1330
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1330
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1330
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1330
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1330
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Credit/Debit", "Cash", "Bevo Pay"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/place/2501+Speedway,+Austin,+TX+78712/@30.288,-97.7362797,159m/data=!3m1!1e3!4m6!3m5!1s0x8644b584abe13c25:0x97d5d5a284a520f6!8m2!3d30.2880123!4d-97.7351504!16s%2Fg%2F11bw3zq348?entry=ttu&g_ep=EgoyMDI1MDEwOC4wIKXMDSoASAFQAw%3D%3D",
+      "apple_maps_link": "https://maps.apple.com/?q=30.288,-97.7362797",
+      "image": "https://www.oscampuscafe.com/wp-content/uploads/2019/10/EER-IMG_0512.jpg",
+      "created_at": "2025-07-13T01:04:48.909619+00:00",
+      "updated_at": "2025-07-13T05:35:58.978+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 15,
+      "latitude": 30.2884639372585,
+      "longitude": -97.7354960730559
+    },
+    {
+      "id": "9e643458-0bb3-4011-825e-bfa0a948d980",
+      "name": "Hook ’em Hut – WCP",
+      "colloquial_name": null,
+      "description": "Pick up refreshments at this mini convenience store located in the WCP Student Activity Center. \n\nHook ‘em Hut offers grab and go food, beverages and sundries to satisfy your needs and busy schedule.",
+      "address": "2201 Speedway Austin, TX 78712",
+      "type_id": "131bb0cb-a083-40e2-bbe2-4bc6044dd8a7",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": ".",
+      "apple_maps_link": "https://maps.apple.com/?address=2201%20Speedway,%20Austin,%20TX%20%2078712,%20United%20States&ll=30.284859,-97.736611&q=2201%20Speedway",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_1000w/public/2021-09/HookEm_Hut_680x454.png.webp?itok=59TSePP8",
+      "created_at": "2025-06-25T05:37:59.572022+00:00",
+      "updated_at": "2025-07-13T05:36:00.36+00:00",
+      "force_close": true,
+      "has_menus": false,
+      "display_order": 51,
+      "latitude": 30.2847930722248,
+      "longitude": -97.7361078031222
+    },
+    {
+      "id": "a596446a-0d52-460f-9277-8c12fd4e4481",
+      "name": "Burrito Factory",
+      "colloquial_name": null,
+      "description": "Burrito Factory is a family-owned dining stall located in the Dobie Mall food court on UT Austin’s campus. They serve generous, authentic Mexican fare—burritos, tacos, tortas—with made-to-order meats like pastor, fajitas, lengua, plus fresh veggies, sauces, and horchata. \n\nKnown for warm service and bold, fresh flavors, it’s a campus go‑to for hearty Tex‑Mex meals.",
+      "address": "2021 Guadalupe St. Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Cash", "Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": ".",
+      "apple_maps_link": "https://maps.apple.com/?address=2021%20Guadalupe%20St,%20Austin,%20TX%20%2078705,%20United%20States&ll=30.283252,-97.741631&q=2021%20Guadalupe%20St",
+      "image": "https://images.squarespace-cdn.com/content/v1/5c2d52da55b02c5b8ef21495/1546628247007-A5NVNACGAZ04O4NYHCXN/BurritoFactory5.png?format=2500w",
+      "created_at": "2025-07-13T04:02:59.464447+00:00",
+      "updated_at": "2025-07-13T05:35:58.714+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 7,
+      "latitude": 30.2832154915849,
+      "longitude": -97.7411307612933
+    },
+    {
+      "id": "b39abf07-d72f-4d91-9a7f-a447e04ad0c2",
+      "name": "Kins Dining",
+      "colloquial_name": "Kins",
+      "description": "Serving the northwest side of campus, Kins Dining hosts several serving lines and outdoor patio seating. Kins Dining is in Kinsolving Hall and offers a dining experience where you can piece together your ideal meal from the assortment of food lines and menu specials.\n\nEnjoy your meal inside the dining hall or on the outdoor patio overlooking the Kinsolving garden.",
+      "address": "2605 Whitis Ave Austin, TX 78705",
+      "type_id": "20be80f1-7e87-424e-a7b8-801c80aca477",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 2000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 2100
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 900,
+              "close": 1400
+            },
+            {
+              "open": 1630,
+              "close": 2000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 2100
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 900,
+              "close": 1400
+            },
+            {
+              "open": 1630,
+              "close": 2000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 2100
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 2100
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [
+        {
+          "name": "Breakfast",
+          "end_time": 1100,
+          "start_time": 700
+        },
+        {
+          "name": "Lunch",
+          "end_time": 1630,
+          "start_time": 1100
+        },
+        {
+          "name": "Dinner",
+          "end_time": 2000,
+          "start_time": 1630
+        }
+      ],
+      "google_maps_link": "https://maps.app.goo.gl/zaxxqbgcuGBgQwBY9",
+      "apple_maps_link": "https://maps.apple.com/?address=2605%20Whitis%20Ave,%20Austin,%20TX%2078705,%20United%20States&auid=9838945571614486266&ll=30.290260,-97.739890&lsp=9902&q=Kins%20Dining",
+      "image": "",
+      "created_at": "2025-06-19T20:45:48.782331+00:00",
+      "updated_at": "2025-07-13T05:35:58.522+00:00",
+      "force_close": true,
+      "has_menus": true,
+      "display_order": 2,
+      "latitude": 30.2903620657162,
+      "longitude": -97.739412608165
+    },
+    {
+      "id": "b55ba288-091a-4c7a-9725-4617157fac28",
+      "name": "Gong Cha",
+      "colloquial_name": null,
+      "description": "Gong Cha is a Taiwanese bubble‐tea chain located in the Dobie Mall food court, just above the Target on Guadalupe Street. It specializes in freshly brewed premium teas, customizable milk teas, fruit slushies, and signature toppings like tapioca and white pearls.\n\nThis spot offers a casual grab‑and‑go experience with strong customization (ice/sugar levels) and reliable quality, making it a go‑to place for bubble tea lovers on campus.",
+      "address": "2021 Guadalupe St. Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1200,
+              "close": 2200
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1200,
+              "close": 2200
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1200,
+              "close": 2200
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1200,
+              "close": 2200
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1200,
+              "close": 2200
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1200,
+              "close": 2200
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1200,
+              "close": 2200
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Cash", "Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": ".",
+      "apple_maps_link": "https://maps.apple.com/?address=2021%20Guadalupe%20St,%20Austin,%20TX%20%2078705,%20United%20States&ll=30.283252,-97.741631&q=2021%20Guadalupe%20St",
+      "image": "https://gong-cha-usa.com/wp-content/uploads/Gong-cha-vertical-logo-symbol-mark-banner.png",
+      "created_at": "2025-07-13T03:57:31.520093+00:00",
+      "updated_at": "2025-07-13T05:35:58.922+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 13,
+      "latitude": 30.2831469807926,
+      "longitude": -97.7412303551798
+    },
+    {
+      "id": "b7ee00fe-027c-45bf-ab65-72a4ed1fb32f",
+      "name": "Tower Burgers and Fries",
+      "colloquial_name": null,
+      "description": "Check out burger, side and beverage options on the west side of campus inside the Texas Union. This location offers a selection of burgers, fries, onion rings, milkshakes and more. \n\nGet your meal to go or dine inside the Texas Union building or on their patio.",
+      "address": "2308 Whitis Ave Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": ".",
+      "apple_maps_link": "https://maps.apple.com/?address=2308%20Whitis%20Ave,%20Austin,%20TX%20%2078712,%20United%20States&ll=30.286619,-97.741141&q=2308%20Whitis%20Ave",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_1000w/public/2021-09/Tower_Burgers_and_Fries_680x454.png.webp?itok=GTdZR1kx",
+      "created_at": "2025-06-25T05:35:01.676111+00:00",
+      "updated_at": "2025-07-13T05:35:59.371+00:00",
+      "force_close": true,
+      "has_menus": false,
+      "display_order": 26,
+      "latitude": 30.2864312807607,
+      "longitude": -97.7410134045862
+    },
+    {
+      "id": "bbc6bdd8-77b8-48b1-ab04-73d466d40891",
+      "name": "Starbucks Coffee",
+      "colloquial_name": null,
+      "description": "The Starbucks on Guadalupe Street sits inside Dobie Center along the Drag, right across from the UT Austin campus. It offers the full menu of espresso drinks, cold brews, pastries, and grab-and-go snacks in a spacious café with plenty of seating and free Wi‑Fi. \n\nThis spot is a popular study and hangout place for students between classes.",
+      "address": "2021 Guadalupe St. Austin, TX 78705",
+      "type_id": "1193411e-6aba-4941-a611-fc9eb7546757",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 2000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 2000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 2000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 2000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 2000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 2000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 2000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Credit/Debit", "Cash"],
+      "meal_times": [],
+      "google_maps_link": ".",
+      "apple_maps_link": "https://maps.apple.com/?address=2021%20Guadalupe%20St,%20Austin,%20TX%20%2078705,%20United%20States&ll=30.283252,-97.741631&q=2021%20Guadalupe%20St",
+      "image": "https://lh3.googleusercontent.com/p/AF1QipO31I_wOVXvFB9UWy4ibYAlUUOZCfiZcXGORu3v=s680-w680-h510",
+      "created_at": "2025-07-13T04:51:00.73974+00:00",
+      "updated_at": "2025-07-13T05:36:00.157+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 45,
+      "latitude": 30.2836301846301,
+      "longitude": -97.7416825443217
+    },
+    {
+      "id": "bf57b1a1-d7f1-4c0f-ac66-8bdb2f240dcc",
+      "name": "Moontower Cafè",
+      "colloquial_name": null,
+      "description": "Moontower Café is a cozy, full-service café located inside UT Austin’s McCombs School of Business (Rowling Hall), adjacent to the AT&T Hotel & Conference Center. It offers a warm study- and meeting-friendly atmosphere with comfy seating and a welcoming vibe.\n\n The menu features fresh breakfast and lunch fare—espresso drinks, coffee, smoothies, soups, sandwiches, and light bites—often praised for its quality ingredients and campus convenience.",
+      "address": "300 W Martin Luther King Blvd. Austin, TX 78705",
+      "type_id": "1193411e-6aba-4941-a611-fc9eb7546757",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1100
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1430
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1430
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1430
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1430
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Cash", "Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/dir//30.28211735,-97.74148886/@30.28211735,-97.74148886,17z",
+      "apple_maps_link": "https://maps.apple.com/?q=30.28211735,-97.74148886",
+      "image": "https://meetattexas.com/assets/images/_imageTextModuleTransform2x/Moontower-Hotel-Dining-Austin.jpg",
+      "created_at": "2025-07-13T04:55:54.553106+00:00",
+      "updated_at": "2025-07-13T05:36:00.063+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 42,
+      "latitude": 30.2823158786514,
+      "longitude": -97.7412403735528
+    },
+    {
+      "id": "c8762d78-b8f3-482c-8d9a-c517d0eb7c2a",
+      "name": "YoYo's Hot Dog",
+      "colloquial_name": null,
+      "description": "YoYo’s Hot Dogs is a fast‑casual stand located inside UT Austin’s Dobie Mall food court. It’s best known for its oversized signature hot dogs slathered with cream cheese and sriracha‑honey mayo, plus offerings like fries and wings. \n\nThis spot has quickly become a campus favorite, bringing the viral Houston‑born concept to students.",
+      "address": "2021 Guadalupe St. Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1130,
+              "close": 2130
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2130
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2130
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2130
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2130
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Cash", "Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": ".",
+      "apple_maps_link": "https://maps.apple.com/?address=2021%20Guadalupe%20St,%20Austin,%20TX%20%2078705,%20United%20States&ll=30.283252,-97.741631&q=2021%20Guadalupe%20St",
+      "image": "https://cdn.prod.website-files.com/66abe0a90447f50739207a39/66abe0a90447f50739208409_Yoyos%2520Logo-p-500.webp",
+      "created_at": "2025-07-13T03:48:41.204483+00:00",
+      "updated_at": "2025-07-13T05:35:59.46+00:00",
+      "force_close": true,
+      "has_menus": false,
+      "display_order": 29,
+      "latitude": 30.2831752097909,
+      "longitude": -97.7413486724252
+    },
+    {
+      "id": "ccc19373-b308-474c-b0aa-27a85bf7180a",
+      "name": "Coffee Union House",
+      "colloquial_name": "Union Coffee",
+      "description": "Union Coffee House proudly serves Starbucks coffee and beverages, bakery items and grab and go options.\n\nLocated in the second floor food court.",
+      "address": "2308 Whitis Ave, Austin, TX 78712",
+      "type_id": "1193411e-6aba-4941-a611-fc9eb7546757",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1400
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1400
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1400
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1400
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1400
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": "https://maps.app.goo.gl/",
+      "apple_maps_link": "https://maps.apple.com/?address=2308%20Whitis%20Ave,%20Austin,%20TX%2078712",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_450w_300h/public/2021-07/Union_Coffee_House_Logo_680x454.png.webp?itok=WPuAgLry",
+      "created_at": "2025-06-24T06:32:28.962536+00:00",
+      "updated_at": "2025-07-13T05:36:00.225+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 47,
+      "latitude": 30.2860731537879,
+      "longitude": -97.7411286006197
+    },
+    {
+      "id": "cdf43858-4b01-47be-be16-7b6125ce7b79",
+      "name": "La Fonda",
+      "colloquial_name": null,
+      "description": "La Fonda is your go-to breakfast and lunch spot for fresh street food. Find breakfast tacos, chilaquiles, tortas, signature dishes and more at this food truck conveniently located on 21st and Speedway. \n\nWhether you’re starting your day or grabbing a quick bite to fuel your studies, La Fonda offers plenty of flavorful snack and meal options.",
+      "address": "2100 Speedway Austin, TX 78712",
+      "type_id": "a82aa62e-9860-46e3-991b-cf6ba41fdb4d",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1500
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1500
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1500
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1500
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": ".",
+      "apple_maps_link": "https://maps.apple.com/?address=2100%20Speedway,%20Austin,%20TX%20%2078705,%20United%20States&ll=30.283945,-97.737801&q=2100%20Speedway",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_1000w/public/2025-02/La_Fonda_680x454.png.webp?itok=UnGDsBH2",
+      "created_at": "2025-06-25T05:26:58.910467+00:00",
+      "updated_at": "2025-07-13T05:35:59.694+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 33,
+      "latitude": 30.2833588,
+      "longitude": -97.7373053
+    },
+    {
+      "id": "d0b7ed5d-2508-4a0b-8e67-c4cc1266a72c",
+      "name": "Commons Cafe",
+      "colloquial_name": null,
+      "description": "The Commons building is home to one of UT's favorite dining establishments - the Commons Cafe. The Cafe offers hot breakfast and lunch options, as well as snacks and beverages. ",
+      "address": "2901 Read Grandberry Trl. Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1400
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1400
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1400
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1400
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1400
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/dir//30.38729172,-97.72659451/@30.38729172,-97.72659451,17z",
+      "apple_maps_link": "https://maps.apple.com/?q=30.38729172,-97.72659451",
+      "image": "https://commons.utexas.edu/sites/default/files/styles/utexas_image_style_2280w_1232h/public/2024-01/cafe-b_mg_9503f-resz_3.jpg.webp?itok=syU4v02R",
+      "created_at": "2025-07-13T04:13:16.086602+00:00",
+      "updated_at": "2025-07-13T05:35:58.822+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 10,
+      "latitude": 30.3873679053101,
+      "longitude": -97.726096880354
+    },
+    {
+      "id": "d0ba7246-6d27-4861-94d0-d9312c3cf04e",
+      "name": "O's Campus Cafè — GSB",
+      "colloquial_name": null,
+      "description": "O’s Campus Café is a multi-location dining spot on UT Austin’s campus, with cafés inside the Engineering Education & Research Center (EER) and the Peter O’Donnell Building. \n\nIt serves from-scratch breakfast and lunch options like pizza, ramen, made-to-order banh mi, soups, salads, stir-fry, smoothies, and specialty coffee.",
+      "address": "2110 Speedway Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1330
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1800
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1800
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1800
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1800
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Cash", "Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/place/McCombs+School+of+Business/@30.2841509,-97.7402261,584m/data=!3m2!1e3!4b1!4m6!3m5!1s0x8644b59c68123325:0x690ca90b0920ae54!8m2!3d30.2841463!4d-97.7376512!16zL20vMDZoMXo3?entry=ttu&g_ep=EgoyMDI1MDEwOC4wIKXMDSoASAFQAw%3D%3D",
+      "apple_maps_link": "https://maps.apple.com/?q=30.2841509,-97.7402261",
+      "image": "https://www.oscampuscafe.com/wp-content/uploads/2019/10/GSB-IMG_0507.jpg",
+      "created_at": "2025-07-13T02:31:29.017859+00:00",
+      "updated_at": "2025-07-13T05:35:59.009+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 16,
+      "latitude": 30.2842185741584,
+      "longitude": -97.7383276718856
+    },
+    {
+      "id": "d10a421e-3b3e-4b57-8166-1831ec135d23",
+      "name": "Sam's Gyro Halal",
+      "colloquial_name": null,
+      "description": "Sam’s Gyro Halal is a popular food truck located on the UT Austin campus, serving fresh Mediterranean and Middle Eastern fare. They’re known for their flavorful gyros, halal meats, and generous portions at student-friendly prices. \n\nConveniently parked at San Jacinto Blvd and E 23rd Street, it’s a go-to spot for a quick and satisfying meal between classes.",
+      "address": "San Jacinto Blvd and E 23rd/Deloss Dodds Way Austin, TX 78712",
+      "type_id": "a82aa62e-9860-46e3-991b-cf6ba41fdb4d",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Cash", "Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/place/San+Jacinto+Blvd+%26+E+23rd+St,+Austin,+TX+78712/@30.2851214,-97.7343143,19.08z/data=!4m10!1m2!2m1!1zKytTYW4rSmFjaW50bytCbHZkK2FuZCtFKzIzcmQlMkZEZWxvc3MrRG9kZHMrV2F5K0F1c3RpbiwrVFgrNzg3MTIrVW5pdGVkK1N0YXRlcw!3m6!1s0x8644b59b0108c209:0x7a1024d0dc6463f2!8m2!3d30.2853206!4d-97.7337036!15sClArK1NhbitKYWNpbnRvK0JsdmQrYW5kK0UrMjNyZCUyRiBEZWxvc3MrRG9kZHMrV2F5K0F1c3Rpbiwr",
+      "apple_maps_link": "https://maps.apple.com/?q=30.2851214,-97.7343143",
+      "image": "https://sam-gyro-halal.square.site/uploads/b/e923e170-6a5c-11ef-9af1-db52aab65aed/Untitled%20design%20(1).png",
+      "created_at": "2025-07-13T00:35:54.019162+00:00",
+      "updated_at": "2025-07-13T05:35:59.779+00:00",
+      "force_close": true,
+      "has_menus": false,
+      "display_order": 35,
+      "latitude": 30.2852394135542,
+      "longitude": -97.7336672270474
+    },
+    {
+      "id": "de91ad3b-8fac-4494-9629-a6bb25eea48b",
+      "name": "JCL Dining",
+      "colloquial_name": "JCL",
+      "description": "Found on the south side of campus, Jester City Limits (JCL) offers a versatile dining experience. JCL is on the ground floor of Jester Center and provides an array of food lines you can choose your meal from.\n\nJester Center’s energetic atmosphere guarantees a unique meal with a menu created by our talented culinary team.",
+      "address": "201 E 21st St Austin, TX 78705",
+      "type_id": "20be80f1-7e87-424e-a7b8-801c80aca477",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1030,
+              "close": 1500
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1030,
+              "close": 2100
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1030,
+              "close": 2100
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1030,
+              "close": 2100
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1030,
+              "close": 2100
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [
+        {
+          "name": "Lunch",
+          "end_time": 1500,
+          "start_time": 1030
+        },
+        {
+          "name": "Dinner",
+          "end_time": 2100,
+          "start_time": 1500
+        }
+      ],
+      "google_maps_link": "https://maps.app.goo.gl/DccikGcpeV4tpZSj7",
+      "apple_maps_link": "https://maps.apple.com/?address=201%20E%2021st%20St,%20Austin,%20TX%20%2078705,%20United%20States&auid=12474801943275870923&ll=30.282840,-97.736945&lsp=9902&q=Jester%20City%20Limits",
+      "image": "",
+      "created_at": "2025-06-19T20:41:58.267439+00:00",
+      "updated_at": "2025-07-13T05:35:58.49+00:00",
+      "force_close": true,
+      "has_menus": true,
+      "display_order": 1,
+      "latitude": 30.282775725267,
+      "longitude": -97.7370539650819
+    },
+    {
+      "id": "e51708dc-d2a4-4e12-ab2d-3cfafc216145",
+      "name": "Hello Doner",
+      "colloquial_name": null,
+      "description": "Hello Doner is a Mediterranean/halal fast‑casual kiosk located in the Dobie Mall food court on UT Austin’s campus, situated on the second floor near Guadalupe. It specializes in doner kebabs—available in beef, chicken, or mixed—served with fries, pickles, signature sauces, and fusion options like kimchi doner. \n\nThe stand offers grab‑and‑go meals and can be ordered via Uber Eats, making it a convenient and flavorful pick for students.",
+      "address": "2021 Guadalupe St. Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 1700
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 1700
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 1700
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 1700
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 1700
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Cash", "Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": ".",
+      "apple_maps_link": "https://maps.apple.com/?address=2021%20Guadalupe%20St,%20Austin,%20TX%20%2078705,%20United%20States&ll=30.283252,-97.741631&q=2021%20Guadalupe%20St",
+      "image": "https://1d8324510dc131f297ab.cdn6.editmysite.com/uploads/b/1d8324510dc131f297abae9a368ce98cb41e8e5fff2293dde6c7c3feea25d04c/Logosquare_1736895887.png?width=2400&optimize=medium",
+      "created_at": "2025-07-13T04:00:52.857539+00:00",
+      "updated_at": "2025-07-13T05:35:58.95+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 14,
+      "latitude": 30.283175900187,
+      "longitude": -97.7411756730167
+    },
+    {
+      "id": "ed5417c6-2a76-4aea-a0f2-56915d842048",
+      "name": "Jester Java",
+      "colloquial_name": null,
+      "description": "Order breakfast tacos, Starbucks coffee and baked goods on the south side of campus, inside Jester Center. \n\nYou’ll find an array of espresso, cold beverages and snacks.",
+      "address": "201 E 21st St Austin, TX 78705",
+      "type_id": "1193411e-6aba-4941-a611-fc9eb7546757",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1600
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1500
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1500
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 730,
+              "close": 1600
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1500
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": "https://maps.app.goo.gl/CtBnkvwy6qCDNtyi9",
+      "apple_maps_link": "https://maps.apple.com/?address=201%20E%2021st%20St,%20Austin,%20TX%20%2078705",
+      "image": "https://housing.utexas.edu/sites/default/files/styles/utexas_image_style_1800w/public/2021-07/Jester%20_Java_Logo_680x454.png.webp?itok=Fgnyii1L",
+      "created_at": "2025-06-22T01:43:28.99342+00:00",
+      "updated_at": "2025-07-13T05:35:59.925+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 39,
+      "latitude": 30.2829495886365,
+      "longitude": -97.736960960708
+    },
+    {
+      "id": "effc1959-1b3b-45d6-946c-0fcbf22b4da8",
+      "name": "The Carillon",
+      "colloquial_name": null,
+      "description": "The Carillon is a refined New American restaurant located in the AT&T Hotel and Conference Center, just south of UT Austin’s campus. \n\nIt features locally sourced, seasonally inspired dishes—from a hearty breakfast buffet to à la carte lunches and an elegant prix fixe dinner menus highlighting items like pork belly, seared sea bass, and wagyu carpaccio.",
+      "address": "1900 University Ave. Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 630,
+              "close": 1000
+            },
+            {
+              "open": 1130,
+              "close": 1330
+            },
+            {
+              "open": 1700,
+              "close": 2200
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 630,
+              "close": 1000
+            },
+            {
+              "open": 1130,
+              "close": 1330
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1100
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 630,
+              "close": 1000
+            },
+            {
+              "open": 1130,
+              "close": 1330
+            },
+            {
+              "open": 1700,
+              "close": 2200
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1100
+            },
+            {
+              "open": 1700,
+              "close": 2200
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 630,
+              "close": 1000
+            },
+            {
+              "open": 1130,
+              "close": 1330
+            },
+            {
+              "open": 1700,
+              "close": 2200
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 630,
+              "close": 1000
+            },
+            {
+              "open": 1130,
+              "close": 1330
+            },
+            {
+              "open": 1700,
+              "close": 2200
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Cash", "Credit/Debit"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/dir//30.28197821,-97.74045003/@30.28197821,-97.74045003,17z",
+      "apple_maps_link": "https://maps.apple.com/?q=30.28197821,-97.74045003",
+      "image": "https://meetattexas.com/assets/images/_800x550_crop_center-center_none/Carillon-Restaurant-Austin-UT-Campus.jpg",
+      "created_at": "2025-07-13T04:10:53.883734+00:00",
+      "updated_at": "2025-07-13T05:35:59.332+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 25,
+      "latitude": 30.282038431987,
+      "longitude": -97.7401505905862
+    },
+    {
+      "id": "f00c1a2c-2937-44dc-8422-72ce70a5114e",
+      "name": "Wendy's",
+      "colloquial_name": "Jendy's",
+      "description": "Wendy’s — often nicknamed “Jendy’s” on campus — is a quick-service fast-food restaurant located inside Jester Center at UT Austin. It’s known for its fresh, never-frozen square beef burgers, spicy and classic chicken sandwiches, crispy fries, salads, chili, baked potatoes, and signature Frosty desserts. \n\nThis location is a popular grab‑and‑go and study-break spot for students.",
+      "address": "201 E 21st St. Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 2200
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 1800
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 2200
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 1800
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 2200
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1000,
+              "close": 2200
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Cash", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/place/J2+Dining/@30.2828306,-97.7394699,17z/data=!3m2!4b1!5s0x8644b59c0460f9dd:0xcd12421dd5e67026!4m6!3m5!1s0x8644b59c0ff101f1:0x5f36f99f7a4e997!8m2!3d30.282826!4d-97.736895!16s%2Fg%2F1hc3mqth5?entry=ttu&g_ep=EgoyMDI1MDExNS4wIKXMDSoASAFQAw%3D%3D",
+      "apple_maps_link": "https://maps.apple.com/?q=30.2828306,-97.7394699",
+      "image": "https://assets.turbologo.com/blog/en/2019/12/19084801/Wendys-logo.png",
+      "created_at": "2025-07-13T02:35:40.6733+00:00",
+      "updated_at": "2025-07-13T05:35:59.428+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 28,
+      "latitude": 30.2828784696289,
+      "longitude": -97.7371556916687
+    },
+    {
+      "id": "f0e24d6c-71ad-4ef0-83b4-668281dea8c5",
+      "name": "Oma's Kitchen",
+      "colloquial_name": null,
+      "description": "Oma's Kitchen is a cozy restaurant in Austin, TX that specializes in serving homestyle comfort food.\n\nWith a focus on traditional recipes and warm hospitality, Oma's Kitchen aims to create a welcoming dining experience for its guests.",
+      "address": "2021 Guadalupe St. Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2100
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2100
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1200,
+              "close": 2000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2100
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2100
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2100
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 1100,
+              "close": 2100
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Credit/Debit", "Cash"],
+      "meal_times": [],
+      "google_maps_link": ",",
+      "apple_maps_link": "https://maps.apple.com/?address=2025%20Guadalupe%20St,%20%23226,%20Austin,%20TX%20%2078705,%20United%20States&ll=30.283380,-97.741219&q=2025%20Guadalupe%20St,%20%23226",
+      "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYTX2-wkAGox5laz824Xw6D7Cj64VZq-YLTw&s",
+      "created_at": "2025-07-13T02:42:14.575965+00:00",
+      "updated_at": "2025-07-13T05:35:59.112+00:00",
+      "force_close": false,
+      "has_menus": false,
+      "display_order": 19,
+      "latitude": 30.2831777386702,
+      "longitude": -97.7414316353353
+    },
+    {
+      "id": "f3c360e0-92ad-4564-bb25-88f60d8b85da",
+      "name": "Shake Smart — Union",
+      "colloquial_name": null,
+      "description": "Find freshly blended protein shakes, cold brew coffee and quick nutritious bites at this Texas Union location of the health food chain.\n\nMake Shake Smart your one-stop shop for pre- and post-gym fuel and a regular destination for when you’re on the go. Located in the second floor food court.",
+      "address": "2308 Whitis Avenue Austin, TX 78712",
+      "type_id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": true,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Credit/Debit", "Bevo Pay", "Cash", "Dine In Dollars"],
+      "meal_times": [],
+      "google_maps_link": "https://www.google.com/maps/search/?api=1&query=%2B2308%2BWhitis%2BAvenue%2BAustin%2C%2BTX%2B78712%2BUnited%2BStates",
+      "apple_maps_link": "https://maps.apple.com/?address=2308%20Whitis%20Ave,%20Austin,%20TX%20%2078712,%20United%20States&ll=30.286619,-97.741141&q=2308%20Whitis%20Ave",
+      "image": "https://universityunions.utexas.edu/sites/default/files/styles/utexas_image_style_900w/public/2023-06/smart.png?itok=8uNFATMa",
+      "created_at": "2025-07-13T05:35:23.467331+00:00",
+      "updated_at": "2025-07-13T05:35:59.294+00:00",
+      "force_close": true,
+      "has_menus": false,
+      "display_order": 24,
+      "latitude": 30.2865267,
+      "longitude": -97.7411533
+    },
+    {
+      "id": "feb48836-df0e-4bbe-bdc8-b0a64df9c086",
+      "name": "J2 Dining",
+      "colloquial_name": "J2",
+      "description": "Positioned on the south side of campus, J2 Dining houses a top-9 allergen free line as well as other unique options. \n\nJ2 Dining is located on the second floor of Jester Center and serves a varied menu for you to create your ideal meal. The offerings at J2 include something for everyone.",
+      "address": "201 E 21st St Austin, TX 78705",
+      "type_id": "20be80f1-7e87-424e-a7b8-801c80aca477",
+      "regular_service_hours": {
+        "friday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            },
+            {
+              "open": 1100,
+              "close": 1400
+            },
+            {
+              "open": 1630,
+              "close": 2000
+            }
+          ]
+        },
+        "monday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            },
+            {
+              "open": 1100,
+              "close": 1400
+            },
+            {
+              "open": 1630,
+              "close": 2000
+            }
+          ]
+        },
+        "sunday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1000
+            },
+            {
+              "open": 1100,
+              "close": 1400
+            },
+            {
+              "open": 1630,
+              "close": 2000
+            }
+          ]
+        },
+        "tuesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            },
+            {
+              "open": 1100,
+              "close": 1400
+            },
+            {
+              "open": 1630,
+              "close": 2000
+            }
+          ]
+        },
+        "saturday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1000
+            },
+            {
+              "open": 1100,
+              "close": 1400
+            },
+            {
+              "open": 1630,
+              "close": 2000
+            }
+          ]
+        },
+        "thursday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 800,
+              "close": 1000
+            },
+            {
+              "open": 1100,
+              "close": 1400
+            },
+            {
+              "open": 1630,
+              "close": 2000
+            }
+          ]
+        },
+        "wednesday": {
+          "isClosed": false,
+          "timeRanges": [
+            {
+              "open": 700,
+              "close": 1000
+            },
+            {
+              "open": 1100,
+              "close": 1400
+            },
+            {
+              "open": 1630,
+              "close": 2000
+            }
+          ]
+        }
+      },
+      "methods_of_payment": ["Bevo Pay", "Credit/Debit", "Dine In Dollars"],
+      "meal_times": [
+        {
+          "name": "Breakfast",
+          "end_time": 1000,
+          "start_time": 700
+        },
+        {
+          "name": "Lunch",
+          "end_time": 1400,
+          "start_time": 1100
+        },
+        {
+          "name": "Dinner",
+          "end_time": 2000,
+          "start_time": 1630
+        }
+      ],
+      "google_maps_link": "https://maps.app.goo.gl/oQJCkYWNgyFkMvFf7",
+      "apple_maps_link": "https://maps.apple.com/?address=201%20E%2021st%20St,%20Austin,%20TX%20%2078705,%20United%20States&auid=18232725234478875257&ll=30.282849,-97.736878&lsp=9902&q=J2%20Dining",
+      "image": "",
+      "created_at": "2025-06-19T06:14:47.57904+00:00",
+      "updated_at": "2025-07-13T05:35:58.419+00:00",
+      "force_close": false,
+      "has_menus": true,
+      "display_order": 0,
+      "latitude": 30.2826823632255,
+      "longitude": -97.7367937262777
+    }
+  ],
+  "location_type": [
+    {
+      "id": "1193411e-6aba-4941-a611-fc9eb7546757",
+      "name": "Coffee Shop",
+      "created_at": "2025-06-19T06:02:38.275971+00:00",
+      "updated_at": "2025-06-19T06:02:38.275971+00:00",
+      "display_order": 3
+    },
+    {
+      "id": "131bb0cb-a083-40e2-bbe2-4bc6044dd8a7",
+      "name": "Convenience Store",
+      "created_at": "2025-06-19T06:02:38.275971+00:00",
+      "updated_at": "2025-06-19T06:02:38.275971+00:00",
+      "display_order": 4
+    },
+    {
+      "id": "20be80f1-7e87-424e-a7b8-801c80aca477",
+      "name": "Dining Hall",
+      "created_at": "2025-06-19T06:02:38.275971+00:00",
+      "updated_at": "2025-06-19T06:02:38.275971+00:00",
+      "display_order": 0
+    },
+    {
+      "id": "a82aa62e-9860-46e3-991b-cf6ba41fdb4d",
+      "name": "Food Truck",
+      "created_at": "2025-07-12T22:38:31.723011+00:00",
+      "updated_at": "2025-07-12T22:38:31.723011+00:00",
+      "display_order": 2
+    },
+    {
+      "id": "dc1bae58-29a1-4c1f-829e-d0c3e2ed4479",
+      "name": "Food & Drink",
+      "created_at": "2025-06-19T06:02:38.275971+00:00",
+      "updated_at": "2025-06-19T06:02:38.275971+00:00",
+      "display_order": 1
+    }
+  ],
+  "app_information": [
+    {
+      "id": "987e7606-c084-4b71-b583-f972b8f31b0f",
+      "about_title": "About UT Dining",
+      "about_description": "UT Dining is your companion app for exploring dining options at the University of Texas at Austin. Browse menus, check dining hours, and find the perfect meal on campus.",
+      "credits_contributors": [
+        {
+          "id": "1752383801390",
+          "name": "Vina Do",
+          "order": 1
+        },
+        {
+          "id": "1751429646841",
+          "name": "Austin Tran",
+          "order": 2
+        },
+        {
+          "id": "1751429683238",
+          "name": "Chetan Gorantla",
+          "order": 3
+        },
+        {
+          "id": "1751429651538",
+          "name": "Ali Vayani",
+          "order": 4
+        },
+        {
+          "id": "1751429639255",
+          "name": "David Nguyen",
+          "order": 5
+        }
+      ],
+      "support_links": [
+        {
+          "id": "17514297261920",
+          "url": "mailto:ethanlanting@gmail.com",
+          "label": "Contact Support",
+          "order": 1
+        },
+        {
+          "id": "17514297261921",
+          "url": "https://longhorn-developers.github.io/ut-dining-website/faq",
+          "label": "FAQ",
+          "order": 2
+        },
+        {
+          "id": "17514297261922",
+          "url": "https://longhorn-developers.github.io/ut-dining-website/privacy-policy",
+          "label": "Privacy Policy",
+          "order": 3
+        },
+        {
+          "id": "17514297261923",
+          "url": "https://github.com/Longhorn-Developers/UT-Dining",
+          "label": "Source Code",
+          "order": 4
+        }
+      ],
+      "created_at": "2025-07-02T04:12:54.44+00:00",
+      "updated_at": "2025-07-13T05:17:32.03",
+      "app_version": "1.2.1"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "7fce4f94-59cd-4ccf-97ac-5ce3d14609f3",
+      "title": "Welcome Back, Longhorns! 🤘",
+      "body": "New menus just dropped! Tap to see what’s good on campus.",
+      "redirect_url": "",
+      "scheduled_at": null,
+      "created_at": "2025-07-10T03:06:05.883693+00:00",
+      "sent": true,
+      "type": "a0510183-252a-4998-9542-621df7b0cd4a"
+    },
+    {
+      "id": "a851565e-50f5-4797-9bed-92b1e3ef240c",
+      "title": "🔥 Fresh Drop at Kins",
+      "body": "Pssst… steak at Kins. You didn’t hear it from me 👀",
+      "redirect_url": "",
+      "scheduled_at": null,
+      "created_at": "2025-07-10T03:09:35.488165+00:00",
+      "sent": true,
+      "type": "ddd275bc-9620-499b-82e0-c6a31e7c9ad3"
+    },
+    {
+      "id": "ba6a7d24-0046-4c41-8226-8c7da68e1b8d",
+      "title": "J2 Temporarily Closed",
+      "body": "J2 is temporarily closed. Check other spots open nearby.",
+      "redirect_url": "https://housing.utexas.edu/dining/dining-locations/dining-halls/j2-dining",
+      "scheduled_at": null,
+      "created_at": "2025-07-10T03:08:00.390549+00:00",
+      "sent": true,
+      "type": "9d6d913b-856b-4afe-9cbf-6ada99c29fb7"
+    },
+    {
+      "id": "d15905d4-6dfc-4f44-b1f2-d311644efb23",
+      "title": "Maintenance Underway",
+      "body": "We’re making improvements behind the scenes. Dining info and notifications might be delayed. Everything will be back soon!",
+      "redirect_url": "",
+      "scheduled_at": null,
+      "created_at": "2025-07-10T03:10:17.158217+00:00",
+      "sent": true,
+      "type": "b68cb27f-1eca-439c-bec0-e109a78a87a1"
+    }
+  ],
+  "notification_types": [
+    {
+      "id": "9d6d913b-856b-4afe-9cbf-6ada99c29fb7",
+      "name": "Location Update",
+      "created_at": "2025-07-05T20:59:07.440183+00:00",
+      "updated_at": "2025-07-05T20:59:07.440183+00:00"
+    },
+    {
+      "id": "a0510183-252a-4998-9542-621df7b0cd4a",
+      "name": "Special Alert",
+      "created_at": "2025-07-05T20:59:39.775092+00:00",
+      "updated_at": "2025-07-05T20:59:39.775092+00:00"
+    },
+    {
+      "id": "b68cb27f-1eca-439c-bec0-e109a78a87a1",
+      "name": "System Announcement",
+      "created_at": "2025-07-05T20:58:42.592689+00:00",
+      "updated_at": "2025-07-05T20:58:42.592689+00:00"
+    },
+    {
+      "id": "ddd275bc-9620-499b-82e0-c6a31e7c9ad3",
+      "name": "Food Alert",
+      "created_at": "2025-07-05T20:59:00.068011+00:00",
+      "updated_at": "2025-07-05T20:59:00.068011+00:00"
+    }
+  ]
+}

@@ -106,9 +106,9 @@ export default function About() {
               { icon: <Star />, value: '4.8', label: 'App Rating' },
               { icon: <Coffee />, value: '10+', label: 'Dining Locations' },
               { icon: <Clock />, value: 'Real-time', label: 'Menu Updates' },
-            ].map((stat, index) => (
+            ].map((stat) => (
               <motion.div
-                key={index}
+                key={stat.label}
                 variants={itemVariants}
                 className="glass space-y-2 p-4 text-center"
               >
@@ -144,9 +144,9 @@ export default function About() {
             viewport={{ once: true }}
             className="mb-12 grid grid-cols-1 gap-4 sm:grid-cols-2 md:mb-20 md:gap-8 lg:grid-cols-4"
           >
-            {teamValues.map((value, index) => (
+            {teamValues.map((value) => (
               <motion.div
-                key={index}
+                key={value.title}
                 variants={itemVariants}
                 className="glass space-y-3 p-4 text-center md:p-6"
               >
@@ -168,7 +168,7 @@ export default function About() {
             <div className="space-y-6">
               {milestones.map((milestone, index) => (
                 <motion.div
-                  key={index}
+                  key={milestone.title}
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}

@@ -9,7 +9,12 @@ import { useDatabase } from '~/hooks/useDatabase';
 import { useFoodData } from '~/hooks/useFoodData';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { isFavoriteItem, toggleFavorites } from '~/services/database/database';
-import { useMealPlanStore } from '~/store/useMealPlanStore';
+import {
+  planDayPhrase,
+  todayKey,
+  useIsMealPlanItem,
+  useMealPlanStore,
+} from '~/store/useMealPlanStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
 import Alert from './Alert';
@@ -45,6 +50,7 @@ const LocationTopBar = () => {
   return (
     <View className="flex w-full flex-row items-center justify-between ">
       <TouchableOpacity
+        testID="back-button"
         className="flex flex-row items-center"
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -57,6 +63,9 @@ const LocationTopBar = () => {
 
       <View className="flex flex-row gap-x-5">
         <TouchableOpacity
+          testID="location-favorites-button"
+          accessibilityLabel="Favorites"
+          accessibilityRole="button"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             router.push(`/favorites`);
@@ -66,6 +75,9 @@ const LocationTopBar = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
+          testID="location-meal-plan-button"
+          accessibilityLabel="Meal plan"
+          accessibilityRole="button"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             router.push(`/meal-plan`);
@@ -75,6 +87,9 @@ const LocationTopBar = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
+          testID="location-info-button"
+          accessibilityLabel="Location info"
+          accessibilityRole="button"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
@@ -106,7 +121,11 @@ const FoodTopBar = () => {
 
   const { foodItem } = useFoodData(location, menu, category, food, favorite === 'true', date);
   const toggleMealPlanItem = useMealPlanStore((state) => state.toggleMealPlanItem);
-  const isMealPlanItem = useMealPlanStore((state) => state.isMealPlanItem(food));
+  const planDate = date || todayKey();
+  const isMealPlanItem = useIsMealPlanItem(
+    { name: food, locationName: location, menuName: menu, categoryName: category },
+    planDate,
+  );
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
   const db = useDatabase();
   const [isFavorite, setIsFavorite] = useState(false);
@@ -129,6 +148,7 @@ const FoodTopBar = () => {
   return (
     <View className="flex w-full flex-row items-center justify-between ">
       <TouchableOpacity
+        testID="back-button"
         className="flex flex-row items-center"
         onPress={() => {
           router.back();
@@ -142,6 +162,9 @@ const FoodTopBar = () => {
 
       <View className="flex-row gap-x-5">
         <TouchableOpacity
+          testID="food-favorite-button"
+          accessibilityLabel={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          accessibilityRole="button"
           onPress={async () => {
             if (foodItem) {
               if (isFavorite) {
@@ -178,26 +201,33 @@ const FoodTopBar = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
+          testID="food-meal-plan-button"
+          accessibilityLabel={isMealPlanItem ? 'Remove from meal plan' : 'Add to meal plan'}
+          accessibilityRole="button"
           onPress={() => {
             if (foodItem) {
-              toggleMealPlanItem({
-                name: foodItem.name as string,
-                locationName: location,
-                categoryName: category,
-                menuName: menu,
-                allergens: Object.fromEntries(
-                  Object.entries(foodItem.allergens || {}).filter(([key]) => key !== 'id'),
-                ) as Record<string, boolean>,
-                nutrition: {
-                  calories: foodItem.nutrition?.calories || '',
-                  protein: foodItem.nutrition?.protein || '',
-                  total_carbohydrates: foodItem.nutrition?.total_carbohydrates || '',
+              toggleMealPlanItem(
+                {
+                  name: foodItem.name as string,
+                  locationName: location,
+                  categoryName: category,
+                  menuName: menu,
+                  allergens: Object.fromEntries(
+                    Object.entries(foodItem.allergens || {}).filter(([key]) => key !== 'id'),
+                  ) as Record<string, boolean>,
+                  nutrition: {
+                    calories: foodItem.nutrition?.calories || '',
+                    protein: foodItem.nutrition?.protein || '',
+                    total_carbohydrates: foodItem.nutrition?.total_carbohydrates || '',
+                    total_fat: foodItem.nutrition?.total_fat || '',
+                  },
                 },
-              });
+                planDate,
+              );
 
               if (isMealPlanItem) {
                 Notifier.showNotification({
-                  title: `${foodItem.name} removed from today.`,
+                  title: `${foodItem.name} removed from ${planDayPhrase(planDate)}.`,
                   description: `You've updated your meal plan.`,
                   swipeEnabled: true,
                   Component: Alert,
@@ -206,8 +236,8 @@ const FoodTopBar = () => {
                 });
               } else {
                 Notifier.showNotification({
-                  title: `${foodItem.name} saved for today!`,
-                  description: `Added to today's meal plan.`,
+                  title: `${foodItem.name} saved for ${planDayPhrase(planDate)}!`,
+                  description: `Added to your meal plan for ${planDayPhrase(planDate)}.`,
                   swipeEnabled: true,
                   Component: Alert,
                   duration: 3000,
@@ -226,6 +256,9 @@ const FoodTopBar = () => {
           />
         </TouchableOpacity>
         <TouchableOpacity
+          testID="food-info-button"
+          accessibilityLabel="Food info"
+          accessibilityRole="button"
           onPress={() => {
             SheetManager.show('food-info', {
               context: 'food',
@@ -244,6 +277,7 @@ const BackTopBar = () => {
   return (
     <View className="flex w-full flex-row items-center justify-between ">
       <TouchableOpacity
+        testID="back-button"
         className="flex flex-row items-center"
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

@@ -6,10 +6,13 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL'),
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'),
-);
+const supabaseUrl = Deno.env.get('SUPABASE_URL');
+const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+if (!supabaseUrl || !serviceRoleKey) {
+  throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set');
+}
+
+const supabase = createClient(supabaseUrl, serviceRoleKey);
 
 const BATCH_SIZE = 100;
 
@@ -46,7 +49,20 @@ Deno.serve(async (req) => {
   }
 
   // 2. Fetch user push tokens
-  const { data: userDevices } = await supabase.from('user_devices').select('push_token');
+  const { data: userDevices, error: devicesError } = await supabase
+    .from('user_devices')
+    .select('push_token');
+
+  if (!userDevices) {
+    console.error('❌ Failed to fetch user devices:', devicesError);
+    return new Response(
+      JSON.stringify({ error: 'Failed to fetch user devices', details: devicesError }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
+  }
 
   console.log('🔍 User devices:', JSON.stringify(userDevices, null, 2));
 

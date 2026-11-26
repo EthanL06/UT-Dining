@@ -38,8 +38,8 @@ export default function DashboardSkeleton() {
           </Table.Thead>
           <Table.Tbody>
             {/* Generate 5 skeleton rows */}
-            {Array.from({ length: 5 }).map((_, index) => (
-              <Table.Tr key={index}>
+            {Array.from({ length: 5 }, (_, index) => `skeleton-row-${index}`).map((rowKey) => (
+              <Table.Tr key={rowKey}>
                 {/* Name column with avatar and text */}
                 <Table.Td>
                   <Group gap="sm">

@@ -21,7 +21,7 @@ import { useForm } from '@mantine/form';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { IconCopy, IconPlus, IconTrash, IconX } from '@tabler/icons-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { paymentMethodOptions } from '@/lib/payment-methods';
 import type { Location, LocationType, MealTime, TimeRange } from '@/types/location';
 
@@ -236,14 +236,14 @@ export function AddLocationModal({
       latitude: (value) => {
         if (!value || String(value).trim() === '') return 'Latitude is required';
         const num = Number(value);
-        if (isNaN(num)) return 'Latitude must be a valid number';
+        if (Number.isNaN(num)) return 'Latitude must be a valid number';
         if (num < -90 || num > 90) return 'Latitude must be between -90 and 90';
         return null;
       },
       longitude: (value) => {
         if (!value || String(value).trim() === '') return 'Longitude is required';
         const num = Number(value);
-        if (isNaN(num)) return 'Longitude must be a valid number';
+        if (Number.isNaN(num)) return 'Longitude must be a valid number';
         if (num < -180 || num > 180) return 'Longitude must be between -180 and 180';
         return null;
       },
@@ -271,12 +271,16 @@ export function AddLocationModal({
     }
   }, [opened, form.values, selectedPaymentMethods, mealTimes, initialFormData]);
 
+  const onModalClosed = useEffectEvent(() => {
+    resetForm();
+  });
+
   // Reset form when modal closes
   useEffect(() => {
     if (!opened) {
       // Small delay to ensure modal animation completes before resetting
       const timeoutId = setTimeout(() => {
-        resetForm();
+        onModalClosed();
       }, 150);
 
       return () => clearTimeout(timeoutId);
@@ -291,29 +295,33 @@ export function AddLocationModal({
     }
   }, [opened, editingLocation]);
 
+  const populateForm = useEffectEvent((editing: Location | null) => {
+    if (editing) {
+      const initialValues = getInitialValues();
+      form.setValues(initialValues);
+      setSelectedPaymentMethods(editing.methods_of_payment || []);
+      setMealTimes(editing.meal_times || []);
+    } else {
+      form.reset();
+      setSelectedPaymentMethods([]);
+      setMealTimes([]);
+    }
+
+    // Clear errors when modal opens
+    setServiceHoursError(null);
+    setPaymentMethodsError(null);
+    setMealTimesError(null);
+    setImageError(false);
+
+    // Reset initial form data when modal opens
+    setInitialFormData(null);
+  });
+
   // Update form values and payment methods when editing location changes
   useEffect(() => {
     // Only update form when modal is opening, not when closing
     if (opened) {
-      if (localEditingLocation) {
-        const initialValues = getInitialValues();
-        form.setValues(initialValues);
-        setSelectedPaymentMethods(localEditingLocation.methods_of_payment || []);
-        setMealTimes(localEditingLocation.meal_times || []);
-      } else {
-        form.reset();
-        setSelectedPaymentMethods([]);
-        setMealTimes([]);
-      }
-
-      // Clear errors when modal opens
-      setServiceHoursError(null);
-      setPaymentMethodsError(null);
-      setMealTimesError(null);
-      setImageError(false);
-
-      // Reset initial form data when modal opens
-      setInitialFormData(null);
+      populateForm(localEditingLocation);
     }
   }, [localEditingLocation, opened]);
 
@@ -415,7 +423,7 @@ export function AddLocationModal({
 
       // Close modal (reset will be handled by useEffect)
       onClose();
-    } catch (error) {
+    } catch {
       // Handle unexpected errors
       notifications.show({
         title: 'Submission Error',

@@ -2,7 +2,7 @@
 
 import type { Json } from '@ut-dining/supabase';
 import { createClient } from '@/lib/supabase/server';
-import type { Location, LocationType } from '@/types/location';
+import type { Location } from '@/types/location';
 
 export async function addLocation(location: Location) {
   const supabase = await createClient();

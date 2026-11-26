@@ -2,7 +2,7 @@ import { FlashList } from '@shopify/flash-list';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { BicepsFlexed, Flame, Wheat } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
-import { useEffect } from 'react';
+import { useEffect, useEffectEvent } from 'react';
 import { Text, View } from 'react-native';
 import { SheetProvider } from 'react-native-actions-sheet';
 import { Container } from '~/components/Container';
@@ -43,13 +43,16 @@ const FoodScreen = () => {
   // Filter out serving size from nutrition data
   const nutritionDataFiltered = nutritionData.filter((item) => item.key !== 'Serving Size');
 
-  // biome-ignorelint/correctness/useExhaustiveDependencies: analytics only
-  useEffect(() => {
+  const trackScreen = useEffectEvent(() => {
     analytics.screen(`${food}`, {
       location,
       menu,
       category,
     });
+  });
+
+  useEffect(() => {
+    trackScreen();
   }, []);
   return (
     <SheetProvider context="food">

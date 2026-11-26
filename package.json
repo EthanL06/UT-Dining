@@ -12,6 +12,7 @@
     "dev:mobile": "pnpm --filter @ut-dining/mobile start",
     "dev:ios": "pnpm --filter @ut-dining/mobile ios",
     "dev:android": "pnpm --filter @ut-dining/mobile android",
+    "e2e:ios": "./scripts/qa/mobile-e2e.sh",
     "scrape": "pnpm --filter @ut-dining/scraper start",
     "lint": "biome check",
     "fix": "biome check --write",

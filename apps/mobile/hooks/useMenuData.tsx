@@ -1,19 +1,37 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toCentralTime } from '@ut-dining/core';
+import { useEffect, useMemo, useState } from 'react';
 import {
   getLocationMenuData,
   getLocationMenuNames,
   type Location,
 } from '~/services/database/database';
-import { getTodayInCentralTime } from '~/utils/date';
+import {
+  addDaysToDate,
+  createDateFromString,
+  formatDateForAPI,
+  getTodayInCentralTime,
+} from '~/utils/date';
+import { getMealTimes } from '~/utils/locations';
 import { useDatabase } from './useDatabase';
+
+const pickDefaultMenu = (
+  menuNames: (string | null)[],
+  mealTimes: ReturnType<typeof getMealTimes>,
+) => {
+  const now = toCentralTime().time;
+  const breakfastEnd = mealTimes?.breakfast?.closeTime ?? 1100;
+  const lunchEnd = mealTimes?.lunch?.closeTime ?? 1700;
+  const meal = now < breakfastEnd ? 'Breakfast' : now < lunchEnd ? 'Lunch' : 'Dinner';
+  return menuNames.find((name) => name === meal) ?? menuNames[0];
+};
+
+const ADJACENT_DAY_PREFETCH_DELAY_MS = 300;
 
 export function useMenuData(location: string, date?: string) {
   const db = useDatabase();
   const queryClient = useQueryClient();
   const [selectedMenu, setSelectedMenu] = useState<string | null>(null);
-  const [isMenuSwitching, setIsMenuSwitching] = useState(false);
-  const prevSelectedMenuRef = useRef<string | null>(null);
 
   // Use provided date or default to today
   const targetDate = date || getTodayInCentralTime();
@@ -32,8 +50,10 @@ export function useMenuData(location: string, date?: string) {
     enabled: !!location,
   });
 
-  // Auto-select first menu if none selected
-  const defaultMenu = selectedMenu || menuNames[0];
+  const defaultMenu = useMemo(() => {
+    if (selectedMenu && menuNames.includes(selectedMenu)) return selectedMenu;
+    return pickDefaultMenu(menuNames, getMealTimes(db, location));
+  }, [selectedMenu, menuNames, db, location]);
 
   // Prefetch all menu data for instant switching
   useEffect(() => {
@@ -50,6 +70,34 @@ export function useMenuData(location: string, date?: string) {
     }
   }, [menuNames, location, db, queryClient, targetDate]);
 
+  // Keep the days next to the selected date ready after the current day has settled
+  useEffect(() => {
+    if (!location) return;
+    const timer = setTimeout(() => {
+      for (const offset of [1, -1]) {
+        const date = formatDateForAPI(addDaysToDate(createDateFromString(targetDate), offset));
+        queryClient
+          .fetchQuery({
+            queryKey: ['menuNames', location, date],
+            queryFn: () => getLocationMenuNames(db, location, date),
+            staleTime: 5 * 60 * 1000,
+          })
+          .then((names) => {
+            for (const menuName of names) {
+              if (!menuName) continue;
+              queryClient.prefetchQuery({
+                queryKey: ['menuData', location, menuName, date],
+                queryFn: () => getLocationMenuData(db, location, menuName, date),
+                staleTime: 5 * 60 * 1000,
+              });
+            }
+          })
+          .catch(() => {});
+      }
+    }, ADJACENT_DAY_PREFETCH_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [location, targetDate, db, queryClient]);
+
   // Query for current menu data (should be instant due to prefetching)
   const {
     data: menuData = null,
@@ -62,32 +110,8 @@ export function useMenuData(location: string, date?: string) {
     gcTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: false,
     enabled: !!location && !!defaultMenu,
+    placeholderData: keepPreviousData,
   });
-
-  // Reset selected menu when date changes
-  useEffect(() => {
-    setSelectedMenu(null);
-  }, []);
-
-  // Track menu switching state
-  useEffect(() => {
-    if (defaultMenu && prevSelectedMenuRef.current !== defaultMenu) {
-      if (prevSelectedMenuRef.current !== null) {
-        setIsMenuSwitching(true);
-      }
-      prevSelectedMenuRef.current = defaultMenu;
-    }
-  }, [defaultMenu]);
-
-  // Reset switching state when data is loaded
-  useEffect(() => {
-    if (!isLoadingMenuData && isMenuSwitching) {
-      const timer = setTimeout(() => {
-        setIsMenuSwitching(false);
-      }, 200); // Small delay to ensure smooth transition
-      return () => clearTimeout(timer);
-    }
-  }, [isLoadingMenuData, isMenuSwitching]);
 
   // Transform menu names to filters format
   const filters = useMemo(
@@ -109,6 +133,5 @@ export function useMenuData(location: string, date?: string) {
     selectedMenu: defaultMenu,
     setSelectedMenu,
     filters,
-    isSwitchingMenus: isMenuSwitching,
   };
 }

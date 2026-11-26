@@ -1,7 +1,13 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import type { AppConfig, CreditsConfig, HelpSupportConfig } from '@/types/config';
+import type {
+  AppConfig,
+  Contributor,
+  CreditsConfig,
+  HelpSupportConfig,
+  HelpSupportLink,
+} from '@/types/config';
 
 // About Section - App Configuration
 export async function getAppConfig(): Promise<AppConfig> {
@@ -106,9 +112,9 @@ export async function getCreditsConfig(): Promise<CreditsConfig> {
     };
   }
 
-  const contributors = (data?.credits_contributors as any[]) || [];
+  const contributors = (data?.credits_contributors as Contributor[] | null) || [];
   return {
-    contributors: contributors.map((contributor: any) => ({
+    contributors: contributors.map((contributor) => ({
       id: contributor.id,
       name: contributor.name,
       order: contributor.order,
@@ -145,9 +151,9 @@ export async function updateCreditsConfig(config: CreditsConfig): Promise<Credit
       return config; // Return the input config as fallback
     }
 
-    const contributors = (insertData.credits_contributors as any[]) || [];
+    const contributors = (insertData.credits_contributors as Contributor[] | null) || [];
     return {
-      contributors: contributors.map((contributor: any) => ({
+      contributors: contributors.map((contributor) => ({
         id: contributor.id,
         name: contributor.name,
         order: contributor.order,
@@ -174,9 +180,9 @@ export async function updateCreditsConfig(config: CreditsConfig): Promise<Credit
     return config; // Return the input config as fallback
   }
 
-  const contributors = (data.credits_contributors as any[]) || [];
+  const contributors = (data.credits_contributors as Contributor[] | null) || [];
   return {
-    contributors: contributors.map((contributor: any) => ({
+    contributors: contributors.map((contributor) => ({
       id: contributor.id,
       name: contributor.name,
       order: contributor.order,
@@ -198,9 +204,9 @@ export async function getHelpSupportConfig(): Promise<HelpSupportConfig> {
     };
   }
 
-  const links = (data?.support_links as any[]) || [];
+  const links = (data?.support_links as HelpSupportLink[] | null) || [];
   return {
-    links: links.map((link: any) => ({
+    links: links.map((link) => ({
       id: link.id,
       label: link.label,
       url: link.url,
@@ -240,9 +246,9 @@ export async function updateHelpSupportConfig(
       return config; // Return the input config as fallback
     }
 
-    const links = (insertData.support_links as any[]) || [];
+    const links = (insertData.support_links as HelpSupportLink[] | null) || [];
     return {
-      links: links.map((link: any) => ({
+      links: links.map((link) => ({
         id: link.id,
         label: link.label,
         url: link.url,
@@ -270,9 +276,9 @@ export async function updateHelpSupportConfig(
     return config; // Return the input config as fallback
   }
 
-  const links = (data.support_links as any[]) || [];
+  const links = (data.support_links as HelpSupportLink[] | null) || [];
   return {
-    links: links.map((link: any) => ({
+    links: links.map((link) => ({
       id: link.id,
       label: link.label,
       url: link.url,

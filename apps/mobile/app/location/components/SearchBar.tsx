@@ -41,6 +41,7 @@ const SearchBar = ({ query, setQuery, onFocus, onBlur, isSearchFocused }: Props)
       >
         <Search size={18} color={isDarkMode ? '#aaa' : COLORS['ut-grey']} />
         <TextInput
+          testID="menu-search-input"
           ref={inputRef}
           className={cn(
             'ml-2 min-h-4 flex-1 text-base leading-tight',

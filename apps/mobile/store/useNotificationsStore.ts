@@ -22,19 +22,13 @@ const notificationsStorage = {
 interface NotificationsState {
   lastVisited: number | null;
   setLastVisited: (timestamp: number) => void;
-  initializeLastVisited: () => void;
 }
 
 export const useNotificationsStore = create<NotificationsState>((set) => ({
-  lastVisited: null,
+  lastVisited: notificationsStorage.getLastVisited(),
 
   setLastVisited: (timestamp: number) => {
     notificationsStorage.setLastVisited(timestamp);
     set({ lastVisited: timestamp });
-  },
-
-  initializeLastVisited: () => {
-    const stored = notificationsStorage.getLastVisited();
-    set({ lastVisited: stored });
   },
 }));

@@ -1,5 +1,4 @@
 import { Divider, Stack, Title } from '@mantine/core';
-import React from 'react';
 import { NotificationForm } from '@/components/dashboard/notifications';
 import { getNotificationTypes, getScheduledNotifications } from './action';
 import { ScheduledNotificationsClient } from './scheduled-notifications-client';

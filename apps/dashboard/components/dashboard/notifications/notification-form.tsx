@@ -98,12 +98,9 @@ export function NotificationForm({
     setIsLoading(true);
 
     try {
-      let result;
-      if (values.isScheduled) {
-        result = await scheduleNotification(values);
-      } else {
-        result = await sendNotification(values);
-      }
+      const result = values.isScheduled
+        ? await scheduleNotification(values)
+        : await sendNotification(values);
 
       if (result.success) {
         notifications.show({
@@ -120,7 +117,7 @@ export function NotificationForm({
           color: 'red',
         });
       }
-    } catch (error) {
+    } catch {
       notifications.show({
         title: 'Error',
         message: 'An unexpected error occurred. Please try again.',

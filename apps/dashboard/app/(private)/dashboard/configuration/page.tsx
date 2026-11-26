@@ -1,10 +1,11 @@
 import { Skeleton, Stack, Title } from '@mantine/core';
-import React, { Suspense } from 'react';
+import React from 'react';
 import {
   AboutSection,
   CreditsSection,
   HelpSupportSection,
 } from '@/components/dashboard/configuration';
+import type { AppConfig, CreditsConfig, HelpSupportConfig } from '@/types/config';
 import { getAppConfig, getCreditsConfig, getHelpSupportConfig } from './action';
 
 function ConfigurationContent() {
@@ -37,9 +38,9 @@ async function ConfigurationSections({
   creditsConfigPromise,
   helpSupportConfigPromise,
 }: {
-  appConfigPromise: Promise<any>;
-  creditsConfigPromise: Promise<any>;
-  helpSupportConfigPromise: Promise<any>;
+  appConfigPromise: Promise<AppConfig>;
+  creditsConfigPromise: Promise<CreditsConfig>;
+  helpSupportConfigPromise: Promise<HelpSupportConfig>;
 }) {
   // Wait for all data to load
   const [appConfig, creditsConfig, helpSupportConfig] = await Promise.all([

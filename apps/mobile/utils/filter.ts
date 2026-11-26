@@ -1,12 +1,12 @@
 import type { FoodItem } from '~/services/database/database';
 import type * as schema from '~/services/database/schema';
 import type { FiltersState } from '~/store/useFiltersStore';
-import { useMealPlanStore } from '~/store/useMealPlanStore';
 
 export const filterFoodItems = (
   foodItems: FoodItem[],
   filters: FiltersState['filters'],
   favorites: schema.Favorite[],
+  isInMealPlan: (item: FoodItem) => boolean = () => false,
 ) => {
   return foodItems.filter((item) => {
     // Check favorites filter
@@ -15,7 +15,7 @@ export const filterFoodItems = (
     }
 
     // Check meal plan filter
-    if (filters.mealPlan && !useMealPlanStore.getState().isMealPlanItem(item.name as string)) {
+    if (filters.mealPlan && !isInMealPlan(item)) {
       return false;
     }
 

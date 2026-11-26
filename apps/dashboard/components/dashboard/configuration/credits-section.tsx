@@ -15,7 +15,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { ActionIcon, Button, Group, Paper, Stack, Text, TextInput, Title } from '@mantine/core';
+import { ActionIcon, Button, Group, Paper, Stack, Text, Title } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconDeviceFloppy, IconPlus } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';

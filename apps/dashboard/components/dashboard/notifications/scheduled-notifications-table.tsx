@@ -1,9 +1,8 @@
 'use client';
 
 import { ActionIcon, Badge, Group, Paper, Table, Text, Tooltip } from '@mantine/core';
-import { IconExternalLink, IconInfoCircle, IconTrash } from '@tabler/icons-react';
+import { IconExternalLink, IconTrash } from '@tabler/icons-react';
 import type { Tables } from '@ut-dining/supabase';
-import React from 'react';
 
 type ScheduledNotification = Tables<'notifications'> & {
   notification_types: Pick<Tables<'notification_types'>, 'name'>;

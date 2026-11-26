@@ -1,0 +1,18 @@
+appId: com.ethanl06.ut-dining.dev
+name: Every tab opens
+---
+- runFlow: ../subflows/start.yaml
+- tapOn: Map
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: map
+- tapOn: Notifications
+- extendedWaitUntil:
+    visible: Stay updated with the latest dining alerts and updates.
+    timeout: 5000
+- assertVisible: 'Maintenance Underway(,.*)?'
+- takeScreenshot: notifications
+- tapOn: Home
+- extendedWaitUntil:
+    visible: '.*Your planned meals.*'
+    timeout: 5000

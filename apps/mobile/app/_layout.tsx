@@ -1,11 +1,16 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  focusManager,
+  onlineManager,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { Stack } from 'expo-router';
-import { openDatabaseSync, SQLiteProvider } from 'expo-sqlite';
+import { openDatabaseSync, type SQLiteDatabase, SQLiteProvider } from 'expo-sqlite';
 import { PostHogProvider } from 'posthog-react-native';
 import { Suspense, useEffect } from 'react';
-import { ActivityIndicator, Appearance } from 'react-native';
+import { ActivityIndicator, Appearance, AppState } from 'react-native';
 import { SheetProvider } from 'react-native-actions-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NotifierWrapper } from 'react-native-notifier';
@@ -19,6 +24,7 @@ import type * as schema from '../services/database/schema';
 
 import '../global.css';
 import * as Device from 'expo-device';
+import * as Network from 'expo-network';
 import { VersionCheckProvider } from '~/components/VersionCheckProvider';
 import { usePostHogScreens } from '~/hooks/usePostHogScreens';
 import { POSTHOG_API_KEY, POSTHOG_CONFIG } from '~/services/analytics/posthog';
@@ -34,9 +40,37 @@ configureReanimatedLogger({
   strict: false, // Reanimated runs in strict mode by default
 });
 
+const CONNECTION_PRAGMAS = 'PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 3000;';
+
 const expoDb = openDatabaseSync(DATABASE_NAME);
+expoDb.execSync(CONNECTION_PRAGMAS);
+
+const configureConnection = (database: SQLiteDatabase) => database.execAsync(CONNECTION_PRAGMAS);
 const db = drizzle<typeof schema>(expoDb);
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      networkMode: 'always',
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    },
+  },
+});
+
+focusManager.setEventListener((handleFocus) => {
+  const subscription = AppState.addEventListener('change', (state) => {
+    handleFocus(state === 'active');
+  });
+  return () => subscription.remove();
+});
+
+onlineManager.setEventListener((setOnline) => {
+  Network.getNetworkStateAsync().then((state) => setOnline(state.isConnected !== false));
+  const subscription = Network.addNetworkStateListener((state) => {
+    setOnline(state.isConnected !== false);
+  });
+  return () => subscription.remove();
+});
 
 const AppContent = () => {
   const { success, error } = useMigrations(db, migrations);
@@ -65,11 +99,14 @@ const AppContent = () => {
     }
   }, [success, error, incrementLaunchCount]);
 
+  if (!success && !error) return null;
+
   return (
     <QueryClientProvider client={queryClient}>
       <Suspense fallback={<ActivityIndicator size="small" />}>
         <SQLiteProvider
           databaseName={DATABASE_NAME}
+          onInit={configureConnection}
           options={{ enableChangeListener: true }}
           useSuspense
         >

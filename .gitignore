@@ -31,3 +31,6 @@ android
 
 # Written by `next dev` (Next.js 16 agent notes)
 apps/*/AGENTS.md
+
+.context/
+.lavish/

@@ -123,7 +123,7 @@ export default function Faq() {
               {filteredFAQs.length > 0 ? (
                 filteredFAQs.map((item, index) => (
                   <motion.div
-                    key={index}
+                    key={item.question}
                     variants={itemVariants}
                     className="overflow-hidden rounded-lg"
                   >

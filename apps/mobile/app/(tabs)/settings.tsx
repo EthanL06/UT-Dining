@@ -28,6 +28,7 @@ import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 import { Container } from '~/components/Container';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationPermissions } from '~/hooks/useLocationPermissions';
+import { forceMenuSync } from '~/hooks/useMenuSync';
 import { useNotificationPermissions } from '~/hooks/useNotificationPermissions';
 import { getAppInformation } from '~/services/database/database';
 import type { AppInformation } from '~/services/database/schema';
@@ -37,7 +38,7 @@ import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getColor } from '~/utils/colors';
-import { fetchMenuData } from '~/utils/queries';
+import { formatTimeSinceSync } from '~/utils/time';
 import { cn } from '~/utils/utils';
 
 interface SettingItemProps {
@@ -51,6 +52,7 @@ interface SettingItemProps {
   hasChevron?: boolean;
   onPress?: () => void;
   isDarkMode: boolean;
+  testID?: string;
 }
 
 const ITUNES_ITEM_ID = '6743042002';
@@ -66,8 +68,11 @@ const SettingItem = ({
   hasChevron = false,
   onPress = () => {},
   isDarkMode,
+  testID,
 }: SettingItemProps) => (
   <TouchableOpacity
+    testID={hasToggle ? undefined : testID}
+    accessible={!hasToggle}
     className={cn(
       'flex-row items-center justify-between border-b py-3',
       isDarkMode ? 'border-neutral-800' : 'border-gray-100',
@@ -102,9 +107,15 @@ const SettingItem = ({
     </View>
     {hasToggle && (
       <Switch
+        testID={testID}
+        accessibilityLabel={title}
         value={toggleValue}
         onValueChange={onToggle}
-        trackColor={{ false: '#D1D5DB', true: getColor('ut-burnt-orange', false) }}
+        trackColor={{
+          false: isDarkMode ? '#3A3A3C' : '#D1D5DB',
+          true: getColor('ut-burnt-orange', false),
+        }}
+        ios_backgroundColor={isDarkMode ? '#3A3A3C' : '#D1D5DB'}
         thumbColor="#FFFFFF"
       />
     )}
@@ -379,11 +390,10 @@ const LocationSettingsSection = ({ isDarkMode }: { isDarkMode: boolean }): React
 };
 
 const SyncDataSection = ({ isDarkMode }: { isDarkMode: boolean }): React.JSX.Element => {
-  const { getTimeSinceLastSync } = useDataSyncStore();
+  const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
   const db = useDatabase();
   const queryClient = useQueryClient();
-  const [isSyncing, setIsSyncing] = React.useState(false);
-  const [syncError, setSyncError] = React.useState<string | null>(null);
+  const [syncStatus, setSyncStatus] = React.useState<'idle' | 'syncing' | 'failed'>('idle');
   const [currentTime, setCurrentTime] = React.useState(Date.now());
 
   // Update every minute to keep the time display current
@@ -395,23 +405,23 @@ const SyncDataSection = ({ isDarkMode }: { isDarkMode: boolean }): React.JSX.Ele
     return () => clearInterval(interval);
   }, []);
 
-  const timeSinceSync = getTimeSinceLastSync();
+  const isSyncing = syncStatus === 'syncing';
+  const syncError = syncStatus === 'failed' ? 'Failed to sync data' : null;
+  const timeSinceSync = lastSyncedAt === null ? Infinity : Math.max(0, currentTime - lastSyncedAt);
   const lastSyncText = formatTimeSinceSync(timeSinceSync);
 
   const handleSync = async () => {
     if (!db || isSyncing) return;
 
-    setIsSyncing(true);
-    setSyncError(null);
+    setSyncStatus('syncing');
 
     try {
-      await fetchMenuData(db, true);
-      await queryClient.invalidateQueries({ queryKey: ['menuData'] });
+      await forceMenuSync(db, queryClient);
+      setCurrentTime(Date.now());
+      setSyncStatus('idle');
     } catch (error) {
-      setSyncError('Failed to sync data');
+      setSyncStatus('failed');
       console.warn('Sync failed:', error);
-    } finally {
-      setIsSyncing(false);
     }
   };
 
@@ -427,6 +437,7 @@ const SyncDataSection = ({ isDarkMode }: { isDarkMode: boolean }): React.JSX.Ele
         'flex-row items-center justify-between border-b py-3',
         isDarkMode ? 'border-neutral-800' : 'border-gray-100',
       )}
+      testID="settings-sync-data"
       onPress={handleSync}
       disabled={isSyncing}
       activeOpacity={isSyncing ? 1 : 0.7}
@@ -447,6 +458,7 @@ const SyncDataSection = ({ isDarkMode }: { isDarkMode: boolean }): React.JSX.Ele
             Sync Data
           </Text>
           <Text
+            testID="settings-sync-status"
             className={cn(
               'text-sm',
               syncError ? 'text-red-500' : isDarkMode ? 'text-gray-400' : 'text-gray-500',
@@ -475,27 +487,6 @@ const VersionInfo = ({ isDarkMode }: VersionInfoProps): React.JSX.Element => {
       )}
     </View>
   );
-};
-
-const formatTimeSinceSync = (timeSinceSync: number): string => {
-  if (timeSinceSync === Infinity) {
-    return 'Never synced';
-  }
-
-  const seconds = Math.floor(timeSinceSync / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  if (days > 0) {
-    return `${days} day${days === 1 ? '' : 's'} ago`;
-  } else if (hours > 0) {
-    return `${hours} hour${hours === 1 ? '' : 's'} ago`;
-  } else if (minutes > 0) {
-    return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
-  } else {
-    return 'Just now';
-  }
 };
 
 const SettingsPage = () => {
@@ -541,6 +532,7 @@ const SettingsPage = () => {
           <SettingItem
             activeOpacity={0.7}
             title="Favorites"
+            testID="settings-favorites"
             Icon={Heart}
             hasChevron
             isDarkMode={isDarkMode}
@@ -554,6 +546,7 @@ const SettingsPage = () => {
           <SettingItem
             activeOpacity={0.7}
             title="Meal Plan"
+            testID="settings-meal-plan"
             Icon={ChefHat}
             hasChevron
             isDarkMode={isDarkMode}
@@ -567,6 +560,7 @@ const SettingsPage = () => {
           <SettingItem
             activeOpacity={0.7}
             title="Filters"
+            testID="settings-filters"
             Icon={Filter}
             hasChevron
             isDarkMode={isDarkMode}
@@ -579,6 +573,7 @@ const SettingsPage = () => {
           <SectionHeader title="Display" className="mt-4" isDarkMode={isDarkMode} />
           <SettingItem
             title="Dark Mode"
+            testID="settings-dark-mode-switch"
             Icon={Moon}
             hasToggle
             toggleValue={isDarkMode}
@@ -587,6 +582,7 @@ const SettingsPage = () => {
           />
           <SettingItem
             title="Colorblind Mode"
+            testID="settings-colorblind-switch"
             Icon={Accessibility}
             hasToggle
             toggleValue={isColorBlindMode}
@@ -595,6 +591,7 @@ const SettingsPage = () => {
           />
           <SettingItem
             title="Use Colloquial Names"
+            testID="settings-colloquial-names-switch"
             Icon={Type}
             hasToggle
             toggleValue={useColloquialNames}
