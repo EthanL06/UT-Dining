@@ -1,9 +1,24 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { AppStoreButton } from '@/components/AppStoreButton';
+import { JsonLd } from '@/components/JsonLd';
 import { Phone } from '@/components/Phone';
 import { SiteFooter } from '@/components/SiteFooter';
 import { SiteHeader } from '@/components/SiteHeader';
 import { getChangelog } from '@/lib/changelog';
+import {
+  APP_STORE_URL,
+  absoluteUrl,
+  GITHUB_URL,
+  pageMetadata,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+} from '@/lib/site';
+
+export const revalidate = 300;
+
+export const metadata: Metadata = pageMetadata({ description: SITE_DESCRIPTION, path: '/' });
 
 type Tile = {
   title: string;
@@ -110,6 +125,7 @@ function FeatureTile({ tile }: { tile: Tile }) {
       <Phone
         src={tile.src}
         alt={tile.alt}
+        preload={big}
         className={
           tile.layout === 'below'
             ? '-translate-x-1/2 absolute top-34 left-1/2 w-55'
@@ -124,65 +140,106 @@ function FeatureTile({ tile }: { tile: Tile }) {
 
 export default async function Home() {
   const [latest] = await getChangelog();
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': `${SITE_URL}/#organization`,
+        name: SITE_NAME,
+        url: absoluteUrl('/'),
+        logo: absoluteUrl('/icon-512.png'),
+        sameAs: [APP_STORE_URL, GITHUB_URL],
+      },
+      {
+        '@type': 'WebSite',
+        '@id': `${SITE_URL}/#website`,
+        name: SITE_NAME,
+        url: absoluteUrl('/'),
+        description: SITE_DESCRIPTION,
+        inLanguage: 'en-US',
+        publisher: { '@id': `${SITE_URL}/#organization` },
+      },
+      {
+        '@type': 'MobileApplication',
+        '@id': `${SITE_URL}/#app`,
+        name: SITE_NAME,
+        description: SITE_DESCRIPTION,
+        url: absoluteUrl('/'),
+        downloadUrl: APP_STORE_URL,
+        installUrl: APP_STORE_URL,
+        operatingSystem: 'iOS',
+        applicationCategory: 'LifestyleApplication',
+        ...(latest ? { softwareVersion: latest.version } : {}),
+        image: absoluteUrl('/icon-512.png'),
+        screenshot: tiles.map((tile) => absoluteUrl(tile.src)),
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+        publisher: { '@id': `${SITE_URL}/#organization` },
+      },
+    ],
+  };
 
   return (
     <div className="min-h-screen">
+      <JsonLd data={structuredData} />
       <SiteHeader />
 
-      <section className="mx-auto max-w-290 px-6 pt-16 pb-14 md:pt-18">
-        <h1 className="max-w-225 font-bold text-[clamp(44px,8vw,80px)] leading-[0.98] tracking-[-0.045em]">
-          Hungry? Here's everything open on campus.
-        </h1>
-        <div className="mt-7 flex flex-wrap items-end justify-between gap-6">
-          <p className="max-w-120 text-[19px] text-muted leading-normal">
-            Your companion for dining at UT Austin. Browse menus, check hours, and find your next
-            meal.
-          </p>
-          <AppStoreButton />
-        </div>
-      </section>
-
-      <section id="features" className="mx-auto max-w-290 scroll-mt-6 px-6">
-        <h2 className="sr-only">Features</h2>
-        <div className="grid grid-cols-1 gap-4 md:auto-rows-[300px] md:grid-cols-6">
-          {tiles.map((tile) => (
-            <FeatureTile key={tile.title} tile={tile} />
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto mt-4 grid max-w-290 grid-cols-1 gap-4 px-6 md:grid-cols-2">
-        <div className="rounded-[28px] bg-tile p-10">
-          <h2 className="font-semibold text-accent-text text-sm">Why it exists</h2>
-          <p className="mt-3 text-[22px] leading-[1.45] tracking-[-0.01em]">
-            Figuring out where to eat on campus shouldn't be a chore. UT Dining gathers every spot,
-            from dining halls to cafés and markets, into one simple app, built by students, for
-            students.
-          </p>
-        </div>
-        {latest && (
-          <div className="flex flex-col justify-between gap-6 rounded-[28px] bg-tile p-10">
-            <div>
-              <h2 className="font-semibold text-accent-text text-sm">
-                What's new in {latest.version}
-              </h2>
-              {latest.summary && (
-                <p className="mt-3 font-semibold text-[22px] tracking-[-0.01em]">
-                  {latest.summary}
-                </p>
-              )}
-              <ul className="mt-3 space-y-1 text-[17px] text-muted leading-normal">
-                {latest.changes.slice(0, 4).map((change) => (
-                  <li key={change.title}>{change.title}</li>
-                ))}
-              </ul>
-            </div>
-            <Link href="/changelog/" className="font-semibold hover:text-accent-text">
-              See the changelog
-            </Link>
+      <main>
+        <section className="mx-auto max-w-290 px-6 pt-16 pb-14 md:pt-18">
+          <h1 className="max-w-225 font-bold text-[clamp(44px,8vw,80px)] leading-[0.98] tracking-[-0.045em]">
+            Hungry? Here's everything open on campus.
+          </h1>
+          <div className="mt-7 flex flex-wrap items-end justify-between gap-6">
+            <p className="max-w-120 text-[19px] text-muted leading-normal">
+              Your companion for dining at UT Austin. Browse menus, check hours, and find your next
+              meal.
+            </p>
+            <AppStoreButton />
           </div>
-        )}
-      </section>
+        </section>
+
+        <section id="features" className="mx-auto max-w-290 scroll-mt-6 px-6">
+          <h2 className="sr-only">Features</h2>
+          <div className="grid grid-cols-1 gap-4 md:auto-rows-[300px] md:grid-cols-6">
+            {tiles.map((tile) => (
+              <FeatureTile key={tile.title} tile={tile} />
+            ))}
+          </div>
+        </section>
+
+        <section className="mx-auto mt-4 grid max-w-290 grid-cols-1 gap-4 px-6 md:grid-cols-2">
+          <div className="rounded-[28px] bg-tile p-10">
+            <h2 className="font-semibold text-accent-text text-sm">Why it exists</h2>
+            <p className="mt-3 text-[22px] leading-[1.45] tracking-[-0.01em]">
+              Figuring out where to eat on campus shouldn't be a chore. UT Dining gathers every
+              spot, from dining halls to cafés and markets, into one simple app, built by students,
+              for students.
+            </p>
+          </div>
+          {latest && (
+            <div className="flex flex-col justify-between gap-6 rounded-[28px] bg-tile p-10">
+              <div>
+                <h2 className="font-semibold text-accent-text text-sm">
+                  What's new in {latest.version}
+                </h2>
+                {latest.summary && (
+                  <p className="mt-3 font-semibold text-[22px] tracking-[-0.01em]">
+                    {latest.summary}
+                  </p>
+                )}
+                <ul className="mt-3 space-y-1 text-[17px] text-muted leading-normal">
+                  {latest.changes.slice(0, 4).map((change) => (
+                    <li key={change.title}>{change.title}</li>
+                  ))}
+                </ul>
+              </div>
+              <Link href="/changelog/" className="font-semibold hover:text-accent-text">
+                See the changelog
+              </Link>
+            </div>
+          )}
+        </section>
+      </main>
 
       <SiteFooter />
     </div>

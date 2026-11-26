@@ -45,6 +45,8 @@ jobs:
 
       - run: pnpm turbo run build --filter=@ut-dining/website
         env:
+          WEBSITE_STATIC_EXPORT: '1'
+          WEBSITE_SITE_URL: https://longhorn-developers.github.io
           WEBSITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           WEBSITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 

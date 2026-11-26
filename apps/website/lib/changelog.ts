@@ -23,6 +23,8 @@ function compareVersions(a: string, b: string) {
   return 0;
 }
 
+export const CHANGELOG_REVALIDATE_SECONDS = 300;
+
 export type ChangelogSource = { url: string; key: string } | null;
 
 export function changelogSource(): ChangelogSource {
@@ -37,7 +39,10 @@ export async function fetchPublished(source: ChangelogSource): Promise<Changelog
   try {
     const res = await fetch(
       `${url}/rest/v1/changelog?select=version,release_date,summary,changes&is_published=eq.true`,
-      { headers: { apikey: key, Authorization: `Bearer ${key}` } },
+      {
+        headers: { apikey: key, Authorization: `Bearer ${key}` },
+        next: { revalidate: CHANGELOG_REVALIDATE_SECONDS, tags: ['changelog'] },
+      },
     );
     if (!res.ok) {
       console.warn(`Changelog fetch failed with ${res.status}, using content/changelog.json`);
