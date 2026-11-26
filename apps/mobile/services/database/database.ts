@@ -6,7 +6,7 @@ import {
   type MenuDayVersions,
   planMenuDays,
 } from '@ut-dining/core';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import type { SQLiteBindValue, SQLiteDatabase } from 'expo-sqlite';
 import { getTodayInCentralTime } from '~/utils/date';
@@ -478,6 +478,81 @@ export const getLocationMenuData = async (
   }
 };
 
+const FOOD_ITEM_DETAIL_SELECT = {
+  food_name: schema.food_item.name,
+  food_link: schema.food_item.link,
+  allergens: {
+    id: schema.allergens.id,
+    beef: schema.allergens.beef,
+    egg: schema.allergens.egg,
+    fish: schema.allergens.fish,
+    peanuts: schema.allergens.peanuts,
+    pork: schema.allergens.pork,
+    shellfish: schema.allergens.shellfish,
+    soy: schema.allergens.soy,
+    tree_nuts: schema.allergens.tree_nuts,
+    wheat: schema.allergens.wheat,
+    sesame_seeds: schema.allergens.sesame_seeds,
+    vegan: schema.allergens.vegan,
+    vegetarian: schema.allergens.vegetarian,
+    halal: schema.allergens.halal,
+    milk: schema.allergens.milk,
+  },
+  nutrition: {
+    id: schema.nutrition.id,
+    serving_size: schema.nutrition.serving_size,
+    calories: schema.nutrition.calories,
+    total_fat: schema.nutrition.total_fat,
+    saturated_fat: schema.nutrition.saturated_fat,
+    trans_fat: schema.nutrition.trans_fat,
+    cholesterol: schema.nutrition.cholesterol,
+    sodium: schema.nutrition.sodium,
+    total_carbohydrates: schema.nutrition.total_carbohydrates,
+    dietary_fiber: schema.nutrition.dietary_fiber,
+    total_sugars: schema.nutrition.total_sugars,
+    protein: schema.nutrition.protein,
+    vitamin_d: schema.nutrition.vitamin_d,
+    calcium: schema.nutrition.calcium,
+    iron: schema.nutrition.iron,
+    potassium: schema.nutrition.potassium,
+    ingredients: schema.nutrition.ingredients,
+  },
+};
+
+const findFoodItems = (
+  db: ExpoSQLiteDatabase<typeof schema>,
+  locationName: string,
+  itemName: string,
+  date: string,
+) =>
+  db
+    .select({
+      ...FOOD_ITEM_DETAIL_SELECT,
+      menu_name: schema.menu.name,
+      category_title: schema.menu_category.title,
+    })
+    .from(schema.location)
+    .innerJoin(schema.menu, eq(schema.menu.location_id, schema.location.id))
+    .innerJoin(schema.menu_category, eq(schema.menu_category.menu_id, schema.menu.id))
+    .innerJoin(schema.food_item, eq(schema.food_item.menu_category_id, schema.menu_category.id))
+    .leftJoin(schema.allergens, eq(schema.allergens.id, schema.food_item.allergens_id))
+    .leftJoin(schema.nutrition, eq(schema.nutrition.id, schema.food_item.nutrition_id))
+    .where(
+      and(
+        eq(schema.location.name, locationName),
+        eq(schema.menu.date, date),
+        eq(schema.food_item.name, itemName),
+      ),
+    )
+    .execute();
+
+const toFoodItem = (row: Awaited<ReturnType<typeof findFoodItems>>[number]): FoodItem => ({
+  name: row.food_name,
+  link: row.food_link,
+  allergens: (row.allergens ?? undefined) as schema.Allergens | undefined,
+  nutrition: (row.nutrition ?? undefined) as schema.Nutrition | undefined,
+});
+
 /**
  * Retrieves a single food item by its location, menu, category, and item name.
  *
@@ -497,77 +572,29 @@ export const getFoodItem = async (
   itemName: string,
   date?: string,
 ): Promise<FoodItem | null> => {
-  const targetDate = date || getTodayInCentralTime();
-  const data = await db
-    .select({
-      food_name: schema.food_item.name,
-      food_link: schema.food_item.link,
-      allergens: {
-        id: schema.allergens.id,
-        beef: schema.allergens.beef,
-        egg: schema.allergens.egg,
-        fish: schema.allergens.fish,
-        peanuts: schema.allergens.peanuts,
-        pork: schema.allergens.pork,
-        shellfish: schema.allergens.shellfish,
-        soy: schema.allergens.soy,
-        tree_nuts: schema.allergens.tree_nuts,
-        wheat: schema.allergens.wheat,
-        sesame_seeds: schema.allergens.sesame_seeds,
-        vegan: schema.allergens.vegan,
-        vegetarian: schema.allergens.vegetarian,
-        halal: schema.allergens.halal,
-        milk: schema.allergens.milk,
-      },
-      nutrition: {
-        id: schema.nutrition.id,
-        serving_size: schema.nutrition.serving_size,
-        calories: schema.nutrition.calories,
-        total_fat: schema.nutrition.total_fat,
-        saturated_fat: schema.nutrition.saturated_fat,
-        trans_fat: schema.nutrition.trans_fat,
-        cholesterol: schema.nutrition.cholesterol,
-        sodium: schema.nutrition.sodium,
-        total_carbohydrates: schema.nutrition.total_carbohydrates,
-        dietary_fiber: schema.nutrition.dietary_fiber,
-        total_sugars: schema.nutrition.total_sugars,
-        protein: schema.nutrition.protein,
-        vitamin_d: schema.nutrition.vitamin_d,
-        calcium: schema.nutrition.calcium,
-        iron: schema.nutrition.iron,
-        potassium: schema.nutrition.potassium,
-        ingredients: schema.nutrition.ingredients,
-      },
-    })
-    .from(schema.location)
-    .leftJoin(schema.menu, eq(schema.menu.location_id, schema.location.id))
-    .leftJoin(schema.menu_category, eq(schema.menu_category.menu_id, schema.menu.id))
-    .leftJoin(schema.food_item, eq(schema.food_item.menu_category_id, schema.menu_category.id))
-    .leftJoin(schema.allergens, eq(schema.allergens.id, schema.food_item.allergens_id))
-    .leftJoin(schema.nutrition, eq(schema.nutrition.id, schema.food_item.nutrition_id))
-    .where(
-      sql`${schema.location.name} = ${locationName}
-          AND ${schema.menu.name} = ${menuName}
-          AND ${schema.menu.date} = ${targetDate}
-          AND ${schema.menu_category.title} = ${categoryName}
-          AND ${schema.food_item.name} = ${itemName}`,
-    )
-    .execute();
+  const rows = await findFoodItems(db, locationName, itemName, date || getTodayInCentralTime());
+  const match = rows.find(
+    (row) => row.menu_name === menuName && row.category_title === categoryName,
+  );
+  return match ? toFoodItem(match) : null;
+};
 
-  // Return null if no results found
-  if (data.length === 0 || !data[0].food_name) {
-    return null;
-  }
-
-  // Convert the result to a StructuredFoodItem
-  const foodItem: FoodItem = {
-    name: data[0].food_name,
-    link: data[0].food_link,
-    allergens: data[0].allergens as unknown as schema.Allergens,
-    nutrition: data[0].nutrition as unknown as schema.Nutrition,
-  };
-
-  return foodItem;
+export const findServedFoodItem = async (
+  db: ExpoSQLiteDatabase<typeof schema>,
+  locationName: string,
+  itemName: string,
+  menuName: string,
+  categoryName: string,
+  date?: string,
+): Promise<FoodItem | null> => {
+  const rows = await findFoodItems(db, locationName, itemName, date || getTodayInCentralTime());
+  const score = (row: (typeof rows)[number]) =>
+    (row.menu_name === menuName ? 2 : 0) + (row.category_title === categoryName ? 1 : 0);
+  const best = rows.reduce<(typeof rows)[number] | undefined>(
+    (current, row) => (!current || score(row) > score(current) ? row : current),
+    undefined,
+  );
+  return best ? toFoodItem(best) : null;
 };
 
 /**
@@ -582,36 +609,49 @@ export const getFavorites = async (db: ExpoSQLiteDatabase<typeof schema>) => {
   return data;
 };
 
+const favoriteMatch = (foodName: string, locationName: string) =>
+  and(eq(schema.favorites.name, foodName), eq(schema.favorites.location_name, locationName));
+
 /**
- * Checks whether a food item is marked as a favorite.
+ * Checks whether a food item is a favorite at a location.
  *
  * @param db - The Expo SQLite database instance.
  * @param foodName - The name of the food item.
+ * @param locationName - The location the item is served at.
  * @returns A boolean indicating if the item is a favorite.
  */
-export const isFavoriteItem = (db: ExpoSQLiteDatabase<typeof schema>, foodName: string) => {
+export const isFavoriteItem = (
+  db: ExpoSQLiteDatabase<typeof schema>,
+  foodName: string,
+  locationName: string,
+) => {
   const favorite = db
     .select()
     .from(schema.favorites)
-    .where(eq(schema.favorites.name, foodName))
+    .where(favoriteMatch(foodName, locationName))
     .get();
 
   return favorite !== null && favorite !== undefined;
 };
 
 /**
- * Retrieves a single favorite food item by its name.
+ * Retrieves a favorite food item by its name and location.
  *
  * @param db - The Expo SQLite database instance.
  * @param foodName - The name of the food item.
- * @returns A Promise resolving to the favorite item or null.
+ * @param locationName - The location the item was saved from.
+ * @returns The favorite item, or undefined.
  */
-export const getFavoriteItem = (db: ExpoSQLiteDatabase<typeof schema>, foodName: string) => {
-  return db.select().from(schema.favorites).where(eq(schema.favorites.name, foodName)).get();
+export const getFavoriteItem = (
+  db: ExpoSQLiteDatabase<typeof schema>,
+  foodName: string,
+  locationName: string,
+) => {
+  return db.select().from(schema.favorites).where(favoriteMatch(foodName, locationName)).get();
 };
 
 /**
- * Toggles a food item's favorite status:
+ * Toggles a food item's favorite status at a location:
  * - Adds it to favorites if not present.
  * - Removes it if already marked as favorite.
  *
@@ -631,11 +671,10 @@ export const toggleFavorites = async (
   menuName: string,
   categoryName: string,
 ) => {
-  if (isFavoriteItem(db, foodItem.name as string)) {
-    // Remove the item from favorites
+  if (isFavoriteItem(db, foodItem.name as string, locationName)) {
     await db
       .delete(schema.favorites)
-      .where(eq(schema.favorites.name, foodItem.name as string))
+      .where(favoriteMatch(foodItem.name as string, locationName))
       .execute();
 
     return false;
@@ -643,22 +682,22 @@ export const toggleFavorites = async (
 
   // Get nutrition and allergens data
   const nutrition =
-    foodItem.nutrition?.id !== undefined
+    (foodItem.nutrition?.id
       ? db
           .select()
           .from(schema.nutrition)
           .where(eq(schema.nutrition.id, foodItem.nutrition.id))
           .get()
-      : undefined;
+      : undefined) ?? foodItem.nutrition;
 
   const allergens =
-    foodItem.allergens?.id !== undefined
+    (foodItem.allergens?.id
       ? db
           .select()
           .from(schema.allergens)
           .where(eq(schema.allergens.id, foodItem.allergens.id))
           .get()
-      : undefined;
+      : undefined) ?? foodItem.allergens;
 
   // Insert into favorites table
   await db

@@ -72,4 +72,5 @@ export interface LocationDay {
   locationName: string;
   date: string;
   menus: Menu[];
+  complete: boolean;
 }
