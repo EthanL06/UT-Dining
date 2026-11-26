@@ -1,9 +1,7 @@
-import * as Application from 'expo-application';
 import { Stack } from 'expo-router';
-import { History } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
-import { Container } from '~/components/Container';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChangelogEntryCard } from '~/components/changelog/ChangelogEntryView';
 import TopBar from '~/components/TopBar';
 import { refreshChangelog, useChangelogStore } from '~/store/useChangelogStore';
@@ -13,74 +11,77 @@ import { cn } from '~/utils/utils';
 
 const Changelog = () => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
-  const installedVersion = Application.nativeApplicationVersion;
+  const insets = useSafeAreaInsets();
   const entries = useChangelogStore((state) => state.entries);
   const [status, setStatus] = useState<'loading' | 'loaded' | 'failed'>('loading');
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     refreshChangelog().then((loaded) => setStatus(loaded ? 'loaded' : 'failed'));
   }, []);
 
+  const latestVersion = entries[0]?.version;
+  const isExpanded = (version: string) => expanded[version] ?? version === latestVersion;
+
   return (
-    <View style={{ flex: 1, backgroundColor: isDarkMode ? '#171717' : '#fff' }}>
+    <View style={{ flex: 1, backgroundColor: isDarkMode ? '#171717' : '#F7F6F4' }}>
       <Stack.Screen options={{ title: 'Changelog', headerShown: false }} />
-      <Container className="mx-0 gap-y-0" disableBottomPadding>
-        <View className="mt-2 flex gap-y-4 px-6">
-          <TopBar variant="back" />
-          <View>
-            <View className="flex-row items-center gap-x-2">
-              <Text
-                className={cn('font-extrabold text-3xl', isDarkMode ? 'text-white' : 'text-black')}
-              >
-                Changelog
-              </Text>
-              <History size={20} color={COLORS['ut-burnt-orange']} />
-            </View>
-            <Text className={cn('font-medium', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}>
-              Everything new in UT Dining, one update at a time.
-            </Text>
-          </View>
-          <View
-            className={cn(
-              'w-full border-b',
-              isDarkMode ? 'border-neutral-800' : 'border-ut-grey/15',
-            )}
-          />
-        </View>
-        <ScrollView
-          testID="changelog-list"
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingHorizontal: 24,
-            paddingTop: 16,
-            paddingBottom: 64,
-            gap: 16,
-          }}
+      <View
+        style={{ paddingTop: insets.top + 8 }}
+        className={cn(
+          'gap-y-3 border-b px-6 pb-3.5',
+          isDarkMode ? 'border-neutral-800 bg-neutral-900' : 'border-[#ECECEC] bg-white',
+        )}
+      >
+        <TopBar variant="back" />
+        <Text
+          className={cn(
+            'font-extrabold text-[32px] tracking-[-0.5px]',
+            isDarkMode ? 'text-white' : 'text-[#111111]',
+          )}
         >
-          {entries.map((entry) => (
-            <ChangelogEntryCard
-              key={entry.version}
-              entry={entry}
-              isInstalled={entry.version === installedVersion}
-            />
+          Changelog
+        </Text>
+      </View>
+      <ScrollView
+        testID="changelog-list"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          padding: 16,
+          paddingBottom: insets.bottom + 48,
+          gap: 10,
+        }}
+      >
+        {entries.map((entry) => (
+          <ChangelogEntryCard
+            key={entry.version}
+            entry={entry}
+            isLatest={entry.version === latestVersion}
+            expanded={isExpanded(entry.version)}
+            onToggle={() =>
+              setExpanded((current) => ({
+                ...current,
+                [entry.version]: !isExpanded(entry.version),
+              }))
+            }
+          />
+        ))}
+        {entries.length === 0 &&
+          (status === 'loading' ? (
+            <ActivityIndicator className="py-8" color={COLORS['ut-burnt-orange']} />
+          ) : (
+            <Text
+              className={cn(
+                'py-8 text-center text-base',
+                isDarkMode ? 'text-gray-400' : 'text-gray-500',
+              )}
+            >
+              {status === 'failed'
+                ? "Couldn't load the changelog. Check your connection and try again."
+                : 'No release notes yet.'}
+            </Text>
           ))}
-          {entries.length === 0 &&
-            (status === 'loading' ? (
-              <ActivityIndicator className="py-8" color={COLORS['ut-burnt-orange']} />
-            ) : (
-              <Text
-                className={cn(
-                  'py-8 text-center text-base',
-                  isDarkMode ? 'text-gray-400' : 'text-gray-500',
-                )}
-              >
-                {status === 'failed'
-                  ? "Couldn't load the changelog. Check your connection and try again."
-                  : 'No release notes yet.'}
-              </Text>
-            ))}
-        </ScrollView>
-      </Container>
+      </ScrollView>
     </View>
   );
 };

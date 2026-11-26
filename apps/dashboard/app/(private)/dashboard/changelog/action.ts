@@ -7,6 +7,7 @@ import {
   type ChangelogEntry,
   type ChangelogEntryInput,
   compareVersions,
+  isChangelogIcon,
   isValidVersion,
 } from '@/types/changelog';
 
@@ -20,6 +21,7 @@ const toChanges = (value: unknown): ChangelogChange[] =>
               {
                 title: change.title,
                 description: typeof change.description === 'string' ? change.description : '',
+                icon: isChangelogIcon(change.icon) ? change.icon : 'sparkles',
               },
             ]
           : [],
@@ -58,11 +60,14 @@ export async function saveChangelogEntry(input: ChangelogEntryInput): Promise<Ac
 
   const changes = input.changes
     .map((change) => ({
+      icon: isChangelogIcon(change.icon) ? change.icon : 'sparkles',
       title: change.title.trim(),
       description: change.description.trim(),
     }))
     .filter((change) => change.title)
-    .map((change) => (change.description ? change : { title: change.title }));
+    .map(({ icon, title, description }) =>
+      description ? { icon, title, description } : { icon, title },
+    );
 
   if (changes.length === 0) {
     return { success: false, message: 'Add at least one change.' };

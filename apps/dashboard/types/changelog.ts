@@ -1,6 +1,31 @@
+export const CHANGELOG_ICONS = [
+  'sparkles',
+  'zap',
+  'rocket',
+  'arrow-up-down',
+  'refresh-cw',
+  'shield-check',
+  'wrench',
+  'layout',
+  'moon',
+  'palette',
+  'utensils',
+  'calendar',
+  'map',
+  'map-pin',
+  'bell',
+  'wifi-off',
+] as const;
+
+export type ChangelogIcon = (typeof CHANGELOG_ICONS)[number];
+
+export const isChangelogIcon = (value: unknown): value is ChangelogIcon =>
+  typeof value === 'string' && (CHANGELOG_ICONS as readonly string[]).includes(value);
+
 export interface ChangelogChange {
   title: string;
   description: string;
+  icon: ChangelogIcon;
 }
 
 export interface ChangelogEntry {

@@ -1,85 +1,175 @@
-import { Text, View } from 'react-native';
-
-import type { ChangelogEntry } from '~/services/changelog/types';
+import { ChevronDown, ChevronUp } from 'lucide-react-native';
+import { LayoutAnimation, Text, TouchableOpacity, View } from 'react-native';
+import type { ChangelogChange, ChangelogEntry } from '~/services/changelog/types';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { cn } from '~/utils/utils';
+import { ChangelogIconTile } from './ChangelogIcon';
 
-const formatReleaseDate = (date: string) =>
-  new Date(`${date}T12:00:00`).toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
+const parseDate = (date: string) => new Date(`${date}T12:00:00`);
 
-export const ChangelogChanges = ({ entry }: { entry: ChangelogEntry }) => {
+const formatMonthYear = (date: string) =>
+  parseDate(date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+
+const formatShortDate = (date: string) =>
+  parseDate(date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+export const entryTitle = (entry: ChangelogEntry) =>
+  entry.summary ?? entry.changes[0]?.title ?? `Version ${entry.version}`;
+
+export const VersionBadge = ({ version, isLatest }: { version: string; isLatest: boolean }) => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
 
   return (
-    <View className="gap-y-3">
-      {entry.summary && (
-        <Text className={cn('text-base', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>
-          {entry.summary}
-        </Text>
+    <View
+      className={cn(
+        'rounded-md px-[7px] py-[3px]',
+        isLatest ? 'bg-ut-burnt-orange' : isDarkMode ? 'bg-neutral-700' : 'bg-[#EDEBE8]',
       )}
-      {entry.changes.map((change) => (
-        <View key={change.title} className="flex-row gap-x-3">
-          <View className="mt-2 h-1.5 w-1.5 rounded-full bg-ut-burnt-orange" />
-          <View className="flex-1">
-            <Text
-              className={cn(
-                'font-semibold text-base',
-                isDarkMode ? 'text-gray-100' : 'text-gray-800',
-              )}
-            >
-              {change.title}
-            </Text>
-            {change.description && (
-              <Text className={cn('text-sm', isDarkMode ? 'text-gray-400' : 'text-gray-500')}>
-                {change.description}
-              </Text>
+    >
+      <Text
+        className={cn(
+          'font-bold text-xs',
+          isLatest ? 'text-white' : isDarkMode ? 'text-gray-200' : 'text-[#3A3F48]',
+        )}
+      >
+        {version}
+      </Text>
+    </View>
+  );
+};
+
+export const ChangelogChangeRow = ({
+  change,
+  compact = false,
+}: {
+  change: ChangelogChange;
+  compact?: boolean;
+}) => {
+  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+
+  return (
+    <View className={cn('flex-row gap-x-3', compact ? 'items-center' : 'items-start')}>
+      <ChangelogIconTile icon={change.icon} size={compact ? 'sm' : 'md'} />
+      <View className="flex-1 gap-y-px">
+        <Text
+          className={cn(
+            compact ? 'font-medium text-[15px]' : 'font-semibold text-base',
+            isDarkMode ? 'text-white' : 'text-[#111111]',
+          )}
+        >
+          {change.title}
+        </Text>
+        {!compact && change.description && (
+          <Text
+            className={cn(
+              'text-sm leading-[19px]',
+              isDarkMode ? 'text-gray-400' : 'text-[#5B6270]',
             )}
-          </View>
-        </View>
-      ))}
+          >
+            {change.description}
+          </Text>
+        )}
+      </View>
     </View>
   );
 };
 
 export const ChangelogEntryCard = ({
   entry,
-  isInstalled,
+  isLatest,
+  expanded,
+  onToggle,
 }: {
   entry: ChangelogEntry;
-  isInstalled: boolean;
+  isLatest: boolean;
+  expanded: boolean;
+  onToggle: () => void;
 }) => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+  const chevronColor = isDarkMode ? '#9CA3AF' : '#8A8F98';
+
+  const toggle = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    onToggle();
+  };
+
+  if (!expanded) {
+    return (
+      <TouchableOpacity
+        testID={`changelog-entry-${entry.version}`}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: false }}
+        activeOpacity={0.7}
+        onPress={toggle}
+        className={cn(
+          'min-h-14 flex-row items-center gap-x-2.5 rounded-[14px] px-4 py-3',
+          isDarkMode ? 'bg-neutral-800' : 'bg-white',
+        )}
+      >
+        <VersionBadge version={entry.version} isLatest={isLatest} />
+        <Text
+          numberOfLines={1}
+          className={cn(
+            'flex-1 font-semibold text-[15px]',
+            isDarkMode ? 'text-white' : 'text-[#111111]',
+          )}
+        >
+          {entryTitle(entry)}
+        </Text>
+        {entry.date && (
+          <Text className={cn('text-[13px]', isDarkMode ? 'text-gray-400' : 'text-[#6B7280]')}>
+            {formatShortDate(entry.date)}
+          </Text>
+        )}
+        <ChevronDown size={16} color={chevronColor} strokeWidth={2.4} />
+      </TouchableOpacity>
+    );
+  }
 
   return (
     <View
       testID={`changelog-entry-${entry.version}`}
       className={cn(
-        'gap-y-3 rounded-xl p-4',
-        isDarkMode ? 'bg-ut-grey-dark-mode/10' : 'bg-neutral-50',
+        'gap-y-3.5 rounded-[18px] p-[18px]',
+        isDarkMode ? 'bg-neutral-800' : 'bg-white',
       )}
+      style={{
+        shadowColor: '#000',
+        shadowOpacity: isDarkMode ? 0 : 0.05,
+        shadowRadius: 2,
+        shadowOffset: { width: 0, height: 1 },
+      }}
     >
-      <View className="flex-row items-center justify-between">
-        <View className="flex-row items-center gap-x-2">
-          <Text className={cn('font-bold text-xl', isDarkMode ? 'text-white' : 'text-black')}>
-            Version {entry.version}
-          </Text>
-          {isInstalled && (
-            <View className="rounded-full bg-ut-burnt-orange/15 px-2 py-0.5">
-              <Text className="font-semibold text-ut-burnt-orange text-xs">Installed</Text>
-            </View>
-          )}
-        </View>
+      <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityState={{ expanded: true }}
+        activeOpacity={0.7}
+        onPress={toggle}
+        className="flex-row items-center gap-x-2"
+      >
+        <VersionBadge version={entry.version} isLatest={isLatest} />
         {entry.date && (
-          <Text className={cn('text-sm', isDarkMode ? 'text-gray-500' : 'text-gray-400')}>
-            {formatReleaseDate(entry.date)}
+          <Text
+            className={cn(
+              'font-bold text-xs tracking-[0.6px]',
+              isDarkMode ? 'text-gray-400' : 'text-[#5B6270]',
+            )}
+          >
+            {formatMonthYear(entry.date)}
           </Text>
         )}
-      </View>
-      <ChangelogChanges entry={entry} />
+        <View className="ml-auto">
+          <ChevronUp size={18} color={chevronColor} strokeWidth={2.4} />
+        </View>
+      </TouchableOpacity>
+      {entry.summary && (
+        <Text className={cn('font-bold text-xl', isDarkMode ? 'text-white' : 'text-[#111111]')}>
+          {entry.summary}
+        </Text>
+      )}
+      {entry.changes.map((change) => (
+        <ChangelogChangeRow key={change.title} change={change} />
+      ))}
     </View>
   );
 };

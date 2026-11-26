@@ -6,8 +6,8 @@ import {
   Button,
   Card,
   Group,
-  List,
   Modal,
+  Select,
   Stack,
   Switch,
   Text,
@@ -26,13 +26,21 @@ import {
   saveChangelogEntry,
 } from '@/app/(private)/dashboard/changelog/action';
 import {
+  CHANGELOG_ICONS,
   type ChangelogEntry,
   type ChangelogEntryInput,
+  type ChangelogIcon,
   compareVersions,
   isValidVersion,
 } from '@/types/changelog';
+import { CHANGELOG_ICON_OPTIONS, ChangelogIconBadge } from './changelog-icons';
 
-const emptyChange = () => ({ title: '', description: '' });
+const iconData = CHANGELOG_ICONS.map((value) => ({
+  value,
+  label: CHANGELOG_ICON_OPTIONS[value].label,
+}));
+
+const emptyChange = () => ({ title: '', description: '', icon: 'sparkles' as ChangelogIcon });
 
 const formatDate = (date: string) =>
   new Date(`${date}T12:00:00`).toLocaleDateString('en-US', {
@@ -136,6 +144,20 @@ function ChangelogEditor({
             <Card key={form.key(`changes.${index}`)} withBorder padding="sm" radius="md">
               <Group align="flex-start" wrap="nowrap" gap="xs">
                 <Stack gap="xs" style={{ flex: 1 }}>
+                  <Select
+                    aria-label={`Change ${index + 1} icon`}
+                    data={iconData}
+                    allowDeselect={false}
+                    leftSection={<ChangelogIconBadge icon={change.icon} size={12} />}
+                    renderOption={({ option }) => (
+                      <Group gap="xs" wrap="nowrap">
+                        <ChangelogIconBadge icon={option.value as ChangelogIcon} size={12} />
+                        <Text size="sm">{option.label}</Text>
+                      </Group>
+                    )}
+                    w={180}
+                    {...form.getInputProps(`changes.${index}.icon`)}
+                  />
                   <TextInput
                     placeholder="Title"
                     aria-label={`Change ${index + 1} title`}
@@ -298,20 +320,23 @@ export function ChangelogManager({ entries }: { entries: ChangelogEntry[] }) {
               </Tooltip>
             </Group>
           </Group>
-          <List mt="sm" spacing={6} size="sm">
+          <Stack mt="md" gap="sm">
             {entry.changes.map((change, index) => (
-              <List.Item key={`${entry.id}-${index}`}>
-                <Text span fw={600} size="sm">
-                  {change.title}
-                </Text>
-                {change.description && (
-                  <Text size="sm" c="dimmed">
-                    {change.description}
+              <Group key={`${entry.id}-${index}`} gap="sm" wrap="nowrap" align="flex-start">
+                <ChangelogIconBadge icon={change.icon} />
+                <Stack gap={0}>
+                  <Text fw={600} size="sm">
+                    {change.title}
                   </Text>
-                )}
-              </List.Item>
+                  {change.description && (
+                    <Text size="sm" c="dimmed">
+                      {change.description}
+                    </Text>
+                  )}
+                </Stack>
+              </Group>
             ))}
-          </List>
+          </Stack>
         </Card>
       ))}
 

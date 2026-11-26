@@ -1,7 +1,15 @@
 import type { Json } from '@ut-dining/supabase';
 import { supabase } from '~/utils/supabase';
 import { isNewerVersion } from '~/utils/version';
-import type { ChangelogChange, ChangelogEntry } from './types';
+import {
+  CHANGELOG_ICONS,
+  type ChangelogChange,
+  type ChangelogEntry,
+  type ChangelogIcon,
+} from './types';
+
+const isChangelogIcon = (value: unknown): value is ChangelogIcon =>
+  typeof value === 'string' && (CHANGELOG_ICONS as readonly string[]).includes(value);
 
 const parseChanges = (changes: Json): ChangelogChange[] => {
   if (!Array.isArray(changes)) return [];
@@ -14,7 +22,8 @@ const parseChanges = (changes: Json): ChangelogChange[] => {
       typeof change.description === 'string' && change.description.trim()
         ? change.description.trim()
         : undefined;
-    return [{ title, description }];
+    const icon = isChangelogIcon(change.icon) ? change.icon : 'sparkles';
+    return [{ title, description, icon }];
   });
 };
 

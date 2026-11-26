@@ -36,13 +36,13 @@ insert into public.changelog (version, release_date, summary, changes) values
   null,
   'A faster, more accurate UT Dining.',
   '[
-    {"title": "Instant launch", "description": "Menus you have already loaded show right away, even before a sync finishes."},
-    {"title": "Faster menu switching", "description": "Changing meals, dates and locations no longer has a delay."},
-    {"title": "Smarter syncing", "description": "Only the menu days that changed are downloaded, and a failed sync keeps your saved menus."},
-    {"title": "More accurate allergens and nutrition", "description": "Every recipe now keeps its full allergen list, and unknown nutrients are left blank instead of showing 0."},
-    {"title": "Liquid Glass tab bar", "description": "The tab bar uses the new iOS look and follows the in-app dark mode setting."},
-    {"title": "What''s New", "description": "See what changed after every update, or anytime from Settings."},
-    {"title": "Fixes", "description": "Food details match the selected date, hours stay current after a sync, food card swipes work again, and the map sheet updates when you tap another pin."}
+    {"icon": "zap", "title": "Instant launch", "description": "Menus you have already loaded show right away, even before a sync finishes."},
+    {"icon": "arrow-up-down", "title": "Faster menu switching", "description": "Changing meals, dates and locations no longer has a delay."},
+    {"icon": "refresh-cw", "title": "Smarter syncing", "description": "Only the menu days that changed are downloaded, and a failed sync keeps your saved menus."},
+    {"icon": "shield-check", "title": "More accurate allergens and nutrition", "description": "Every recipe now keeps its full allergen list, and unknown nutrients are left blank instead of showing 0."},
+    {"icon": "layout", "title": "Liquid Glass tab bar", "description": "The tab bar uses the new iOS look and follows the in-app dark mode setting."},
+    {"icon": "sparkles", "title": "What''s New", "description": "See what changed after every update, or anytime from Settings."},
+    {"icon": "wrench", "title": "Fixes", "description": "Food details match the selected date, hours stay current after a sync, food card swipes work again, and the map sheet updates when you tap another pin."}
   ]'::jsonb
 ),
 (
@@ -50,7 +50,7 @@ insert into public.changelog (version, release_date, summary, changes) values
   null,
   null,
   '[
-    {"title": "Faster menu loading", "description": "Menus load with fewer database queries."}
+    {"icon": "rocket", "title": "Faster menu loading", "description": "Menus load with fewer database queries."}
   ]'::jsonb
 ),
 (
@@ -58,7 +58,7 @@ insert into public.changelog (version, release_date, summary, changes) values
   '2025-08-21',
   null,
   '[
-    {"title": "Fixed a bug that kept food''s nutrition information from loading"}
+    {"icon": "wrench", "title": "Fixed a bug that kept food''s nutrition information from loading"}
   ]'::jsonb
 ),
 (
@@ -66,9 +66,9 @@ insert into public.changelog (version, release_date, summary, changes) values
   '2025-08-19',
   null,
   '[
-    {"title": "Refreshed dark mode", "description": "A cleaner color palette with better contrast and spacing for easier reading."},
-    {"title": "Decimal quantities in the Meal Planner", "description": "Enter fractional quantities like 0.5 servings for more accurate planning."},
-    {"title": "Performance improvements and bug fixes"}
+    {"icon": "moon", "title": "Refreshed dark mode", "description": "A cleaner color palette with better contrast and spacing for easier reading."},
+    {"icon": "utensils", "title": "Decimal quantities in the Meal Planner", "description": "Enter fractional quantities like 0.5 servings for more accurate planning."},
+    {"icon": "wrench", "title": "Performance improvements and bug fixes"}
   ]'::jsonb
 ),
 (
@@ -76,13 +76,13 @@ insert into public.changelog (version, release_date, summary, changes) values
   '2025-08-03',
   'Our biggest update yet.',
   '[
-    {"title": "Past and future menus", "description": "Know what is being served before and after you go."},
-    {"title": "Interactive campus map", "description": "Quickly find what is nearby."},
-    {"title": "50+ new locations", "description": "Food trucks, new restaurants, cafés and more."},
-    {"title": "Push notifications", "description": "Get alerts about closures, hours and new menus."},
-    {"title": "Offline mode", "description": "Access menus and hours without a connection."},
-    {"title": "Refreshed design", "description": "Sleeker, smoother and easier to navigate."},
-    {"title": "New onboarding", "description": "Start exploring faster than ever."}
+    {"icon": "calendar", "title": "Past and future menus", "description": "Know what is being served before and after you go."},
+    {"icon": "map", "title": "Interactive campus map", "description": "Quickly find what is nearby."},
+    {"icon": "map-pin", "title": "50+ new locations", "description": "Food trucks, new restaurants, cafés and more."},
+    {"icon": "bell", "title": "Push notifications", "description": "Get alerts about closures, hours and new menus."},
+    {"icon": "wifi-off", "title": "Offline mode", "description": "Access menus and hours without a connection."},
+    {"icon": "palette", "title": "Refreshed design", "description": "Sleeker, smoother and easier to navigate."},
+    {"icon": "sparkles", "title": "New onboarding", "description": "Start exploring faster than ever."}
   ]'::jsonb
 )
 on conflict (version) do nothing;
