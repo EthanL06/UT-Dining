@@ -143,14 +143,16 @@ const useFilteredItems = (
 /**
  * Generate skeleton items for loading state
  */
+const SKELETON_SECTIONS = [4, 3];
+
 const useSkeletonItems = (): ListItem[] => {
   return React.useMemo(() => {
     const items: ListItem[] = [];
-    for (let i = 0; i < 2; i++) {
+    for (const [i, itemCount] of SKELETON_SECTIONS.entries()) {
       items.push({ type: 'skeleton_header', id: `skeleton-header-${i}` } as const);
-      const itemCount = Math.floor(Math.random() * 2) + 3;
       for (let j = 0; j < itemCount; j++) {
-        items.push({ type: 'skeleton_item', id: `skeleton-item-${i}-${j}` } as const);
+        const position = j === 0 ? 'first' : j === itemCount - 1 ? 'last' : 'middle';
+        items.push({ type: 'skeleton_item', id: `skeleton-item-${i}-${j}-${position}` } as const);
       }
     }
     return items;
@@ -346,7 +348,7 @@ const Location = () => {
           return <SkeletonItem isHeader />;
 
         case 'skeleton_item':
-          return <SkeletonItem />;
+          return <SkeletonItem position={item.id.split('-').pop() as RowPosition} />;
 
         default:
           return null;
