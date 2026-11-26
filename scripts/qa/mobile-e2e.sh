@@ -157,6 +157,10 @@ if [[ "$DEV_CLIENT" == true ]]; then
 fi
 
 [[ ${#MAESTRO_ARGS[@]} -gt 0 ]] || MAESTRO_ARGS=("$E2E_DIR")
+for i in "${!MAESTRO_ARGS[@]}"; do
+  arg="${MAESTRO_ARGS[$i]}"
+  if [[ -e "$arg" && "$arg" != /* ]]; then MAESTRO_ARGS[$i]="$PWD/$arg"; fi
+done
 
 DEVICE_LIST="$(IFS=,; echo "${DEVICES[*]}")"
 
@@ -195,6 +199,15 @@ if [[ "$RESULT" -ne 0 && "$RETRIES" -gt 0 && -f "$REPORT" ]]; then
     RESULT=$?
     set -e
     REPORT="$OUT/retry/report.xml"
+    for flow in "${FAILED[@]}"; do
+      grep -o '<testcase [^>]*>' "$REPORT" | grep -F "file=\"$flow\"" | grep -q 'status="SUCCESS"' || continue
+      name="${flow#"$ROOT"/}"
+      echo "Flaky: $name failed and then passed on retry"
+      if [[ -n "${GITHUB_ACTIONS:-}" ]]; then
+        echo "::warning title=Flaky E2E flow::$name failed and then passed on retry"
+        [[ -n "${GITHUB_STEP_SUMMARY:-}" ]] && echo "- Flaky: \`$name\` failed and then passed on retry" >> "$GITHUB_STEP_SUMMARY"
+      fi
+    done
   fi
 fi
 
