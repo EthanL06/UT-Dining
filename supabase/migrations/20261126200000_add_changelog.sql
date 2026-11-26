@@ -32,7 +32,7 @@ grant all on table public.changelog to service_role;
 
 insert into public.changelog (version, release_date, summary, changes) values
 (
-  '1.3.0',
+  '2.0.0',
   null,
   'A faster, more accurate UT Dining.',
   '[

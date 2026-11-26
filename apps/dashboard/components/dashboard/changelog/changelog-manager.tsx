@@ -84,7 +84,7 @@ function ChangelogEditor({
           isPublished: false,
         },
     validate: {
-      version: (value) => (isValidVersion(value.trim()) ? null : 'Use the format 1.3.0'),
+      version: (value) => (isValidVersion(value.trim()) ? null : 'Use the format 2.0.0'),
       changes: (value) =>
         value.some((change) => change.title.trim()) ? null : 'Add at least one change',
     },
@@ -114,7 +114,7 @@ function ChangelogEditor({
         <Group grow align="flex-start">
           <TextInput
             label="Version"
-            placeholder="1.3.0"
+            placeholder="2.0.0"
             required
             {...form.getInputProps('version')}
           />

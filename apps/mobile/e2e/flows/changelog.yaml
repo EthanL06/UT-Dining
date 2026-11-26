@@ -18,7 +18,7 @@ tags:
     timeout: 5000
 - extendedWaitUntil:
     visible:
-      id: changelog-entry-1.3.0
+      id: changelog-entry-2.0.0
     timeout: 10000
 - takeScreenshot: changelog
 - scrollUntilVisible:

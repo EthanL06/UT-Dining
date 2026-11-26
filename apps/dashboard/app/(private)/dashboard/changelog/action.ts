@@ -55,7 +55,7 @@ export async function getChangelogEntries(): Promise<ChangelogEntry[]> {
 export async function saveChangelogEntry(input: ChangelogEntryInput): Promise<ActionResult> {
   const version = input.version.trim();
   if (!isValidVersion(version)) {
-    return { success: false, message: 'Version must look like 1.3.0.' };
+    return { success: false, message: 'Version must look like 2.0.0.' };
   }
 
   const changes = input.changes
