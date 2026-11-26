@@ -238,7 +238,7 @@ const InformationSection = ({ appInfo }: { appInfo: AppInformation }) => {
           <Text className="mb-1 font-semibold text-[17px]" style={{ color: theme.label }}>
             {appInfo.about_title}
           </Text>
-          <Text className="text-[15px] leading-5" style={{ color: theme.secondaryLabel }}>
+          <Text className="text-[15px] leading-[22px]" style={{ color: theme.secondaryLabel }}>
             {appInfo.about_description}
           </Text>
         </View>

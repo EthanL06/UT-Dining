@@ -113,7 +113,7 @@ const NotificationRow = ({
                   {formatSentAt(notification.sent_at, group)}
                 </Text>
               </View>
-              <Text className="text-[15px] leading-5" style={{ color: theme.secondaryLabel }}>
+              <Text className="text-[15px] leading-[22px]" style={{ color: theme.secondaryLabel }}>
                 {notification.body}
               </Text>
             </View>
