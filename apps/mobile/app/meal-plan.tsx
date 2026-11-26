@@ -15,16 +15,13 @@ import {
 import ReanimatedSwipeable, {
   type SwipeableMethods,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
-import { Notifier } from 'react-native-notifier';
 
-import Alert from '~/components/Alert';
 import { RemoveAction } from '~/components/AnimatedActions';
 import { Container } from '~/components/Container';
 import TopBar from '~/components/TopBar';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import {
   type MealPlanItem,
-  planDayPhrase,
   sumNutrient,
   todayKey,
   useMealPlanDates,
@@ -112,13 +109,6 @@ const MealPlanComponent = ({
         swipeableRef.current?.close();
 
         removeMealPlanItem(food.id, date);
-
-        Notifier.showNotification({
-          title: `${food.name} removed from ${planDayPhrase(date)}.`,
-          description: 'You removed this item from your meal plan.',
-          swipeEnabled: true,
-          Component: Alert,
-        });
       }}
     >
       <Pressable
@@ -216,13 +206,6 @@ const MealPlanComponent = ({
                 }
                 if (quantity <= 0) {
                   removeMealPlanItem(food.id, date);
-
-                  Notifier.showNotification({
-                    title: `${food.name} removed from ${planDayPhrase(date)}.`,
-                    description: 'You removed this item from your meal plan.',
-                    swipeEnabled: true,
-                    Component: Alert,
-                  });
                 } else if (quantity > 99) {
                   quantity = 99;
                 }

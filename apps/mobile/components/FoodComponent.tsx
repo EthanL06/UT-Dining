@@ -14,20 +14,13 @@ import ReanimatedSwipeable, {
   type SwipeableMethods,
   SwipeDirection,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
-import { Notifier } from 'react-native-notifier';
 import Reanimated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import type { FoodItem } from '~/services/database/database';
-import {
-  planDayPhrase,
-  todayKey,
-  useIsMealPlanItem,
-  useMealPlanStore,
-} from '~/store/useMealPlanStore';
+import { todayKey, useIsMealPlanItem, useMealPlanStore } from '~/store/useMealPlanStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
 import { cn, displayNutrient } from '~/utils/utils';
-import Alert from './Alert';
 import { AddMealPlanAction, FavoriteAction, RemoveAction } from './AnimatedActions';
 
 const FoodComponent = ({
@@ -149,19 +142,6 @@ const FoodComponent = ({
               },
               planDate,
             );
-
-            Notifier.showNotification({
-              title: isMealPlan
-                ? `${food.name} removed from ${planDayPhrase(planDate)}.`
-                : `${food.name} saved for ${planDayPhrase(planDate)}!`,
-              description: isMealPlan
-                ? `You've updated your meal plan.`
-                : `Added to your meal plan for ${planDayPhrase(planDate)}.`,
-              swipeEnabled: true,
-              Component: Alert,
-              duration: 3000,
-              queueMode: 'immediate',
-            });
           } else if (direction === SwipeDirection.LEFT) {
             await onFavorite(food);
           }

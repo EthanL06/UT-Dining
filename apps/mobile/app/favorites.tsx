@@ -4,9 +4,7 @@ import { router, Stack } from 'expo-router';
 import { Heart } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { Notifier } from 'react-native-notifier';
 
-import Alert from '~/components/Alert';
 import { Container } from '~/components/Container';
 import FoodComponent from '~/components/FoodComponent';
 import TopBar from '~/components/TopBar';
@@ -93,15 +91,6 @@ const Favorites = () => {
                 isFavorite
                 isFavoriteScreen
                 onFavorite={async (food) => {
-                  Notifier.showNotification({
-                    title: `${food.name} removed from Favorites!`,
-                    description: 'You removed this item from your favorites.',
-                    swipeEnabled: true,
-                    Component: Alert,
-                    duration: 3000,
-                    queueMode: 'immediate',
-                  });
-
                   // Toggle in database
                   await toggleFavorites(
                     db,
