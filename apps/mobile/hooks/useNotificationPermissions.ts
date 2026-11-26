@@ -20,12 +20,10 @@ export function useNotificationPermissions() {
     }
   }, []);
 
-  // Check permissions on mount
   useEffect(() => {
     checkPermissions();
   }, [checkPermissions]);
 
-  // Re-check permissions when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       checkPermissions();

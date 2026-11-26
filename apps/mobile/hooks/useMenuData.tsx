@@ -33,10 +33,8 @@ export function useMenuData(location: string, date?: string) {
   const queryClient = useQueryClient();
   const [selectedMenu, setSelectedMenu] = useState<string | null>(null);
 
-  // Use provided date or default to today
   const targetDate = date || getTodayInCentralTime();
 
-  // Query for menu names
   const {
     data: menuNames = [],
     isLoading: isLoadingMenuNames,
@@ -44,8 +42,8 @@ export function useMenuData(location: string, date?: string) {
   } = useQuery({
     queryKey: ['menuNames', location, targetDate],
     queryFn: () => getLocationMenuNames(db, location, targetDate),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
     enabled: !!location,
   });
@@ -55,7 +53,6 @@ export function useMenuData(location: string, date?: string) {
     return pickDefaultMenu(menuNames, getMealTimes(db, location));
   }, [selectedMenu, menuNames, db, location]);
 
-  // Prefetch all menu data for instant switching
   useEffect(() => {
     if (menuNames.length > 0 && queryClient) {
       menuNames.forEach((menuName) => {
@@ -63,14 +60,13 @@ export function useMenuData(location: string, date?: string) {
           queryClient.prefetchQuery({
             queryKey: ['menuData', location, menuName, targetDate],
             queryFn: () => getLocationMenuData(db, location, menuName, targetDate),
-            staleTime: 5 * 60 * 1000, // 5 minutes
+            staleTime: 5 * 60 * 1000,
           });
         }
       });
     }
   }, [menuNames, location, db, queryClient, targetDate]);
 
-  // Keep the days next to the selected date ready after the current day has settled
   useEffect(() => {
     if (!location) return;
     const timer = setTimeout(() => {
@@ -98,7 +94,6 @@ export function useMenuData(location: string, date?: string) {
     return () => clearTimeout(timer);
   }, [location, targetDate, db, queryClient]);
 
-  // Query for current menu data (should be instant due to prefetching)
   const {
     data: menuData = null,
     isLoading: isLoadingMenuData,
@@ -106,14 +101,13 @@ export function useMenuData(location: string, date?: string) {
   } = useQuery({
     queryKey: ['menuData', location, defaultMenu, targetDate],
     queryFn: () => getLocationMenuData(db, location, defaultMenu as string, targetDate),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
     enabled: !!location && !!defaultMenu,
     placeholderData: keepPreviousData,
   });
 
-  // Transform menu names to filters format
   const filters = useMemo(
     () =>
       menuNames.map((menuName) => ({

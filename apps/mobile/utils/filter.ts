@@ -9,17 +9,14 @@ export const filterFoodItems = (
   isInMealPlan: (item: FoodItem) => boolean = () => false,
 ) => {
   return foodItems.filter((item) => {
-    // Check favorites filter
     if (filters.favorites && !favorites?.some((fav) => fav.name === item.name)) {
       return false;
     }
 
-    // Check meal plan filter
     if (filters.mealPlan && !isInMealPlan(item)) {
       return false;
     }
 
-    // Check allergens filter
     const allergenFilters = Object.entries(filters.allergens).filter(([_, value]) => value);
     if (allergenFilters.length > 0) {
       for (const [allergen] of allergenFilters) {
@@ -28,22 +25,20 @@ export const filterFoodItems = (
           allergen in item.allergens &&
           item.allergens[allergen as keyof typeof item.allergens]
         ) {
-          return false; // Filter out if it contains this allergen
+          return false;
         }
       }
     }
 
-    // Check dietary filter
     const dietaryFilters = Object.entries(filters.dietary).filter(([_, value]) => value);
     if (dietaryFilters.length > 0) {
-      // Item must match ALL selected dietary preferences
       for (const [diet] of dietaryFilters) {
         if (
           !item.allergens ||
           !(diet in item.allergens) ||
           !item.allergens[diet as keyof typeof item.allergens]
         ) {
-          return false; // Filter out if it doesn't match this dietary preference
+          return false;
         }
       }
     }

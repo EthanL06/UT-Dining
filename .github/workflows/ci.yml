@@ -15,8 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 2
 
       - uses: pnpm/action-setup@v6
 
@@ -37,9 +35,8 @@ jobs:
       - name: Lint and format
         run: pnpm biome ci
 
-      - name: No added code comments
-        if: github.event_name == 'pull_request'
-        run: scripts/dev/check-comments.sh --base HEAD^1
+      - name: No code comments
+        run: scripts/dev/check-comments.sh --all
 
       - name: Typecheck and test
         run: pnpm turbo run typecheck test --cache-dir=.turbo/cache
@@ -47,7 +44,6 @@ jobs:
       - name: Build web apps
         run: pnpm turbo run build --filter=@ut-dining/dashboard --filter=@ut-dining/website --cache-dir=.turbo/cache
         env:
-          # The dashboard only needs these to exist at build time; nothing connects to them.
           NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder
 

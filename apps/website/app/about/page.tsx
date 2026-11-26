@@ -80,7 +80,6 @@ export default function About() {
       <Navbar />
 
       <main className="pt-20 pb-12 md:pt-24 md:pb-20">
-        {/* Hero Section */}
         <div className="container px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -94,7 +93,6 @@ export default function About() {
             </p>
           </motion.div>
 
-          {/* Stats Section */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -119,7 +117,6 @@ export default function About() {
             ))}
           </motion.div>
 
-          {/* Mission Section */}
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -136,7 +133,6 @@ export default function About() {
             </p>
           </motion.div>
 
-          {/* Team Values */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -157,7 +153,6 @@ export default function About() {
             ))}
           </motion.div>
 
-          {/* Timeline Section */}
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}

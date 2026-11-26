@@ -100,7 +100,6 @@ export default function Faq() {
               Find answers to common questions about UT Dining
             </p>
 
-            {/* Search Input */}
             <div className="relative mx-auto max-w-md">
               <SearchIcon className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
               <Input

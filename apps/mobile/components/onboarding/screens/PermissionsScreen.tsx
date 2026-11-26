@@ -30,10 +30,8 @@ const PermissionsScreen = ({ width, onPermissionsChange }: Props) => {
   useEffect(() => {
     const requestPermissions = async () => {
       try {
-        // Request location permission
         const { status: locationStatus } = await Location.requestForegroundPermissionsAsync();
 
-        // Request notification permission
         const { status: notificationStatus } = await Notifications.requestPermissionsAsync();
 
         const newPermissions = {
@@ -50,7 +48,6 @@ const PermissionsScreen = ({ width, onPermissionsChange }: Props) => {
 
     const checkPermissions = async () => {
       try {
-        // Check current permission status without requesting
         const { status: locationStatus } = await Location.getForegroundPermissionsAsync();
         const { status: notificationStatus } = await Notifications.getPermissionsAsync();
 
@@ -70,7 +67,6 @@ const PermissionsScreen = ({ width, onPermissionsChange }: Props) => {
 
     const handleAppStateChange = (nextAppState: string) => {
       if (nextAppState === 'active') {
-        // Check permissions when app becomes active (user returns from settings)
         checkPermissions();
       }
     };
@@ -110,7 +106,6 @@ const PermissionsScreen = ({ width, onPermissionsChange }: Props) => {
         </Text>
 
         <View className="w-full space-y-6">
-          {/* Location Permission */}
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={permissions.location === 'denied' ? openSettings : undefined}
@@ -141,7 +136,6 @@ const PermissionsScreen = ({ width, onPermissionsChange }: Props) => {
             </View>
           </TouchableOpacity>
 
-          {/* Notification Permission */}
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={openSettings}

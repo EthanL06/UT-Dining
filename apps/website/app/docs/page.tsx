@@ -140,7 +140,6 @@ export default function Docs() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // Update active section based on scroll position
       const sectionElements = sections.map((section) => document.getElementById(section.id));
 
       const currentSection = sectionElements.find((element) => {
@@ -153,7 +152,6 @@ export default function Docs() {
         setActiveSection(currentSection.id);
       }
 
-      // Show/hide back to top button
       setShowBackToTop(window.scrollY > 500);
     };
 
@@ -212,7 +210,6 @@ export default function Docs() {
         </div>
       </section>
 
-      {/* Back to Top Button */}
       <motion.button
         initial={{ opacity: 0 }}
         animate={{ opacity: showBackToTop ? 1 : 0 }}

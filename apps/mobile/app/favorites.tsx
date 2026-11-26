@@ -29,7 +29,6 @@ const Favorites = () => {
     }
   }, [favorites]);
 
-  // Sort favorites by date added (newest first)
   const sortedFavorites = useMemo(() => {
     return [...favorites].sort(
       (a, b) => new Date(b.date_added).getTime() - new Date(a.date_added).getTime(),
@@ -77,21 +76,17 @@ const Favorites = () => {
                 categoryName={item.category_name}
                 food={{
                   name: item.name,
-                  // These are empty because we don't have full nutrition data in favorites
-                  // You could modify to store this if needed
                   nutrition: undefined,
                   allergens: undefined,
                   link: '',
                 }}
                 location={item.location_name}
-                // Check if item.menuName is a string, otherwise convert it
                 selectedMenu={item.menu_name}
                 showExtraInfo={false}
                 canMealPlan={false}
                 isFavorite
                 isFavoriteScreen
                 onFavorite={async (food) => {
-                  // Toggle in database
                   await toggleFavorites(
                     db,
                     food,

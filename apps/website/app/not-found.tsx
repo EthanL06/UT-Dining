@@ -33,7 +33,6 @@ export default function NotFound() {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            {/* Icon */}
             <motion.div
               initial={{ rotate: 0 }}
               animate={{ rotate: [0, -10, 10, -10, 10, 0] }}
@@ -48,7 +47,6 @@ export default function NotFound() {
               <Coffee className="h-20 w-20 text-primary md:h-24 md:w-24" />
             </motion.div>
 
-            {/* Error Message */}
             <div className="space-y-4">
               <h1 className="font-bold text-4xl md:text-5xl">Oops! Page Not Found</h1>
               <p className="text-lg text-muted-foreground md:text-xl">
@@ -56,7 +54,6 @@ export default function NotFound() {
               </p>
             </div>
 
-            {/* Primary Action */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -71,7 +68,6 @@ export default function NotFound() {
               </Link>
             </motion.div>
 
-            {/* Suggested Links */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

@@ -22,7 +22,6 @@ const SearchBar = ({ query, setQuery, onFocus, onBlur, isSearchFocused }: Props)
   const handleCancel = () => {
     Keyboard.dismiss();
     inputRef.current?.blur();
-    // Set query to empty string
     setQuery('');
     onBlur?.();
   };

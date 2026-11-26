@@ -6,7 +6,6 @@ import FoodComponent from '~/components/FoodComponent';
 import { type FoodItem, toggleFavorites } from '~/services/database/database';
 import type * as schema from '~/services/database/schema';
 
-// Define interfaces for the props
 interface FoodItemProps {
   data: FoodItem;
   categoryId: string;
@@ -25,10 +24,8 @@ interface FoodItemRowProps {
 
 const FoodItemRow = ({ item, selectedMenu, location, date, db, favorites }: FoodItemRowProps) => {
   const foodName = item.data.name;
-  // Use state for favorite status
   const [isFavorite, setIsFavorite] = useState(favorites.some((f) => f.name === foodName));
 
-  // Update local state when favorites change
   useEffect(() => {
     setIsFavorite(favorites.some((f) => f.name === foodName));
   }, [favorites, foodName]);
@@ -46,7 +43,6 @@ const FoodItemRow = ({ item, selectedMenu, location, date, db, favorites }: Food
 
           setIsFavorite(newFavoriteState);
 
-          // Toggle in database
           await toggleFavorites(db, food, location, selectedMenu, item.categoryId);
         }}
         isFavorite={isFavorite}

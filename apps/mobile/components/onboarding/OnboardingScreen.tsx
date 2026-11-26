@@ -63,7 +63,6 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
   } | null>(null);
   const [hasTrackedStart, setHasTrackedStart] = React.useState(false);
 
-  // Track onboarding start only once
   React.useEffect(() => {
     if (!isOnboardingComplete && !hasTrackedStart) {
       analytics.capture('onboarding_start', {
@@ -188,7 +187,6 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
   };
 
   const handlePress = () => {
-    // Ensure animation resets on press
     scale.value = withSpring(1, { damping: 50, stiffness: 400 });
     opacity.value = withSpring(1, { damping: 50, stiffness: 400 });
 

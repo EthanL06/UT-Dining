@@ -52,7 +52,6 @@ const LocationHeader = React.memo(
 
     useEffect(() => {
       const checkOpen = async () => {
-        // Get location id
         const locationDbData = db
           .select()
           .from(location_schema)
@@ -79,13 +78,11 @@ const LocationHeader = React.memo(
 
     return (
       <View className="mx-6 mt-6 flex gap-y-5">
-        {/* Content that's hidden when search is focused */}
         {!isSearchFocused && (
           <>
             <TopBar variant="location" />
 
             <View className="gap-y-4">
-              {/* Temporarily Closed Banner */}
               {locationData?.force_close && (
                 <View className="rounded-lg bg-red-600 px-4 py-2">
                   <Text className="text-center font-extrabold text-lg text-white tracking-wider">
@@ -94,7 +91,6 @@ const LocationHeader = React.memo(
                 </View>
               )}
 
-              {/* Location Header */}
               <View>
                 <View className="mb-1 w-full flex-row flex-wrap items-center gap-x-3 gap-y-1">
                   <Text
@@ -118,7 +114,6 @@ const LocationHeader = React.memo(
                     )}
                   />
 
-                  {/* Location Type Pill */}
                   {locationData?.type && (
                     <View
                       className={cn(
@@ -139,7 +134,6 @@ const LocationHeader = React.memo(
                 </View>
               </View>
 
-              {/* Time Schedule */}
               <TimeSchedule
                 schedule={schedule}
                 isOpen={timeDropdownOpen}
@@ -156,13 +150,11 @@ const LocationHeader = React.memo(
                 )}
               />
 
-              {/* Date Navigator */}
               <DateNavigator selectedDate={selectedDate} onDateChange={onDateChange} />
             </View>
           </>
         )}
 
-        {/* Search Bar - always visible when filters exist */}
         {filters && filters.length >= 1 && (
           <View className="gap-y-3">
             <SearchBar
@@ -175,7 +167,6 @@ const LocationHeader = React.memo(
           </View>
         )}
 
-        {/* Filter Bar - only visible when search is not focused */}
         {!isSearchFocused && filters && filters.length >= 1 && (
           <View className="gap-y-3">
             <View className="flex-row items-center justify-between">

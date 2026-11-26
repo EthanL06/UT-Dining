@@ -43,7 +43,6 @@ function SortableLocationsTable({
   );
   const id = useId();
 
-  // Keep items in sync with locations prop
   useEffect(() => {
     setItems(locations.map((loc) => loc.id).filter(Boolean) as UniqueIdentifier[]);
   }, [locations]);
@@ -55,13 +54,11 @@ function SortableLocationsTable({
       const newIndex = items.indexOf(over.id);
       const newItems = arrayMove(items, oldIndex, newIndex);
       setItems(newItems);
-      // Update display_order for each location
       await Promise.all(newItems.map((id, idx) => updateLocationDisplayOrder(id as string, idx)));
     }
     onDragEnd(event);
   };
 
-  // Map items to locations
   const orderedLocations = items
     .map((id) => locations.find((loc) => loc.id === id))
     .filter(Boolean) as Location[];
@@ -116,14 +113,11 @@ export function LocationsTable({
     setIsClient(true);
   }, []);
 
-  // Show empty state when there are no locations
   if (locations.length === 0) {
     return <EmptyState onAddLocation={onAddLocation} />;
   }
 
-  const handleDragEnd = () => {
-    // This will be handled by the SortableLocationsTable component
-  };
+  const handleDragEnd = () => {};
 
   return (
     <Paper p="md" withBorder>
@@ -138,7 +132,6 @@ export function LocationsTable({
           onDragEnd={handleDragEnd}
         />
       ) : (
-        // Non-interactive version for SSR
         <Table striped highlightOnHover withRowBorders={false}>
           <Table.Thead>
             <Table.Tr>

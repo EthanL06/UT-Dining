@@ -40,8 +40,8 @@ const FooterColumn = ({ title, children }: FooterColumnProps) => {
 const footerLinks = {
   product: [
     { href: '/downloads', label: 'Downloads' },
-    { href: '/#features', label: 'Features' }, // TODO
-    { href: '/reviews', label: 'Reviews' }, // TODO
+    { href: '/#features', label: 'Features' },
+    { href: '/reviews', label: 'Reviews' },
   ],
   resources: [
     { href: '/docs', label: 'Documentation' },
@@ -55,7 +55,6 @@ export function Footer() {
     <footer className="border-t">
       <div className="container px-4 py-8">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-2 md:grid-cols-4 md:gap-12">
-          {/* About Column */}
           <div className="col-span-2 space-y-3 sm:col-span-2 md:col-span-1">
             <h3 className="font-bold text-base">UT Dining</h3>
             <p className="text-muted-foreground text-sm">
@@ -63,7 +62,6 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Product Column */}
           <FooterColumn title="Product">
             {footerLinks.product.map((link) => (
               <li key={link.href}>
@@ -72,7 +70,6 @@ export function Footer() {
             ))}
           </FooterColumn>
 
-          {/* Resources Column */}
           <FooterColumn title="Resources">
             {footerLinks.resources.map((link) => (
               <li key={link.href}>
@@ -81,7 +78,6 @@ export function Footer() {
             ))}
           </FooterColumn>
 
-          {/* Connect Column */}
           <FooterColumn title="Connect">
             <li>
               <FooterLink href="https://github.com/Longhorn-Developers/ut-dining-website" external>
@@ -92,7 +88,6 @@ export function Footer() {
           </FooterColumn>
         </div>
 
-        {/* Copyright Section */}
         <div className="mt-8 border-t pt-6 text-center text-muted-foreground text-sm">
           <p className="mx-auto max-w-lg">
             &copy; {new Date().getFullYear()} UT Dining. A Longhorn Developers Project.

@@ -398,11 +398,10 @@ const SyncDataSection = ({ isDarkMode }: { isDarkMode: boolean }): React.JSX.Ele
   const [syncStatus, setSyncStatus] = React.useState<'idle' | 'syncing' | 'failed'>('idle');
   const [currentTime, setCurrentTime] = React.useState(Date.now());
 
-  // Update every minute to keep the time display current
   React.useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(Date.now());
-    }, 60000); // Update every 60 seconds
+    }, 60000);
 
     return () => clearInterval(interval);
   }, []);

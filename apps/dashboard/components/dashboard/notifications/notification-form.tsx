@@ -57,12 +57,12 @@ export function NotificationForm({
       redirectLink: (value) => {
         if (value && value.length > 0) {
           const urlPattern = new RegExp(
-            '^(https?:\\/\\/)?' + // protocol
-              '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-              '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-              '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-              '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-              '(\\#[-a-z\\d_]*)?$', // fragment locator
+            '^(https?:\\/\\/)?' +
+              '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' +
+              '((\\d{1,3}\\.){3}\\d{1,3}))' +
+              '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
+              '(\\?[;&a-z\\d%_.~+=-]*)?' +
+              '(\\#[-a-z\\d_]*)?$',
             'i',
           );
           return !urlPattern.test(value) ? 'Please enter a valid URL' : null;
@@ -86,7 +86,6 @@ export function NotificationForm({
     const currentValue = form.values[field];
     form.setFieldValue(field, currentValue + emojiData.emoji);
 
-    // Close the emoji picker
     if (field === 'title') {
       closeTitleEmoji();
     } else {

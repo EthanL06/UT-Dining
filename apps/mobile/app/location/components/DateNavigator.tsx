@@ -26,20 +26,16 @@ const DateNavigator: React.FC<DateNavigatorProps> = ({ selectedDate, onDateChang
   const currentDate = createDateFromString(selectedDate);
   const displayDate = formatDateForDisplay(currentDate);
 
-  // Calculate date boundaries: 2 days in past, 3 days in future
   const today = getCentralTimeDate();
   const minDate = subDays(today, 2);
   const maxDate = addDays(today, 3);
 
-  // Check if buttons should be disabled
   const isPreviousDisabled = isSameDay(currentDate, minDate) || currentDate < minDate;
   const isNextDisabled = isSameDay(currentDate, maxDate) || currentDate > maxDate;
 
-  // Animation values for previous button
   const previousScale = useSharedValue(1);
   const previousOpacity = useSharedValue(1);
 
-  // Animation values for next button
   const nextScale = useSharedValue(1);
   const nextOpacity = useSharedValue(1);
 

@@ -15,13 +15,12 @@ import { cn } from '~/utils/utils';
 type FilterBarProps = {
   selectedItem: string;
   setSelectedItem: (item: FilterType) => void;
-  items: { id: string; title: string }[]; // Accepts dynamic items array
+  items: { id: string; title: string }[];
   mealTimes?: MealTimes;
   showFilterButton?: boolean;
   useTimeOfDayDefault?: boolean;
 };
 
-// Define the proper meal order
 const MEAL_ORDER = {
   Breakfast: 1,
   Lunch: 2,
@@ -38,7 +37,6 @@ const FilterBar = ({
 }: FilterBarProps) => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
 
-  // Sort items based on meal order
   const sortedItems = useMemo(() => {
     return [...filterItems].sort((a, b) => {
       const orderA = MEAL_ORDER[a.title as keyof typeof MEAL_ORDER] || 999;
@@ -47,9 +45,7 @@ const FilterBar = ({
     });
   }, [filterItems]);
 
-  // When enabled, set default filter based on timeOfDay if none is selected.
   useEffect(() => {
-    // If there's only one item, automatically select it
     if (filterItems.length === 1 && !selectedItem) {
       setSelectedItem(filterItems[0].id as FilterType);
       return;
@@ -63,13 +59,11 @@ const FilterBar = ({
       else if (tod === 'afternoon') defaultFilter = 'Lunch';
       else if (tod === 'evening') defaultFilter = 'Dinner';
 
-      // Find item with matching title
       const matchingItem = filterItems.find((item) => item.title === defaultFilter);
 
       if (matchingItem) {
         setSelectedItem(matchingItem.id as FilterType);
       } else {
-        // Fallback to first item if no match
         setSelectedItem(filterItems[0]?.id as FilterType);
       }
     }
@@ -128,7 +122,6 @@ const FilterButton = () => {
   const filters = useFiltersStore((state) => state.filters);
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
 
-  // If there are any filters, make this true
   const hasFilters = () => {
     const hasValues = <T extends Record<string, boolean>>(item: T): boolean =>
       Array.isArray(item) ? item.length > 0 : Object.values(item).some(Boolean);

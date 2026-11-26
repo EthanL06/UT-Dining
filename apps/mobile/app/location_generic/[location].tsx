@@ -44,7 +44,6 @@ export default function LocationGenericScreen() {
     : [];
 
   const isTablet = Device.deviceType === Device.DeviceType.TABLET;
-  // Only track screen view if PostHog is enabled
   const trackScreen = useEffectEvent(() => {
     analytics.screen(location);
   });
@@ -89,15 +88,15 @@ export default function LocationGenericScreen() {
       </View>
       <Container disableInsets className="mx-0">
         <FlatList
-          data={[{}]} // dummy item just to satisfy FlatList
+          data={[{}]}
           keyExtractor={(_, index) => `main-content-${index}`}
-          className="w-full px-6" // <-- tailwind for width: 100%
+          className="w-full px-6"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             padding: 0,
             paddingBottom: 100,
             alignItems: 'center',
-            width: '100%', // now this 100% is relative to the FlatList's real width
+            width: '100%',
           }}
           renderItem={() => (
             <View className="mt-3 mb-6 flex-1 flex-col gap-y-4">
@@ -154,7 +153,6 @@ export default function LocationGenericScreen() {
                     )}
                   />
 
-                  {/* Location Type Pill */}
                   {locationData.type && (
                     <View>
                       <View

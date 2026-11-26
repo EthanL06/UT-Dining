@@ -40,7 +40,6 @@ const FoodScreen = () => {
 
   const analytics = getSafePostHog(usePostHog());
 
-  // Filter out serving size from nutrition data
   const nutritionDataFiltered = nutritionData.filter((item) => item.key !== 'Serving Size');
 
   const trackScreen = useEffectEvent(() => {
@@ -58,7 +57,6 @@ const FoodScreen = () => {
     <SheetProvider context="food">
       <View style={{ flex: 1, backgroundColor: isDarkMode ? '#171717' : '#fff' }}>
         <Stack.Screen options={{ title: 'Food' }} />
-        {/* Pull Down Indicator (outside FlashList) */}
         <View
           style={{
             alignItems: 'center',

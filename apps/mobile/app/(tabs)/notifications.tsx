@@ -23,7 +23,6 @@ export interface Notification {
   type: string | null;
   sent_at: string | null;
   type_name: string;
-  // UI state
   isRead: boolean;
 }
 
@@ -36,7 +35,6 @@ const NotificationItem = ({
 }) => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
 
-  // Refer to the Supabase notification_types table for the type names
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'Food Alert':
@@ -128,18 +126,15 @@ const Notifications = () => {
   const db = useDatabase();
   const { lastVisited, setLastVisited } = useNotificationsStore();
 
-  // Track when user leaves the notifications page
   useFocusEffect(
     useCallback(() => {
       return () => {
-        // This cleanup function runs when the screen loses focus
         const now = Date.now();
         setLastVisited(now);
       };
     }, [setLastVisited]),
   );
 
-  // Use live query to get notifications in real-time, sorted by sent_at DESC
   const lastSyncTime = useDataSyncStore((state) => state.lastSupabaseQueryTime);
   const { data: dbNotifications = [] } = useLiveQuery(
     db
@@ -161,7 +156,6 @@ const Notifications = () => {
     [lastSyncTime],
   );
 
-  // Convert database notifications to UI format with isRead state
   const notifications: Notification[] = useMemo(() => {
     return (dbNotifications || []).map((notification) => {
       const isRead =

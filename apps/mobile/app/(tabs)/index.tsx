@@ -32,17 +32,14 @@ import * as schema from '../../services/database/schema';
 import HomeHeader from '../_components/HomeHeader';
 import LocationItem from '../_components/LocationItem';
 
-// Constants
 const SPLASH_SCREEN_DURATION = 200;
 
-// Configure splash screen
 SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({
   duration: SPLASH_SCREEN_DURATION,
   fade: true,
 });
 
-// Types
 export type FilterType = 'all' | string;
 
 const filterAndSortLocations = (
@@ -83,11 +80,10 @@ export default function Home() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(new Date());
-    }, 60000); // 1 minute
+    }, 60000);
     return () => clearInterval(interval);
   }, []);
 
-  // Use TanStack Query for menu/location data
   const { data, isLoading, isError } = useQuery({
     queryKey: ['menuData'],
     queryFn: () => readCachedMenuData(drizzleDb),
@@ -97,24 +93,20 @@ export default function Home() {
   const menuSync = useMenuSync(drizzleDb);
   const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
 
-  // Handle refresh
   const handleRefresh = async () => {
     setRefreshing(true);
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     try {
-      // Check if user is online before attempting to refetch
       const networkState = await Network.getNetworkStateAsync();
       if (!networkState.isConnected) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         return;
       }
 
-      // Add timeout to refetch operation (10 seconds)
       const timeoutPromise = new Promise((_, reject) => {
         timeoutId = setTimeout(() => reject(new Error('Request timeout')), 30000);
       });
 
-      // Force sync with Supabase and then refetch the query
       await Promise.race([forceMenuSync(drizzleDb, queryClient), timeoutPromise]);
     } catch (error) {
       console.error('Error refreshing data:', error);

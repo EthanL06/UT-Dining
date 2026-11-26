@@ -36,7 +36,6 @@ export default function DashboardLocationsClient({
   const [locationMenuStatus, setLocationMenuStatus] =
     useState<Record<string, boolean>>(initialLocationMenuStatus);
 
-  // Helper function to refresh menu status for a specific location
   const refreshLocationMenuStatus = async (locationId: string) => {
     try {
       const hasMenus = await checkLocationHasMenus(locationId);
@@ -77,7 +76,6 @@ export default function DashboardLocationsClient({
 
           setLocations((prev) => prev.filter((loc) => loc.id !== locationId));
 
-          // Remove menu status for deleted location
           setLocationMenuStatus((prev) => {
             const newStatus = { ...prev };
             delete newStatus[locationId];
@@ -105,7 +103,6 @@ export default function DashboardLocationsClient({
   const handleSubmitLocation = async (locationData: Location) => {
     try {
       if (editingLocation) {
-        // Update existing location
         if (!editingLocation.id) {
           throw new Error('Location ID is required for updating');
         }
@@ -113,18 +110,15 @@ export default function DashboardLocationsClient({
         const updated = await updateLocation(editingLocation.id, locationData);
         setLocations((prev) => prev.map((loc) => (loc.id === editingLocation.id ? updated : loc)));
 
-        // Refresh menu status for the updated location
         if (updated.id) {
           await refreshLocationMenuStatus(updated.id);
         }
 
         console.log('✏️ Location updated successfully');
       } else {
-        // Add new location
         const inserted = await addLocation(locationData);
         setLocations((prev) => [...prev, inserted]);
 
-        // Set initial menu status for new location (typically false for new locations)
         if (inserted.id) {
           await refreshLocationMenuStatus(inserted.id);
         }
@@ -158,7 +152,6 @@ export default function DashboardLocationsClient({
     const actionType = forceClose ? 'force close' : 'enable';
     const currentState = forceClose ? 'enabling' : 'disabling';
 
-    // Determine the reason for the automatic force close
     const forceCloseReason = forceClose
       ? 'The force close will automatically override regular service hours. The system also automatically closes locations when there are no menus available for the day.'
       : 'Disabling force close will restore regular service hours if menus are available for the day.';

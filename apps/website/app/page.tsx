@@ -22,7 +22,6 @@ export default function Home() {
     <div className="min-h-screen overflow-x-hidden bg-background">
       <Navbar />
 
-      {/* Hero Section */}
       <section className="relative px-4 pt-20 pb-12 md:pt-32 md:pb-20">
         <div className="container mx-auto">
           <div className="mx-auto max-w-3xl space-y-4 text-center md:space-y-6">
@@ -75,7 +74,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Metrics Section */}
       <section className="relative px-4 py-12 md:py-20">
         <div className="container mx-auto">
           <motion.h2
@@ -121,7 +119,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
       <section id="features" className="relative px-4 py-12 md:py-20">
         <div className="container mx-auto">
           <motion.div

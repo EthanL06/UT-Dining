@@ -38,7 +38,6 @@ export function ScheduledNotificationsClient({
           const result = await deleteScheduledNotification(id);
 
           if (result.success) {
-            // Remove the notification from the state
             setScheduledNotifications((prev) => prev.filter((n) => n.id !== id));
 
             notifications.show({

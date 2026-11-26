@@ -79,7 +79,6 @@ const MealPlanComponent = ({
   const updateMealPlanItemQuantity = useMealPlanStore((state) => state.updateMealPlanItemQuantity);
   const removeMealPlanItem = useMealPlanStore((state) => state.removeMealPlanItem);
 
-  // Local state to hold TextInput value.
   const [quantityInput, setQuantityInput] = useState(`${quantity}` || '1');
 
   const description = `${categoryName} - ${location} (${selectedMenu})`;
@@ -412,7 +411,7 @@ const MealPlan = () => {
             </Text>
           </View>
         }
-        stickyHeaderIndices={[0]} // Makes the header sticky
+        stickyHeaderIndices={[0]}
       />
     </Container>
   );

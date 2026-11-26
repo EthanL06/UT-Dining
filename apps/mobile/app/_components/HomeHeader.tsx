@@ -93,7 +93,6 @@ const HomeHeader = ({
 }: HomeHeaderProps) => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
 
-  // Generate filter items dynamically from location types, sorted by display_order
   const filterItems = [
     { id: 'all', title: 'All' },
     ...locationTypes

@@ -42,7 +42,7 @@ const FoodComponent = ({
   date?: string;
   onFavorite: (food: FoodItem) => Promise<void>;
   isFavorite: boolean;
-  isFavoriteScreen?: boolean; // If the component is rendered on the favorites screen
+  isFavoriteScreen?: boolean;
   showExtraInfo?: boolean;
   canMealPlan?: boolean;
 }) => {
@@ -106,18 +106,16 @@ const FoodComponent = ({
           backgroundColor: COLORS['ut-burnt-orange'],
         }}
         enableTrackpadTwoFingerGesture
-        // Add these properties to fix the gliding issue
-        friction={1.5} // Higher friction reduces gliding
-        overshootFriction={200} // Higher value means less overshoot
+        friction={1.5}
+        overshootFriction={200}
         animationOptions={{
-          damping: 1, // Higher damping means less oscillation
-          stiffness: 11, // Higher stiffness means faster snapping
-          mass: 0.1, // Lower mass means faster settling
-          restDisplacementThreshold: 0.005, // Small threshold for considering animation "done"
-          restSpeedThreshold: 0.005, // Small threshold for considering animation "done"
+          damping: 1,
+          stiffness: 11,
+          mass: 0.1,
+          restDisplacementThreshold: 0.005,
+          restSpeedThreshold: 0.005,
         }}
         onSwipeableWillClose={() => {
-          // Optional haptic feedback when closing
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }}
         onSwipeableOpen={async (direction) => {
@@ -146,10 +144,9 @@ const FoodComponent = ({
             await onFavorite(food);
           }
         }}
-        // Add these threshold properties to better define when an action is triggered
         overshootLeft={!canMealPlan}
-        leftThreshold={canMealPlan ? 50 : Number.MAX_VALUE} // Higher threshold requires more decisive swipe
-        rightThreshold={100} // Higher threshold requires more decisive swipe
+        leftThreshold={canMealPlan ? 50 : Number.MAX_VALUE}
+        rightThreshold={100}
         dragOffsetFromLeft={canMealPlan ? 50 : Number.MAX_VALUE}
         renderRightActions={(progress) =>
           isFavorite ? <RemoveAction progress={progress} /> : <FavoriteAction progress={progress} />
@@ -188,7 +185,6 @@ const FoodComponent = ({
   );
 };
 
-// Extract the food content into a separate component for reuse
 const FoodContent = ({
   food,
   isFavorite,

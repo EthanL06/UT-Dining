@@ -12,20 +12,16 @@ interface SkeletonItemProps {
 const SkeletonItem = React.memo(({ isHeader = false }: SkeletonItemProps) => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
 
-  // Create animated value for the shimmer effect
   const shimmerAnimation = React.useRef(new Animated.Value(0)).current;
 
-  // Run the shimmer animation in a loop
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        // Animate to darker gray
         Animated.timing(shimmerAnimation, {
           toValue: 1,
           duration: 750,
-          useNativeDriver: false, // Need to use false for backgroundColor
+          useNativeDriver: false,
         }),
-        // Animate back to lighter gray
         Animated.timing(shimmerAnimation, {
           toValue: 0,
           duration: 750,
@@ -34,7 +30,6 @@ const SkeletonItem = React.memo(({ isHeader = false }: SkeletonItemProps) => {
       ]),
     ).start();
 
-    // Clean up animation on unmount
     return () => shimmerAnimation.stopAnimation();
   }, [shimmerAnimation]);
 
@@ -43,7 +38,6 @@ const SkeletonItem = React.memo(({ isHeader = false }: SkeletonItemProps) => {
     outputRange: isDarkMode ? ['#262626', '#404040'] : ['#d1d5db', '#f3f4f6'],
   });
 
-  // Header skeleton
   const HeaderSkeleton = () => (
     <View className="my-2 flex-row items-center justify-between">
       <Animated.View style={{ backgroundColor }} className="h-10 w-72 rounded-md" />
@@ -53,7 +47,6 @@ const SkeletonItem = React.memo(({ isHeader = false }: SkeletonItemProps) => {
     </View>
   );
 
-  // Food item skeleton
   const FoodItemSkeleton = () => (
     <View className="mb-2">
       <Animated.View style={{ backgroundColor }} className="h-[4.25rem] w-full rounded-md" />

@@ -74,7 +74,6 @@ const NutritionRow = React.memo(({ item, isDarkMode }: NutritionRowProps) => {
   );
 });
 
-// Helper function to calculate percentage of daily value
 function getPercentage(value: number, key: string) {
   return Math.round((value / (DAILY_VALUES[key] || 1)) * 100);
 }

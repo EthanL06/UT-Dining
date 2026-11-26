@@ -1,10 +1,8 @@
 import { type Hhmm, WEEKDAYS, type Weekday } from './hours.ts';
 
-/** UT Austin's time zone. Menus and service hours are all in Central time. */
 export const CENTRAL_TIME_ZONE = 'America/Chicago';
 
 export interface ZonedNow {
-  /** Calendar date, YYYY-MM-DD, as menus are keyed in Supabase. */
   date: string;
   day: Weekday;
   time: Hhmm;
@@ -21,7 +19,6 @@ const formatter = new Intl.DateTimeFormat('en-US', {
   weekday: 'long',
 });
 
-/** The Central-time calendar date, weekday and HHMM time of an instant. Handles DST. */
 export const toCentralTime = (instant: Date = new Date()): ZonedNow => {
   const parts = Object.fromEntries(
     formatter.formatToParts(instant).map((part) => [part.type, part.value]),
@@ -33,7 +30,6 @@ export const toCentralTime = (instant: Date = new Date()): ZonedNow => {
   };
 };
 
-/** The weekday and HHMM time of a Date in the device's own time zone. */
 export const toLocalTime = (date: Date): Omit<ZonedNow, 'date'> => ({
   day: WEEKDAYS[date.getDay()],
   time: date.getHours() * 100 + date.getMinutes(),

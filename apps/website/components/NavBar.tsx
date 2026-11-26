@@ -18,7 +18,6 @@ interface NavItemProps {
 
 const NavItem = ({ href, children, className, onClick }: NavItemProps) => {
   const pathname = usePathname();
-  // trailingSlash makes the pathname /faq/ while links use /faq.
   const isActive = pathname.replace(/\/$/, '') === href;
 
   return (
@@ -54,7 +53,6 @@ export function Navbar() {
           UT Dining
         </Link>
 
-        {/* Desktop Navigation */}
         <div className="hidden items-center gap-8 md:flex">
           {navItems.map((item) => (
             <NavItem key={item.href} href={item.href}>
@@ -64,7 +62,6 @@ export function Navbar() {
           <ThemeToggle />
         </div>
 
-        {/* Mobile Navigation */}
         <div className="flex items-center gap-4 md:hidden">
           <ThemeToggle />
           <Sheet open={isOpen} onOpenChange={setIsOpen}>

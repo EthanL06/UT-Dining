@@ -36,7 +36,6 @@ export function ThemeToggle() {
     [applySystemTheme],
   );
 
-  // Get initial theme from localStorage or system preference
   useEffect(() => {
     setMounted(true);
     const savedTheme = localStorage.getItem('theme') as Theme;
@@ -44,13 +43,11 @@ export function ThemeToggle() {
       setTheme(savedTheme);
       applyTheme(savedTheme);
     } else {
-      // If no saved theme, default to system
       setTheme('system');
       applySystemTheme();
     }
   }, [applyTheme, applySystemTheme]);
 
-  // Handle system theme changes
   useEffect(() => {
     if (theme === 'system') {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');

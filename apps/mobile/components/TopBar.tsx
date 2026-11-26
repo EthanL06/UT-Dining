@@ -86,7 +86,7 @@ const LocationTopBar = () => {
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-            if (!locationData) return; // Handle loading state
+            if (!locationData) return;
 
             SheetManager.show('location-about', {
               payload: {

@@ -30,7 +30,6 @@ function DraggableLocationRowContent(props: DraggableLocationRowProps) {
     id: props.location.id as UniqueIdentifier,
   });
 
-  // Drag handle to be rendered in the row
   const dragHandle = (
     <button
       type="button"
@@ -73,7 +72,6 @@ export function DraggableLocationRow(props: DraggableLocationRowProps) {
   }, []);
 
   if (!isClient) {
-    // Return a non-interactive version for SSR
     return (
       <LocationRow
         {...props}

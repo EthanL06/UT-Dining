@@ -19,10 +19,8 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
   const displayName = useLocationName(locationName || '', useColloquialNames);
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
 
-  // Generate schedule from database data
   const schedule = generateSchedule(locationData, false);
 
-  // Get payment methods from database data - ensure it's an array
   const paymentMethods = Array.isArray(locationData?.methods_of_payment)
     ? locationData.methods_of_payment
     : [];
@@ -156,7 +154,6 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
             </Text>
             <View className="flex-row flex-wrap items-center justify-between gap-4">
               {paymentMethods.map((method) => {
-                // Check if method exists in PAYMENT_INFO_ICONS
                 if (method in PAYMENT_INFO_ICONS) {
                   return (
                     <View key={method} className="items-center justify-center gap-0.5">

@@ -29,10 +29,8 @@ import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
 import { cn } from '~/utils/utils';
 
-// The native iOS tab bar floats over the map, so overlays sit above it.
 const TAB_BAR_CLEARANCE = Platform.OS === 'ios' ? 100 : 0;
 
-// Type for merged location data (dining + microwave locations)
 type MergedLocation = {
   name: string;
   address: string;
@@ -52,7 +50,6 @@ const initialRegion = {
   longitudeDelta: 0.01,
 };
 
-// Helper function to check if two coordinates are the same (within small tolerance)
 const coordinatesMatch = (
   coord1: { latitude: number; longitude: number },
   coord2: { latitude: number; longitude: number },
@@ -75,28 +72,28 @@ const ICON_MAP = {
 
 const ICON_MAP_COLORS = {
   microwave: {
-    default: '#C0392B', // Gold
-    colorBlind: '#556B2F', // Much darker gold/brown for high contrast
+    default: '#C0392B',
+    colorBlind: '#556B2F',
   },
   'Coffee Shop': {
-    default: '#5C3A21', // Deep Brown
-    colorBlind: '#D2691E', // Strong reddish-brown (chocolate) for separation
+    default: '#5C3A21',
+    colorBlind: '#D2691E',
   },
   'Convenience Store': {
-    default: '#36827F', // Teal
-    colorBlind: '#004D60', // Deep blue-teal for clearer difference
+    default: '#36827F',
+    colorBlind: '#004D60',
   },
   'Dining Hall': {
-    default: COLORS['ut-burnt-orange'], // Burnt Orange
-    colorBlind: '#5A2200', // Very dark brownish orange for strong contrast
+    default: COLORS['ut-burnt-orange'],
+    colorBlind: '#5A2200',
   },
   'Food & Drink': {
-    default: '#D97706', // Amber
-    colorBlind: '#C2185B', // Dark burnt brown for clear separation from amber/orange
+    default: '#D97706',
+    colorBlind: '#C2185B',
   },
   'Food Truck': {
-    default: '#43A047', // Bright warm red
-    colorBlind: '#7B1FA2', // Deep burgundy for clear separation
+    default: '#43A047',
+    colorBlind: '#7B1FA2',
   },
 };
 
@@ -164,7 +161,6 @@ const EdgeIndicator = ({ direction, onPress }: { direction: Direction; onPress: 
   const squishAnimation = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // Scale in animation when component mounts
     Animated.spring(scaleAnimation, {
       toValue: 1,
       useNativeDriver: true,
@@ -172,7 +168,6 @@ const EdgeIndicator = ({ direction, onPress }: { direction: Direction; onPress: 
       friction: 8,
     }).start();
 
-    // Return cleanup function for scale out animation
     return () => {
       Animated.spring(scaleAnimation, {
         toValue: 0,
@@ -365,8 +360,8 @@ const MapPage = () => {
       const subscription = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
-          timeInterval: 10000, // Update every 10 seconds
-          distanceInterval: 10, // Update every 10 meters
+          timeInterval: 10000,
+          distanceInterval: 10,
         },
         (newLocation: Location.LocationObject) => {
           setUserLocation(newLocation);
@@ -395,9 +390,7 @@ const MapPage = () => {
     fetchDbLocations();
   }, [db]);
 
-  // Merge database dining locations with static microwave locations
   const mergedLocations: MergedLocation[] = React.useMemo(() => {
-    // Transform database locations to consistent format, filtering out null names
     const databaseLocations = dbLocations
       .filter((loc) => loc.name !== null)
       .map((loc) => ({
@@ -412,7 +405,6 @@ const MapPage = () => {
         hasMenu: loc.has_menus,
       }));
 
-    // Add microwave locations that don't overlap with database locations
     const uniqueMicrowaveLocations = MICROWAVE_LOCATIONS.filter(
       (microwaveLocation) =>
         !databaseLocations.some((dbLocation) =>
@@ -428,21 +420,17 @@ const MapPage = () => {
   }, [dbLocations]);
 
   const handleRegionChangeComplete = (region: Region) => {
-    // Update current region for edge indicator calculations
     setCurrentRegion(region);
   };
 
   const outOfViewLocations = useMemo(() => {
-    // Calculate distance from initial campus center
     const distanceFromCampus = Math.sqrt(
       (currentRegion.latitude - initialRegion.latitude) ** 2 +
         (currentRegion.longitude - initialRegion.longitude) ** 2,
     );
 
-    // Threshold to determine if user has scrolled away from main campus area
     const campusDistanceThreshold = 0.013;
 
-    // Only show edge indicators when user has scrolled significantly away from campus
     const isAwayFromCampus = distanceFromCampus > campusDistanceThreshold;
 
     const grouped: Record<Direction, typeof mergedLocations> = {
@@ -452,7 +440,6 @@ const MapPage = () => {
       west: [],
     };
 
-    // Return empty groups if still within campus area
     if (!isAwayFromCampus) {
       return grouped;
     }
@@ -467,7 +454,6 @@ const MapPage = () => {
     mergedLocations.forEach((location) => {
       const { latitude, longitude } = location.coordinates;
 
-      // Check if location is outside visible bounds
       const isOutOfView =
         latitude > visibleBounds.north ||
         latitude < visibleBounds.south ||
@@ -475,19 +461,16 @@ const MapPage = () => {
         longitude < visibleBounds.west;
 
       if (isOutOfView) {
-        // Determine primary direction
         const latDiff = latitude - currentRegion.latitude;
         const lonDiff = longitude - currentRegion.longitude;
 
         if (Math.abs(latDiff) > Math.abs(lonDiff)) {
-          // Primary direction is north/south
           if (latDiff > 0) {
             grouped.north.push(location);
           } else {
             grouped.south.push(location);
           }
         } else {
-          // Primary direction is east/west
           if (lonDiff > 0) {
             grouped.east.push(location);
           } else {
@@ -497,7 +480,6 @@ const MapPage = () => {
       }
     });
 
-    // Find the direction with the most locations
     const directionWithMost = Object.entries(grouped).reduce(
       (max, [direction, locations]) => {
         return locations.length > max.count
@@ -507,7 +489,6 @@ const MapPage = () => {
       { direction: 'north' as Direction, count: 0 },
     );
 
-    // Return only the direction with the most locations
     return {
       [directionWithMost.direction]: grouped[directionWithMost.direction],
     };
@@ -522,7 +503,6 @@ const MapPage = () => {
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    // Find the closest location in that direction
     const closest = locationsInDirection.reduce((closest, current) => {
       const closestDistance = Math.sqrt(
         (closest.coordinates.latitude - currentRegion.latitude) ** 2 +
@@ -535,7 +515,6 @@ const MapPage = () => {
       return currentDistance < closestDistance ? current : closest;
     });
 
-    // Animate to the closest location
     mapRef.current?.animateToRegion(
       {
         latitude: closest.coordinates.latitude,
@@ -548,9 +527,7 @@ const MapPage = () => {
   };
 
   const handleMarkerPress = (coordinates: { latitude: number; longitude: number }) => {
-    // Calculate a vertical offset to account for the sheet height (60vh)
-    // We'll move the target point up by ~25% of the view delta to position it in the upper portion of the screen
-    const targetLatitude = coordinates.latitude - 0.00031; // Offset north by a small amount
+    const targetLatitude = coordinates.latitude - 0.00031;
 
     mapRef.current?.animateToRegion(
       {
@@ -626,7 +603,6 @@ const MapPage = () => {
           }}
         />
 
-        {/* Edge Indicators */}
         {Object.entries(outOfViewLocations).map(([direction, locations]) => {
           if (locations.length === 0) return null;
 
@@ -644,7 +620,6 @@ const MapPage = () => {
           );
         })}
 
-        {/* Location Button */}
         {hasLocationPermission && (
           <TouchableOpacity
             activeOpacity={0.5}

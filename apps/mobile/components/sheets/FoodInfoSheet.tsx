@@ -9,7 +9,6 @@ import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
 import { cn } from '~/utils/utils';
 
-// Helper function to organize allergen data
 const categorizeAllergens = () => {
   const allergens = Object.entries(ALLERGEN_ICONS)
     .filter(([key]) => !ALLERGEN_EXCEPTIONS.has(key))
@@ -52,7 +51,6 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
     >
       <ScrollView showsVerticalScrollIndicator={false} className="max-h-[60vh]">
         <View className="p-6">
-          {/* Header */}
           <View>
             <View className="mb-2 flex-row items-center gap-x-2">
               <InfoIcon color={COLORS['ut-burnt-orange']} />
@@ -62,7 +60,6 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
             </View>
           </View>
 
-          {/* Allergens Section */}
           <View>
             <Text className={cn('font-semibold text-xl', isDarkMode ? 'text-white' : 'text-black')}>
               Allergens
@@ -100,7 +97,6 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
             </View>
           </View>
 
-          {/* Divider */}
           <View
             className={cn(
               'mb-4 w-full border-b',
@@ -108,7 +104,6 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
             )}
           />
 
-          {/* Dietary Section */}
           <View>
             <Text className={cn('font-semibold text-xl', isDarkMode ? 'text-white' : 'text-black')}>
               Dietary Preferences

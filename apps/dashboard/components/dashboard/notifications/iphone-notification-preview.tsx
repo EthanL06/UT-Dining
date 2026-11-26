@@ -28,7 +28,6 @@ export function IPhoneNotificationPreview({ data }: IPhoneNotificationPreviewPro
         background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
       }}
     >
-      {/* iPhone Dynamic Island */}
       <Box
         style={{
           width: '126px',
@@ -44,7 +43,6 @@ export function IPhoneNotificationPreview({ data }: IPhoneNotificationPreviewPro
         }}
       />
 
-      {/* Status bar area */}
       <Box
         style={{
           padding: '60px 24px 0px 24px',
@@ -65,7 +63,6 @@ export function IPhoneNotificationPreview({ data }: IPhoneNotificationPreviewPro
           {currentTime}
         </Text>
         <Box style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-          {/* Signal bars */}
           <Box style={{ display: 'flex', gap: '2px' }}>
             {[1, 2, 3, 4].map((bar) => (
               <Box
@@ -79,7 +76,6 @@ export function IPhoneNotificationPreview({ data }: IPhoneNotificationPreviewPro
               />
             ))}
           </Box>
-          {/* WiFi icon */}
           <Box
             style={{
               width: '15px',
@@ -102,7 +98,6 @@ export function IPhoneNotificationPreview({ data }: IPhoneNotificationPreviewPro
               }}
             />
           </Box>
-          {/* Battery */}
           <Box
             style={{
               width: '24px',
@@ -139,7 +134,6 @@ export function IPhoneNotificationPreview({ data }: IPhoneNotificationPreviewPro
         </Box>
       </Box>
 
-      {/* Lock screen background */}
       <Box
         style={{
           position: 'absolute',
@@ -153,14 +147,12 @@ export function IPhoneNotificationPreview({ data }: IPhoneNotificationPreviewPro
         }}
       />
 
-      {/* Notification container */}
       <Box
         style={{
           padding: '0 16px',
           marginTop: '40px',
         }}
       >
-        {/* Notification */}
         <Flex
           gap="sm"
           align="center"
@@ -237,7 +229,6 @@ export function IPhoneNotificationPreview({ data }: IPhoneNotificationPreviewPro
         </Flex>
       </Box>
 
-      {/* Home indicator */}
       <Box
         style={{
           position: 'absolute',

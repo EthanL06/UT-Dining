@@ -16,7 +16,6 @@ const TimeSchedule = ({ schedule, isOpen, onToggle }: TimeScheduleProps) => {
 
   return (
     <TouchableOpacity onPress={onToggle} className="flex flex-row items-start gap-4">
-      {/* Left Column: Day Ranges */}
       <View className="flex flex-col gap-1.5">
         {(isOpen ? schedule : schedule.slice(0, 1)).map((item, index) => {
           const timeLines = item.time.split('\n');
@@ -34,7 +33,7 @@ const TimeSchedule = ({ schedule, isOpen, onToggle }: TimeScheduleProps) => {
                   'text-sm',
                   isDarkMode ? 'text-gray-300' : 'text-ut-grey',
                   index === 0 && lineIdx === 0 && 'font-semibold',
-                  lineIdx > 0 && 'opacity-0', // Hide text for extra lines
+                  lineIdx > 0 && 'opacity-0',
                 )}
               >
                 {lineIdx === 0 ? `${item.dayRange}:` : ''}
@@ -44,7 +43,6 @@ const TimeSchedule = ({ schedule, isOpen, onToggle }: TimeScheduleProps) => {
         })}
       </View>
 
-      {/* Right Column: Times */}
       <View className="flex flex-col gap-1.5">
         {(isOpen ? schedule : schedule.slice(0, 1)).map((item, index) => {
           const timeLines = item.time.split('\n');

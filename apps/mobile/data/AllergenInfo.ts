@@ -48,7 +48,6 @@ const ALLERGEN_ICONS: Record<AllergenKey, ImageSourcePropType> = {
   halal: HalalIcon,
 };
 
-// Constants
 const NUTRITION_ORDER = [
   'Calories',
   'Total Fat',

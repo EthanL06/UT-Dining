@@ -1,4 +1,3 @@
-# Git hooks, installed by `pnpm install` (root "prepare" script).
 pre-commit:
   commands:
     biome:

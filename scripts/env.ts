@@ -1,11 +1,3 @@
-// Writes each app's .env.local so it points at a Supabase instance.
-//
-//   node scripts/env.ts --local   use the local Supabase started by `pnpm db:start`
-//   node scripts/env.ts --dev     use the hosted dev project from SUPABASE_DEV_* env vars
-//
-// Existing keys in an app's .env.local that this script does not manage (for
-// example EXPO_PUBLIC_POSTHOG_API_KEY) are kept.
-
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';

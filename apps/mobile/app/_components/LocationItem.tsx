@@ -26,7 +26,6 @@ const LocationItem = ({ location, isOpen: open, currentTime }: LocationItemProps
   const displayName = useLocationName(location.name ?? '', useColloquialNames);
 
   const startPingAnimation = useCallback(() => {
-    // Create a looping animation that expands and fades
     Animated.loop(
       Animated.sequence([
         Animated.timing(pingAnimation, {
@@ -46,7 +45,6 @@ const LocationItem = ({ location, isOpen: open, currentTime }: LocationItemProps
   }, [pingAnimation]);
 
   useEffect(() => {
-    // Stop any running animation
     pingAnimation.stopAnimation();
     pingAnimation.setValue(0);
 
@@ -55,7 +53,6 @@ const LocationItem = ({ location, isOpen: open, currentTime }: LocationItemProps
     }
 
     return () => {
-      // Clean up animation on unmount
       pingAnimation.stopAnimation();
     };
   }, [open, pingAnimation, startPingAnimation]);

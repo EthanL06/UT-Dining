@@ -41,7 +41,7 @@ The `Makefile` is the front door. `make` prints every target. Every target is no
 
 ## Conventions
 
-- No code comments in code you write, workflow YAML and shell included (`biome-ignore` and `@ts-expect-error` directives are fine). Lefthook blocks a commit that adds one, and CI fails a PR that adds one.
+- No code comments in code you write, workflow YAML and shell included (`biome-ignore` and `@ts-expect-error` directives are fine). There are none in the repo, and `make check` and CI fail on any (`scripts/dev/check-comments.sh --all`, which parses TypeScript, JavaScript and CSS); Lefthook checks the staged diff. `node scripts/dev/comments.ts --write` removes them. Only `supabase/config.toml` (the Supabase CLI template), SQL migrations and generated files are exempt.
 - Biome rules that are errors on purpose, so agents get a clear failure instead of a review comment: no `any` (explicit or implicit `let`), no non-null `!`, no unused imports or variables, `===` only, `const` when never reassigned, no reassigned parameters, throw only `Error`s. Fix the code; do not add a `biome-ignore` unless the rule is wrong for that line, and say why in the ignore.
 - No AI attribution in commits, PR bodies or comments.
 - PRs target `staging` and are squash merged. Only Ethan promotes `staging` to `main`, which ships production.

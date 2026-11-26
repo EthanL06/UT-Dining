@@ -14,7 +14,6 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
   const insets = useSafeAreaInsets();
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
 
-  // Get filters from store
   const {
     filters,
     toggleFavoriteFilter,
@@ -24,7 +23,6 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
     resetFilters,
   } = useFiltersStore();
 
-  // Helper function to format allergen keys
   const formatKey = (key: string) => {
     return key
       .split('_')
@@ -32,10 +30,8 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
       .join(' ');
   };
 
-  // Get allergens excluding dietary preferences
   const allergens = Object.entries(ALLERGEN_ICONS).filter(([key]) => !ALLERGEN_EXCEPTIONS.has(key));
 
-  // Get dietary preferences
   const dietaryOptions = Object.entries(ALLERGEN_ICONS).filter(([key]) =>
     ALLERGEN_EXCEPTIONS.has(key),
   );
@@ -51,7 +47,6 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
     >
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="p-6">
-          {/* Header */}
           <View className="mb-4 flex-row items-center justify-between">
             <View className="flex-row items-center gap-x-2">
               <Filter color={COLORS['ut-burnt-orange']} size={20} />
@@ -79,7 +74,6 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
             </TouchableOpacity>
           </View>
 
-          {/* Special Filters */}
           <Text className={cn('mb-2 font-semibold text-xl', isDarkMode ? 'text-gray-100' : '')}>
             My Items
           </Text>
@@ -136,7 +130,6 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
             </TouchableOpacity>
           </View>
 
-          {/* Allergen Filters */}
           <Text className={cn('font-semibold text-xl', isDarkMode ? 'text-gray-100' : '')}>
             Allergens
           </Text>
@@ -177,7 +170,6 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
             ))}
           </View>
 
-          {/* Dietary Preferences */}
           <Text className={cn('font-semibold text-xl', isDarkMode ? 'text-gray-100' : '')}>
             Dietary Preferences
           </Text>

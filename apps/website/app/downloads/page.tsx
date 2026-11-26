@@ -126,7 +126,6 @@ export default function Downloads() {
             animate="visible"
             className="mt-8 space-y-8 md:mt-16 md:space-y-12"
           >
-            {/* Mobile Section */}
             <motion.div variants={itemVariants} className="glass p-6 md:p-8">
               <h2 className="mb-4 font-semibold text-xl md:mb-6 md:text-2xl">Mobile Apps</h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
@@ -136,7 +135,6 @@ export default function Downloads() {
               </div>
             </motion.div>
 
-            {/* Desktop Section */}
             <motion.div variants={itemVariants} className="glass p-6 md:p-8">
               <h2 className="mb-4 font-semibold text-xl md:mb-6 md:text-2xl">Desktop Apps</h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8 lg:grid-cols-3">
@@ -146,7 +144,6 @@ export default function Downloads() {
               </div>
             </motion.div>
 
-            {/* Web Version */}
             <motion.div variants={itemVariants} className="glass p-6 md:p-8">
               <h2 className="mb-4 font-semibold text-xl md:mb-6 md:text-2xl">Web Version</h2>
               <div className="max-w-md">
@@ -156,7 +153,7 @@ export default function Downloads() {
                     title: 'Web App',
                     subtitle: 'Access from any browser',
                     icon: <Globe className="h-6 w-6 md:h-8 md:w-8" />,
-                    href: 'https://github.com/Longhorn-Developers/ut-dining-website', // TODO: Update link
+                    href: 'https://github.com/Longhorn-Developers/ut-dining-website',
                   }}
                 />
               </div>

@@ -77,13 +77,11 @@ const MapLocationSheet = ({ payload, sheetId }: MapLocationProps) => {
       backgroundInteractionEnabled
     >
       <ScrollView showsHorizontalScrollIndicator={false} className="max-h-[60vh] p-5">
-        {/* Location header */}
         <View className="mb-4 flex-row items-start justify-between">
           <View className="flex-1">
             <Text className={cn('font-bold text-3xl', isDarkMode && 'text-white')}>{name}</Text>
             <View className="mt-2 flex-col gap-y-2">
               <View className="flex-row items-center gap-x-3">
-                {/* Location Type Pill */}
                 {type && (
                   <View>
                     <View
@@ -130,14 +128,12 @@ const MapLocationSheet = ({ payload, sheetId }: MapLocationProps) => {
           </View>
         </View>
 
-        {/* Description */}
         <View className="mb-3">
           <Text className={cn('text-base leading-6', isDarkMode && 'text-white')}>
             {description}
           </Text>
         </View>
 
-        {/* Special note */}
         {note && (
           <View className="mb-4 flex-row items-center gap-x-3 self-start rounded-xl bg-ut-burnt-orange/10 px-4 py-2.5">
             <CircleAlert color={getColor('ut-burnt-orange', isColorBlindMode)} size={18} />
@@ -145,7 +141,6 @@ const MapLocationSheet = ({ payload, sheetId }: MapLocationProps) => {
           </View>
         )}
 
-        {/* Navigation button */}
         <TouchableOpacity
           activeOpacity={0.8}
           className="mt-2 rounded-xl bg-ut-burnt-orange py-3.5 shadow-sm"
@@ -166,7 +161,6 @@ const MapLocationSheet = ({ payload, sheetId }: MapLocationProps) => {
             )}
             onPress={() => {
               if (hasMenu) {
-                // First redirect to home tab and then redirect to location after interactions
                 ref.current?.hide();
                 router.replace('/');
 
