@@ -16,7 +16,7 @@ const FavoritesFeatureScreen = ({ width }: { width: number }) => (
     width={width}
     images={images}
     title="Favorites & Meal Planning"
-    subtitle="Press and hold any food to save it or add it to today's plan."
+    subtitle="Press and hold any food to save it, or add it to the meal plan for that day."
   />
 );
 

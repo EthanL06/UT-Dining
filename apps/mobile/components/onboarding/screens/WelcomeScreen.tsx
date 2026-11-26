@@ -20,7 +20,7 @@ const FEATURES: { Icon: LucideIcon; title: string; subtitle: string }[] = [
   {
     Icon: Heart,
     title: 'Save and plan',
-    subtitle: 'Keep your favorites and plan your meals for the day.',
+    subtitle: 'Keep your favorites and plan your meals day by day.',
   },
 ];
 
@@ -53,7 +53,10 @@ const WelcomeScreen = ({ width }: { width: number }) => {
                 <Text className="font-semibold text-[17px]" style={{ color: theme.label }}>
                   {title}
                 </Text>
-                <Text className="text-[15px] leading-5" style={{ color: theme.secondaryLabel }}>
+                <Text
+                  className="text-[15px] leading-[21px]"
+                  style={{ color: theme.secondaryLabel }}
+                >
                   {subtitle}
                 </Text>
               </View>

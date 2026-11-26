@@ -1,12 +1,12 @@
 import * as Location from 'expo-location';
 import * as Notifications from 'expo-notifications';
-import { Bell, Check, MapPin, XIcon } from 'lucide-react-native';
+import { Bell, Check, MapPin } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { Alert, AppState, Linking, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, AppState, Linking, Text, View } from 'react-native';
 
-import { useSettingsStore } from '~/store/useSettingsStore';
-import { COLORS } from '~/utils/colors';
-import { cn } from '~/utils/utils';
+import { GroupedRow, GroupedSection, IconSquare } from '~/components/ui/Grouped';
+import { useTheme } from '~/utils/theme';
+import OnboardingHeader from './OnboardingHeader';
 
 type Props = {
   width: number;
@@ -20,29 +20,39 @@ interface PermissionState {
   notifications: PermissionStatus;
 }
 
+const toState = (location: string, notifications: string): PermissionState => ({
+  location: location === 'granted' ? 'granted' : 'denied',
+  notifications: notifications === 'granted' ? 'granted' : 'denied',
+});
+
+const PermissionStatusLabel = ({ status }: { status: PermissionStatus }) => {
+  const theme = useTheme();
+  if (status === 'granted') return <Check size={20} color={theme.tint} strokeWidth={2.5} />;
+  return (
+    <Text className="text-[15px]" style={{ color: theme.secondaryLabel }}>
+      {status === 'denied' ? 'Off' : ''}
+    </Text>
+  );
+};
+
 const PermissionsScreen = ({ width, onPermissionsChange }: Props) => {
+  const theme = useTheme();
   const [permissions, setPermissions] = useState<PermissionState>({
     location: 'undetermined',
     notifications: 'undetermined',
   });
-  const isDark = useSettingsStore((state) => state.isDarkMode);
 
   useEffect(() => {
+    const apply = (next: PermissionState) => {
+      setPermissions(next);
+      onPermissionsChange(next);
+    };
+
     const requestPermissions = async () => {
       try {
-        // Request location permission
         const { status: locationStatus } = await Location.requestForegroundPermissionsAsync();
-
-        // Request notification permission
         const { status: notificationStatus } = await Notifications.requestPermissionsAsync();
-
-        const newPermissions = {
-          location: locationStatus === 'granted' ? 'granted' : 'denied',
-          notifications: notificationStatus === 'granted' ? 'granted' : 'denied',
-        } as PermissionState;
-
-        setPermissions(newPermissions);
-        onPermissionsChange(newPermissions);
+        apply(toState(locationStatus, notificationStatus));
       } catch (error) {
         console.error('Error requesting permissions:', error);
       }
@@ -50,17 +60,9 @@ const PermissionsScreen = ({ width, onPermissionsChange }: Props) => {
 
     const checkPermissions = async () => {
       try {
-        // Check current permission status without requesting
         const { status: locationStatus } = await Location.getForegroundPermissionsAsync();
         const { status: notificationStatus } = await Notifications.getPermissionsAsync();
-
-        const newPermissions = {
-          location: locationStatus === 'granted' ? 'granted' : 'denied',
-          notifications: notificationStatus === 'granted' ? 'granted' : 'denied',
-        } as PermissionState;
-
-        setPermissions(newPermissions);
-        onPermissionsChange(newPermissions);
+        apply(toState(locationStatus, notificationStatus));
       } catch (error) {
         console.error('Error checking permissions:', error);
       }
@@ -68,126 +70,47 @@ const PermissionsScreen = ({ width, onPermissionsChange }: Props) => {
 
     requestPermissions();
 
-    const handleAppStateChange = (nextAppState: string) => {
-      if (nextAppState === 'active') {
-        // Check permissions when app becomes active (user returns from settings)
-        checkPermissions();
-      }
-    };
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') checkPermissions();
+    });
 
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
-
-    return () => {
-      subscription?.remove();
-    };
+    return () => subscription.remove();
   }, [onPermissionsChange]);
 
   const openSettings = () => {
-    Alert.alert('Open Settings', 'To enable permissions, please go to your device settings.', [
+    Alert.alert('Open Settings', 'To turn on permissions, go to your device settings.', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Open Settings', onPress: () => Linking.openSettings() },
     ]);
   };
 
   return (
-    <View style={{ width }} className={cn('flex-1 px-6', isDark ? 'bg-black' : 'bg-[#F2F2F7]')}>
-      <View className="flex-1 items-center justify-center">
-        <Text
-          className={cn(
-            'mb-1 text-center font-bold text-3xl',
-            isDark ? 'text-white' : 'text-gray-900',
-          )}
-        >
-          Enable Permissions
-        </Text>
-        <Text
-          className={cn(
-            'mb-4 max-w-[250px] text-center text-lg leading-6',
-            isDark ? 'text-gray-300' : 'text-gray-600',
-          )}
-        >
-          We just need a few permissions to make your experience better
-        </Text>
-
-        <View className="w-full space-y-6">
-          {/* Location Permission */}
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={permissions.location === 'denied' ? openSettings : undefined}
-            className={cn(
-              'mb-2 rounded-2xl p-6',
-              isDark ? ' bg-neutral-800' : 'border border-gray-200 bg-white',
-            )}
-          >
-            <View className="flex-row items-center">
-              <View className="mr-4 h-12 w-12 items-center justify-center rounded-full bg-ut-burnt-orange/10">
-                <MapPin size={24} color={COLORS['ut-burnt-orange']} />
-              </View>
-              <View className="flex-1">
-                <Text
-                  className={cn('font-semibold text-lg', isDark ? 'text-white' : 'text-gray-900')}
-                >
-                  Location Services
-                </Text>
-                <Text className={cn('text-sm', isDark ? 'text-gray-300' : 'text-gray-600')}>
-                  See your location on the interactive campus map
-                </Text>
-              </View>
-              {permissions.location === 'granted' ? (
-                <Check size={24} color={isDark ? '#22c55e' : 'green'} />
-              ) : (
-                <XIcon size={24} color={isDark ? '#ef4444' : 'red'} />
-              )}
-            </View>
-          </TouchableOpacity>
-
-          {/* Notification Permission */}
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={openSettings}
-            className={cn(
-              'rounded-2xl p-6',
-              isDark ? ' bg-neutral-800' : 'border border-gray-200 bg-white',
-            )}
-          >
-            <View className="flex-row items-center">
-              <View className="mr-4 h-12 w-12 items-center justify-center rounded-full bg-ut-burnt-orange/10">
-                <Bell size={24} color={COLORS['ut-burnt-orange']} />
-              </View>
-              <View className="flex-1">
-                <Text
-                  className={cn('font-semibold text-lg', isDark ? 'text-white' : 'text-gray-900')}
-                >
-                  Push Notifications
-                </Text>
-                <Text
-                  className={cn(
-                    'max-w-[200px] text-sm',
-                    isDark ? 'text-gray-300' : 'text-gray-600',
-                  )}
-                >
-                  Get notified for menu updates, hours changes, and more
-                </Text>
-              </View>
-
-              {permissions.notifications === 'granted' ? (
-                <Check size={24} color={isDark ? '#22c55e' : 'green'} />
-              ) : (
-                <XIcon size={24} color={isDark ? '#ef4444' : 'red'} />
-              )}
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        <Text
-          className={cn(
-            'absolute bottom-0 max-w-[260px] text-center text-sm md:max-w-full',
-            isDark ? 'text-gray-400' : 'text-gray-500',
-          )}
-        >
-          These settings are completely optional and can be changed at any time.
-        </Text>
-      </View>
+    <View style={{ width, backgroundColor: theme.background }} className="flex-1 justify-center">
+      <OnboardingHeader
+        title="Enable Permissions"
+        subtitle="Two optional permissions make UT Dining more useful."
+      />
+      <GroupedSection footer="You can change these at any time in Settings.">
+        <GroupedRow
+          isFirst
+          separatorInset={58}
+          leading={<IconSquare Icon={MapPin} color="#0A84FF" />}
+          title="Location Services"
+          subtitle="Shows where you are on the campus map"
+          multilineSubtitle
+          trailing={<PermissionStatusLabel status={permissions.location} />}
+          onPress={permissions.location === 'denied' ? openSettings : undefined}
+        />
+        <GroupedRow
+          separatorInset={58}
+          leading={<IconSquare Icon={Bell} color="#E0463F" />}
+          title="Push Notifications"
+          subtitle="Menu updates, hours changes and more"
+          multilineSubtitle
+          trailing={<PermissionStatusLabel status={permissions.notifications} />}
+          onPress={permissions.notifications === 'denied' ? openSettings : undefined}
+        />
+      </GroupedSection>
     </View>
   );
 };

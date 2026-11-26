@@ -1,8 +1,8 @@
 import LottieView from 'lottie-react-native';
 import { useEffect, useRef } from 'react';
 import { Text, View } from 'react-native';
-import { useSettingsStore } from '~/store/useSettingsStore';
-import { cn } from '~/utils/utils';
+
+import { useTheme } from '~/utils/theme';
 
 type Props = {
   width: number;
@@ -11,8 +11,8 @@ type Props = {
 };
 
 const CompleteScreen = ({ width, isCurrentScreen }: Props) => {
+  const theme = useTheme();
   const lottieRef = useRef<LottieView>(null);
-  const isDark = useSettingsStore((state) => state.isDarkMode);
 
   useEffect(() => {
     if (!isCurrentScreen) {
@@ -21,39 +21,30 @@ const CompleteScreen = ({ width, isCurrentScreen }: Props) => {
   }, [isCurrentScreen]);
 
   return (
-    <View style={{ width }} className={cn('flex-1 px-6', isDark ? 'bg-black' : 'bg-[#F2F2F7]')}>
-      <View className="flex-1 items-center justify-center">
-        <View className="items-center">
-          <LottieView
-            ref={lottieRef}
-            source={require('~/assets/onboarding/success-lottie.json')}
-            autoPlay={isCurrentScreen}
-            loop
-            style={{ width: 300, height: 300 }}
-            resizeMode="cover"
-          />
-
-          <Text
-            style={{
-              marginTop: -48,
-            }}
-            className={cn(
-              'mb-4 text-center font-bold text-3xl',
-              isDark ? 'text-white' : 'text-gray-900',
-            )}
-          >
-            You're all set 🤘
-          </Text>
-          <Text
-            className={cn(
-              'max-w-[260px] text-center text-lg leading-6',
-              isDark ? 'text-gray-300' : 'text-gray-600',
-            )}
-          >
-            Thanks for setting things up — now it's time to find your next meal
-          </Text>
-        </View>
-      </View>
+    <View
+      style={{ width, backgroundColor: theme.background }}
+      className="flex-1 items-center justify-center px-8"
+    >
+      <LottieView
+        ref={lottieRef}
+        source={require('~/assets/onboarding/success-lottie.json')}
+        autoPlay={isCurrentScreen}
+        loop
+        style={{ width: 300, height: 300 }}
+        resizeMode="cover"
+      />
+      <Text
+        style={{ marginTop: -48, color: theme.label }}
+        className="text-center font-bold text-[28px] leading-[33px]"
+      >
+        You're all set 🤘
+      </Text>
+      <Text
+        className="mx-auto mt-2 max-w-[300px] text-center text-[17px] leading-[23px]"
+        style={{ color: theme.secondaryLabel }}
+      >
+        Thanks for setting things up. Now it's time to find your next meal.
+      </Text>
     </View>
   );
 };
