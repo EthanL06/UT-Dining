@@ -23,10 +23,17 @@ function compareVersions(a: string, b: string) {
   return 0;
 }
 
-async function fetchPublished(): Promise<ChangelogEntry[] | null> {
+export type ChangelogSource = { url: string; key: string } | null;
+
+export function changelogSource(): ChangelogSource {
   const url = process.env.WEBSITE_SUPABASE_URL;
   const key = process.env.WEBSITE_SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
+  return url && key ? { url, key } : null;
+}
+
+export async function fetchPublished(source: ChangelogSource): Promise<ChangelogEntry[] | null> {
+  if (!source) return null;
+  const { url, key } = source;
   try {
     const res = await fetch(
       `${url}/rest/v1/changelog?select=version,release_date,summary,changes&is_published=eq.true`,
@@ -44,9 +51,12 @@ async function fetchPublished(): Promise<ChangelogEntry[] | null> {
   }
 }
 
-export async function getChangelog(): Promise<ChangelogEntry[]> {
-  const entries = (await fetchPublished()) ?? (fallback as ChangelogEntry[]);
+export function sortEntries(entries: ChangelogEntry[]) {
   return [...entries].sort((a, b) => compareVersions(a.version, b.version));
+}
+
+export async function getChangelog(): Promise<ChangelogEntry[]> {
+  return sortEntries((await fetchPublished(changelogSource())) ?? (fallback as ChangelogEntry[]));
 }
 
 export function formatReleaseDate(date: string | null) {
