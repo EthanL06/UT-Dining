@@ -5,6 +5,7 @@ import {
   Badge,
   Button,
   Card,
+  Grid,
   Group,
   Modal,
   Select,
@@ -33,6 +34,7 @@ import {
   compareVersions,
   isValidVersion,
 } from '@/types/changelog';
+import { ChangelogAppPreview } from './app-preview';
 import { CHANGELOG_ICON_OPTIONS, ChangelogIconBadge } from './changelog-icons';
 
 const iconData = CHANGELOG_ICONS.map((value) => ({
@@ -109,128 +111,146 @@ function ChangelogEditor({
   const changes = form.values.changes;
 
   return (
-    <form onSubmit={form.onSubmit(handleSubmit)}>
-      <Stack gap="md">
-        <Group grow align="flex-start">
-          <TextInput
-            label="Version"
-            placeholder="2.0.0"
-            required
-            {...form.getInputProps('version')}
+    <Grid gutter="xl">
+      <Grid.Col span={{ base: 12, md: 7 }}>
+        <form onSubmit={form.onSubmit(handleSubmit)}>
+          <Stack gap="md">
+            <Group grow align="flex-start">
+              <TextInput
+                label="Version"
+                placeholder="2.0.0"
+                required
+                {...form.getInputProps('version')}
+              />
+              <TextInput
+                label="Release date"
+                description="Leave empty until it ships"
+                type="date"
+                value={form.values.releaseDate ?? ''}
+                onChange={(event) =>
+                  form.setFieldValue('releaseDate', event.currentTarget.value || null)
+                }
+              />
+            </Group>
+            <Textarea
+              label="Summary"
+              description="Optional one-line headline shown above the changes"
+              placeholder="A faster, more accurate UT Dining."
+              autosize
+              minRows={1}
+              {...form.getInputProps('summary')}
+            />
+            <Stack gap="xs">
+              <Text fw={600} size="sm">
+                Changes
+              </Text>
+              {changes.map((change, index) => (
+                <Card key={form.key(`changes.${index}`)} withBorder padding="sm" radius="md">
+                  <Group align="flex-start" wrap="nowrap" gap="xs">
+                    <Stack gap="xs" style={{ flex: 1 }}>
+                      <Select
+                        aria-label={`Change ${index + 1} icon`}
+                        data={iconData}
+                        allowDeselect={false}
+                        leftSection={<ChangelogIconBadge icon={change.icon} size={12} />}
+                        renderOption={({ option }) => (
+                          <Group gap="xs" wrap="nowrap">
+                            <ChangelogIconBadge icon={option.value as ChangelogIcon} size={12} />
+                            <Text size="sm">{option.label}</Text>
+                          </Group>
+                        )}
+                        w={180}
+                        {...form.getInputProps(`changes.${index}.icon`)}
+                      />
+                      <TextInput
+                        placeholder="Title"
+                        aria-label={`Change ${index + 1} title`}
+                        {...form.getInputProps(`changes.${index}.title`)}
+                      />
+                      <Textarea
+                        placeholder="Description (optional)"
+                        aria-label={`Change ${index + 1} description`}
+                        autosize
+                        minRows={1}
+                        {...form.getInputProps(`changes.${index}.description`)}
+                      />
+                    </Stack>
+                    <Stack gap={4}>
+                      <ActionIcon
+                        variant="subtle"
+                        color="gray"
+                        aria-label="Move up"
+                        disabled={index === 0}
+                        onClick={() =>
+                          form.reorderListItem('changes', { from: index, to: index - 1 })
+                        }
+                      >
+                        <IconArrowUp size={16} />
+                      </ActionIcon>
+                      <ActionIcon
+                        variant="subtle"
+                        color="gray"
+                        aria-label="Move down"
+                        disabled={index === changes.length - 1}
+                        onClick={() =>
+                          form.reorderListItem('changes', { from: index, to: index + 1 })
+                        }
+                      >
+                        <IconArrowDown size={16} />
+                      </ActionIcon>
+                      <ActionIcon
+                        variant="subtle"
+                        color="red"
+                        aria-label="Remove change"
+                        disabled={changes.length === 1}
+                        onClick={() => form.removeListItem('changes', index)}
+                      >
+                        <IconTrash size={16} />
+                      </ActionIcon>
+                    </Stack>
+                  </Group>
+                </Card>
+              ))}
+              {form.errors.changes && (
+                <Text c="red" size="xs">
+                  {form.errors.changes}
+                </Text>
+              )}
+              <Button
+                variant="light"
+                leftSection={<IconPlus size={16} />}
+                onClick={() => form.insertListItem('changes', emptyChange())}
+              >
+                Add change
+              </Button>
+            </Stack>
+            <Switch
+              label="Show in the app"
+              description="Hidden entries are only visible here"
+              {...form.getInputProps('isPublished', { type: 'checkbox' })}
+            />
+            <Group justify="flex-end">
+              <Button variant="default" onClick={onClose} disabled={isSaving}>
+                Cancel
+              </Button>
+              <Button type="submit" loading={isSaving}>
+                Save
+              </Button>
+            </Group>
+          </Stack>
+        </form>
+      </Grid.Col>
+      <Grid.Col span={{ base: 12, md: 5 }}>
+        <div style={{ position: 'sticky', top: 0 }}>
+          <ChangelogAppPreview
+            version={form.values.version.trim()}
+            releaseDate={form.values.releaseDate}
+            summary={form.values.summary}
+            changes={form.values.changes}
           />
-          <TextInput
-            label="Release date"
-            description="Leave empty until it ships"
-            type="date"
-            value={form.values.releaseDate ?? ''}
-            onChange={(event) =>
-              form.setFieldValue('releaseDate', event.currentTarget.value || null)
-            }
-          />
-        </Group>
-        <Textarea
-          label="Summary"
-          description="Optional one-line headline shown above the changes"
-          placeholder="A faster, more accurate UT Dining."
-          autosize
-          minRows={1}
-          {...form.getInputProps('summary')}
-        />
-        <Stack gap="xs">
-          <Text fw={600} size="sm">
-            Changes
-          </Text>
-          {changes.map((change, index) => (
-            <Card key={form.key(`changes.${index}`)} withBorder padding="sm" radius="md">
-              <Group align="flex-start" wrap="nowrap" gap="xs">
-                <Stack gap="xs" style={{ flex: 1 }}>
-                  <Select
-                    aria-label={`Change ${index + 1} icon`}
-                    data={iconData}
-                    allowDeselect={false}
-                    leftSection={<ChangelogIconBadge icon={change.icon} size={12} />}
-                    renderOption={({ option }) => (
-                      <Group gap="xs" wrap="nowrap">
-                        <ChangelogIconBadge icon={option.value as ChangelogIcon} size={12} />
-                        <Text size="sm">{option.label}</Text>
-                      </Group>
-                    )}
-                    w={180}
-                    {...form.getInputProps(`changes.${index}.icon`)}
-                  />
-                  <TextInput
-                    placeholder="Title"
-                    aria-label={`Change ${index + 1} title`}
-                    {...form.getInputProps(`changes.${index}.title`)}
-                  />
-                  <Textarea
-                    placeholder="Description (optional)"
-                    aria-label={`Change ${index + 1} description`}
-                    autosize
-                    minRows={1}
-                    {...form.getInputProps(`changes.${index}.description`)}
-                  />
-                </Stack>
-                <Stack gap={4}>
-                  <ActionIcon
-                    variant="subtle"
-                    color="gray"
-                    aria-label="Move up"
-                    disabled={index === 0}
-                    onClick={() => form.reorderListItem('changes', { from: index, to: index - 1 })}
-                  >
-                    <IconArrowUp size={16} />
-                  </ActionIcon>
-                  <ActionIcon
-                    variant="subtle"
-                    color="gray"
-                    aria-label="Move down"
-                    disabled={index === changes.length - 1}
-                    onClick={() => form.reorderListItem('changes', { from: index, to: index + 1 })}
-                  >
-                    <IconArrowDown size={16} />
-                  </ActionIcon>
-                  <ActionIcon
-                    variant="subtle"
-                    color="red"
-                    aria-label="Remove change"
-                    disabled={changes.length === 1}
-                    onClick={() => form.removeListItem('changes', index)}
-                  >
-                    <IconTrash size={16} />
-                  </ActionIcon>
-                </Stack>
-              </Group>
-            </Card>
-          ))}
-          {form.errors.changes && (
-            <Text c="red" size="xs">
-              {form.errors.changes}
-            </Text>
-          )}
-          <Button
-            variant="light"
-            leftSection={<IconPlus size={16} />}
-            onClick={() => form.insertListItem('changes', emptyChange())}
-          >
-            Add change
-          </Button>
-        </Stack>
-        <Switch
-          label="Show in the app"
-          description="Hidden entries are only visible here"
-          {...form.getInputProps('isPublished', { type: 'checkbox' })}
-        />
-        <Group justify="flex-end">
-          <Button variant="default" onClick={onClose} disabled={isSaving}>
-            Cancel
-          </Button>
-          <Button type="submit" loading={isSaving}>
-            Save
-          </Button>
-        </Group>
-      </Stack>
-    </form>
+        </div>
+      </Grid.Col>
+    </Grid>
   );
 }
 
@@ -344,7 +364,7 @@ export function ChangelogManager({ entries }: { entries: ChangelogEntry[] }) {
         opened={editing !== null}
         onClose={() => setEditing(null)}
         title={editing === 'new' ? 'New version' : `Edit version ${editing?.version ?? ''}`}
-        size="lg"
+        size="80rem"
         centered
       >
         {editing !== null && (
