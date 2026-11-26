@@ -22,7 +22,7 @@ The cloud SessionStart hook (`scripts/claude-session-start.sh`) points the apps 
 ## Web apps
 
 - Website: `pnpm --filter @ut-dining/website dev --port 3001`, open `http://localhost:3001/ut-dining-website/`.
-- Dashboard: `pnpm --filter @ut-dining/dashboard dev`, open `http://localhost:3000/login`. Create a local user with the auth admin API (see verifier-browser setup step 5) and sign in with it.
+- Dashboard: `pnpm --filter @ut-dining/dashboard dev`, open `http://localhost:3000/login`. Sign-in is Google only and limited to `public.dashboard_admins`; verifier-browser setup step 5 shows how to get a local admin session without Google.
 - agent-browser in a Linux container: `npm i -g agent-browser`, then `export AGENT_BROWSER_EXECUTABLE_PATH=/opt/pw-browsers/chromium AGENT_BROWSER_ARGS=--no-sandbox` to use the preinstalled Chromium.
 
 ## Mobile app

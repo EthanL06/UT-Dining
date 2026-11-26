@@ -157,6 +157,22 @@ export type Database = {
         };
         Relationships: [];
       };
+      dashboard_admins: {
+        Row: {
+          created_at: string;
+          email: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          email: string;
+        };
+        Update: {
+          created_at?: string;
+          email?: string;
+        };
+        Relationships: [];
+      };
       food_item: {
         Row: {
           allergens_id: number | null;
@@ -532,6 +548,7 @@ export type Database = {
     Functions: {
       insert_location_and_menus: { Args: { arg_data: Json }; Returns: boolean };
       insert_multiple_locations_and_menus: { Args: { arg_data_array: Json[] }; Returns: boolean };
+      is_dashboard_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       prune_location_day_menus: {
         Args: { arg_date: string; arg_location_name: string; arg_menu_names: string[] };
         Returns: number;
