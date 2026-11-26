@@ -10,6 +10,7 @@ import { ChefHat, Heart } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -68,10 +69,19 @@ const sortLocationsByStatus = (
   };
 };
 
+const appIcon = require('../../../assets/image.png');
+
 const MEAL_MESSAGE = {
-  morning: 'Breakfast is served',
-  afternoon: 'Lunch is served',
-  evening: 'Dinner is served',
+  morning: 'Breakfast is served.',
+  afternoon: 'Lunch is served.',
+  evening: 'Dinner is served.',
+};
+
+const greeting = (time: Date) => {
+  const hour = time.getHours();
+  if (hour < 11) return 'Good Morning! ☀️';
+  if (hour < 18) return 'Good Afternoon! 🌤️';
+  return 'Good Evening! 🌙';
 };
 
 const QuickLink = ({
@@ -290,7 +300,7 @@ export default function Home() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
-      <Stack.Screen options={{ title: 'Dining' }} />
+      <Stack.Screen options={{ title: 'Home', headerShown: false }} />
       <OnboardingScreen isOnboardingComplete={isOnboardingComplete} />
 
       {locations.length === 0 && menuSync.isFetching ? (
@@ -317,7 +327,7 @@ export default function Home() {
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 32 }}
+          contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -326,7 +336,20 @@ export default function Home() {
             />
           }
         >
-          <Text className="mx-5 mb-3 text-[15px]" style={{ color: theme.secondaryLabel }}>
+          <Image
+            source={appIcon}
+            accessibilityLabel="UT Dining"
+            className="mx-4 mb-4 size-12"
+            resizeMode="contain"
+          />
+          <Text
+            accessibilityRole="header"
+            className="mx-5 font-bold text-[32px]"
+            style={{ color: theme.label }}
+          >
+            {greeting(currentTime)}
+          </Text>
+          <Text className="mx-5 mb-4 text-[15px]" style={{ color: theme.secondaryLabel }}>
             {MEAL_MESSAGE[timeOfDay(currentTime)]}
             {syncUnavailable &&
               ` · ${onlineManager.isOnline() ? "Couldn't update" : 'Offline'}${
