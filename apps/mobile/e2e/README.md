@@ -4,15 +4,19 @@ End-to-end flows for the iOS app, written for [Maestro](https://docs.maestro.dev
 
 ## Run
 
-Needs macOS with Xcode, Docker, Maestro (`curl -fsSL https://get.maestro.mobile.dev | bash`, which needs Java 17+) and a simulator with the development client installed (`pnpm dev:ios`).
+Needs macOS with Xcode, Docker, Maestro (`curl -fsSL https://get.maestro.mobile.dev | bash`, which needs Java 17+) and a simulator with the development client installed (`make ios`). `make doctor` checks all of this.
 
 ```sh
-pnpm db:start
-pnpm e2e:ios --sim <UDID>
-pnpm e2e:ios --sim <UDID> apps/mobile/e2e/flows/favorites.yaml
-pnpm e2e:ios --sim <UDID> --include-tags smoke
-pnpm e2e:ios --sim <UDID> --shards 3
+make db-up
+make e2e SIM=<UDID or name>
+make e2e SIM=<UDID> ARGS=apps/mobile/e2e/flows/favorites.yaml
+make e2e SIM=<UDID> ARGS="--include-tags smoke"
+make e2e SIM=<UDID> ARGS="--shards 3 --retry-failed"
+make e2e-fixtures SIM=<UDID>
+make clean-sims
 ```
+
+`make e2e` runs `scripts/qa/mobile-e2e.sh` (also `pnpm e2e:ios`), and `ARGS` passes straight through to it. `make clean-sims` deletes shard clones a cancelled run left behind.
 
 `scripts/qa/mobile-e2e.sh` loads the fixture menus into local Supabase (`scripts/qa/e2e-load-fixtures.ts`), points `apps/mobile/.env.local` at it, boots the simulator in light appearance, starts Metro when it is not running, runs Maestro, and stops what it started. The JUnit report, screenshots and Maestro logs go to `.context/maestro/<time>/`. Pass `--release` when the simulator has a release build of the dev bundle id instead of a development client. Pass `--shards <n>` to split the flows across n simulators at once: the extra ones are clones of `--sim` with the app already installed, and the script deletes them when it finishes. Each simulator needs about 2 GB of free RAM.
 

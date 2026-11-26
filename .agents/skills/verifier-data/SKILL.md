@@ -10,8 +10,8 @@ Local data only. Never connect to the production Supabase project or the hosted 
 ## Setup
 
 1. Docker must be running (`docker info`). On macOS, `open -a Docker` and wait for `docker info`. In a Linux cloud container with no daemon, start one: `dockerd > "$run/dockerd.log" 2>&1 &`. With no Docker at all, BLOCKED.
-2. Ports. When `docker ps --format '{{.Names}}' | grep -qx supabase_db_ut-dining` is true, a UT Dining stack from another worktree is already up: reuse it, and do not start or stop it. Else check the ports in `supabase/config.toml` (`lsof -iTCP:54321 -sTCP:LISTEN`, same for 54320 to 54329). If any is taken by another project, move this worktree's stack: `sed -i.bak -E 's/^(port|shadow_port) = 543([0-9]{2})$/\1 = 563\2/' supabase/config.toml` (pick another free prefix if 563xx is taken). This edit is for the run only: restore it at teardown and never commit it.
-3. Start local Supabase with only what the checks need: `pnpm exec supabase start -x vector,logflare,imgproxy,studio,edge-runtime,realtime,storage-api,postgres-meta > "$run/start.log" 2>&1`. The first start pulls images and takes a few minutes; later starts take about a minute.
+2. Ports. When `docker ps --format '{{.Names}}' | grep -qx supabase_db_ut-dining` is true, a UT Dining stack from another worktree is already up: reuse it, and do not start or stop it.
+3. Else start local Supabase with only what the checks need: `SUPABASE_EXCLUDE=vector,logflare,imgproxy,studio,edge-runtime,realtime,storage-api,postgres-meta make db-up > "$run/start.log" 2>&1`. When another project holds 54320 to 54329, it moves this stack to a free range and saves it in the gitignored `supabase/.env`, which every `supabase` command reads. Never edit the ports in `supabase/config.toml`. The first start pulls images and takes a few minutes; later starts take about a minute.
 4. Read the local URLs and keys: `eval "$(pnpm exec supabase status -o env | grep -E '^(API_URL|DB_URL|SERVICE_ROLE_KEY|ANON_KEY)=')"`. Use `$API_URL` and `$SERVICE_ROLE_KEY` below; they are Supabase's fixed local demo values, not secrets.
 5. Reset to the base state: `pnpm db:reset > "$run/reset.log" 2>&1`. It applies every file in `supabase/migrations` from scratch, then `supabase/seed.sql`.
 6. A query helper: `psql_local() { docker exec -i supabase_db_ut-dining psql -U postgres -At "$@"; }`.
@@ -30,7 +30,7 @@ Local data only. Never connect to the production Supabase project or the hosted 
 
 ## Teardown
 
-If you started the stack, `pnpm db:stop`. It keeps the `supabase_db_ut-dining` Docker volume on purpose, so the next start is fast; `pnpm db:reset` puts it back to the base state, so old data never leaks into a check. If you moved the ports, `mv supabase/config.toml.bak supabase/config.toml`. Stop `dockerd` only if you started it.
+If you started the stack, `pnpm db:stop`. It keeps the `supabase_db_ut-dining` Docker volume on purpose, so the next start is fast; `pnpm db:reset` puts it back to the base state, so old data never leaks into a check. Stop `dockerd` only if you started it.
 
 ## Result
 

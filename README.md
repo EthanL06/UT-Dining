@@ -73,51 +73,81 @@ UT Dining is a monorepo: the mobile app, the admin dashboard, the website, the m
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) 24 (22.18 or newer works). `.node-version` is read by fnm, mise and nvm.
-- [Docker](https://docs.docker.com/get-docker/) if you want a local Supabase database
-- An [Expo account](https://expo.dev) and an iOS simulator, Android emulator or phone for the mobile app
+- macOS or Linux with `make` and `git` (on macOS they come with the Xcode Command Line Tools)
+- [Node.js](https://nodejs.org/) 24 (22.18 or newer works). `.node-version` is read by fnm, mise and nvm, and `make setup` installs it through any of them.
+- [Docker Desktop](https://docs.docker.com/get-docker/) or [OrbStack](https://orbstack.dev) for the local Supabase database
+- For the mobile app: Xcode with an iOS Simulator (or Android Studio), CocoaPods and, for E2E tests, [Maestro](https://docs.maestro.dev)
 
-pnpm and the Supabase CLI are installed for you.
+pnpm, the Supabase CLI, Biome and the git hooks are installed for you.
 
 ### Quick start
 
 ```sh
 git clone https://github.com/<your-username>/UT-Dining.git
 cd UT-Dining
-./setup.sh   # installs Node deps, writes each app's .env.local, starts local Supabase if Docker is running
-./dev.sh     # pick what to run: mobile app, dashboard, website, scraper, local Supabase
+make setup   # one command: deps, env files, local Supabase, a few days of real menus
+make dev     # dashboard, website and Metro together
 ```
 
-`setup.sh` points the apps at the hosted dev Supabase project when `SUPABASE_DEV_URL`, `SUPABASE_DEV_ANON_KEY` and `SUPABASE_DEV_SERVICE_KEY` are set, and at a local Supabase otherwise. Run `pnpm env:local` or `pnpm env:dev` to switch later.
+`make setup` is safe to re-run: it keeps your `.env.local` files and the data in your local database, and only does what is missing. It never prompts, so agents and CI can run it too. It starts Docker if it is installed but not running. If another project already uses Supabase's default ports (54321 and up), it picks a free range and saves it in the gitignored `supabase/.env`; `make db-status` prints the real URLs.
 
-To seed your local database with real menus, run the scraper once: `./dev.sh scrape`.
+Pick the database with `DB=`:
+
+| Command | Database |
+| --- | --- |
+| `make setup` | Local Supabase when Docker is installed, otherwise the hosted dev project when `SUPABASE_DEV_URL`, `SUPABASE_DEV_ANON_KEY` and `SUPABASE_DEV_SERVICE_KEY` are set. If the apps already point at a hosted project, they keep it. |
+| `make setup DB=local` / `DB=dev` / `DB=none` | Force one |
+| `make setup SEED=0` | Skip scraping menus |
+
+Nothing ever points at the production Supabase project: `scripts/env.ts` refuses to write it, `make setup` switches away from it, and `make doctor` fails when an app uses it.
+
+When something looks off, run `make doctor`. It checks Node, pnpm, dependencies, git hooks, Docker, local Supabase, where each app's `.env.local` points, running dev servers and, on macOS, Xcode, CocoaPods, Maestro and which simulators have the development build. It exits with an error when a required check fails.
 
 ### Mobile app
 
 The app uses native modules (MMKV, SQLCipher), so it runs in a [development build](https://docs.expo.dev/develop/development-builds/introduction/), not Expo Go.
 
 ```sh
-./dev.sh ios             # build and install the development build on the iOS simulator (macOS)
-./dev.sh android         # same for Android
-./dev.sh mobile          # start the dev server for an installed development build
-./dev.sh mobile --tunnel # reach the dev server from a phone on another network
+make sim                     # boot a simulator (one with the dev build if there is one) and open it
+make ios                     # build and install the development build, then start Metro
+make ios SIM="iPhone 17"     # same, on a named simulator or UDID
+make mobile                  # only Metro, for a development build that is already installed
+make mobile ARGS=--tunnel    # reach Metro from a phone on another network
+make sims                    # list simulators and which have the development build
 ```
 
-No Mac? Build the development build in the cloud with `npx eas-cli build --profile development --platform ios` from `apps/mobile`, install it on your iPhone, then use `./dev.sh mobile --tunnel`.
+No Mac? Build the development build in the cloud with `npx eas-cli build --profile development --platform ios` from `apps/mobile`, install it on your iPhone, then use `make mobile ARGS=--tunnel`.
 
-While the dev server runs, press `Shift + M` and pick `expo-drizzle-studio-plugin` to inspect the local SQLite cache.
+While Metro runs, press `Shift + M` and pick `expo-drizzle-studio-plugin` to inspect the local SQLite cache.
 
 ### Everyday commands
 
+Run `make` (or `make help`) for the full list. Variables go after the target, for example `make db-seed DAYS=5`.
+
 | Command | What it does |
 | --- | --- |
-| `pnpm check` | Lint, format check, typecheck and tests for everything |
-| `pnpm fix` | Apply Biome's safe lint and format fixes |
-| `pnpm typecheck` | Typecheck every package (TypeScript 7, cached by Turborepo) |
-| `pnpm db:start` / `pnpm db:stop` | Start or stop local Supabase |
-| `pnpm db:reset` | Re-apply migrations and `supabase/seed.sql` |
-| `pnpm db:new <name>` | Create a migration in `supabase/migrations` |
-| `pnpm db:types` | Regenerate `@ut-dining/supabase` from the local database |
+| `make dev` | Start local Supabase if the apps use it, then the dashboard (:3000), website (:3001) and Metro (:8081) |
+| `make dashboard` / `make website` / `make mobile` | Start one of them |
+| `make scrape` | Run the scraper once with `apps/scraper/.env.local` |
+| `make check` | Lint, format check, typecheck and tests for everything. Run it before you push. |
+| `make fix` | Apply Biome's safe lint and format fixes |
+| `make typecheck` / `make test` / `make build` | One step of the checks |
+| `make db-up` / `make db-down` | Start or stop local Supabase (data is kept), and point the apps at it |
+| `make db-status` | Local URLs and how many locations and menus are loaded |
+| `make db-seed DAYS=3` | Scrape real UT menus into the local database |
+| `make db-fixtures` | Load the fixed E2E test menus instead |
+| `make db-reset` | Rebuild the local database from migrations and `supabase/seed.sql` |
+| `make db-new NAME=add_meal_notes` | Create a migration in `supabase/migrations` |
+| `make db-migrate` | Apply new migrations without dropping data |
+| `make db-types` | Regenerate `@ut-dining/supabase` from the local database |
+| `make db-psql` / `make db-studio` | Open psql or Supabase Studio on the local database |
+| `make env-local` / `make env-dev` | Point every app at local Supabase or the hosted dev project |
+| `make e2e SIM=<UDID>` | Run the Maestro flows (see [apps/mobile/e2e](apps/mobile/e2e/README.md)) |
+| `make worktree NAME=feat-x` | New git worktree in `.worktrees/feat-x` from `origin/staging`, with env files and dependencies |
+| `make clean` | Stop Metro, delete leftover E2E simulator clones, remove clean and pushed worktrees, clear build caches |
+| `make stop` | End of the day: stop Metro and local Supabase and shut down every simulator |
+
+The `pnpm` scripts in `package.json` (`pnpm check`, `pnpm db:reset` and so on) still work; the Makefile is a front door over them.
 
 Commits are checked by commitlint and staged files are formatted by Biome through [Lefthook](https://lefthook.dev) hooks, installed automatically by `pnpm install`.
 
@@ -139,9 +169,10 @@ UT-Dining/
 │   ├── supabase/          # @ut-dining/supabase: generated database types shared by all apps
 │   └── tsconfig/          # @ut-dining/tsconfig: shared TypeScript presets
 ├── supabase/              # Supabase config, migrations, seed data and edge functions
-├── scripts/               # setup and environment helpers
-├── setup.sh               # one-time setup
-└── dev.sh                 # start an app or service
+├── scripts/
+│   ├── dev/               # what the Makefile runs: setup, doctor, database, simulators, cleanup
+│   └── qa/                # Maestro E2E runner and fixtures
+└── Makefile               # every setup and daily command: run `make`
 ```
 
 ## Frequently Asked Questions
@@ -160,7 +191,7 @@ A: The menu data is updated every day at 1:00 AM CST (7:00 AM UTC) to ensure you
 ### Development
 
 **Q: Do I need to run the scraper to test the app locally?**  
-A: No, you can develop and test the app without running the scraper, but we highly recommend you do to be able to fully test all of the app's features. To work with real menu data, run `./dev.sh scrape` against your local Supabase.
+A: No, you can develop and test the app without running the scraper, but we highly recommend you do to be able to fully test all of the app's features. To work with real menu data, run `make db-seed` (`make setup` already scrapes a few days).
 
 **Q: What is local Supabase development and why do I need it?**  
 A: Local Supabase development means running Supabase on your own computer instead of using a hosted service. This gives you:
@@ -179,7 +210,7 @@ A: The app uses [react-native-mmkv](https://github.com/mrousavy/react-native-mmk
 A: Make sure you're using a development build and not Expo Go. If the error persists, try:
 
 1. Delete the app from your device/emulator
-2. Rebuild using `./dev.sh ios` or `./dev.sh android`
+2. Rebuild using `make ios` or `make android`
 3. If issues continue, check Drizzle Studio (press `Shift + M` in terminal) to inspect the database
 
 **Q: How do I test admin features?**  
@@ -205,7 +236,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
    test: add or update tests
    chore: update dependencies or configuration
    ```
-4. Run `pnpm check`, then push the branch (`git push origin feat-meal-reminders`)
+4. Run `make check`, then push the branch (`git push origin feat-meal-reminders`)
 5. Open a Pull Request
 
 ## Deployments

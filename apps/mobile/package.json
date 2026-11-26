@@ -7,6 +7,7 @@
     "android": "APP_VARIANT=development expo run:android",
     "ios": "APP_VARIANT=development expo run:ios",
     "start": "APP_VARIANT=development expo start --dev-client",
+    "dev": "APP_VARIANT=development expo start --dev-client",
     "prebuild": "expo prebuild",
     "web": "expo start --web",
     "typecheck": "node ../../node_modules/tsgo/bin/tsc --noEmit"
