@@ -1,7 +1,17 @@
 import * as Haptics from 'expo-haptics';
-import { BicepsFlexed, Flame, Wheat } from 'lucide-react-native';
-import { useRef, useState } from 'react';
-import { FlatList, Image, Text, TextInput, View } from 'react-native';
+import { router } from 'expo-router';
+import { BicepsFlexed, ChevronLeft, ChevronRight, Flame, Wheat } from 'lucide-react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  AppState,
+  FlatList,
+  Image,
+  Pressable,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import ReanimatedSwipeable, {
   type SwipeableMethods,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
@@ -12,10 +22,44 @@ import { RemoveAction } from '~/components/AnimatedActions';
 import { Container } from '~/components/Container';
 import TopBar from '~/components/TopBar';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
-import { type MealPlanItem, useMealPlanStore } from '~/store/useMealPlanStore';
+import {
+  type MealPlanItem,
+  planDayPhrase,
+  sumNutrient,
+  todayKey,
+  useMealPlanDates,
+  useMealPlanItems,
+  useMealPlanStore,
+} from '~/store/useMealPlanStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
+import { createDateFromString, formatDateForDisplay } from '~/utils/date';
 import { cn, displayNutrient } from '~/utils/utils';
+
+const useToday = () => {
+  const [today, setToday] = useState(todayKey());
+
+  useEffect(() => {
+    const refresh = () => setToday(todayKey());
+    const interval = setInterval(refresh, 60_000);
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') refresh();
+    });
+    return () => {
+      clearInterval(interval);
+      subscription.remove();
+    };
+  }, []);
+
+  return today;
+};
+
+const formatPlanDay = (date: string) => {
+  const day = createDateFromString(date);
+  const label = formatDateForDisplay(day);
+  if (['Today', 'Yesterday', 'Tomorrow'].includes(label)) return label;
+  return day.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+};
 
 const MealPlanComponent = ({
   food,
@@ -23,12 +67,16 @@ const MealPlanComponent = ({
   categoryName,
   location,
   quantity,
+  date,
+  editable,
 }: {
   food: MealPlanItem;
   selectedMenu: string;
   categoryName: string;
   location: string;
   quantity: number;
+  date: string;
+  editable: boolean;
 }) => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
   const updateMealPlanItemQuantity = useMealPlanStore((state) => state.updateMealPlanItemQuantity);
@@ -50,6 +98,7 @@ const MealPlanComponent = ({
         marginBottom: 8,
         backgroundColor: COLORS['ut-burnt-orange'],
       }}
+      enabled={editable}
       overshootLeft={false}
       overshootRight={false}
       leftThreshold={50}
@@ -62,17 +111,33 @@ const MealPlanComponent = ({
       onSwipeableOpen={() => {
         swipeableRef.current?.close();
 
-        removeMealPlanItem(food.name || '');
+        removeMealPlanItem(food.id, date);
 
         Notifier.showNotification({
-          title: `${food.name} removed from today's meal plan!`,
+          title: `${food.name} removed from ${planDayPhrase(date)}.`,
           description: 'You removed this item from your meal plan.',
           swipeEnabled: true,
           Component: Alert,
         });
       }}
     >
-      <View
+      <Pressable
+        testID="meal-plan-item"
+        disabled={!editable}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          router.push({
+            pathname: '/food/[food]',
+            params: {
+              food: food.name,
+              menu: selectedMenu,
+              category: categoryName,
+              location,
+              favorite: 'false',
+              date,
+            },
+          });
+        }}
         className={cn(
           'flex-row items-center justify-between rounded border px-3 py-2 pb-2',
           isDarkMode ? 'border-neutral-800 bg-neutral-800' : 'border-ut-grey/15 bg-white',
@@ -138,67 +203,91 @@ const MealPlanComponent = ({
         </View>
 
         <View className="relative items-center gap-1">
-          <TextInput
-            className="h-8 w-12 rounded-lg border border-ut-burnt-orange text-center font-bold text-ut-burnt-orange"
-            keyboardType="decimal-pad"
-            value={quantityInput}
-            onChangeText={setQuantityInput}
-            onEndEditing={() => {
-              let quantity = parseFloat(quantityInput);
-              if (Number.isNaN(quantity)) {
-                quantity = 1;
-              }
-              if (quantity <= 0) {
-                removeMealPlanItem(food.name || '');
+          {editable ? (
+            <TextInput
+              className="h-8 w-12 rounded-lg border border-ut-burnt-orange text-center font-bold text-ut-burnt-orange"
+              keyboardType="decimal-pad"
+              value={quantityInput}
+              onChangeText={setQuantityInput}
+              onEndEditing={() => {
+                let quantity = parseFloat(quantityInput);
+                if (Number.isNaN(quantity)) {
+                  quantity = 1;
+                }
+                if (quantity <= 0) {
+                  removeMealPlanItem(food.id, date);
 
-                Notifier.showNotification({
-                  title: `${food.name} removed from today's meal plan!`,
-                  description: 'You removed this item from your meal plan.',
-                  swipeEnabled: true,
-                  Component: Alert,
-                });
-              } else if (quantity > 99) {
-                quantity = 99;
-              }
+                  Notifier.showNotification({
+                    title: `${food.name} removed from ${planDayPhrase(date)}.`,
+                    description: 'You removed this item from your meal plan.',
+                    swipeEnabled: true,
+                    Component: Alert,
+                  });
+                } else if (quantity > 99) {
+                  quantity = 99;
+                }
 
-              quantity = Math.round(quantity * 100) / 100;
-              setQuantityInput(quantity.toString());
-              updateMealPlanItemQuantity(food.name || '', quantity);
-            }}
-          />
+                quantity = Math.round(quantity * 100) / 100;
+                setQuantityInput(quantity.toString());
+                updateMealPlanItemQuantity(food.id, quantity, date);
+              }}
+            />
+          ) : (
+            <Text className="h-8 w-12 text-center font-bold text-ut-burnt-orange leading-8">
+              {quantity}
+            </Text>
+          )}
           <Text
             className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}
           >
             Quantity
           </Text>
         </View>
-      </View>
+      </Pressable>
     </ReanimatedSwipeable>
   );
 };
 
 const MealPlan = () => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
-  const mealPlanItems = useMealPlanStore((state) => state.mealPlanItems);
+  const today = useToday();
+  const [selectedDate, setSelectedDate] = useState(today);
+  const [lastToday, setLastToday] = useState(today);
+  if (lastToday !== today) {
+    setLastToday(today);
+    if (selectedDate === lastToday) setSelectedDate(today);
+  }
 
-  const totalCalories = mealPlanItems.reduce(
-    (sum, item) => sum + parseFloat(String(item.nutrition?.calories || 0)) * (item?.quantity || 1),
-    0,
+  const mealPlanItems = useMealPlanItems(selectedDate);
+  const planDates = useMealPlanDates();
+  const days = useMemo(
+    () => Array.from(new Set([...planDates, today, selectedDate])).sort(),
+    [planDates, today, selectedDate],
   );
-  const totalProtein = mealPlanItems.reduce(
-    (sum, item) => sum + parseFloat(String(item.nutrition?.protein || 0)) * (item?.quantity || 1),
-    0,
-  );
-  const totalCarbs = mealPlanItems.reduce(
-    (sum, item) =>
-      sum + parseFloat(String(item.nutrition?.total_carbohydrates || 0)) * (item?.quantity || 1),
-    0,
-  );
+  const dayIndex = days.indexOf(selectedDate);
+  const previousDay = dayIndex > 0 ? days[dayIndex - 1] : null;
+  const nextDay = dayIndex < days.length - 1 ? days[dayIndex + 1] : null;
+  const editable = selectedDate >= today;
+
+  const totalCalories = sumNutrient(mealPlanItems, 'calories');
+  const totalProtein = sumNutrient(mealPlanItems, 'protein');
+  const totalCarbs = sumNutrient(mealPlanItems, 'total_carbohydrates');
+
+  const goTo = (date: string | null) => {
+    if (!date) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSelectedDate(date);
+  };
+
+  const arrowColor = (enabled: boolean) => {
+    if (enabled) return COLORS['ut-burnt-orange'];
+    return isDarkMode ? COLORS['ut-grey-dark-mode'] : COLORS['ut-grey'];
+  };
 
   return (
     <Container className="m-0">
       <FlatList
-        keyExtractor={(item) => `${item.name}-${item.categoryName}-${item.menuName}`}
+        keyExtractor={(item) => `${selectedDate}-${item.id}`}
         ListHeaderComponent={
           <View className={cn('flex gap-y-5 py-6', isDarkMode ? 'bg-neutral-900' : 'bg-white')}>
             <TopBar variant="back" />
@@ -214,13 +303,43 @@ const MealPlan = () => {
                 </Text>
               </View>
               <Text className={cn('font-medium', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}>
-                Swipe right on a food item to add it to your meal plan. To remove it, swipe right
-                again on the item in your meal plan.
+                Swipe right on a food item to add it to that day's meal plan. Each day gets its own
+                plan, and past days stay here so you can look back on what you ate.
               </Text>
-              <Text className={cn('mt-2 text-sm', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}>
-                <Text className="font-bold text-ut-burnt-orange">Note: </Text>
-                Your meal plan will reset at the end of the day.
-              </Text>
+            </View>
+
+            <View className="flex-row items-center justify-between">
+              <TouchableOpacity
+                testID="meal-plan-previous-day"
+                accessibilityLabel="Previous day"
+                disabled={!previousDay}
+                onPress={() => goTo(previousDay)}
+                hitSlop={12}
+              >
+                <ChevronLeft size={24} color={arrowColor(!!previousDay)} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                testID="meal-plan-day"
+                disabled={selectedDate === today}
+                onPress={() => goTo(today)}
+                className="items-center"
+              >
+                <Text className={cn('font-bold text-lg', isDarkMode ? 'text-white' : 'text-black')}>
+                  {formatPlanDay(selectedDate)}
+                </Text>
+                {selectedDate !== today && (
+                  <Text className="font-medium text-ut-burnt-orange text-xs">Back to today</Text>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                testID="meal-plan-next-day"
+                accessibilityLabel="Next day"
+                disabled={!nextDay}
+                onPress={() => goTo(nextDay)}
+                hitSlop={12}
+              >
+                <ChevronRight size={24} color={arrowColor(!!nextDay)} />
+              </TouchableOpacity>
             </View>
 
             <View
@@ -287,6 +406,8 @@ const MealPlan = () => {
             location={item.locationName}
             selectedMenu={item.menuName}
             quantity={item.quantity || 1}
+            date={selectedDate}
+            editable={editable}
           />
         )}
         ListEmptyComponent={
@@ -297,12 +418,14 @@ const MealPlan = () => {
                 isDarkMode ? 'text-white' : 'text-ut-burnt-orange',
               )}
             >
-              Empty Meal Plan!
+              {editable ? 'Empty Meal Plan!' : 'Nothing logged'}
             </Text>
             <Text
               className={cn('max-w-64 text-center', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}
             >
-              Swipe right on a food item to add to your meal plan.
+              {editable
+                ? 'Swipe right on a food item to add to your meal plan.'
+                : 'You had nothing in your meal plan this day.'}
             </Text>
           </View>
         }
