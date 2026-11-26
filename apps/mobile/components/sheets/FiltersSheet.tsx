@@ -2,7 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { ChefHat, Heart } from 'lucide-react-native';
 import type React from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
-import ActionSheet, { ScrollView, SheetManager, type SheetProps } from 'react-native-actions-sheet';
+import ActionSheet, { ScrollView, type SheetProps, useSheetRef } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ALLERGEN_EXCEPTIONS, ALLERGEN_ICONS } from '~/data/AllergenInfo';
@@ -11,6 +11,7 @@ import { useTheme } from '~/utils/theme';
 
 const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
   const insets = useSafeAreaInsets();
+  const sheetRef = useSheetRef();
   const theme = useTheme();
 
   // Get filters from store
@@ -128,7 +129,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
         <Pressable
           testID="filters-done-button"
           accessibilityRole="button"
-          onPress={() => SheetManager.hide(sheetId)}
+          onPress={() => sheetRef.current?.hide()}
           className="h-9 justify-center rounded-full px-3.5"
           style={{ backgroundColor: theme.card }}
         >
