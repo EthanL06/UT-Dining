@@ -1,9 +1,9 @@
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChangelogEntryCard } from '~/components/changelog/ChangelogEntryView';
-import TopBar from '~/components/TopBar';
 import { refreshChangelog, useChangelogStore } from '~/store/useChangelogStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
@@ -26,18 +26,24 @@ const Changelog = () => {
   return (
     <View style={{ flex: 1, backgroundColor: isDarkMode ? '#171717' : '#F7F6F4' }}>
       <Stack.Screen options={{ title: 'Changelog', headerShown: false }} />
-      <View
-        style={{ paddingTop: insets.top + 8 }}
-        className={cn(
-          'gap-y-3 border-b px-6 pb-3.5',
-          isDarkMode ? 'border-neutral-800 bg-neutral-900' : 'border-[#ECECEC] bg-white',
-        )}
-      >
-        <TopBar variant="back" />
+      <View style={{ paddingTop: insets.top }}>
+        <View className="px-4 pt-2">
+          <Pressable
+            testID="back-button"
+            accessibilityLabel="Back"
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            className="size-11 items-center justify-center rounded-full"
+            style={{ backgroundColor: isDarkMode ? '#262626' : '#FFFFFF' }}
+          >
+            <ChevronLeft size={22} color={isDarkMode ? '#FFFFFF' : '#000000'} />
+          </Pressable>
+        </View>
         <Text
+          testID="changelog-title"
           className={cn(
-            'font-extrabold text-[32px] tracking-[-0.5px]',
-            isDarkMode ? 'text-white' : 'text-[#111111]',
+            'px-5 pt-3 pb-1 font-bold text-[34px]',
+            isDarkMode ? 'text-white' : 'text-black',
           )}
         >
           Changelog
