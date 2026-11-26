@@ -7,6 +7,7 @@ pnpm + Turborepo monorepo for the UT Dining iOS/Android app and its services.
 - `apps/mobile`: Expo SDK 58 app (React Native 0.88, React 19, New Architecture only; Expo Router, NativeWind, Drizzle + expo-sqlite, TanStack Query, Zustand, MMKV). Needs a development build, not Expo Go. EAS config lives here.
 - `apps/dashboard`: admin dashboard (Next.js 16, Mantine, Supabase SSR auth). Deployed on Vercel.
 - `apps/website`: public site and privacy policy (Next.js 16 static export, Tailwind 4). Base path `/ut-dining-website` must stay: the App Store privacy link points at its GitHub Pages URL.
+- `apps/cli` (`@ut-dining/cli`): command line version of the dashboard for agents. See "Dashboard data" below.
 - `apps/scraper`: daily menu scraper. Plain ESM TypeScript run directly by Node (no build). Runs daily from `.github/workflows/scraper.yml` (GitHub Actions).
 - `packages/core` (`@ut-dining/core`): pure domain logic shared by the app and the dashboard (service hours, open/closed status, Central-time dates, payment methods). No React, React Native or database code here; Vitest tests live next to the source. Run with `pnpm --filter @ut-dining/core test`.
 - `packages/supabase` (`@ut-dining/supabase`): generated Supabase types. Regenerate with `make db-types`; never hand-edit.
@@ -28,6 +29,16 @@ The `Makefile` is the front door. `make` prints every target. Every target is no
 - Cleanup when you are done: `make clean` (Metro, E2E simulator clones, clean and pushed worktrees, caches) and `make stop` (also local Supabase and every booted simulator). On Ethan's Mac, shut down only simulators you booted.
 - `pnpm --filter @ut-dining/<app> <script>`: run one package's script. The root `pnpm` scripts still work.
 - New dev scripts go in `scripts/dev/` and get a Makefile target plus a line in `make help`. They must run on macOS bash 3.2.
+
+## Dashboard data
+
+When Ethan asks to change app data (hours, force close, locations, support links, credits, About text, changelog entries, push notifications), use the CLI instead of the dashboard or raw SQL. Full docs: `apps/cli/README.md`.
+
+- `pnpm -s admin <group> <command>` (or `make admin ARGS="..."`). `pnpm -s admin help --json` lists every command. Add `--json` for machine output and `--dry-run` to preview a write.
+- Targets: `--dev` (default) needs `SUPABASE_DEV_URL` and `SUPABASE_DEV_SERVICE_KEY`; `--local` needs nothing; `--prod` needs `SUPABASE_PROD_URL` and `SUPABASE_PROD_SERVICE_KEY`. Keys come only from the environment. Never paste a key into chat, a file or a commit.
+- Always ask Ethan before any production write. Show him the `--dry-run` output and wait for his OK, then add `--prod --confirm-prod yrmylgizphirqqkzgbth`.
+- Push notifications reach real phones. `notifications send` and `schedule` only preview unless `--send` is passed. Always show Ethan the exact title and body and get his OK before sending or scheduling, on any target.
+- Run `pnpm -s admin status` first. If the dev keys are missing, say which variables Ethan needs to add to the cloud environment; don't fall back to production.
 
 ## Conventions
 

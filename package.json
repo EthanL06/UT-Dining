@@ -26,7 +26,8 @@
     "db:new": "supabase migration new",
     "db:types": "supabase gen types typescript --local > packages/supabase/src/database.types.ts && biome format --write packages/supabase/src/database.types.ts",
     "env:local": "node scripts/env.ts --local",
-    "env:dev": "node scripts/env.ts --dev"
+    "env:dev": "node scripts/env.ts --dev",
+    "admin": "node apps/cli/src/index.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.1.2",
