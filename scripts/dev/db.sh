@@ -48,9 +48,22 @@ write_ports() {
   load_supabase_env
 }
 
+sync_running_ports() {
+  local api prefix
+  api="$(docker port supabase_kong_ut-dining 8000/tcp 2>/dev/null | head -1 | sed 's/.*://')"
+  [[ "$api" =~ ^[0-9]{3}21$ ]] || return 0
+  prefix="${api:0:3}"
+  [[ "$api" == "${SUPABASE_API_PORT:-54321}" ]] && return 0
+  note "the running UT Dining stack uses ${prefix}20-${prefix}29, saving that in supabase/.env"
+  write_ports "$prefix"
+}
+
 choose_ports() {
   load_supabase_env
-  db_running && return 0
+  if db_running; then
+    sync_running_ports
+    return 0
+  fi
   if port_in_use 54324 && [[ ",$EXCLUDE," != *",mailpit,"* ]]; then
     warn "port 54324 is taken, so the local email inbox (Mailpit) is skipped"
     EXCLUDE="${EXCLUDE:+$EXCLUDE,}mailpit"
@@ -119,6 +132,7 @@ cmd_status() {
     warn "local Supabase is not running. Start it with: make db-up"
     return 1
   fi
+  sync_running_ports
   require_local_api
   ok "API      $API_URL"
   ok "Postgres $DB_URL"
