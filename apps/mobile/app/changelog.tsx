@@ -24,7 +24,7 @@ const Changelog = () => {
   const isExpanded = (version: string) => expanded[version] ?? version === latestVersion;
 
   return (
-    <View style={{ flex: 1, backgroundColor: isDarkMode ? '#171717' : '#F7F6F4' }}>
+    <View style={{ flex: 1, backgroundColor: isDarkMode ? '#000000' : '#F2F2F7' }}>
       <Stack.Screen options={{ title: 'Changelog', headerShown: false }} />
       <View style={{ paddingTop: insets.top }}>
         <View className="px-4 pt-2">
@@ -34,7 +34,7 @@ const Changelog = () => {
             accessibilityRole="button"
             onPress={() => router.back()}
             className="size-11 items-center justify-center rounded-full"
-            style={{ backgroundColor: isDarkMode ? '#262626' : '#FFFFFF' }}
+            style={{ backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF' }}
           >
             <ChevronLeft size={22} color={isDarkMode ? '#FFFFFF' : '#000000'} />
           </Pressable>
