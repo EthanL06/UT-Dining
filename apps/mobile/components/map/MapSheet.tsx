@@ -198,7 +198,7 @@ const PlaceCard = ({
       )}
 
       {place.description !== '' && (
-        <Text className="mt-4 text-[15px] leading-5" style={{ color: theme.secondaryLabel }}>
+        <Text className="mt-4 text-[15px] leading-[22px]" style={{ color: theme.secondaryLabel }}>
           {place.description}
         </Text>
       )}
