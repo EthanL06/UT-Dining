@@ -242,7 +242,10 @@ const FoodScreen = () => {
 
               <GroupedSection header="Ingredients">
                 <View className="px-4 py-3">
-                  <Text className="text-[14.5px] leading-5" style={{ color: theme.secondaryLabel }}>
+                  <Text
+                    className="text-[14.5px] leading-[21px]"
+                    style={{ color: theme.secondaryLabel }}
+                  >
                     {foodItem.nutrition?.ingredients || 'Not listed'}
                   </Text>
                 </View>
