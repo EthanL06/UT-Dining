@@ -15,7 +15,7 @@ A modern dashboard for managing UT Austin dining hall locations, menus, and oper
 - **Menu Integration:**  
   See which locations have menus available.
 - **Authentication:**  
-  Secure login and session management.
+  Google sign-in through Supabase Auth, limited to the emails in `public.dashboard_admins`.
 - **Responsive UI:**  
   Built with Mantine for a modern, accessible experience.
 

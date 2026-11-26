@@ -1,26 +1,30 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 
-export default async function login(formData: FormData) {
+export async function signInWithGoogle() {
   const supabase = await createClient();
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
-  };
+  const requestHeaders = await headers();
+  const origin =
+    requestHeaders.get('origin') ??
+    `${requestHeaders.get('x-forwarded-proto') ?? 'https'}://${requestHeaders.get('host')}`;
 
-  const { error } = await supabase.auth.signInWithPassword(data);
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${origin}/auth/callback`,
+      queryParams: { prompt: 'select_account' },
+    },
+  });
 
-  if (error) {
-    redirect('/login');
+  if (error || !data.url) {
+    redirect('/login?error=auth');
   }
 
-  revalidatePath('/', 'layout');
-  redirect('/dashboard');
+  redirect(data.url);
 }
 
 export async function logout() {
