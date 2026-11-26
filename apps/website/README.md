@@ -14,11 +14,13 @@ pnpm --filter @ut-dining/website build   # static export in apps/website/out
 
 ## Changelog
 
-`/changelog/` reads published rows from the Supabase `changelog` table at build time when `WEBSITE_SUPABASE_URL` and `WEBSITE_SUPABASE_ANON_KEY` are set. Without them, or if the request fails, it uses `content/changelog.json`.
+`/changelog/` reads published rows from the Supabase `changelog` table at build time when `WEBSITE_SUPABASE_URL` and `WEBSITE_SUPABASE_ANON_KEY` are set, then fetches them again in the browser so dashboard edits show without a rebuild. Without them, or if the request fails, it uses `content/changelog.json`.
 
 ## Deployment
 
-`.github/workflows/website-deploy.yml` builds the site on pushes to `main` and publishes `out/` to the `gh-pages` branch of [Longhorn-Developers/ut-dining-website](https://github.com/Longhorn-Developers/ut-dining-website). That keeps the site at https://longhorn-developers.github.io/ut-dining-website/, which the App Store privacy-policy link uses.
+The Vercel project `ut-dining-website` builds `apps/website` with `WEBSITE_BASE_PATH` empty, so the site is served from `/`. Production builds from `main`; other branches get previews that read dev Supabase. `vercel.json` skips builds when nothing the website depends on changed (`turbo-ignore`) and never builds `assets/*` branches.
+
+Until the move is finished, `.github/workflows/website-deploy.yml` builds the site on pushes to `main` and publishes `out/` to the `gh-pages` branch of [Longhorn-Developers/ut-dining-website](https://github.com/Longhorn-Developers/ut-dining-website). That keeps the site at https://longhorn-developers.github.io/ut-dining-website/, which the App Store privacy-policy link uses.
 
 ## License
 

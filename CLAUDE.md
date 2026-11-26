@@ -26,7 +26,7 @@ pnpm + Turborepo monorepo for the UT Dining iOS/Android app and its services.
 - Conventional commits (enforced by commitlint through Lefthook). Branches are `<type>-<kebab-description>`, e.g. `feat-meal-reminders`.
 - Biome formats and lints everything: single quotes, 2 spaces, 100 columns.
 - Shared versions go in the `catalog:` in `pnpm-workspace.yaml`.
-- PR screenshots go on an orphan `assets/<topic>` branch. Include `apps/dashboard/vercel.json` containing `{ "git": { "deploymentEnabled": false } }` in that branch, or Vercel tries to build it and fails because `apps/dashboard` is missing.
+- PR screenshots go on an orphan `assets/<topic>` branch. Include `apps/dashboard/vercel.json` and `apps/website/vercel.json`, each containing `{ "git": { "deploymentEnabled": false } }`, in that branch, or Vercel tries to build it and fails because the app folder is missing.
 - pnpm uses its default isolated `node_modules`. The app must list every package it imports directly (for example `react-native-css-interop`, which NativeWind's JSX runtime needs).
 - Before an Expo SDK bump, run `npx expo install expo@^<sdk> && npx expo install --fix` in `apps/mobile`, then `npx expo-doctor`.
 - Env files: each app commits `.env.example`; real values go in the gitignored `.env.local` (written by `scripts/env.ts`). Never commit keys.
