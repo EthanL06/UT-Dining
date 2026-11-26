@@ -29,6 +29,8 @@ const positionOf = (index: number, count: number): RowPosition => {
   return 'middle';
 };
 
+const matchKey = (name: string, location: string) => `${location}\u001f${name}`;
+
 const todaysMatches = (db: DrizzleDB, names: string[]) => {
   if (names.length === 0) return new Map<string, TodayMatch>();
   const rows = db
@@ -51,8 +53,9 @@ const todaysMatches = (db: DrizzleDB, names: string[]) => {
     (a, b) => Number(b.menu === currentMeal) - Number(a.menu === currentMeal),
   );
   for (const row of ordered) {
-    if (row.name && !matches.has(row.name)) {
-      matches.set(row.name, { location: row.location ?? '', menu: row.menu ?? '' });
+    const key = matchKey(row.name ?? '', row.location ?? '');
+    if (row.name && !matches.has(key)) {
+      matches.set(key, { location: row.location ?? '', menu: row.menu ?? '' });
     }
   }
   return matches;
@@ -78,7 +81,7 @@ const FavoriteSection = ({
         {title}
       </Text>
       {items.map((item, index) => {
-        const match = matches.get(item.name);
+        const match = matches.get(matchKey(item.name, item.location_name));
         const calories = item.calories ? `${displayNutrient(item.calories)} kcal` : null;
         const subtitle = match
           ? [match.location, match.menu, calories].filter(Boolean).join(' · ')
@@ -137,8 +140,8 @@ const Favorites = () => {
       ),
     [db, sorted, lastSyncedAt],
   );
-  const onToday = sorted.filter((item) => matches.has(item.name));
-  const notToday = sorted.filter((item) => !matches.has(item.name));
+  const onToday = sorted.filter((item) => matches.has(matchKey(item.name, item.location_name)));
+  const notToday = sorted.filter((item) => !matches.has(matchKey(item.name, item.location_name)));
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: insets.top }}>
@@ -163,9 +166,11 @@ const Favorites = () => {
         >
           Favorites
         </Text>
-        <Text className="px-5 pb-4 text-[15px]" style={{ color: theme.secondaryLabel }}>
-          Swipe left on a favorite to remove it.
-        </Text>
+        {sorted.length > 0 && (
+          <Text className="px-5 pb-4 text-[15px]" style={{ color: theme.secondaryLabel }}>
+            Swipe left on a favorite to remove it.
+          </Text>
+        )}
 
         {sorted.length === 0 ? (
           <View className="mx-8 mt-12 items-center gap-y-2">
