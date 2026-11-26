@@ -13,7 +13,6 @@ import { Suspense, useEffect } from 'react';
 import { ActivityIndicator, Appearance, AppState } from 'react-native';
 import { SheetProvider } from 'react-native-actions-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { NotifierWrapper } from 'react-native-notifier';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 import { useSyncQueries } from 'tanstack-query-dev-tools-expo-plugin';
 
@@ -111,65 +110,63 @@ const AppContent = () => {
           useSuspense
         >
           <GestureHandlerRootView>
-            <NotifierWrapper useRNScreensOverlay>
-              <SheetProvider>
-                <VersionCheckProvider>
-                  <PushNotificationsInitializer />
-                  <Stack
-                    screenOptions={{
+            <SheetProvider>
+              <VersionCheckProvider>
+                <PushNotificationsInitializer />
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    contentStyle: {
+                      backgroundColor: 'white',
+                    },
+                    gestureEnabled: true,
+                  }}
+                >
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
+                  <Stack.Screen
+                    name="location_generic/[location]"
+                    options={{
+                      presentation: isTablet ? 'card' : 'modal',
+                      sheetGrabberVisible: true,
                       headerShown: false,
-                      contentStyle: {
-                        backgroundColor: 'white',
-                      },
-                      gestureEnabled: true,
+                      animation: 'slide_from_bottom',
                     }}
-                  >
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                  />
+                  <Stack.Screen
+                    name="food/[food]"
+                    options={{
+                      presentation: isTablet ? 'card' : 'modal',
+                      sheetGrabberVisible: true,
+                      headerShown: false,
+                    }}
+                  />
 
-                    <Stack.Screen
-                      name="location_generic/[location]"
-                      options={{
-                        presentation: isTablet ? 'card' : 'modal',
-                        sheetGrabberVisible: true,
-                        headerShown: false,
-                        animation: 'slide_from_bottom',
-                      }}
-                    />
-                    <Stack.Screen
-                      name="food/[food]"
-                      options={{
-                        presentation: isTablet ? 'card' : 'modal',
-                        sheetGrabberVisible: true,
-                        headerShown: false,
-                      }}
-                    />
+                  <Stack.Screen
+                    name="favorites"
+                    options={{
+                      headerShown: false,
+                      fullScreenGestureEnabled: false,
+                    }}
+                  />
 
-                    <Stack.Screen
-                      name="favorites"
-                      options={{
-                        headerShown: false,
-                        fullScreenGestureEnabled: false,
-                      }}
-                    />
-
-                    <Stack.Screen
-                      name="meal-plan"
-                      options={{
-                        headerShown: false,
-                        fullScreenGestureEnabled: false,
-                      }}
-                    />
-                    <Stack.Screen
-                      name="location/[location]"
-                      options={{
-                        headerShown: false,
-                        fullScreenGestureEnabled: false,
-                      }}
-                    />
-                  </Stack>
-                </VersionCheckProvider>
-              </SheetProvider>
-            </NotifierWrapper>
+                  <Stack.Screen
+                    name="meal-plan"
+                    options={{
+                      headerShown: false,
+                      fullScreenGestureEnabled: false,
+                    }}
+                  />
+                  <Stack.Screen
+                    name="location/[location]"
+                    options={{
+                      headerShown: false,
+                      fullScreenGestureEnabled: false,
+                    }}
+                  />
+                </Stack>
+              </VersionCheckProvider>
+            </SheetProvider>
           </GestureHandlerRootView>
         </SQLiteProvider>
       </Suspense>
