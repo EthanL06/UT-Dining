@@ -14,7 +14,7 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 	dev mobile ios android dashboard website scrape \
 	db-up db-down db-status db-reset db-migrate db-new db-types db-seed db-fixtures db-psql db-studio \
 	env-local env-dev \
-	check fix lint typecheck test build \
+	check verify check-comments fix lint typecheck test build \
 	sim sims e2e e2e-fixtures \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
@@ -54,7 +54,10 @@ help:
 	'  env-dev         Point every app at the hosted dev project (needs SUPABASE_DEV_* vars)' \
 	'' \
 	'Quality' \
-	'  check           Biome, typecheck and tests (run before pushing)' \
+	'  verify          Fast check of what changed since BASE=origin/staging: Biome on changed files,' \
+	'                  comment check, typecheck and tests of affected packages, then what else to verify' \
+	'  check           Biome, typecheck and tests of everything (run before pushing)' \
+	'  check-comments  Fail on added code comments. ARGS="--base origin/staging" (default: staged diff)' \
 	'  fix             Biome safe fixes' \
 	'  lint | typecheck | test | build' \
 	'' \
@@ -147,6 +150,12 @@ env-dev:
 
 check:
 	@pnpm check
+
+verify:
+	@$(DEV)/verify.sh
+
+check-comments:
+	@$(DEV)/check-comments.sh $(ARGS)
 
 fix:
 	@pnpm fix
