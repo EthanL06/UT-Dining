@@ -36,7 +36,7 @@ cmd_new() {
     if git show-ref --verify --quiet "refs/heads/$branch"; then
       git worktree add "$path" "$branch"
     else
-      git worktree add -b "$branch" "$path" "origin/$base"
+      git worktree add --no-track -b "$branch" "$path" "origin/$base"
     fi
   fi
   copy_env "$path"

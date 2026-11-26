@@ -51,6 +51,10 @@ write_ports() {
 choose_ports() {
   load_supabase_env
   db_running && return 0
+  if port_in_use 54324 && [[ ",$EXCLUDE," != *",mailpit,"* ]]; then
+    warn "port 54324 is taken, so the local email inbox (Mailpit) is skipped"
+    EXCLUDE="${EXCLUDE:+$EXCLUDE,}mailpit"
+  fi
   local current="543" prefix
   [[ -n "${SUPABASE_API_PORT:-}" ]] && current="${SUPABASE_API_PORT:0:3}"
   if ports_free "$current"; then
@@ -92,6 +96,7 @@ cmd_ensure() {
   local url
   url="$(sed -n 's/^EXPO_PUBLIC_SUPABASE_URL="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' apps/mobile/.env.local 2>/dev/null | tail -1)"
   case "$url" in
+    *"$PROD_REF"*) die "apps/mobile/.env.local points at PRODUCTION Supabase. Run: make env-local" ;;
     https://*) step "Database"; ok "apps use $url, not starting local Supabase" ;;
     *) cmd_up ;;
   esac

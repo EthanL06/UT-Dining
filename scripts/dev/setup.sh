@@ -69,7 +69,10 @@ done
 
 if [[ "$DB_MODE" == "auto" ]]; then
   current_url="$(sed -n 's/^EXPO_PUBLIC_SUPABASE_URL="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' apps/mobile/.env.local 2>/dev/null || true)"
-  if [[ "$current_url" == https://* ]]; then
+  if [[ "$current_url" == *"$PROD_REF"* ]]; then
+    warn "apps/mobile/.env.local points at PRODUCTION Supabase. Switching it to a safe database."
+    if have docker; then DB_MODE="local"; elif [[ -n "${SUPABASE_DEV_URL:-}" ]]; then DB_MODE="dev"; else die "install Docker for local Supabase, or set SUPABASE_DEV_* for the dev project, then re-run."; fi
+  elif [[ "$current_url" == https://* ]]; then
     DB_MODE="keep"
   elif have docker; then
     DB_MODE="local"

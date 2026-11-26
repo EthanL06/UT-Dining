@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Claude Code SessionStart hook: make cloud sessions ready to work without manual setup.
-# Local sessions are left alone; run ./setup.sh yourself there.
+# Local sessions are left alone; run make setup yourself there.
 set -euo pipefail
 [[ "${CLAUDE_CODE_REMOTE:-}" == "true" ]] || exit 0
 cd "$CLAUDE_PROJECT_DIR"

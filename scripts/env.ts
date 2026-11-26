@@ -23,7 +23,7 @@ const readLocal = (): Supabase => {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
   } catch {
-    throw new Error('Local Supabase is not running. Start it with `pnpm db:start` first.');
+    throw new Error('Local Supabase is not running. Start it with `make db-up` first.');
   }
   const status = parseEnv(output);
   return {
