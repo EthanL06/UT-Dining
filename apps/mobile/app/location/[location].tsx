@@ -63,12 +63,16 @@ const useSkeletonItems = (): ListItem[] => {
   }, []);
 };
 
-const EDGE_SWIPE_WIDTH = 24;
+const EDGE_SWIPE_DISMISSAL = { unstable_dismissalBoundsRect: { maxX: 24 } };
+
+const EdgeSwipeDismissal = () => {
+  usePreventZoomTransitionDismissal(EDGE_SWIPE_DISMISSAL);
+  return null;
+};
 
 const Location = () => {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  usePreventZoomTransitionDismissal({ unstable_dismissalBoundsRect: { maxX: EDGE_SWIPE_WIDTH } });
   const setLastOpenedLocation = useMealStripStore((state) => state.setLastOpenedLocation);
   const { location } = useLocalSearchParams<{ location: string }>();
   const [selectedDate, setSelectedDate] = useState(getTodayInCentralTime());
@@ -300,6 +304,7 @@ const Location = () => {
 
   return (
     <>
+      <EdgeSwipeDismissal />
       <Stack.Screen
         options={{
           title: displayName,
