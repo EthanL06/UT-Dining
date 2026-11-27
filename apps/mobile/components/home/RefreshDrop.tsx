@@ -1,4 +1,5 @@
 import { formatCentral } from '@ut-dining/core';
+import { GlassView } from 'expo-glass-effect';
 import { Check, CircleAlert, Utensils } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
@@ -25,8 +26,9 @@ import Reanimated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
-import { GlassSurface, useLiquidGlass } from '~/components/ui/Glass';
+import { useLiquidGlass } from '~/components/ui/Glass';
 import { Text } from '~/components/ui/Text';
+import { useSettingsStore } from '~/store/useSettingsStore';
 import {
   BUBBLE_SIZE,
   dropFrame,
@@ -37,6 +39,7 @@ import {
 import { useTheme } from '~/utils/theme';
 
 const AnimatedCircle = Reanimated.createAnimatedComponent(Circle);
+const AnimatedGlassView = Reanimated.createAnimatedComponent(GlassView);
 
 const RING_RADIUS = 16;
 const RING_STROKE = 2.8;
@@ -60,6 +63,7 @@ export const RefreshDrop = ({
 }) => {
   const theme = useTheme();
   const hasGlass = useLiquidGlass();
+  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
   const reduceMotion = useReducedMotion();
   const { top: safeTop } = useSafeAreaInsets();
   const { width: screenWidth } = useWindowDimensions();
@@ -144,11 +148,13 @@ export const RefreshDrop = ({
       opacity: f.opacity,
       width: f.width,
       height: f.height,
-      borderRadius: f.height / 2,
       top: f.centerY - f.height / 2,
       left: (screenWidth - f.width) / 2,
     };
   });
+  const corners = useAnimatedStyle(() => ({
+    borderRadius: Math.min(frame.value.width, frame.value.height) / 2,
+  }));
   const ink = useAnimatedStyle(() => ({ opacity: frame.value.ink }));
   const ring = useAnimatedStyle(() => ({
     opacity: frame.value.ringOpacity,
@@ -191,51 +197,61 @@ export const RefreshDrop = ({
           {message}
         </Text>
       </View>
-      <Reanimated.View
-        pointerEvents="none"
-        style={[
-          styles.shell,
-          !hasGlass && { borderColor: theme.separator, borderWidth: 0.5 },
-          shell,
-        ]}
-      >
-        <GlassSurface fallbackColor={theme.card} style={StyleSheet.absoluteFill} />
-        <Reanimated.View style={[StyleSheet.absoluteFill, styles.ink, ink]} />
-        <Reanimated.View style={[styles.center, glyph]}>
-          <Utensils size={16} color={theme.label} strokeWidth={2.2} />
-        </Reanimated.View>
-        <Reanimated.View style={[styles.center, ring]}>
-          <Svg width={BUBBLE_SIZE} height={BUBBLE_SIZE} viewBox="0 0 40 40">
-            <Circle
-              cx={20}
-              cy={20}
-              r={RING_RADIUS}
-              fill="none"
-              stroke={theme.fill}
-              strokeWidth={RING_STROKE}
-            />
-            <AnimatedCircle
-              cx={20}
-              cy={20}
-              r={RING_RADIUS}
-              fill="none"
-              stroke={theme.tint}
-              strokeWidth={RING_STROKE}
-              strokeLinecap="round"
-              strokeDasharray={`${CIRCUMFERENCE} ${CIRCUMFERENCE}`}
-              animatedProps={arc}
-              rotation={-90}
-              origin="20, 20"
-            />
-          </Svg>
-        </Reanimated.View>
-        <Reanimated.View style={[styles.center, pillStyle]}>
-          <View style={[styles.pillRow, { width: rowWidth }]}>
-            {badge}
-            <Text variant="footnote" emphasized numberOfLines={1}>
-              {message}
-            </Text>
-          </View>
+      <Reanimated.View pointerEvents="none" style={[styles.shell, shell]}>
+        {hasGlass ? (
+          <AnimatedGlassView
+            glassEffectStyle="regular"
+            colorScheme={isDarkMode ? 'dark' : 'light'}
+            style={[StyleSheet.absoluteFill, corners]}
+          />
+        ) : (
+          <Reanimated.View
+            style={[
+              StyleSheet.absoluteFill,
+              styles.fallback,
+              { backgroundColor: theme.card, borderColor: theme.separator },
+              corners,
+            ]}
+          />
+        )}
+        <Reanimated.View style={[StyleSheet.absoluteFill, styles.clip, corners]}>
+          <Reanimated.View style={[StyleSheet.absoluteFill, styles.ink, ink]} />
+          <Reanimated.View style={[styles.center, glyph]}>
+            <Utensils size={16} color={theme.label} strokeWidth={2.2} />
+          </Reanimated.View>
+          <Reanimated.View style={[styles.center, ring]}>
+            <Svg width={BUBBLE_SIZE} height={BUBBLE_SIZE} viewBox="0 0 40 40">
+              <Circle
+                cx={20}
+                cy={20}
+                r={RING_RADIUS}
+                fill="none"
+                stroke={theme.fill}
+                strokeWidth={RING_STROKE}
+              />
+              <AnimatedCircle
+                cx={20}
+                cy={20}
+                r={RING_RADIUS}
+                fill="none"
+                stroke={theme.tint}
+                strokeWidth={RING_STROKE}
+                strokeLinecap="round"
+                strokeDasharray={`${CIRCUMFERENCE} ${CIRCUMFERENCE}`}
+                animatedProps={arc}
+                rotation={-90}
+                origin="20, 20"
+              />
+            </Svg>
+          </Reanimated.View>
+          <Reanimated.View style={[styles.center, pillStyle]}>
+            <View style={[styles.pillRow, { width: rowWidth }]}>
+              {badge}
+              <Text variant="footnote" emphasized numberOfLines={1}>
+                {message}
+              </Text>
+            </View>
+          </Reanimated.View>
         </Reanimated.View>
       </Reanimated.View>
     </>
@@ -243,7 +259,9 @@ export const RefreshDrop = ({
 };
 
 const styles = StyleSheet.create({
-  shell: { position: 'absolute', overflow: 'hidden', zIndex: 10 },
+  shell: { position: 'absolute', zIndex: 10 },
+  clip: { overflow: 'hidden' },
+  fallback: { borderWidth: StyleSheet.hairlineWidth },
   ink: { backgroundColor: '#000000' },
   center: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
   pillRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },

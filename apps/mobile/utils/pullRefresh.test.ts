@@ -96,8 +96,16 @@ describe('dropFrame', () => {
     expect(end.opacity).toBe(0);
   });
 
-  it('fades out on the way up without an island', () => {
+  it('slides up off the screen without an island, never at partial opacity', () => {
+    const half = dropFrame({ ...base, island: null, pill: 1, float: 1, retract: 0.5 });
+    expect(half.opacity).toBe(1);
     const end = dropFrame({ ...base, island: null, pill: 1, float: 1, retract: 1 });
+    expect(end.centerY + end.height / 2).toBeLessThan(0);
     expect(end.opacity).toBe(0);
+  });
+
+  it('is fully opaque or hidden while pulling, so the glass effect is never faded', () => {
+    expect(dropFrame({ ...base, island: null, pull: 5 }).opacity).toBe(1);
+    expect(dropFrame({ ...base, pull: 0.5 }).opacity).toBe(0);
   });
 });
