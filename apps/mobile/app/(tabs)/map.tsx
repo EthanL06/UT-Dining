@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
-import { Stack, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import {
   ChevronDown,
   ChevronLeft,
@@ -583,13 +583,6 @@ const MapPage = () => {
         disableInsets
         className={cn('mx-0 gap-6', isDarkMode ? 'bg-neutral-900' : 'bg-white')}
       >
-        <Stack.Screen
-          options={{
-            title: 'Map',
-            headerShown: false,
-          }}
-        />
-
         <MapView
           ref={mapRef}
           style={{

@@ -103,7 +103,7 @@ export const ChangelogEntryCard = ({
         onPress={toggle}
         className={cn(
           'min-h-14 flex-row items-center gap-x-2.5 rounded-[14px] px-4 py-3',
-          isDarkMode ? 'bg-neutral-800' : 'bg-white',
+          isDarkMode ? 'bg-[#1C1C1E]' : 'bg-white',
         )}
       >
         <VersionBadge version={entry.version} isLatest={isLatest} />
@@ -129,10 +129,7 @@ export const ChangelogEntryCard = ({
   return (
     <View
       testID={`changelog-entry-${entry.version}`}
-      className={cn(
-        'gap-y-3.5 rounded-[18px] p-[18px]',
-        isDarkMode ? 'bg-neutral-800' : 'bg-white',
-      )}
+      className={cn('gap-y-3.5 rounded-[18px] p-[18px]', isDarkMode ? 'bg-[#1C1C1E]' : 'bg-white')}
       style={{
         shadowColor: '#000',
         shadowOpacity: isDarkMode ? 0 : 0.05,

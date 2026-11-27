@@ -128,6 +128,7 @@ export const buildRestTables = (today = todayInCentral()): Record<string, Row[]>
   const base = readJson<Record<string, Row[]>>('base.json');
   const tables: Record<string, Row[]> = {
     ...base,
+    changelog: readJson<Row[]>('changelog.json'),
     menu: [],
     menu_category: [],
     food_item: [],

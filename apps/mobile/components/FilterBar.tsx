@@ -4,7 +4,8 @@ import { useEffect, useMemo } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SheetManager } from 'react-native-actions-sheet';
 
-import type { FilterType } from '~/app/(tabs)';
+export type FilterType = 'all' | string;
+
 import { useFiltersStore } from '~/store/useFiltersStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
