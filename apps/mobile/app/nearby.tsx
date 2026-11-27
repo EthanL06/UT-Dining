@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
@@ -18,7 +17,6 @@ import { getLocationStatusText } from '~/utils/time';
 export default function NearbyScreen() {
   const { halls } = useLocalSearchParams<{ halls?: string }>();
   const theme = useTheme();
-  const insets = useSafeAreaInsets();
   const db = useDatabase();
   const now = useNow();
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
@@ -83,10 +81,7 @@ export default function NearbyScreen() {
   };
 
   return (
-    <View
-      style={{ backgroundColor: theme.background, paddingBottom: insets.bottom + 8 }}
-      className="pt-6"
-    >
+    <View style={{ backgroundColor: theme.background }} className="pt-6">
       <View className="mb-4 px-5">
         <Text variant="title2" emphasized>
           You're near
