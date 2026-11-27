@@ -15,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
 
       - uses: pnpm/action-setup@v6
 
@@ -34,6 +36,10 @@ jobs:
 
       - name: Lint and format
         run: pnpm biome ci
+
+      - name: No added code comments
+        if: github.event_name == 'pull_request'
+        run: scripts/dev/check-comments.sh --base HEAD^1
 
       - name: Typecheck and test
         run: pnpm turbo run typecheck test --cache-dir=.turbo/cache

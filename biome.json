@@ -28,7 +28,9 @@
               }
             ]
           }
-        }
+        },
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error"
       },
       "nursery": {
         "useSortedClasses": {
@@ -36,6 +38,17 @@
           "fix": "safe",
           "options": {}
         }
+      },
+      "suspicious": {
+        "noExplicitAny": "error",
+        "noDoubleEquals": "error",
+        "noImplicitAnyLet": "error"
+      },
+      "style": {
+        "noNonNullAssertion": "error",
+        "noParameterAssign": "error",
+        "useThrowOnlyError": "error",
+        "useConst": "error"
       }
     }
   },

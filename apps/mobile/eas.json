@@ -9,13 +9,15 @@
       "distribution": "internal",
       "channel": "development",
       "env": {
-        "APP_VARIANT": "development"
+        "APP_VARIANT": "development",
+        "EAS_USE_CACHE": "1"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "APP_VARIANT": "preview"
+        "APP_VARIANT": "preview",
+        "EAS_USE_CACHE": "1"
       },
       "autoIncrement": true,
       "channel": "preview"

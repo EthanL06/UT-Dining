@@ -61,6 +61,7 @@ export const GroupedRow = ({
   disabled,
   testID,
   detailTestID,
+  selected,
 }: {
   title: ReactNode;
   subtitle?: ReactNode;
@@ -76,6 +77,7 @@ export const GroupedRow = ({
   disabled?: boolean;
   testID?: string;
   detailTestID?: string;
+  selected?: boolean;
 }) => {
   const theme = useTheme();
 
@@ -83,6 +85,8 @@ export const GroupedRow = ({
     <Pressable
       testID={testID}
       accessible={!!onPress}
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityState={selected === undefined ? undefined : { selected }}
       onPress={
         onPress
           ? () => {
