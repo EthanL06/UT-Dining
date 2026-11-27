@@ -93,6 +93,19 @@ for (ref, scenario, _run), rows in runs.items():
                 values[(ref, f'f. place photo {label} (ms)')].append(o['ms'])
             values[(ref, f'f. place photo {label}: shown')].append(1 if o['outcome'] == 'loaded' else 0)
         notes[ref].append(f"place {result.get('place')}")
+    if scenario == 'menu' and result.get('metric') == 'menu-taps':
+        for a in result['actions']:
+            for key, label in [
+                ('ms', 'first commit painted (ms)'),
+                ('settleMs', 'last commit settled (ms)'),
+                ('foodRowRenders', 'FoodItemRow renders'),
+                ('foodComponentRenders', 'FoodComponent renders'),
+                ('headerRenders', 'CategoryHeader renders'),
+                ('chipRenders', 'Chip renders'),
+            ]:
+                if a.get(key) is not None:
+                    values[(ref, f"h. {a['action']}: {label}")].append(a[key])
+        notes[ref].append(f"menu taps on {result.get('loc')} {result.get('menu')} ({result.get('items')} rows)")
     if scenario == 'home' and result.get('metric') == 'home':
         for a in result['actions']:
             if a['ms'] is not None:

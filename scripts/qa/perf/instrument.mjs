@@ -8,6 +8,9 @@ const renderCounters = [
   ['app/location/components/FoodItemRow.tsx', 'FoodItemRow'],
   ['app/location/components/CategoryHeader.tsx', 'CategoryHeader'],
   ['components/FoodComponent.tsx', 'FoodComponent'],
+  ['app/(tabs)/map.tsx', 'MapPage'],
+  ['components/sheets/FiltersSheet.tsx', 'Chip'],
+  ['components/sheets/FiltersSheet.tsx', 'FiltersSheet'],
 ];
 
 const edits = [
@@ -18,7 +21,7 @@ const edits = [
   {
     file: 'app/(tabs)/(home)/index.tsx',
     prepend:
-      "import { hooks as perfHooks, painted, runHarness, usePerfRender } from '~/utils/perf';\n",
+      "import { hooks as perfHooks, painted, usePerfRender } from '~/utils/perf';\nimport { runHarness } from '~/utils/perf-runs';\n",
     anchors: [
       [/export default function Home\(\) \{\n/, (m) => `${m}  usePerfRender('home');\n`],
       [
@@ -111,15 +114,13 @@ const edits = [
       ],
     ],
   },
-  ...renderCounters.map(([file, name]) => ({
+  ...Object.entries(Object.groupBy(renderCounters, ([file]) => file)).map(([file, counters]) => ({
     file,
     prepend: "import { usePerfRender } from '~/utils/perf';\n",
-    anchors: [
-      [
-        new RegExp(`const ${name} = (?:React\\.memo\\()?\\([\\s\\S]*?\\) => \\{\\n`),
-        (m) => `${m}  usePerfRender('${name}');\n`,
-      ],
-    ],
+    anchors: counters.map(([, name]) => [
+      new RegExp(`const ${name} = (?:React\\.memo\\()?\\([\\s\\S]*?\\) => \\{\\n`),
+      (m) => `${m}  usePerfRender('${name}');\n`,
+    ]),
   })),
 ];
 
@@ -140,7 +141,9 @@ for (const edit of edits) {
   fs.writeFileSync(file, src);
   changed.push(edit.file);
 }
-fs.copyFileSync(path.join(here, 'perf.ts'), path.join(mobile, 'utils/perf.ts'));
+for (const file of ['perf.ts', 'perf-runs.ts']) {
+  fs.copyFileSync(path.join(here, file), path.join(mobile, 'utils', file));
+}
 if (failures.length) {
   console.error(
     `instrument: anchors not found, update scripts/qa/perf/instrument.mjs\n${failures.join('\n')}`,
