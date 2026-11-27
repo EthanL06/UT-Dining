@@ -46,7 +46,7 @@ It refuses to run unless `supabase status` reports a `http://127.0.0.1:` API URL
 | `food-details.yaml` | A food opens nutrition and allergens |
 | `save-hold-and-select.yaml` | Press and hold on a food adds it to the meal plan, Select Multiple adds several foods at once, and Reset empties the plan |
 | `favorites.yaml` | The heart on a food and press and hold add favorites, press and hold removes them |
-| `meal-plan.yaml` | Press and hold and the chef hat add to the meal plan, a right swipe on the meal plan removes |
+| `meal-plan.yaml` | Press and hold and the chef hat add to the meal plan; press and hold and − at one serving remove, and Undo brings an item back |
 | `settings.yaml` | Dark mode switch, Sync Data, Favorites quick link |
 | `filters.yaml` | Hiding soy removes the soy foods from the J2 menu, and Reset brings them back |
 | `no-menu-location.yaml` | Search opens a place without a menu, which shows Directions and Hours |
