@@ -12,7 +12,7 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 
 .PHONY: help setup install doctor \
 	dev mobile ios android dashboard website scrape places admin mobile-preview \
-	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-psql db-studio \
+	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-sample db-fresh db-psql db-studio \
 	env-local env-dev \
 	check verify pre-push check-staged check-comments check-size check-state functions fix lint typecheck test build \
 	sim sims e2e e2e-fixtures screenshots ios-app perf-build size-report \
@@ -52,6 +52,8 @@ help:
 	'                  BASE=origin/staging. Leaves the local stack alone' \
 	'  db-seed         Scrape real UT menus into the local database. DAYS=3' \
 	'  db-fixtures     Load the fixed E2E test menus' \
+	'  db-sample       Load sample menus and edge-case places (no network)' \
+	'  db-fresh        Reset and load the sample data: a known local database in one command' \
 	'  db-psql         psql on the local database. ARGS="-c \"select count(*) from menu\""' \
 	'  db-studio       Print and open Supabase Studio' \
 	'  env-local       Point every app at local Supabase' \
@@ -160,6 +162,12 @@ db-seed:
 
 db-fixtures:
 	@$(DEV)/db.sh fixtures
+
+db-sample:
+	@$(DEV)/db.sh sample
+
+db-fresh:
+	@$(DEV)/db.sh fresh
 
 db-psql:
 	@$(DEV)/db.sh psql $(ARGS)
