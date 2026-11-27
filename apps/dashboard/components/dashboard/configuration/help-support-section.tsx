@@ -5,6 +5,7 @@ import { notifications } from '@mantine/notifications';
 import { IconDeviceFloppy, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useState } from 'react';
 import { updateHelpSupportConfig } from '@/app/(private)/dashboard/configuration/action';
+import { log } from '@/lib/log';
 import type { HelpSupportConfig, HelpSupportLink } from '@/types/config';
 
 interface HelpSupportSectionProps {
@@ -85,7 +86,7 @@ export function HelpSupportSection({ initialConfig }: HelpSupportSectionProps) {
         autoClose: 3000,
       });
     } catch (error) {
-      console.error('Failed to update help & support section:', error);
+      log.error('Failed to update help & support section:', error);
 
       notifications.show({
         title: 'Error',

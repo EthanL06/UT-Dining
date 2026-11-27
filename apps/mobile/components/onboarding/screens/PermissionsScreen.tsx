@@ -1,7 +1,7 @@
 import * as Location from 'expo-location';
 import * as Notifications from 'expo-notifications';
 import { Bell, Check, MapPin } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, AppState, Linking, View } from 'react-native';
 import { GroupedRow, GroupedSection, IconSquare } from '~/components/ui/Grouped';
 import { Text } from '~/components/ui/Text';
@@ -11,6 +11,7 @@ import OnboardingHeader from './OnboardingHeader';
 
 type Props = {
   width: number;
+  isCurrentScreen: boolean;
   onPermissionsChange: (permissions: PermissionState) => void;
 };
 
@@ -21,9 +22,12 @@ interface PermissionState {
   notifications: PermissionStatus;
 }
 
+const toStatus = (status: string): PermissionStatus =>
+  status === 'granted' ? 'granted' : status === 'undetermined' ? 'undetermined' : 'denied';
+
 const toState = (location: string, notifications: string): PermissionState => ({
-  location: location === 'granted' ? 'granted' : 'denied',
-  notifications: notifications === 'granted' ? 'granted' : 'denied',
+  location: toStatus(location),
+  notifications: toStatus(notifications),
 });
 
 const PermissionStatusLabel = ({ status }: { status: PermissionStatus }) => {
@@ -36,12 +40,13 @@ const PermissionStatusLabel = ({ status }: { status: PermissionStatus }) => {
   );
 };
 
-const PermissionsScreen = ({ width, onPermissionsChange }: Props) => {
+const PermissionsScreen = ({ width, isCurrentScreen, onPermissionsChange }: Props) => {
   const theme = useTheme();
   const [permissions, setPermissions] = useState<PermissionState>({
     location: 'undetermined',
     notifications: 'undetermined',
   });
+  const hasAsked = useRef(false);
 
   useEffect(() => {
     const apply = (next: PermissionState) => {
@@ -49,34 +54,33 @@ const PermissionsScreen = ({ width, onPermissionsChange }: Props) => {
       onPermissionsChange(next);
     };
 
-    const requestPermissions = async () => {
+    const readPermissions = async (ask: boolean) => {
       try {
-        const { status: locationStatus } = await Location.requestForegroundPermissionsAsync();
-        const { status: notificationStatus } = await Notifications.requestPermissionsAsync();
+        const location = ask
+          ? Location.requestForegroundPermissionsAsync
+          : Location.getForegroundPermissionsAsync;
+        const notifications = ask
+          ? Notifications.requestPermissionsAsync
+          : Notifications.getPermissionsAsync;
+        const { status: locationStatus } = await location();
+        const { status: notificationStatus } = await notifications();
         apply(toState(locationStatus, notificationStatus));
       } catch (error) {
-        log.error('Error requesting permissions', error);
+        log.error('Error reading permissions', error);
       }
     };
 
-    const checkPermissions = async () => {
-      try {
-        const { status: locationStatus } = await Location.getForegroundPermissionsAsync();
-        const { status: notificationStatus } = await Notifications.getPermissionsAsync();
-        apply(toState(locationStatus, notificationStatus));
-      } catch (error) {
-        log.error('Error checking permissions', error);
-      }
-    };
-
-    requestPermissions();
+    if (isCurrentScreen && !hasAsked.current) {
+      hasAsked.current = true;
+      void readPermissions(true);
+    }
 
     const subscription = AppState.addEventListener('change', (nextAppState) => {
-      if (nextAppState === 'active') checkPermissions();
+      if (nextAppState === 'active' && hasAsked.current) void readPermissions(false);
     });
 
     return () => subscription.remove();
-  }, [onPermissionsChange]);
+  }, [isCurrentScreen, onPermissionsChange]);
 
   const openSettings = () => {
     Alert.alert('Open Settings', 'To turn on permissions, go to your device settings.', [

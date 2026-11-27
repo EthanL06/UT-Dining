@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { isRatingPromptDue } from '~/utils/ratingPrompt';
+
 import { zustandStorage } from './rnmmkv-storage';
 
 interface AppLaunchState {
@@ -43,10 +45,7 @@ export const useAppLaunchStore = create<AppLaunchState>()(
         });
       },
 
-      shouldShowRatingPrompt: () => {
-        const state = get();
-        return state.launchCount >= 2 && !state.hasShownRatingPrompt;
-      },
+      shouldShowRatingPrompt: () => isRatingPromptDue(get(), Date.now()),
 
       isSecondLaunch: () => {
         return get().launchCount === 2;

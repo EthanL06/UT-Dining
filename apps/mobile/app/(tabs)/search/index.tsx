@@ -1,27 +1,30 @@
-import { and, asc, eq, like } from 'drizzle-orm';
+import { and, asc, eq, or, type SQLWrapper, sql } from 'drizzle-orm';
 import { router, Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ScrollView } from 'react-native';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useDebounce } from '~/hooks/useDebounce';
 import type { DrizzleDB } from '~/services/database/database';
 import * as schema from '~/services/database/schema';
+import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
 import { getLocationName } from '~/utils/locations';
+import { containsPattern } from '~/utils/search';
 import { useTheme } from '~/utils/theme';
 import { getLocationStatusText } from '~/utils/time';
 
 const RESULT_LIMIT = 50;
 
-const stripWildcards = (text: string) => text.replace(/[%_]/g, '');
+const contains = (column: SQLWrapper, pattern: string) =>
+  sql`${column} LIKE ${pattern} ESCAPE '\\'`;
 
 const searchToday = (db: DrizzleDB, query: string) => {
   const today = getTodayInCentralTime();
-  const pattern = `%${stripWildcards(query)}%`;
+  const pattern = containsPattern(query);
 
   const foods = db
     .select({
@@ -37,7 +40,7 @@ const searchToday = (db: DrizzleDB, query: string) => {
     .innerJoin(schema.menu, eq(schema.menu_category.menu_id, schema.menu.id))
     .innerJoin(schema.location, eq(schema.menu.location_id, schema.location.id))
     .leftJoin(schema.nutrition, eq(schema.food_item.nutrition_id, schema.nutrition.id))
-    .where(and(eq(schema.menu.date, today), like(schema.food_item.name, pattern)))
+    .where(and(eq(schema.menu.date, today), contains(schema.food_item.name, pattern)))
     .orderBy(asc(schema.food_item.name))
     .limit(RESULT_LIMIT)
     .all();
@@ -45,7 +48,12 @@ const searchToday = (db: DrizzleDB, query: string) => {
   const places = db
     .select()
     .from(schema.location)
-    .where(like(schema.location.name, pattern))
+    .where(
+      or(
+        contains(schema.location.name, pattern),
+        contains(schema.location.colloquial_name, pattern),
+      ),
+    )
     .orderBy(asc(schema.location.display_order))
     .all();
 
@@ -58,14 +66,17 @@ export default function Search() {
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
   const [query, setQuery] = useState('');
   const debouncedQuery = useDebounce(query.trim(), 150);
+  const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: search again after a sync replaces the cache
   const results = useMemo(
     () => (debouncedQuery.length > 0 ? searchToday(db, debouncedQuery) : null),
-    [db, debouncedQuery],
+    [db, debouncedQuery, lastSyncedAt],
   );
+  // biome-ignore lint/correctness/useExhaustiveDependencies: today's menus change after a sync
   const locationIdsWithMenus = useMemo(
     () => getLocationIdsWithMenus(db, getTodayInCentralTime()),
-    [db],
+    [db, lastSyncedAt],
   );
   const now = new Date();
 
@@ -82,7 +93,8 @@ export default function Search() {
           },
         }}
       />
-      <ScrollView
+      <OverflowScrollView
+        divider={false}
         contentInsetAdjustmentBehavior="automatic"
         keyboardDismissMode="on-drag"
         style={{ flex: 1, backgroundColor: theme.background }}
@@ -113,9 +125,12 @@ export default function Search() {
                       subtitle={getLocationStatusText(place, isOpen, now)}
                       showChevron
                       onPress={() =>
-                        router.push(
-                          place.has_menus ? `/location/${name}` : `/location_generic/${name}`,
-                        )
+                        router.push({
+                          pathname: place.has_menus
+                            ? '/location/[location]'
+                            : '/location_generic/[location]',
+                          params: { location: name },
+                        })
                       }
                     />
                   );
@@ -158,7 +173,7 @@ export default function Search() {
             )}
           </>
         )}
-      </ScrollView>
+      </OverflowScrollView>
     </>
   );
 }

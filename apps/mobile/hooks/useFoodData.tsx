@@ -1,14 +1,14 @@
-import { router } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { ALLERGEN_EXCEPTIONS, NUTRITION_ORDER } from '~/data/AllergenInfo';
 import {
+  type DrizzleDB,
   type FoodItem,
   findServedFoodItem,
   getFavoriteItem,
   getFoodItem,
 } from '~/services/database/database';
 import type { Favorite } from '~/services/database/schema';
-import { log } from '~/utils/log';
 import { useDatabase } from './useDatabase';
 
 const formatNutritionKey = (key: string) =>
@@ -17,86 +17,46 @@ const formatNutritionKey = (key: string) =>
     .map((word) => word[0].toUpperCase() + word.slice(1))
     .join(' ');
 
-export function useFoodData(
-  location: string | string[],
-  menu: string | string[],
-  category: string | string[],
-  food: string | string[],
-  isFavorite?: boolean,
-  date?: string,
-) {
+export type FoodLookup = {
+  location: string;
+  menu: string;
+  category: string;
+  food: string;
+  fromFavorites: boolean;
+  date?: string;
+};
+
+export type FoodStatus = 'loading' | 'ready' | 'missing' | 'error';
+
+const loadFoodItem = async (db: DrizzleDB, lookup: FoodLookup): Promise<FoodItem | null> => {
+  const { location, menu, category, food, fromFavorites, date } = lookup;
+  if (!location || !menu || !category || !food) return null;
+  if (!fromFavorites) return getFoodItem(db, location, menu, category, food, date);
+
+  const favorite = getFavoriteItem(db, food, location);
+  if (!favorite) return null;
+  return (
+    (await findServedFoodItem(db, location, food, menu, category, date)) ??
+    convertFavoriteItemToFoodItem(favorite)
+  );
+};
+
+export function useFoodData(lookup: FoodLookup) {
   const db = useDatabase();
+  const query = useQuery({
+    queryKey: ['foodItem', lookup],
+    queryFn: () => loadFoodItem(db, lookup),
+    retry: false,
+  });
 
-  const [foodItem, setFoodItem] = useState<FoodItem | null>(null);
-
-  const isFirstRender = useRef(true);
-
-  const prevFood = useRef<string>('');
-  const prevLocation = useRef<string>('');
-  const prevIsFavorite = useRef<boolean | undefined>(undefined);
-  const prevDate = useRef<string | undefined>(undefined);
-
-  useEffect(() => {
-    const fetchFoodItem = async () => {
-      if (!location || !menu || !category || !food) {
-        router.back();
-        return;
-      }
-
-      const locString = Array.isArray(location) ? location[0] : location;
-      const menuString = Array.isArray(menu) ? menu[0] : menu;
-      const categoryString = Array.isArray(category) ? category[0] : category;
-      const foodString = Array.isArray(food) ? food[0] : food;
-
-      try {
-        let item: FoodItem | null;
-
-        if (isFavorite) {
-          const favoriteItem = getFavoriteItem(db, foodString, locString);
-          if (!favoriteItem) {
-            router.back();
-            return;
-          }
-          item =
-            (await findServedFoodItem(
-              db,
-              locString,
-              foodString,
-              menuString,
-              categoryString,
-              date,
-            )) ?? convertFavoriteItemToFoodItem(favoriteItem);
-        } else {
-          item = await getFoodItem(db, locString, menuString, categoryString, foodString, date);
-        }
-
-        if (!item) {
-          router.back();
-          return;
-        }
-
-        setFoodItem(item);
-      } catch (error) {
-        log.error('Error fetching food item', error);
-      }
-    };
-
-    if (
-      isFirstRender.current ||
-      (Array.isArray(food) ? food[0] : food) !== prevFood.current ||
-      (Array.isArray(location) ? location[0] : location) !== prevLocation.current ||
-      isFavorite !== prevIsFavorite.current ||
-      date !== prevDate.current
-    ) {
-      fetchFoodItem();
-      isFirstRender.current = false;
-    }
-
-    prevFood.current = Array.isArray(food) ? food[0] : food;
-    prevLocation.current = Array.isArray(location) ? location[0] : location;
-    prevIsFavorite.current = isFavorite;
-    prevDate.current = date;
-  }, [location, menu, category, food, isFavorite, date, db]);
+  const foodItem = query.data ?? null;
+  const status: FoodStatus = query.isPending
+    ? 'loading'
+    : query.isError
+      ? 'error'
+      : foodItem
+        ? 'ready'
+        : 'missing';
 
   const nutritionData = useMemo(() => {
     if (!foodItem?.nutrition) return [];
@@ -133,6 +93,7 @@ export function useFoodData(
   }, [foodItem]);
 
   return {
+    status,
     foodItem,
     nutritionData,
     ...allergenData,

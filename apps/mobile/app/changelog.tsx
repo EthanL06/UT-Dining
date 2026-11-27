@@ -1,9 +1,10 @@
 import { router, Stack } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChangelogEntryCard } from '~/components/changelog/ChangelogEntryView';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { refreshChangelog, useChangelogStore } from '~/store/useChangelogStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -17,7 +18,7 @@ const Changelog = () => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    refreshChangelog().then((loaded) => setStatus(loaded ? 'loaded' : 'failed'));
+    void refreshChangelog().then((loaded) => setStatus(loaded ? 'loaded' : 'failed'));
   }, []);
 
   const latestVersion = entries[0]?.version;
@@ -43,7 +44,8 @@ const Changelog = () => {
           Changelog
         </Text>
       </View>
-      <ScrollView
+      <OverflowScrollView
+        divider={false}
         testID="changelog-list"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -76,7 +78,7 @@ const Changelog = () => {
                 : 'No release notes yet.'}
             </Text>
           ))}
-      </ScrollView>
+      </OverflowScrollView>
     </View>
   );
 };

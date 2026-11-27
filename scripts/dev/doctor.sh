@@ -49,7 +49,7 @@ else
   fail_check "dependencies are not installed. Run: make setup"
 fi
 hooks_dir="$(git rev-parse --git-path hooks 2>/dev/null || echo .git/hooks)"
-if [[ -f "$hooks_dir/pre-commit" && -f "$hooks_dir/commit-msg" ]]; then ok "git hooks installed"; else warn "git hooks missing. Run: make install"; fi
+if [[ -f "$hooks_dir/pre-commit" && -f "$hooks_dir/commit-msg" && -f "$hooks_dir/pre-push" ]]; then ok "git hooks installed"; else warn "git hooks missing. Run: make install"; fi
 
 step "Database"
 local_api=""

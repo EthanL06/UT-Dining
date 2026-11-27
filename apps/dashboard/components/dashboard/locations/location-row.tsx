@@ -17,6 +17,7 @@ import {
   IconLockOpen,
   IconTrash,
 } from '@tabler/icons-react';
+import { formatCentral } from '@ut-dining/core';
 import { getCurrentMealTime, getLocationStatus, getLocationTypeName } from '@/lib/location-utils';
 import {
   paymentMethodAvatars,
@@ -182,7 +183,7 @@ export function LocationRow({
 
       <Table.Td>
         <Text size="sm" c="dimmed">
-          {location.updated_at ? new Date(location.updated_at).toLocaleString() : '-'}
+          {location.updated_at ? formatCentral(location.updated_at) : '-'}
         </Text>
       </Table.Td>
 

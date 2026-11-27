@@ -16,9 +16,8 @@ const CompleteScreen = ({ width, isCurrentScreen }: Props) => {
   const lottieRef = useRef<LottieView>(null);
 
   useEffect(() => {
-    if (!isCurrentScreen) {
-      lottieRef.current?.reset();
-    }
+    if (isCurrentScreen) lottieRef.current?.play();
+    else lottieRef.current?.reset();
   }, [isCurrentScreen]);
 
   return (
@@ -29,7 +28,6 @@ const CompleteScreen = ({ width, isCurrentScreen }: Props) => {
       <LottieView
         ref={lottieRef}
         source={require('~/assets/onboarding/success-lottie.json')}
-        autoPlay={isCurrentScreen}
         loop
         style={{ width: 300, height: 300 }}
         resizeMode="cover"

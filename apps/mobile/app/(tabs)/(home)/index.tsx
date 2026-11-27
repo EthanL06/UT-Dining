@@ -1,4 +1,5 @@
-import { onlineManager, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { toCentralTime } from '@ut-dining/core';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
 import * as Network from 'expo-network';
@@ -9,7 +10,6 @@ import { Heart } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -21,14 +21,17 @@ import { MealPlanIcon } from '~/components/MealPlanIcon';
 import OnboardingScreen from '~/components/onboarding/OnboardingScreen';
 import { ServiceStatusBanner } from '~/components/ServiceStatusBanner';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
+import { Image } from '~/components/ui/Image';
 import { Text } from '~/components/ui/Text';
 import { forceMenuSync, useMenuSync } from '~/hooks/useMenuSync';
+import { useNow } from '~/hooks/useNow';
 import type { DrizzleDB } from '~/services/database/database';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
+import { homeView, toSyncStatus } from '~/utils/homeView';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
 import { getLocationName } from '~/utils/locations';
 import { log } from '~/utils/log';
@@ -39,7 +42,7 @@ import * as schema from '../../../services/database/schema';
 
 const SPLASH_SCREEN_DURATION = 200;
 
-SplashScreen.preventAutoHideAsync();
+void SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({
   duration: SPLASH_SCREEN_DURATION,
   fade: true,
@@ -81,8 +84,8 @@ const MEAL_MESSAGE = {
 };
 
 const greeting = (time: Date) => {
-  const hour = time.getHours();
-  if (hour < 11) return 'Good Morning! ☀️';
+  const hour = Math.floor(toCentralTime(time).time / 100);
+  if (hour < 12) return 'Good Morning! ☀️';
   if (hour < 18) return 'Good Afternoon! 🌤️';
   return 'Good Evening! 🌙';
 };
@@ -170,7 +173,10 @@ const LocationRows = ({
         subtitle={getLocationStatusText(location, isOpen, currentTime)}
         showChevron
         onPress={() =>
-          router.push(location.has_menus ? `/location/${name}` : `/location_generic/${name}`)
+          router.push({
+            pathname: location.has_menus ? '/location/[location]' : '/location_generic/[location]',
+            params: { location: name },
+          })
         }
       />
     );
@@ -190,7 +196,7 @@ const CenteredMessage = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default function Home() {
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const currentTime = useNow();
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const [refreshing, setRefreshing] = useState(false);
   const isOnboardingComplete = useOnboardingStore((state) => state.isOnboardingComplete);
@@ -202,20 +208,21 @@ export default function Home() {
 
   useDrizzleStudio(db);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const { data, isLoading, isError } = useQuery({
+  const menuData = useQuery({
     queryKey: ['menuData'],
     queryFn: () => readCachedMenuData(drizzleDb),
     staleTime: Infinity,
     retry: false,
   });
+  const { data } = menuData;
   const menuSync = useMenuSync(drizzleDb);
+  const locations = data?.locations || [];
+  const locationTypes = data?.locationTypes || [];
+  const view = homeView({
+    cache: menuData.status,
+    locationCount: locations.length,
+    sync: toSyncStatus(menuSync),
+  });
   const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
 
   const handleRefresh = async () => {
@@ -242,12 +249,13 @@ export default function Home() {
     }
   };
 
+  const cacheLoading = view.kind === 'loading';
   useEffect(() => {
-    if (isLoading) return;
+    if (cacheLoading) return;
     requestAnimationFrame(() => SplashScreen.hide());
-  }, [isLoading]);
+  }, [cacheLoading]);
 
-  if (isLoading) {
+  if (view.kind === 'loading') {
     return (
       <CenteredMessage>
         <ActivityIndicator size="small" />
@@ -255,7 +263,7 @@ export default function Home() {
     );
   }
 
-  if (isError) {
+  if (view.kind === 'cache-error') {
     return (
       <CenteredMessage>
         <Text variant="title3">Failed to load data!</Text>
@@ -275,9 +283,6 @@ export default function Home() {
     );
   }
 
-  const locations = data?.locations || [];
-  const locationTypes = data?.locationTypes || [];
-  const syncUnavailable = menuSync.isError || menuSync.fetchStatus === 'paused';
   const { open, closed } = sortLocationsByStatus(
     locations,
     locationTypes,
@@ -297,11 +302,11 @@ export default function Home() {
       <Stack.Screen options={{ title: 'Home', headerShown: false }} />
       <OnboardingScreen isOnboardingComplete={isOnboardingComplete} />
 
-      {locations.length === 0 && menuSync.isFetching ? (
+      {view.kind === 'first-sync' ? (
         <CenteredMessage>
           <ActivityIndicator size="small" />
         </CenteredMessage>
-      ) : locations.length === 0 && syncUnavailable ? (
+      ) : view.kind === 'first-sync-failed' ? (
         <CenteredMessage>
           <Text variant="title3" className="mb-1">
             Can't load menus yet
@@ -336,15 +341,15 @@ export default function Home() {
             source={appIcon}
             accessibilityLabel="UT Dining"
             className="mx-4 mb-4 size-12"
-            resizeMode="contain"
+            contentFit="contain"
           />
           <Text variant="largeTitle" accessibilityRole="header" className="mx-5">
             {greeting(currentTime)}
           </Text>
           <Text variant="subheadline" tone="secondary" className="mx-5 mb-4">
             {MEAL_MESSAGE[timeOfDay(currentTime)]}
-            {syncUnavailable &&
-              ` · ${onlineManager.isOnline() ? "Couldn't update" : 'Offline'}${
+            {view.syncProblem &&
+              ` · ${view.syncProblem === 'failed' ? "Couldn't update" : 'Offline'}${
                 lastSyncedAt !== null
                   ? `, menus from ${formatTimeSinceSync(Date.now() - lastSyncedAt).toLowerCase()}`
                   : ''

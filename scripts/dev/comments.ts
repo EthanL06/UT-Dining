@@ -11,7 +11,7 @@ const SKIPPED = [
   /\.d\.ts$/,
 ];
 const DIRECTIVE =
-  /^(\/\/|\/\*\*?)\s*(biome-ignore|@ts-expect-error|@ts-ignore|@ts-nocheck|@ts-check|eslint-|@jsx|turbo-|prettier-ignore|#region|#endregion)|^\/\/\/\s*<reference|^\/\*\*?\s*@(type|satisfies|typedef)\b/;
+  /^(\/\/|\/\*\*?)\s*(biome-ignore|@ts-expect-error|@ts-ignore|@ts-nocheck|@ts-check|eslint-|@jsx|turbo-|prettier-ignore|#region|#endregion|state-machine-ok:)|^\/\/\/\s*<reference|^\/\*\*?\s*@(type|satisfies|typedef)\b/;
 
 interface Range {
   start: number;

@@ -1,7 +1,6 @@
 'use client';
 
 import { Badge, Group, Stack, Text } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { useState } from 'react';
@@ -17,6 +16,7 @@ import {
   LocationsHeader,
   LocationsTable,
 } from '@/components/dashboard/locations';
+import { log } from '@/lib/log';
 import type { Location, LocationType } from '@/types/location';
 
 interface Props {
@@ -25,14 +25,19 @@ interface Props {
   initialLocationMenuStatus: Record<string, boolean>;
 }
 
+type LocationEditor =
+  | { mode: 'closed' }
+  | { mode: 'adding' }
+  | { mode: 'editing'; location: Location };
+
 export default function DashboardLocationsClient({
   initialLocations,
   locationTypes,
   initialLocationMenuStatus,
 }: Props) {
-  const [modalOpened, { open, close }] = useDisclosure(false);
+  const [editor, setEditor] = useState<LocationEditor>({ mode: 'closed' });
   const [locations, setLocations] = useState<Location[]>(initialLocations);
-  const [editingLocation, setEditingLocation] = useState<Location | null>(null);
+  const editingLocation = editor.mode === 'editing' ? editor.location : null;
   const [locationMenuStatus, setLocationMenuStatus] =
     useState<Record<string, boolean>>(initialLocationMenuStatus);
 
@@ -43,16 +48,15 @@ export default function DashboardLocationsClient({
         ...prev,
         [locationId]: hasMenus,
       }));
-      console.log(`🍽️ Updated menu status for location ${locationId}:`, hasMenus);
+      log.info(`🍽️ Updated menu status for location ${locationId}:`, hasMenus);
     } catch (error) {
-      console.error(`Failed to refresh menu status for location ${locationId}:`, error);
+      log.error(`Failed to refresh menu status for location ${locationId}:`, error);
     }
   };
 
   const handleEditLocation = (location: Location) => {
-    console.log('📝 Edit location:', location);
-    setEditingLocation(location);
-    open();
+    log.info('📝 Edit location:', location);
+    setEditor({ mode: 'editing', location });
   };
 
   const handleDeleteLocation = (location: Location) => {
@@ -114,7 +118,7 @@ export default function DashboardLocationsClient({
           await refreshLocationMenuStatus(updated.id);
         }
 
-        console.log('✏️ Location updated successfully');
+        log.info('✏️ Location updated successfully');
       } else {
         const inserted = await addLocation(locationData);
         setLocations((prev) => [...prev, inserted]);
@@ -123,11 +127,10 @@ export default function DashboardLocationsClient({
           await refreshLocationMenuStatus(inserted.id);
         }
 
-        console.log('✅ Location added successfully');
+        log.info('✅ Location added successfully');
       }
 
-      setEditingLocation(null);
-      close();
+      setEditor({ mode: 'closed' });
     } catch (err) {
       const action = editingLocation ? 'update' : 'add';
       throw new Error(`❌ Failed to ${action} location: ${(err as Error).message}`);
@@ -135,13 +138,11 @@ export default function DashboardLocationsClient({
   };
 
   const handleCloseModal = () => {
-    setEditingLocation(null);
-    close();
+    setEditor({ mode: 'closed' });
   };
 
   const handleAddLocation = () => {
-    setEditingLocation(null);
-    open();
+    setEditor({ mode: 'adding' });
   };
 
   const handleToggleForceClose = async (locationId: string, forceClose: boolean) => {
@@ -205,7 +206,7 @@ export default function DashboardLocationsClient({
       },
       onConfirm: async () => {
         try {
-          console.log(`🔒 ${currentState} force close for location:`, location.name);
+          log.info(`🔒 ${currentState} force close for location:`, location.name);
 
           const updated = await toggleForceClose(locationId, forceClose);
 
@@ -218,7 +219,7 @@ export default function DashboardLocationsClient({
             autoClose: 3000,
           });
 
-          console.log(`🔒 Location ${forceClose ? 'force closed' : 'reopened'}:`, updated.name);
+          log.info(`🔒 Location ${forceClose ? 'force closed' : 'reopened'}:`, updated.name);
         } catch (err) {
           notifications.show({
             title: 'Toggle Failed',
@@ -236,7 +237,7 @@ export default function DashboardLocationsClient({
       <LocationsHeader onAddLocation={handleAddLocation} />
 
       <AddLocationModal
-        opened={modalOpened}
+        opened={editor.mode !== 'closed'}
         onClose={handleCloseModal}
         onSubmit={handleSubmitLocation}
         editingLocation={editingLocation}

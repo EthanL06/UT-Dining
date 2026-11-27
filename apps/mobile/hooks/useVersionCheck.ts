@@ -113,10 +113,10 @@ export const useVersionCheck = () => {
       if (!shown) await checkWhatsNew(changelogLoaded, isReturningUser);
     };
 
-    runChecks();
+    void runChecks();
 
     const subscription = AppState.addEventListener('change', (nextAppState) => {
-      if (nextAppState === 'active') runChecks();
+      if (nextAppState === 'active') void runChecks();
     });
     return () => subscription.remove();
   }, [checkForUpdate, checkWhatsNew]);
@@ -147,7 +147,7 @@ export const useVersionCheck = () => {
       if (!(prompt?.kind === 'update' && prompt.required)) {
         useChangelogPromptStore.getState().hidePrompt();
       }
-      openAppStore(version);
+      void openAppStore(version);
     },
     [openAppStore],
   );

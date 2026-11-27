@@ -1,5 +1,4 @@
 import { Book, Calendar, Clock, Heart, Leaf, MapPin, Timer, Utensils } from 'lucide-react-native';
-import { useState } from 'react';
 import { View } from 'react-native';
 
 import { useTheme } from '~/utils/theme';
@@ -8,8 +7,8 @@ import OnboardingHeader from './OnboardingHeader';
 
 type Props = {
   width: number;
-  onSelectionChange: (hasSelection: boolean) => void;
-  onSelectionUpdate: (selectedTags: string[]) => void;
+  selected: string[];
+  onChange: (selected: string[]) => void;
 };
 
 const MOTIVATION_TAGS: Choice[] = [
@@ -23,17 +22,13 @@ const MOTIVATION_TAGS: Choice[] = [
   { id: 'filter-by-diet', label: 'Filter by Diet', icon: Leaf },
 ];
 
-const DataCollectionScreen = ({ width, onSelectionChange, onSelectionUpdate }: Props) => {
+const DataCollectionScreen = ({ width, selected, onChange }: Props) => {
   const theme = useTheme();
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const toggleTag = (tagId: string) => {
-    const newSelection = selectedTags.includes(tagId)
-      ? selectedTags.filter((id) => id !== tagId)
-      : [...selectedTags, tagId];
-    setSelectedTags(newSelection);
-    onSelectionChange(newSelection.length > 0);
-    onSelectionUpdate(newSelection);
+    onChange(
+      selected.includes(tagId) ? selected.filter((id) => id !== tagId) : [...selected, tagId],
+    );
   };
 
   return (
@@ -44,7 +39,7 @@ const DataCollectionScreen = ({ width, onSelectionChange, onSelectionUpdate }: P
       />
       <ChoiceList
         choices={MOTIVATION_TAGS}
-        isSelected={(id) => selectedTags.includes(id)}
+        isSelected={(id) => selected.includes(id)}
         onToggle={toggleTag}
       />
     </View>

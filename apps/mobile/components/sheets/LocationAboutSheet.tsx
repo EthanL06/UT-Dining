@@ -2,6 +2,7 @@ import { ActivityIndicator, Pressable, View } from 'react-native';
 import ActionSheet, { ScrollView, type SheetProps, useSheetRef } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import PlaceDetails from '~/components/PlaceDetails';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -13,7 +14,7 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
   const sheetRef = useSheetRef();
   const theme = useTheme();
   const locationName = payload?.location?.name;
-  const { locationData, loading, error } = useLocationDetails(locationName || '');
+  const { status, locationData } = useLocationDetails(locationName || '');
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
   const displayName = useLocationName(locationName || '', useColloquialNames);
 
@@ -47,12 +48,16 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
           </Text>
         </Pressable>
       </View>
-      <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 560 }}>
-        {loading ? (
+      <OverflowScrollView
+        as={ScrollView}
+        showsVerticalScrollIndicator={false}
+        style={{ maxHeight: 560 }}
+      >
+        {status === 'loading' ? (
           <View className="items-center py-10">
             <ActivityIndicator size="small" />
           </View>
-        ) : error || !locationData ? (
+        ) : !locationData ? (
           <Text variant="subheadline" tone="secondary" className="px-5 py-10 text-center">
             Unable to load details for this place.
           </Text>
@@ -61,7 +66,7 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
             <PlaceDetails place={locationData} />
           </View>
         )}
-      </ScrollView>
+      </OverflowScrollView>
     </ActionSheet>
   );
 };

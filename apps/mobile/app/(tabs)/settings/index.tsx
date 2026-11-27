@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Application from 'expo-application';
 import { router, Stack } from 'expo-router';
 import {
@@ -25,14 +25,14 @@ import {
   Wrench,
 } from 'lucide-react-native';
 import React from 'react';
-import { Linking, ScrollView, Switch, View } from 'react-native';
+import { Linking, Switch, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 import { GroupedRow, GroupedSection, IconSquare } from '~/components/ui/Grouped';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
-import { useLocationPermissions } from '~/hooks/useLocationPermissions';
 import { forceMenuSync } from '~/hooks/useMenuSync';
-import { useNotificationPermissions } from '~/hooks/useNotificationPermissions';
+import { type PermissionState, usePermission } from '~/hooks/usePermission';
 import { openStatusPage, useServiceStatus } from '~/hooks/useServiceStatus';
 import { getAppInformation } from '~/services/database/database';
 import type { AppInformation } from '~/services/database/schema';
@@ -191,19 +191,17 @@ const SyncDataRow = () => {
 };
 
 const PermissionRows = () => {
-  const notifications = useNotificationPermissions();
-  const location = useLocationPermissions();
+  const notifications = usePermission('notifications');
+  const location = usePermission('location');
 
-  const open = (permission: typeof notifications | typeof location) => async () => {
-    if (permission.isUndetermined) {
-      await permission.requestPermissions();
-    } else {
-      Linking.openSettings();
-    }
+  const open = (permission: typeof notifications) => () => {
+    if (permission.state === 'checking') return;
+    if (permission.state === 'undetermined') permission.request();
+    else Linking.openSettings();
   };
 
-  const label = (permission: typeof notifications | typeof location) =>
-    permission.isGranted ? 'On' : 'Off';
+  const label = ({ state }: { state: PermissionState }) =>
+    state === 'checking' ? undefined : state === 'granted' ? 'On' : 'Off';
 
   return (
     <>
@@ -329,18 +327,17 @@ const SettingsPage = () => {
     toggleColorBlindMode,
   } = useSettingsStore();
   const db = useDatabase();
-  const [appInfo, setAppInfo] = React.useState<AppInformation | null>(null);
+  const { data: appInfo } = useQuery({
+    queryKey: ['appInformation'],
+    queryFn: () => getAppInformation(db),
+  });
   const deviceId = getOrCreateDeviceId();
-
-  React.useEffect(() => {
-    if (!db) return;
-    getAppInformation(db).then(setAppInfo);
-  }, [db]);
 
   return (
     <SheetProvider context="settings">
       <Stack.Screen options={{ title: 'Settings' }} />
-      <ScrollView
+      <OverflowScrollView
+        divider={false}
         contentInsetAdjustmentBehavior="automatic"
         style={{ flex: 1, backgroundColor: theme.background }}
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 40 }}
@@ -461,7 +458,7 @@ const SettingsPage = () => {
             </Text>
           )}
         </View>
-      </ScrollView>
+      </OverflowScrollView>
     </SheetProvider>
   );
 };

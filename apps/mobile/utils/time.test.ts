@@ -77,10 +77,24 @@ describe('getLocationTimeMessage', () => {
 
 describe('generateSchedule', () => {
   it('groups days with the same hours', () => {
-    expect(generateSchedule(location(), true, at('2026-11-23T12:00:00'))).toEqual([
+    expect(generateSchedule(location(), true)).toEqual([
       { dayRange: 'M-TH', time: '07:00 AM - 09:00 PM' },
       { dayRange: 'Fri', time: '07:00 AM - 02:00 PM' },
       { dayRange: 'Sat-Sun', time: 'Closed' },
+    ]);
+  });
+
+  it('formats noon, half hours and the end of the day', () => {
+    const late = { isClosed: false, timeRanges: [{ open: 1230, close: 2400 }] };
+    const regular_service_hours = Object.fromEntries(
+      ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => [
+        day,
+        late,
+      ]),
+    );
+    const everyDay = location({ regular_service_hours } as Partial<schema.Location>);
+    expect(generateSchedule(everyDay)).toEqual([
+      { dayRange: 'M-Sun', time: '12:30 PM - 12:00 AM' },
     ]);
   });
 

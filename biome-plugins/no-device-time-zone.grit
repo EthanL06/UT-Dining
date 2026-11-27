@@ -1,0 +1,51 @@
+language js
+
+or {
+  `$date.$method()` where {
+    $method <: or {
+      `getHours`,
+      `getMinutes`,
+      `getSeconds`,
+      `getDay`,
+      `getDate`,
+      `getMonth`,
+      `getFullYear`,
+      `getTimezoneOffset`
+    },
+    register_diagnostic(span=$method, message="Date getters read the device time zone. Use toCentralTime() from @ut-dining/core or a helper in the app's date module.", severity="error")
+  },
+  `$date.$method($args)` where {
+    $method <: or {
+      `setHours`,
+      `setMinutes`,
+      `setSeconds`,
+      `setDate`,
+      `setMonth`,
+      `setFullYear`
+    },
+    register_diagnostic(span=$method, message="Date setters use the device time zone. Do the math on a Central date string or an Hhmm number from @ut-dining/core.", severity="error")
+  },
+  `new Date($a, $b, $rest)` as $call where {
+    register_diagnostic(span=$call, message="new Date(year, month, ...) builds a date in the device time zone. Use a YYYY-MM-DD date key and the helpers in the app's date module.", severity="error")
+  },
+  `$value.$method($args)` where {
+    $method <: or {
+      `toLocaleDateString`,
+      `toLocaleTimeString`
+    },
+    not $args <: contains `timeZone`,
+    register_diagnostic(span=$method, message="Pass timeZone: CENTRAL_TIME_ZONE (from @ut-dining/core) so the date shows in Central time on every device.", severity="error")
+  },
+  `$value.toLocaleString($args)` where {
+    $value <: or {
+      `new Date($_)`,
+      r"(?i).*(?:date|time|at)$"
+    },
+    not $args <: contains `timeZone`,
+    register_diagnostic(span=$value, message="Pass timeZone: CENTRAL_TIME_ZONE (from @ut-dining/core) so the date shows in Central time on every device.", severity="error")
+  },
+  `new Intl.DateTimeFormat($args)` as $call where {
+    not $args <: contains `timeZone`,
+    register_diagnostic(span=$call, message="Pass timeZone: CENTRAL_TIME_ZONE (from @ut-dining/core) so the date shows in Central time on every device.", severity="error")
+  }
+}

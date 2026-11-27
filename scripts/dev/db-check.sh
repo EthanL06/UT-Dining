@@ -17,7 +17,8 @@ usage() {
     '' \
     'Never touches the shared local stack, hosted dev or production.' \
     'FORCE=1 runs even when nothing database related changed. ALLOW_BREAKING=1 turns breaking' \
-    'changes into warnings (CI sets it from the breaking-migration label).'
+    'changes into warnings (CI sets it from the breaking-migration label). STATIC=1 runs only the' \
+    'file checks (1 and 2) without Docker, as the pre-push hook does.'
 }
 
 case "${1:-}" in
@@ -64,6 +65,14 @@ done
 
 types_changed=0
 git diff --quiet "$base_sha" -- "$TYPES" supabase/seed.sql supabase/config.toml || types_changed=1
+
+if [[ "${STATIC:-}" == "1" ]]; then
+  if [[ -n "$new_files" ]] && git diff --quiet "$base_sha" -- "$TYPES"; then
+    warn "new migrations but $TYPES is unchanged; run make db-types if the schema changed"
+  fi
+  [[ "$failed" -eq 0 ]] && ok "migration files are append-only and in order (STATIC=1 skips the Postgres checks)"
+  exit "$failed"
+fi
 
 if [[ -z "$new_files" && "$failed" -eq 0 && "$types_changed" -eq 0 && "${FORCE:-}" != "1" ]]; then
   ok "no migration, seed or type changes since $BASE_REF; nothing to check"

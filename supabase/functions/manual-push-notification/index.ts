@@ -1,3 +1,4 @@
+import { log } from '../_shared/log.ts';
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { broadcast, createDeviceStore, json } from '../_shared/push.ts';
@@ -53,7 +54,7 @@ Deno.serve(async (req) => {
   });
 
   if (insertError) {
-    console.error('Failed to insert notification:', insertError);
+    log.error('Failed to insert notification:', insertError);
     return json({ error: 'Failed to record notification', details: insertError }, 500);
   }
 
@@ -67,10 +68,10 @@ Deno.serve(async (req) => {
       },
       { accessToken: Deno.env.get('EXPO_ACCESS_TOKEN') },
     );
-    console.log('Manual push run:', JSON.stringify(report));
+    log.info('Manual push run:', JSON.stringify(report));
     return json({ success: true, sent: report.accepted, title, body, ...report });
   } catch (error) {
-    console.error('Failed to send manual push:', error);
+    log.error('Failed to send manual push:', error);
     return json({ error: error instanceof Error ? error.message : 'Failed to send' }, 500);
   }
 });

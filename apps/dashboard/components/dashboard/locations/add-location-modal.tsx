@@ -4,6 +4,7 @@ import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { IconX } from '@tabler/icons-react';
 import { useEffect, useEffectEvent, useState } from 'react';
+import { log } from '@/lib/log';
 import { paymentMethodOptions } from '@/lib/payment-methods';
 import type { Location, LocationType, MealTime } from '@/types/location';
 import { LocationDetailsFields } from './location-details-fields';
@@ -43,6 +44,7 @@ export function AddLocationModal({
   const [serviceHoursError, setServiceHoursError] = useState<string | null>(null);
   const [paymentMethodsError, setPaymentMethodsError] = useState<string | null>(null);
   const [mealTimesError, setMealTimesError] = useState<string | null>(null);
+  // state-machine-ok: the image preview failing to load is independent of submitting the form
   const [imageError, setImageError] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copiedDay, setCopiedDay] = useState<string | null>(null);
@@ -121,7 +123,7 @@ export function AddLocationModal({
 
   useEffect(() => {
     if (opened) {
-      console.log('📝 Debug - editingLocation prop:', editingLocation);
+      log.info('📝 Debug - editingLocation prop:', editingLocation);
       setLocalEditingLocation(editingLocation || null);
     }
   }, [opened, editingLocation]);
@@ -424,7 +426,7 @@ export function AddLocationModal({
     >
       <form
         onSubmit={form.onSubmit(handleSubmit, (errors) => {
-          console.warn('Form validation errors:', errors);
+          log.warn('Form validation errors:', errors);
           notifications.show({
             title: 'Form Validation Error',
             message: 'Please correct the highlighted fields and try again.',
