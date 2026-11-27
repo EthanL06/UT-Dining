@@ -29,7 +29,7 @@ if [[ -z "$changed" ]]; then
   ok "nothing changed since $base"
   exit 0
 fi
-if ! printf '%s\n' "$changed" | grep -qvE '\.md$|^\.agents/|^LICENSE$'; then
+if printf '%s\n' "$changed" | scripts/ci/docs-only.sh; then
   ok "docs only, skipping pre-push checks"
   exit 0
 fi
