@@ -11,6 +11,12 @@ Browse menus, check dining hours, and find the perfect meal on campus.
    <img alt="Download on the app store" src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" height="48">
 </a>
 
+[![Website uptime](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FEthanL06%2Fut-dining-uptime%2FHEAD%2Fapi%2Fwebsite%2Fuptime.json&label=website)](https://ethanl06.github.io/ut-dining-uptime/)
+[![Dashboard uptime](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FEthanL06%2Fut-dining-uptime%2FHEAD%2Fapi%2Fdashboard%2Fuptime.json&label=dashboard)](https://ethanl06.github.io/ut-dining-uptime/)
+[![Supabase uptime](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FEthanL06%2Fut-dining-uptime%2FHEAD%2Fapi%2Fsupabase%2Fuptime.json&label=supabase)](https://ethanl06.github.io/ut-dining-uptime/)
+
+Website: [utdining.app](https://utdining.app) · Status: [status.utdining.app](https://status.utdining.app)
+
 ![UT Dining App Screenshot](https://github.com/user-attachments/assets/04b49653-3202-43ce-8ecc-7a19fed814ce)
 
 ## Table of Contents
@@ -20,13 +26,18 @@ Browse menus, check dining hours, and find the perfect meal on campus.
 3. [How it Works](#how-it-works)
 4. [Getting Started](#getting-started)
    - [Prerequisites](#prerequisites)
-   - [VSCode Extensions](#vscode-extensions)
-   - [Installation](#installation)
+   - [Quick start](#quick-start)
+   - [Mobile app](#mobile-app)
+   - [Everyday commands](#everyday-commands)
+   - [Editor](#editor)
 5. [Project Structure](#project-structure)
-6. [Contributing](#contributing)
-7. [Frequently Asked Questions](#frequently-asked-questions)
-8. [Related Repositories](#related-repositories)
-9. [License](#license)
+6. [Environments](#environments)
+7. [Deployments](#deployments)
+   - [Branches and releases](#branches-and-releases)
+8. [Status and Monitoring](#status-and-monitoring)
+9. [Frequently Asked Questions](#frequently-asked-questions)
+10. [Contributing](#contributing)
+11. [License](#license)
 
 ## Features
 
@@ -46,7 +57,10 @@ Browse menus, check dining hours, and find the perfect meal on campus.
 
 ## Tech Stack
 
-- **Framework**: [Expo](https://expo.dev/) + [React Native](https://reactnative.dev/)
+- **Monorepo**: [pnpm workspaces](https://pnpm.io/workspaces) + [Turborepo](https://turborepo.com)
+- **Mobile app**: [Expo](https://expo.dev/) SDK 58 + [React Native](https://reactnative.dev/) 0.88 (New Architecture)
+- **Dashboard**: [Next.js](https://nextjs.org/) 16 + [Mantine](https://mantine.dev/), Supabase SSR auth with Google sign-in
+- **Website**: [Next.js](https://nextjs.org/) 16 + [Tailwind CSS](https://tailwindcss.com/) 4, server-rendered with ISR
 - **Navigation**: [Expo Router](https://docs.expo.dev/router/introduction/)
 - **Global State Management**: [Zustand](https://github.com/pmndrs/zustand)
 - **Database**:
@@ -57,7 +71,8 @@ Browse menus, check dining hours, and find the perfect meal on campus.
 - **Analytics**: [PostHog](https://posthog.com/) with session replay and auto-capture
 - **Styling**: [NativeWind](https://www.nativewind.dev/) (Tailwind CSS for React Native)
 - **Icons**: [Lucide React Native](https://lucide.dev/guide/packages/lucide-react-native)
-- **Code Quality**: [Biome](https://biomejs.dev/) for formatting and linting
+- **Code Quality**: [Biome](https://biomejs.dev/) for formatting and linting, TypeScript 7 (`tsgo`) for typechecking, [Vitest](https://vitest.dev/) for tests
+- **E2E tests**: [Maestro](https://docs.maestro.dev) on the iOS Simulator
 
 ## How it Works
 
@@ -65,11 +80,13 @@ Browse menus, check dining hours, and find the perfect meal on campus.
 
 At the core of the system is a scheduled **GitHub Actions** workflow that runs every day at 7:00 AM UTC _(or 1:00 AM CST)_. It is responsible for scraping the dining menus from UT Austin, sourced from [this page](https://hf-foodpro.austin.utexas.edu/foodpro/location.aspx). Once the menus are scraped, the data is stored in a **Supabase** database. The web scraper lives in [`apps/scraper`](apps/scraper).
 
-Every 24 hours, the **Expo** mobile application fetches the latest menu data from the database, keeping the application up-to-date. To optimize performance and reduce loading times, the data is cached locally in an **SQLite** database using **Drizzle ORM**. This local cache allows the app to quickly retrieve the necessary information, ensuring a smooth, **offline-first** user experience.
+Hours, force closes, support links, the changelog and push notifications are managed from the admin dashboard ([`apps/dashboard`](apps/dashboard)) or its command line twin ([`apps/cli`](apps/cli)), and both write to the same Supabase database.
+
+Every 6 hours, the **Expo** mobile application fetches the latest menu data from the database, keeping the application up-to-date. To optimize performance and reduce loading times, the data is cached locally in an **SQLite** database using **Drizzle ORM**. This local cache allows the app to quickly retrieve the necessary information, ensuring a smooth, **offline-first** user experience.
 
 ## Getting Started
 
-UT Dining is a monorepo: the mobile app, the admin dashboard, the website, the menu scraper and the shared database types live in this one repository, managed with [pnpm workspaces](https://pnpm.io/workspaces) and [Turborepo](https://turborepo.com).
+UT Dining is a monorepo: the mobile app, the admin dashboard, the website, the menu scraper, the admin CLI and the shared packages live in this one repository, managed with [pnpm workspaces](https://pnpm.io/workspaces) and [Turborepo](https://turborepo.com).
 
 ### Prerequisites
 
@@ -128,8 +145,11 @@ Run `make` (or `make help`) for the full list. Variables go after the target, fo
 | --- | --- |
 | `make dev` | Start local Supabase if the apps use it, then the dashboard (:3000), website (:3001) and Metro (:8081) |
 | `make dashboard` / `make website` / `make mobile` | Start one of them |
+| `make android` | Build and run the app on an Android emulator |
 | `make scrape` | Run the scraper once with `apps/scraper/.env.local` |
-| `make check` | Lint, format check, typecheck and tests for everything. Run it before you push. |
+| `make admin ARGS="locations list"` | Run the admin CLI (same as `pnpm -s admin ...`, see [apps/cli](apps/cli/README.md)) |
+| `make verify` | Fast check of only what your diff touches: Biome, the comment check, typecheck and tests of the affected packages |
+| `make check` | Lint, format check, comment check, typecheck and tests for everything, the same as CI. Run it before you push. |
 | `make fix` | Apply Biome's safe lint and format fixes |
 | `make typecheck` / `make test` / `make build` | One step of the checks |
 | `make db-up` / `make db-down` | Start or stop local Supabase (data is kept), and point the apps at it |
@@ -149,7 +169,7 @@ Run `make` (or `make help`) for the full list. Variables go after the target, fo
 
 The `pnpm` scripts in `package.json` (`pnpm check`, `pnpm db:reset` and so on) still work; the Makefile is a front door over them.
 
-Commits are checked by commitlint and staged files are formatted by Biome through [Lefthook](https://lefthook.dev) hooks, installed automatically by `pnpm install`.
+Commits are checked by commitlint and staged files are formatted by Biome through [Lefthook](https://lefthook.dev) hooks, installed automatically by `pnpm install`. The repo has no code comments, and the pre-commit hook and CI fail on new ones; put context in a README, an `AGENTS.md` or the PR description instead.
 
 ### Editor
 
@@ -162,18 +182,63 @@ UT-Dining/
 ├── apps/
 │   ├── mobile/            # Expo app (Expo Router, NativeWind, Drizzle + SQLite, EAS config)
 │   ├── dashboard/         # Admin dashboard (Next.js + Mantine, deployed on Vercel)
-│   ├── website/           # Public website and privacy policy (Next.js static export, GitHub Pages)
+│   ├── website/           # Public website, changelog and privacy policy (Next.js on Vercel, static copy on GitHub Pages)
+│   ├── cli/               # @ut-dining/cli: command line version of the dashboard (pnpm -s admin)
 │   └── scraper/           # Daily menu scraper (Node, runs on GitHub Actions at 07:00 UTC)
 ├── packages/
 │   ├── core/              # @ut-dining/core: shared hours, open/closed status and Central-time logic
 │   ├── supabase/          # @ut-dining/supabase: generated database types shared by all apps
 │   └── tsconfig/          # @ut-dining/tsconfig: shared TypeScript presets
-├── supabase/              # Supabase config, migrations, seed data and edge functions
+├── supabase/              # Supabase config, migrations, seed data and edge functions (push notifications)
+├── .github/workflows/     # CI, scrapers, website deploy and previews, E2E, screenshots
 ├── scripts/
 │   ├── dev/               # what the Makefile runs: setup, doctor, database, simulators, cleanup
 │   └── qa/                # Maestro E2E runner and fixtures
 └── Makefile               # every setup and daily command: run `make`
 ```
+
+## Environments
+
+There are three Supabase databases. Nothing in development ever points at production.
+
+| Environment | Supabase | Used by |
+| --- | --- | --- |
+| Local | Docker stack from `make db-up` | `make setup` and `make dev` by default |
+| Dev | Hosted project `bdnlfwyfgvaployvrivk` | `make env-dev`, cloud agent sessions, Vercel Preview and Development builds, the dev scraper |
+| Production | Hosted project `yrmylgizphirqqkzgbth` | The App Store app, Vercel Production builds, the production scraper |
+
+`scripts/env.ts` refuses to write production keys into `.env.local`, and `make doctor` fails when an app points at production. The admin CLI only writes to production with `--prod --confirm-prod yrmylgizphirqqkzgbth`.
+
+## Deployments
+
+| What | Where | How it ships |
+| --- | --- | --- |
+| Mobile app | App Store | EAS builds from `apps/mobile` |
+| Website | [utdining.app](https://utdining.app) on Vercel | Production builds from `main`, and `staging` gets its own Vercel build |
+| Website PR previews | Cloudflare Workers (`ut-dining-website-preview`) | `website-preview.yml` uploads each PR as `pr-<number>` and comments the URL on the PR. Pushes to `staging` deploy the Worker's main URL. |
+| Website (GitHub Pages copy) | [longhorn-developers.github.io/ut-dining-website](https://longhorn-developers.github.io/ut-dining-website/) | `website-deploy.yml` builds a static export on pushes to `main` and daily at 12:30 UTC. It exists because the App Store privacy-policy link points there. |
+| Dashboard | [dashboard.utdining.app](https://dashboard.utdining.app) on Vercel | Production builds from `main`, previews for `staging` and branches with an open PR |
+| Public status page | [status.utdining.app](https://status.utdining.app) | Served by the dashboard app, so it ships with the dashboard |
+| Scraper (production) | GitHub Actions | `scraper.yml`, daily at 07:00 UTC and on demand |
+| Scraper (dev) | GitHub Actions | `scraper-dev.yml`, daily at 07:30 UTC, on pushes to `staging` and on demand |
+| Database migrations and edge functions | Supabase | Applied by hand. No workflow deploys them. Migrations must stay backwards compatible with the app versions already installed. |
+
+Vercel only builds an app when its files, a workspace package it uses or a root build file changed, and only for `main`, `staging` or a branch with an open PR (`scripts/vercel-ignore.mjs`). That keeps the project under the free plan's 100 deployments a day.
+
+### Branches and releases
+
+1. Branch from `staging` and open a PR into `staging`. CI runs **Lint, typecheck, test** and **Conventional PR title**, and both must pass.
+2. PRs into `staging` are squash merged.
+3. To release, a PR from `staging` into `main` is merged with a merge commit. Only Ethan promotes `staging` to `main`, which ships production. That PR also runs the Maestro E2E suite on an iOS Simulator (`mobile-e2e.yml`).
+
+`main` requires a PR, and `staging` can't be force-pushed or deleted.
+
+## Status and Monitoring
+
+- **[status.utdining.app](https://status.utdining.app)**: the public status page, served by the dashboard app. It shows menus, the app service and the website. The same data is available as JSON at [`/api/status`](https://status.utdining.app/api/status), which the website footer reads.
+- **Admin status**: `/dashboard/status` in the dashboard has the detailed view, including recent GitHub Actions runs.
+- **Uptime monitoring**: [EthanL06/ut-dining-uptime](https://github.com/EthanL06/ut-dining-uptime) runs [Upptime](https://upptime.js.org) on GitHub Actions. Every 5 minutes it checks the website, the dashboard, the status page, the status API and the production Supabase gateway from outside our own hosting. When a check fails it opens an issue in that repo, and it closes the issue on recovery. History and response times are at [ethanl06.github.io/ut-dining-uptime](https://ethanl06.github.io/ut-dining-uptime/).
+- **Dev database**: `dev-supabase-keepalive.yml` pings the dev Supabase project three times a week so the free plan doesn't pause it.
 
 ## Frequently Asked Questions
 
@@ -214,18 +279,14 @@ A: Make sure you're using a development build and not Expo Go. If the error pers
 3. If issues continue, check Drizzle Studio (press `Shift + M` in terminal) to inspect the database
 
 **Q: How do I test admin features?**  
-A: Admin features can be tested by:
-
-1. Setting up the [UT Dining Dashboard](https://github.com/EthanL06/ut-dining-dashboard) locally
-2. Using the same Supabase credentials from your local instance
-3. Accessing the dashboard through your web browser
+A: The dashboard lives in [`apps/dashboard`](apps/dashboard). Run `make dashboard` and open http://localhost:3000. Sign-in is Google only and limited to the emails in `public.dashboard_admins`, so the quickest way to try admin changes locally is the CLI: `pnpm -s admin locations list --local` (see [apps/cli](apps/cli/README.md)).
 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
-2. Create a branch named `<type>-<description>` using a conventional commit type (`git checkout -b feat-meal-reminders`)
+2. Create a branch from `staging` named `<type>-<description>` using a conventional commit type (`git checkout -b feat-meal-reminders origin/staging`)
 3. Commit your changes using [conventional commit messages](https://www.conventionalcommits.org/):
    ```sh
    feat: add new feature
@@ -237,17 +298,10 @@ Contributions are welcome! Please feel free to submit a Pull Request.
    chore: update dependencies or configuration
    ```
 4. Run `make check`, then push the branch (`git push origin feat-meal-reminders`)
-5. Open a Pull Request
-
-## Deployments
-
-- **Mobile app**: EAS builds from `apps/mobile`.
-- **Scraper**: `.github/workflows/scraper.yml` runs `pnpm --filter @ut-dining/scraper start` daily at 07:00 UTC, and on demand from the Actions tab. It reads `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` from repository secrets.
-- **Dashboard**: Vercel project with root directory `apps/dashboard`.
-- **Website**: `.github/workflows/website-deploy.yml` builds `apps/website` and publishes it to the `gh-pages` branch of [Longhorn-Developers/ut-dining-website](https://github.com/Longhorn-Developers/ut-dining-website), which keeps the existing GitHub Pages URL (the App Store privacy-policy link points there).
+5. Open a Pull Request into `staging`
 
 ## License
 
 This project is licensed under the MIT License.
 
-You are free to use, modify, and distribute this software under the terms of the MIT License. See the [LICENSE](https://github.com/Longhorn-Developers/UT-Dining/blob/main/LICENSE) file for more details.
+You are free to use, modify, and distribute this software under the terms of the MIT License. See the [LICENSE](LICENSE) file for more details.
