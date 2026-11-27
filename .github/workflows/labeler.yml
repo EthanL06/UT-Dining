@@ -1,8 +1,8 @@
 name: Label PR
 
 on:
-  pull_request_target:
-    types: [opened, synchronize, reopened]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
   group: labeler-${{ github.event.pull_request.number }}
@@ -11,6 +11,7 @@ concurrency:
 jobs:
   label:
     name: Label by changed paths
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       contents: read

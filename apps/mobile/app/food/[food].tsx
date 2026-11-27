@@ -2,7 +2,6 @@ import { and, eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Flame, Heart, Info, X } from 'lucide-react-native';
-import { usePostHog } from 'posthog-react-native';
 import { useEffect, useEffectEvent } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
@@ -20,7 +19,7 @@ import {
 } from '~/data/AllergenInfo';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useFoodData } from '~/hooks/useFoodData';
-import { getSafePostHog } from '~/services/analytics/posthog';
+import { analytics } from '~/services/analytics/posthog';
 import * as schema from '~/services/database/schema';
 import { todayKey, useIsMealPlanItem } from '~/store/useMealPlanStore';
 import { toggleFavoriteForFood, toggleMealPlanForFood } from '~/utils/foodActions';
@@ -96,7 +95,6 @@ const FoodScreen = () => {
     date,
   });
 
-  const analytics = getSafePostHog(usePostHog());
   const trackScreen = useEffectEvent(() => {
     analytics.screen(`${food}`, { location, menu, category });
   });

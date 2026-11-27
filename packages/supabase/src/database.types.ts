@@ -554,6 +554,7 @@ export type Database = {
         Args: { arg_date: string; arg_location_name: string; arg_menu_names: string[] };
         Returns: number;
       };
+      prune_old_menus: { Args: { arg_keep_days: number; arg_limit?: number }; Returns: number };
       public_status: { Args: Record<PropertyKey, never>; Returns: Json };
     };
     Enums: {

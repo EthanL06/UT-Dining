@@ -3,8 +3,7 @@ import { useIsFetching } from '@tanstack/react-query';
 import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { usePostHog } from 'posthog-react-native';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RowPosition } from '~/components/FoodComponent';
@@ -16,17 +15,21 @@ import { useDebounce } from '~/hooks/useDebounce';
 import { useMenuData } from '~/hooks/useMenuData';
 import { MENU_SYNC_QUERY_KEY } from '~/hooks/useMenuSync';
 import { useMultiSelect } from '~/hooks/useMultiSelect';
+import { useRatingPromptOnMenuView } from '~/hooks/useRatingPromptOnMenuView';
 import { useScrollToTop } from '~/hooks/useScrollToTop';
+import { analytics } from '~/services/analytics/posthog';
+import type { FoodItem } from '~/services/database/database';
 import * as schema from '~/services/database/schema';
-import { type FiltersState, useFiltersStore } from '~/store/useFiltersStore';
+import { useFiltersStore } from '~/store/useFiltersStore';
 import { mealPlanItemId, useMealPlanItems } from '~/store/useMealPlanStore';
 import { useMealStripStore } from '~/store/useMealStripStore';
 import { getTodayInCentralTime } from '~/utils/date';
-import { filterFoodItems, hasActiveFilters } from '~/utils/filter';
+import { hasActiveFilters } from '~/utils/filter';
 import { addFoodsToMealPlan, favoriteFoods } from '~/utils/foodActions';
 import { haptics } from '~/utils/haptics';
 import { log } from '~/utils/log';
 import { menuEmptyState } from '~/utils/menuList';
+import { buildMenuRows, foodMatcher } from '~/utils/menuRows';
 import { useTheme } from '~/utils/theme';
 import CategoryHeader from './components/CategoryHeader';
 import FoodItemRow from './components/FoodItemRow';
@@ -35,94 +38,10 @@ import ScrollToTopButton from './components/ScrollToTopButton';
 import SelectionBar from './components/SelectionBar';
 import SkeletonItem from './components/SkeletonItem';
 
-const useFilteredItems = (
-  flattenedItems: ListItem[],
-  debouncedSearchQuery: string,
-  filters: FiltersState['filters'],
-  favorites: schema.Favorite[],
-  mealPlan: { location: string; menu: string; date: string },
-) => {
-  const mealPlanItems = useMealPlanItems(mealPlan.date);
-  return React.useMemo(() => {
-    const mealPlanIds = new Set(mealPlanItems.map((planItem) => planItem.id));
-
-    let result = flattenedItems;
-
-    if (debouncedSearchQuery.trim()) {
-      const query = debouncedSearchQuery.toLowerCase();
-      result = [];
-      const processedCategoryIds = new Set();
-      let currentCategory = null;
-
-      for (const item of flattenedItems) {
-        if (item.type === 'category_header') {
-          currentCategory = { ...item };
-        } else if (item.type === 'food_item') {
-          const foodName = item.data.name ? item.data.name.toLowerCase() : '';
-
-          if (foodName.includes(query)) {
-            if (currentCategory && !processedCategoryIds.has(currentCategory.id)) {
-              result.push({
-                ...currentCategory,
-              });
-              processedCategoryIds.add(currentCategory.id);
-            }
-            result.push({
-              ...item,
-              hidden: currentCategory ? !currentCategory.isExpanded : false,
-            });
-          }
-        }
-      }
-    }
-
-    if (hasActiveFilters(filters)) {
-      const filteredCategories = new Set();
-      const filteredResult = [];
-      let currentCategory = null;
-
-      for (const item of result) {
-        if (item.type === 'category_header') {
-          currentCategory = item;
-        } else if (item.type === 'food_item') {
-          const foodItem = item.data;
-
-          const categoryName = item.categoryId;
-          const isInMealPlan = (food: typeof foodItem) =>
-            mealPlanIds.has(
-              mealPlanItemId({
-                name: food.name as string,
-                locationName: mealPlan.location,
-                menuName: mealPlan.menu,
-                categoryName,
-              }),
-            );
-          if (filterFoodItems([foodItem], filters, favorites, isInMealPlan).length > 0) {
-            if (currentCategory && !filteredCategories.has(currentCategory.id)) {
-              filteredResult.push(currentCategory);
-              filteredCategories.add(currentCategory.id);
-            }
-            filteredResult.push(item);
-          }
-        } else {
-          filteredResult.push(item);
-        }
-      }
-
-      return filteredResult;
-    }
-
-    return result;
-  }, [
-    flattenedItems,
-    debouncedSearchQuery,
-    filters,
-    favorites,
-    mealPlanItems,
-    mealPlan.location,
-    mealPlan.menu,
-  ]);
-};
+const inMealPlan =
+  (ids: ReadonlySet<string>, locationName: string, menuName: string) =>
+  (food: FoodItem, categoryName: string) =>
+    ids.has(mealPlanItemId({ name: food.name ?? '', locationName, menuName, categoryName }));
 
 const SKELETON_SECTIONS = [4, 3];
 
@@ -140,21 +59,6 @@ const useSkeletonItems = (): ListItem[] => {
   }, []);
 };
 
-const positionsFor = (items: ListItem[]) => {
-  const visible = items.filter((item) => !(item.type === 'food_item' && item.hidden));
-  const positions = new Map<string, RowPosition>();
-  visible.forEach((item, index) => {
-    if (item.type !== 'food_item') return;
-    const startsGroup = visible[index - 1]?.type !== 'food_item';
-    const endsGroup = visible[index + 1]?.type !== 'food_item';
-    positions.set(
-      item.id,
-      startsGroup && endsGroup ? 'single' : startsGroup ? 'first' : endsGroup ? 'last' : 'middle',
-    );
-  });
-  return positions;
-};
-
 const Location = () => {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -169,7 +73,8 @@ const Location = () => {
     filters: menuFilters,
   } = useMenuData(location, selectedDate);
   const isSyncing = useIsFetching({ queryKey: MENU_SYNC_QUERY_KEY }) > 0;
-  const { toggleCategory, flattenedItems, resetExpandedCategories } = useCategoryExpansion(data);
+  const { collapsed, toggleCategory, resetExpandedCategories, source, cache } =
+    useCategoryExpansion(data);
   const db = useDatabase();
   const {
     selecting,
@@ -180,8 +85,6 @@ const Location = () => {
   } = useMultiSelect();
   const canMealPlan = selectedDate >= getTodayInCentralTime();
 
-  const posthog = usePostHog();
-
   useEffect(() => {
     if (location) setLastOpenedLocation(location);
   }, [location, setLastOpenedLocation]);
@@ -191,17 +94,39 @@ const Location = () => {
     [location],
   );
 
-  const activeFilters = useFiltersStore((state) => state.filters);
+  const foodNames = useMemo(
+    () => source.flatMap((category) => category.foods.map((food) => food.data.name ?? null)),
+    [source],
+  );
+  useRatingPromptOnMenuView(menuStatus === 'ready', foodNames, favorites);
+
+  const activeFilters = useDeferredValue(useFiltersStore((state) => state.filters));
 
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  const filteredItems = useFilteredItems(
-    flattenedItems,
-    debouncedSearchQuery,
-    activeFilters,
-    favorites,
-    { location: location as string, menu: selectedMenu ?? '', date: selectedDate },
+  const favoriteNames = useMemo(
+    () => new Set(favorites.map((favorite) => favorite.name)),
+    [favorites],
+  );
+  const mealPlanItems = useMealPlanItems(selectedDate);
+  const matches = useMemo(
+    () =>
+      foodMatcher({
+        query: debouncedSearchQuery,
+        filters: activeFilters,
+        favorites,
+        isInMealPlan: inMealPlan(
+          new Set(mealPlanItems.map((item) => item.id)),
+          location as string,
+          selectedMenu ?? '',
+        ),
+      }),
+    [debouncedSearchQuery, activeFilters, favorites, mealPlanItems, location, selectedMenu],
+  );
+  const rows = useMemo(
+    () => buildMenuRows(source, { collapsed, matches }, cache),
+    [source, collapsed, matches, cache],
   );
   const skeletonItems = useSkeletonItems();
 
@@ -234,38 +159,40 @@ const Location = () => {
   }, [resetExpandedCategories]);
 
   useEffect(() => {
-    if (posthog) {
-      void posthog.screen(location);
-    }
-  }, [location, posthog]);
+    analytics.screen(location);
+  }, [location]);
 
-  const displayedItems = useMemo(() => {
-    if (menuStatus === 'loading') return skeletonItems;
-    if (menuStatus === 'error') return [];
-    return debouncedSearchQuery || hasActiveFilters(activeFilters) ? filteredItems : flattenedItems;
-  }, [
-    menuStatus,
-    debouncedSearchQuery,
-    filteredItems,
-    flattenedItems,
-    skeletonItems,
-    activeFilters,
-  ]);
-
-  const positions = useMemo(() => positionsFor(displayedItems), [displayedItems]);
+  const displayedItems: ListItem[] =
+    menuStatus === 'loading' ? skeletonItems : menuStatus === 'error' ? [] : rows;
 
   const selectedEntries = useMemo(
     () =>
-      flattenedItems.flatMap((item) =>
-        item.type === 'food_item' && selectedIds.has(item.id)
-          ? [{ food: item.data, category: item.categoryId }]
-          : [],
+      source.flatMap((category) =>
+        category.foods
+          .filter((food) => selectedIds.has(food.id))
+          .map((food) => ({ food: food.data, category: category.id })),
       ),
-    [flattenedItems, selectedIds],
+    [source, selectedIds],
   );
   const selectedCalories = selectedEntries.reduce(
     (total, { food }) => total + (Number.parseFloat(food.nutrition?.calories ?? '') || 0),
     0,
+  );
+
+  const handleToggleCategory = useCallback(
+    (id: string) => {
+      toggleCategory(id);
+      haptics.tap();
+    },
+    [toggleCategory],
+  );
+
+  const handleQueryChange = useCallback(
+    (query: string) => {
+      resetExpandedCategories();
+      setSearchQuery(query);
+    },
+    [resetExpandedCategories],
   );
 
   const renderItem = useCallback(
@@ -274,20 +201,14 @@ const Location = () => {
         case 'category_header':
           return (
             <CategoryHeader
+              id={item.id}
               title={item.title}
               isExpanded={item.isExpanded}
-              onToggle={() => {
-                toggleCategory(item.id);
-                haptics.tap();
-              }}
+              onToggle={handleToggleCategory}
             />
           );
 
         case 'food_item': {
-          if (item.hidden) {
-            return null;
-          }
-
           return (
             <FoodItemRow
               item={item}
@@ -295,8 +216,7 @@ const Location = () => {
               location={location as string}
               date={selectedDate}
               db={db}
-              favorites={favorites}
-              position={positions.get(item.id) ?? 'single'}
+              isFavorite={favoriteNames.has(item.data.name ?? '')}
               canMealPlan={canMealPlan}
               selecting={selecting}
               selected={selectedIds.has(item.id)}
@@ -320,10 +240,9 @@ const Location = () => {
       selectedMenu,
       location,
       selectedDate,
-      toggleCategory,
-      favorites,
+      handleToggleCategory,
+      favoriteNames,
       db,
-      positions,
       canMealPlan,
       selecting,
       selectedIds,
@@ -362,12 +281,13 @@ const Location = () => {
       <Stack.Screen options={{ title: 'Location' }} />
       <FlashList
         alwaysBounceVertical={false}
-        extraData={[favorites, positions, canMealPlan, selecting, selectedIds]}
+        extraData={[favoriteNames, canMealPlan, selecting, selectedIds]}
         ref={listRef}
         onScroll={handleScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator
         data={displayedItems}
+        keyExtractor={(item) => `${item.type}|${item.id}`}
         removeClippedSubviews
         contentContainerStyle={{ paddingBottom: insets.bottom + (selecting ? 96 : 32) }}
         ListHeaderComponent=<LocationHeader
@@ -376,10 +296,7 @@ const Location = () => {
           setSelectedMenu={handleMenuChange}
           filters={menuFilters}
           query={searchQuery}
-          setQuery={(query) => {
-            resetExpandedCategories();
-            setSearchQuery(query);
-          }}
+          setQuery={handleQueryChange}
           selectedDate={selectedDate}
           onDateChange={handleDateChange}
           selecting={selecting}
@@ -402,7 +319,7 @@ const Location = () => {
               db,
               selectedEntries.map((entry) => ({
                 ...entry,
-                isFavorite: favorites.some((favorite) => favorite.name === entry.food.name),
+                isFavorite: favoriteNames.has(entry.food.name ?? ''),
               })),
               { location, menu: selectedMenu ?? '' },
             );

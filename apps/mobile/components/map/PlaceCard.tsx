@@ -1,9 +1,9 @@
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
-import { ChevronLeft, CircleAlert, MapPin, Navigation, Utensils, X } from 'lucide-react-native';
-import { Platform, Pressable, View } from 'react-native';
+import { CircleAlert, MapPin, Navigation, Utensils, X } from 'lucide-react-native';
+import { Platform, Pressable, useWindowDimensions, View } from 'react-native';
+import { GlassButton } from '~/components/ui/Glass';
 import { StatusDot } from '~/components/ui/Grouped';
-import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { directionsUrl } from '~/utils/directions';
 import { log } from '~/utils/log';
@@ -11,6 +11,7 @@ import type { Coordinates, Place } from '~/utils/mapPlaces';
 import { walkFrom, walkLabel } from '~/utils/mapPlaces';
 import { useTheme } from '~/utils/theme';
 import { PlaceIcon } from './placeStyle';
+import { SheetScrollView } from './SheetScrollView';
 
 const openDirections = (place: Place) => {
   const url = directionsUrl(
@@ -21,6 +22,7 @@ const openDirections = (place: Place) => {
 };
 
 export const SHEET_CONTENT_GAP = 16;
+const STACKED_BUTTONS_FONT_SCALE = 1.3;
 
 const Note = ({ text }: { text: string }) => {
   const theme = useTheme();
@@ -40,19 +42,18 @@ const Note = ({ text }: { text: string }) => {
 export const PlaceCard = ({
   place,
   userCoordinates,
-  backQuery,
   foods,
-  onBack,
   onClose,
 }: {
   place: Place;
   userCoordinates: Coordinates | null;
-  backQuery: string | null;
   foods: string[];
-  onBack: () => void;
   onClose: () => void;
 }) => {
   const theme = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const stackButtons = fontScale >= STACKED_BUTTONS_FONT_SCALE;
+  const buttonFlex = stackButtons ? null : { flex: 1 };
   const walk = walkFrom(userCoordinates, place);
   const typeLabel = place.type === 'microwave' ? 'Microwave' : place.type;
   const pinned = place.coordinates !== null;
@@ -60,21 +61,6 @@ export const PlaceCard = ({
   return (
     <View className="flex-1">
       <View className="px-4 pb-3">
-        {backQuery !== null && (
-          <Pressable
-            testID="map-place-back"
-            accessibilityRole="button"
-            accessibilityLabel={`Back to results for ${backQuery}`}
-            hitSlop={8}
-            onPress={onBack}
-            className="mb-2 flex-row items-center self-start"
-          >
-            <ChevronLeft size={18} color={theme.tint} />
-            <Text variant="subheadline" tone="tint" numberOfLines={1}>
-              {`Results for “${backQuery}”`}
-            </Text>
-          </Pressable>
-        )}
         <View className="flex-row items-start gap-x-3">
           <PlaceIcon type={place.type} size={44} />
           <View className="flex-1">
@@ -85,20 +71,19 @@ export const PlaceCard = ({
                 .join(' · ')}
             </Text>
           </View>
-          <Pressable
+          <GlassButton
             testID="map-place-close"
             accessibilityLabel="Close"
-            accessibilityRole="button"
+            size={32}
             hitSlop={8}
+            fallbackColor={theme.fill}
             onPress={onClose}
-            className="size-8 items-center justify-center rounded-full"
-            style={{ backgroundColor: theme.fill }}
           >
             <X size={16} color={theme.secondaryLabel} />
-          </Pressable>
+          </GlassButton>
         </View>
       </View>
-      <OverflowScrollView
+      <SheetScrollView
         testID="map-place-scroll"
         containerStyle={{ flex: 1 }}
         contentContainerClassName="px-4 pt-1"
@@ -114,14 +99,14 @@ export const PlaceCard = ({
           </View>
         )}
 
-        <View className="mt-4 flex-row gap-x-2">
+        <View className={stackButtons ? 'mt-4 gap-y-2' : 'mt-4 flex-row gap-x-2'}>
           {pinned && (
             <Pressable
               testID="map-directions-button"
               accessibilityRole="button"
               onPress={() => openDirections(place)}
-              className="h-12 flex-1 flex-row items-center justify-center gap-x-2 rounded-full"
-              style={{ backgroundColor: theme.tint }}
+              className="min-h-12 flex-row items-center justify-center gap-x-2 rounded-full px-4 py-2.5"
+              style={[buttonFlex, { backgroundColor: theme.tint }]}
             >
               <Navigation size={17} color="#FFFFFF" />
               <Text variant="callout" emphasized tone="onTint">
@@ -140,8 +125,8 @@ export const PlaceCard = ({
                   params: { location: name },
                 });
               }}
-              className="h-12 flex-1 flex-row items-center justify-center gap-x-2 rounded-full"
-              style={{ backgroundColor: pinned ? theme.fill : theme.tint }}
+              className="min-h-12 flex-row items-center justify-center gap-x-2 rounded-full px-4 py-2.5"
+              style={[buttonFlex, { backgroundColor: pinned ? theme.fill : theme.tint }]}
             >
               {place.hasMenu ? (
                 <Utensils size={17} color={pinned ? theme.label : '#FFFFFF'} />
@@ -177,7 +162,7 @@ export const PlaceCard = ({
             </Text>
           </Pressable>
         )}
-      </OverflowScrollView>
+      </SheetScrollView>
     </View>
   );
 };

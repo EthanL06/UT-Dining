@@ -26,7 +26,7 @@ export const POSTHOG_CONFIG = {
   debug: false,
 } as const;
 
-export function getSafePostHog(posthog: PostHog | undefined) {
+function getSafePostHog(posthog: PostHog | undefined) {
   return {
     screen: (name?: string, properties?: PostHogEventProperties) => {
       if (posthog && name) {
@@ -49,3 +49,5 @@ export function getSafePostHog(posthog: PostHog | undefined) {
 export const posthogClient = POSTHOG_API_KEY
   ? new PostHog(POSTHOG_API_KEY, POSTHOG_CONFIG.options)
   : undefined;
+
+export const analytics = getSafePostHog(posthogClient);
