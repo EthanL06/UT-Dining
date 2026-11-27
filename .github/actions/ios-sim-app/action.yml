@@ -80,6 +80,7 @@ runs:
           -destination 'generic/platform=iOS Simulator' \
           -derivedDataPath build \
           CODE_SIGNING_ALLOWED=NO \
+          CLANG_ENABLE_EXPLICIT_MODULES=NO \
           > build.log 2>&1 || {
             grep -nE "error:|Error:|@build-script-error|BUILD FAILED" -A8 build.log | head -150
             exit 1
