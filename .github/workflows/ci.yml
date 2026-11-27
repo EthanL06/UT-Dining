@@ -38,6 +38,9 @@ jobs:
       - name: No code comments
         run: scripts/dev/check-comments.sh --all
 
+      - name: No source file over 500 lines
+        run: scripts/dev/check-file-size.sh
+
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
