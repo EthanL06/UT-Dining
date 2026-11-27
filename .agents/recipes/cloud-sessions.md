@@ -48,4 +48,6 @@ The container has no iOS Simulator. Screenshots of the iOS app come from Ethan's
 2. `make db-up && make db-reset` so the local schema has every migration from both sides.
 3. `make db-types`, check that the diff only adds what the migrations explain, and commit.
 
+The Database workflow also runs on every push to `staging`, so drift from two PRs that merged one after the other shows up there; fix it with the same steps in a new PR.
+
 Migration file names start with a timestamp and run in that order. When `staging` gained a migration with a later timestamp than yours, and yours depends on it, rename yours with `make db-new` and move the SQL, before the PR merges. A migration already on `staging` is never edited or renamed.
