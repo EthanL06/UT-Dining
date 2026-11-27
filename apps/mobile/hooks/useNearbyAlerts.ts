@@ -1,8 +1,13 @@
-import { useCallback } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 import { Alert, Linking } from 'react-native';
 import { usePermission } from '~/hooks/usePermission';
 import { getSafePostHog, posthogClient } from '~/services/analytics/posthog';
-import { requestNearbyPermissions } from '~/services/nearby/nearbyAlerts';
+import {
+  mutedNearbyZones,
+  requestNearbyPermissions,
+  subscribeToNearbyHistory,
+  unmuteNearbyZones,
+} from '~/services/nearby/nearbyAlerts';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { haptics } from '~/utils/haptics';
 import { log } from '~/utils/log';
@@ -28,7 +33,13 @@ export const showNearbyPermissionAlert = (kind: keyof typeof PERMISSION_COPY) =>
   ]);
 };
 
+const mutedSnapshot = () => mutedNearbyZones().join('|');
+
+const mutedZoneNames = (snapshot: string) =>
+  snapshot === '' ? [] : snapshot.split('|').map((zone) => zone.split('+').join(' and '));
+
 export function useNearbyAlerts() {
+  const muted = mutedZoneNames(useSyncExternalStore(subscribeToNearbyHistory, mutedSnapshot));
   const isEnabled = useSettingsStore((state) => state.isNearbyAlertsEnabled);
   const setEnabled = useSettingsStore((state) => state.setNearbyAlertsEnabled);
   const location = usePermission('backgroundLocation');
@@ -58,5 +69,10 @@ export function useNearbyAlerts() {
     getSafePostHog(posthogClient).capture('nearby_alerts_toggled', { enabled: false });
   }, [setEnabled]);
 
-  return { view, turnOn, turnOff };
+  const resumeMuted = useCallback(() => {
+    unmuteNearbyZones();
+    haptics.success();
+  }, []);
+
+  return { view, muted, turnOn, turnOff, resumeMuted };
 }

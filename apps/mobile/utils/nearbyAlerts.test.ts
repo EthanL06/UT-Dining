@@ -1,12 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
+  AWAY_BEFORE_ARRIVAL_MS,
   buildZones,
   decideNearbyAlert,
+  EMPTY_HISTORY,
+  muteZone,
   type NearbyHall,
   nearbyAlertsView,
   nearbyPickerView,
   parseNearbyRoute,
+  recordEnter,
+  recordExit,
   recordSent,
+  spansOvernight,
 } from './nearbyAlerts';
 
 const weekdays = (timeRanges: { open: number; close: number }[]) => ({
@@ -86,7 +92,7 @@ describe('decideNearbyAlert', () => {
   it('names both halls when both are open', () => {
     expect(decideNearbyAlert(jester, centralNoonMonday, {})).toEqual({
       kind: 'notify',
-      key: 'J2 Dining+JCL Dining:2026-11-30:Lunch',
+      key: 'J2 Dining+JCL Dining:2026-11-30',
       title: "You're near J2 and JCL",
       body: 'Both are serving lunch. Tap to compare the menus.',
       redirect: '/nearby?halls=J2%20Dining%7CJCL%20Dining',
@@ -96,7 +102,7 @@ describe('decideNearbyAlert', () => {
   it('links straight to the one hall that is open', () => {
     expect(decideNearbyAlert(jester, centralTenFortyFiveMonday, {})).toEqual({
       kind: 'notify',
-      key: 'J2 Dining+JCL Dining:2026-11-30:Lunch',
+      key: 'J2 Dining+JCL Dining:2026-11-30',
       title: "You're near JCL",
       body: 'Lunch is being served until 3 PM. Tap to see the menu.',
       redirect: '/location/JCL%20Dining',
@@ -125,7 +131,7 @@ describe('decideNearbyAlert', () => {
     expect(decideNearbyAlert(zone, centralNoonMonday, {}).kind).toBe('skip');
   });
 
-  it('sends once per zone per meal', () => {
+  it('sends at most once per zone per day', () => {
     const first = decideNearbyAlert(jester, centralNoonMonday, {});
     if (first.kind !== 'notify') throw new Error('expected a notification');
     const sent = recordSent({}, first.key, centralNoonMonday.getTime());
@@ -133,7 +139,8 @@ describe('decideNearbyAlert', () => {
       kind: 'skip',
       reason: 'already_sent',
     });
-    expect(decideNearbyAlert(jester, centralThreePmMonday, sent).kind).toBe('notify');
+    expect(decideNearbyAlert(jester, centralThreePmMonday, sent).kind).toBe('skip');
+    expect(decideNearbyAlert(jester, new Date('2026-12-01T18:00:00Z'), sent).kind).toBe('notify');
   });
 });
 
@@ -189,5 +196,70 @@ describe('nearbyPickerView', () => {
   it('is missing when none of the halls exist anymore', () => {
     expect(nearbyPickerView(locations, ['Old Hall'])).toEqual({ kind: 'missing' });
     expect(nearbyPickerView([], ['J2 Dining'])).toEqual({ kind: 'missing' });
+  });
+});
+
+describe('arrivals', () => {
+  const zone = 'J2 Dining+JCL Dining';
+  const hour = 60 * 60 * 1000;
+  const mondayNoon = Date.parse('2026-11-30T18:00:00Z');
+
+  it('treats the first entry as an arrival', () => {
+    expect(recordEnter(EMPTY_HISTORY, zone, mondayNoon).gate).toEqual({ kind: 'arrival' });
+  });
+
+  it('ignores stepping out and back in within two hours', () => {
+    const away = recordExit(EMPTY_HISTORY, zone, mondayNoon);
+    expect(recordEnter(away, zone, mondayNoon + hour).gate).toEqual({
+      kind: 'skip',
+      reason: 'recently_here',
+    });
+    expect(recordEnter(away, zone, mondayNoon + AWAY_BEFORE_ARRIVAL_MS).gate).toEqual({
+      kind: 'arrival',
+    });
+  });
+
+  it('never notifies for the hall someone sleeps next to', () => {
+    const sundayEvening = Date.parse('2026-11-30T02:00:00Z');
+    const mondayMorning = Date.parse('2026-11-30T15:00:00Z');
+    const home = recordExit(
+      recordEnter(EMPTY_HISTORY, zone, sundayEvening).history,
+      zone,
+      mondayMorning,
+    );
+    expect(recordEnter(home, zone, mondayMorning + 6 * hour).gate).toEqual({
+      kind: 'skip',
+      reason: 'home',
+    });
+    expect(recordEnter(home, zone, mondayMorning + 15 * 24 * hour).gate).toEqual({
+      kind: 'arrival',
+    });
+  });
+
+  it('does not count a daytime visit as home', () => {
+    const visit = recordExit(
+      recordEnter(EMPTY_HISTORY, zone, mondayNoon).history,
+      zone,
+      mondayNoon + hour,
+    );
+    expect(recordEnter(visit, zone, mondayNoon + 5 * hour).gate).toEqual({ kind: 'arrival' });
+  });
+
+  it('stays quiet for a muted hall', () => {
+    expect(recordEnter(muteZone(EMPTY_HISTORY, zone), zone, mondayNoon).gate).toEqual({
+      kind: 'skip',
+      reason: 'muted',
+    });
+  });
+});
+
+describe('spansOvernight', () => {
+  it('counts a stay through the early morning in Central time', () => {
+    expect(
+      spansOvernight(Date.parse('2026-11-30T07:00:00Z'), Date.parse('2026-11-30T10:00:00Z')),
+    ).toBe(true);
+    expect(
+      spansOvernight(Date.parse('2026-11-30T15:00:00Z'), Date.parse('2026-11-30T23:00:00Z')),
+    ).toBe(false);
   });
 });

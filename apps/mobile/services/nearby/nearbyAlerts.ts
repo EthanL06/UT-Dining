@@ -9,21 +9,27 @@ import { log } from '~/utils/log';
 import {
   buildZones,
   decideNearbyAlert,
+  EMPTY_HISTORY,
+  muteZone,
   type NearbyAlert,
   type NearbyHall,
+  type NearbyHistory,
   type NearbyZone,
+  recordEnter,
+  recordExit,
   recordSent,
-  type SentAlerts,
 } from '~/utils/nearbyAlerts';
 
 export const NEARBY_TASK = 'nearby-dining-halls';
 export const NEARBY_NOTIFICATION_TYPE = 'nearby';
 export const NEARBY_HALL_TYPE = 'Dining Hall';
+export const NEARBY_CATEGORY = 'nearby-menus';
+export const NEARBY_MUTE_ACTION = 'mute-hall';
 
 const storage = createMMKV({ id: 'nearby-alerts' });
 const ZONES_KEY = 'zones';
 const REGIONS_KEY = 'regions';
-const SENT_KEY = 'sent';
+const HISTORY_KEY = 'history';
 
 const readJson = <T>(key: string, fallback: T): T => {
   const raw = storage.getString(key);
@@ -40,26 +46,73 @@ type GeofenceEvent = {
   region: Location.LocationRegion;
 };
 
-const notifyForZone = async (zoneId: string): Promise<NearbyAlert['kind'] | 'unknown_zone'> => {
-  const zone = readJson<NearbyZone[]>(ZONES_KEY, []).find((candidate) => candidate.id === zoneId);
-  if (!zone) return 'unknown_zone';
+const readHistory = () => ({
+  ...EMPTY_HISTORY,
+  ...readJson<Partial<NearbyHistory>>(HISTORY_KEY, {}),
+});
+const writeHistory = (history: NearbyHistory) => storage.set(HISTORY_KEY, JSON.stringify(history));
+
+const ensureCategory = () =>
+  Notifications.setNotificationCategoryAsync(NEARBY_CATEGORY, [
+    {
+      identifier: NEARBY_MUTE_ACTION,
+      buttonTitle: 'Stop for This Hall',
+      options: { opensAppToForeground: false, isDestructive: true },
+    },
+  ]);
+
+const notifyForZone = async (
+  zone: NearbyZone,
+  history: NearbyHistory,
+): Promise<NearbyAlert['kind']> => {
   const now = new Date();
-  const sent = readJson<SentAlerts>(SENT_KEY, {});
-  const alert = decideNearbyAlert(zone, now, sent);
+  const alert = decideNearbyAlert(zone, now, history.sent);
   if (alert.kind === 'skip') {
     log.debug('Nearby alert skipped', { zone: zone.id, reason: alert.reason });
     return alert.kind;
   }
-  storage.set(SENT_KEY, JSON.stringify(recordSent(sent, alert.key, now.getTime())));
+  writeHistory({ ...history, sent: recordSent(history.sent, alert.key, now.getTime()) });
+  await ensureCategory();
   await Notifications.scheduleNotificationAsync({
     content: {
       title: alert.title,
       body: alert.body,
-      data: { redirect_url: alert.redirect, type: NEARBY_NOTIFICATION_TYPE },
+      categoryIdentifier: NEARBY_CATEGORY,
+      data: { redirect_url: alert.redirect, type: NEARBY_NOTIFICATION_TYPE, zone: zone.id },
     },
     trigger: null,
   });
   return alert.kind;
+};
+
+const findZone = (zoneId: string) =>
+  readJson<NearbyZone[]>(ZONES_KEY, []).find((candidate) => candidate.id === zoneId);
+
+const handleEnter = async (zoneId: string) => {
+  const zone = findZone(zoneId);
+  if (!zone) return;
+  const { history, gate } = recordEnter(readHistory(), zoneId, Date.now());
+  writeHistory(history);
+  if (gate.kind === 'skip') {
+    log.debug('Nearby entry ignored', { zone: zoneId, reason: gate.reason });
+    return;
+  }
+  await notifyForZone(zone, history);
+};
+
+const handleExit = (zoneId: string) => writeHistory(recordExit(readHistory(), zoneId, Date.now()));
+
+export const muteNearbyZone = (zoneId: string) => writeHistory(muteZone(readHistory(), zoneId));
+
+export const unmuteNearbyZones = () => writeHistory({ ...readHistory(), muted: [] });
+
+export const mutedNearbyZones = () => readHistory().muted;
+
+export const subscribeToNearbyHistory = (onChange: () => void) => {
+  const listener = storage.addOnValueChangedListener((key) => {
+    if (key === HISTORY_KEY) onChange();
+  });
+  return () => listener.remove();
 };
 
 TaskManager.defineTask<GeofenceEvent>(NEARBY_TASK, async ({ data, error }) => {
@@ -68,9 +121,10 @@ TaskManager.defineTask<GeofenceEvent>(NEARBY_TASK, async ({ data, error }) => {
     return;
   }
   const identifier = data?.region?.identifier;
-  if (data?.eventType !== Location.GeofencingEventType.Enter || !identifier) return;
+  if (!identifier) return;
   try {
-    await notifyForZone(identifier);
+    if (data.eventType === Location.GeofencingEventType.Enter) await handleEnter(identifier);
+    if (data.eventType === Location.GeofencingEventType.Exit) handleExit(identifier);
   } catch (caught) {
     log.error('Nearby alert failed', caught);
   }
@@ -140,7 +194,7 @@ export const startNearbyAlerts = async (halls: NearbyHall[]) => {
     longitude: zone.longitude,
     radius: zone.radius,
     notifyOnEnter: true,
-    notifyOnExit: false,
+    notifyOnExit: true,
   }));
   const regionsKey = JSON.stringify(regions);
   const isRunning = await Location.hasStartedGeofencingAsync(NEARBY_TASK);
@@ -174,6 +228,7 @@ export const requestNearbyPermissions = async (): Promise<NearbyPermissionResult
 export const watchedZones = () => readJson<NearbyZone[]>(ZONES_KEY, []);
 
 export const simulateNearbyEnter = async (zoneId: string) => {
-  storage.remove(SENT_KEY);
-  return notifyForZone(zoneId);
+  const zone = findZone(zoneId);
+  if (!zone) return 'skip' as const;
+  return notifyForZone(zone, { ...readHistory(), sent: {} });
 };

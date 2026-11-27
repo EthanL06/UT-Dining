@@ -136,7 +136,7 @@ export const decideNearbyAlert = (zone: NearbyZone, now: Date, sent: SentAlerts)
   if (open.length === 0) return { kind: 'skip', reason: 'closed' };
 
   const meals = [...new Set(open.map((entry) => entry.meal ?? 'open'))];
-  const key = `${zone.id}:${toCentralTime(now).date}:${meals.join('+')}`;
+  const key = `${zone.id}:${toCentralTime(now).date}`;
   if (sent[key] !== undefined) return { kind: 'skip', reason: 'already_sent' };
 
   if (open.length === 1) {
@@ -165,6 +165,77 @@ export const decideNearbyAlert = (zone: NearbyZone, now: Date, sent: SentAlerts)
     redirect: nearbyRoute(open.map((entry) => entry.hall.name)),
   };
 };
+
+export type ZonePresence = {
+  insideSince: number | null;
+  lastExitAt: number | null;
+  lastOvernightAt: number | null;
+};
+
+export type NearbyHistory = {
+  zones: Record<string, ZonePresence>;
+  sent: SentAlerts;
+  muted: string[];
+};
+
+export type ArrivalGate =
+  | { kind: 'arrival' }
+  | { kind: 'skip'; reason: 'muted' | 'home' | 'recently_here' };
+
+export const EMPTY_HISTORY: NearbyHistory = { zones: {}, sent: {}, muted: [] };
+
+const HOUR_MS = 60 * 60 * 1000;
+export const AWAY_BEFORE_ARRIVAL_MS = 2 * HOUR_MS;
+export const HOME_MEMORY_MS = 14 * 24 * HOUR_MS;
+const OVERNIGHT_UTC_TIME = 'T08:30:00Z';
+
+const presenceOf = (history: NearbyHistory, zoneId: string): ZonePresence =>
+  history.zones[zoneId] ?? { insideSince: null, lastExitAt: null, lastOvernightAt: null };
+
+const withPresence = (history: NearbyHistory, zoneId: string, presence: ZonePresence) => ({
+  ...history,
+  zones: { ...history.zones, [zoneId]: presence },
+});
+
+export const spansOvernight = (from: number, to: number) => {
+  if (to <= from) return false;
+  const start = toCentralTime(new Date(from)).date;
+  const end = toCentralTime(new Date(to)).date;
+  const nights = [start, end].map((date) => Date.parse(`${date}${OVERNIGHT_UTC_TIME}`));
+  return start !== end || nights.some((night) => night >= from && night <= to);
+};
+
+export const isHome = (presence: ZonePresence, at: number) =>
+  presence.lastOvernightAt !== null && at - presence.lastOvernightAt < HOME_MEMORY_MS;
+
+export const recordEnter = (
+  history: NearbyHistory,
+  zoneId: string,
+  at: number,
+): { history: NearbyHistory; gate: ArrivalGate } => {
+  const presence = presenceOf(history, zoneId);
+  const next = withPresence(history, zoneId, { ...presence, insideSince: at });
+  if (history.muted.includes(zoneId))
+    return { history: next, gate: { kind: 'skip', reason: 'muted' } };
+  if (isHome(presence, at)) return { history: next, gate: { kind: 'skip', reason: 'home' } };
+  if (presence.lastExitAt !== null && at - presence.lastExitAt < AWAY_BEFORE_ARRIVAL_MS) {
+    return { history: next, gate: { kind: 'skip', reason: 'recently_here' } };
+  }
+  return { history: next, gate: { kind: 'arrival' } };
+};
+
+export const recordExit = (history: NearbyHistory, zoneId: string, at: number): NearbyHistory => {
+  const presence = presenceOf(history, zoneId);
+  const stayedOvernight = presence.insideSince !== null && spansOvernight(presence.insideSince, at);
+  return withPresence(history, zoneId, {
+    insideSince: null,
+    lastExitAt: at,
+    lastOvernightAt: stayedOvernight ? at : presence.lastOvernightAt,
+  });
+};
+
+export const muteZone = (history: NearbyHistory, zoneId: string): NearbyHistory =>
+  history.muted.includes(zoneId) ? history : { ...history, muted: [...history.muted, zoneId] };
 
 export const recordSent = (sent: SentAlerts, key: string, at: number): SentAlerts => ({
   ...Object.fromEntries(Object.entries(sent).filter(([, time]) => at - time < SENT_TTL_MS)),
