@@ -1,5 +1,5 @@
 import * as Device from 'expo-device';
-import { router, useLocalSearchParams } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import { MapPin, Navigation, X } from 'lucide-react-native';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { ActivityIndicator, Pressable, useWindowDimensions, View } from 'react-native';
@@ -116,18 +116,22 @@ export default function LocationGenericScreen() {
               </Text>
             </View>
           )}
-          <Text variant="title1">{displayName}</Text>
-          <Text variant="subheadline" tone="secondary" className="mt-0.5">
-            <Text
-              variant="subheadline"
-              emphasized
-              color={isOpen ? theme.tint : theme.secondaryLabel}
-            >
-              {isOpen ? 'Open' : status}
-            </Text>
-            {isOpen ? status.replace(/^Open/, '') : ''}
-            {locationData.type ? ` · ${locationData.type}` : ''}
-          </Text>
+          <Link.AppleZoomTarget>
+            <View>
+              <Text variant="title1">{displayName}</Text>
+              <Text variant="subheadline" tone="secondary" className="mt-0.5">
+                <Text
+                  variant="subheadline"
+                  emphasized
+                  color={isOpen ? theme.tint : theme.secondaryLabel}
+                >
+                  {isOpen ? 'Open' : status}
+                </Text>
+                {isOpen ? status.replace(/^Open/, '') : ''}
+                {locationData.type ? ` · ${locationData.type}` : ''}
+              </Text>
+            </View>
+          </Link.AppleZoomTarget>
         </View>
 
         <View className="mx-4 mb-5">
