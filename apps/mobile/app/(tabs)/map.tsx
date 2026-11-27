@@ -45,18 +45,10 @@ const shortCloseTime = (status: string) =>
     ? status.replace(/^Open until (\d+)(?::00)? (AM|PM)$/, '$1 $2').replace(/^Open until /, '')
     : '';
 
-const IconPin = ({
-  place,
-  selected,
-  closed = false,
-}: {
-  place: Place;
-  selected: boolean;
-  closed?: boolean;
-}) => {
+const IconPin = ({ place, selected }: { place: Place; selected: boolean }) => {
   const Icon = PLACE_ICONS[place.type];
   const color = usePlaceColor(place.type);
-  const size = selected ? 44 : closed ? 24 : 30;
+  const size = selected ? 44 : 30;
   return (
     <View
       className="items-center justify-center rounded-full"
@@ -64,7 +56,6 @@ const IconPin = ({
         width: size,
         height: size,
         backgroundColor: color,
-        opacity: closed ? 0.55 : 1,
         borderWidth: 2,
         borderColor: '#FFFFFF',
         shadowColor: '#000',
@@ -77,6 +68,13 @@ const IconPin = ({
     </View>
   );
 };
+
+const ClosedDot = () => (
+  <View
+    className="size-3 rounded-full"
+    style={{ backgroundColor: '#8E8E93', borderWidth: 2, borderColor: '#FFFFFF' }}
+  />
+);
 
 const LabelPin = ({ place }: { place: Place }) => {
   const theme = useTheme();
@@ -286,10 +284,10 @@ const MapPage = () => {
   const renderPlace = (place: Place) => {
     const selected = selectedPlace?.name === place.name;
     const showLabel = zoom === 'labels' && place.isOpen && place.type !== 'microwave';
-    const closed = !place.isOpen && !selected;
+    const showDot = !place.isOpen && !selected;
     return (
       <Marker
-        key={`${place.name}-${showLabel ? 'label' : closed ? 'closed' : 'pin'}-${selected}`}
+        key={`${place.name}-${showLabel ? 'label' : showDot ? 'dot' : 'pin'}-${selected}`}
         coordinate={place.coordinates}
         tracksViewChanges={false}
         anchor={showLabel ? { x: 0.1, y: 0.5 } : { x: 0.5, y: 0.5 }}
@@ -298,8 +296,10 @@ const MapPage = () => {
       >
         {showLabel && !selected ? (
           <LabelPin place={place} />
+        ) : showDot ? (
+          <ClosedDot />
         ) : (
-          <IconPin place={place} selected={selected} closed={closed} />
+          <IconPin place={place} selected={selected} />
         )}
       </Marker>
     );
