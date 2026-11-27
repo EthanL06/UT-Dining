@@ -1,0 +1,49 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignoreExportsUsedInFile": true,
+  "workspaces": {
+    ".": {
+      "entry": ["scripts/**/*.{ts,mjs,js}"],
+      "project": ["scripts/**/*.{ts,mjs,js}"]
+    },
+    "apps/cli": {
+      "project": ["src/**/*.ts"]
+    },
+    "apps/scraper": {
+      "project": ["src/**/*.ts"]
+    },
+    "apps/mobile": {
+      "entry": ["app/**/*.{ts,tsx}", "metro.config.cjs", "fingerprint.config.cjs"],
+      "project": ["**/*.{ts,tsx,js,cjs}"],
+      "ignoreDependencies": [
+        "@babel/core",
+        "@babel/plugin-transform-react-jsx",
+        "react-native-css-interop",
+        "@expo/ngrok",
+        "@expo/vector-icons",
+        "expo-status-bar"
+      ]
+    },
+    "apps/dashboard": {
+      "project": ["**/*.{ts,tsx}"],
+      "ignoreDependencies": ["tailwind-preset-mantine", "tailwindcss", "postcss"]
+    },
+    "apps/website": {
+      "project": ["**/*.{ts,tsx}"],
+      "ignoreDependencies": ["tailwindcss", "@tailwindcss/typography", "postcss-load-config"]
+    },
+    "packages/core": {
+      "project": ["src/**/*.ts"]
+    },
+    "packages/supabase": {
+      "project": ["src/**/*.ts"]
+    }
+  },
+  "ignore": ["scripts/qa/perf/**"],
+  "ignoreBinaries": [
+    "make",
+    "scripts/dev/check-comments.sh",
+    "scripts/dev/check-file-size.sh",
+    "scripts/dev/check-state-machines.sh"
+  ]
+}
