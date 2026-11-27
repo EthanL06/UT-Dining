@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { GITHUB_URL, STATUS_URL } from '@/lib/site';
+import { GITHUB_URL } from '@/lib/site';
+import { StatusLink } from './StatusLink';
 
 export function SiteFooter() {
   return (
@@ -12,9 +13,7 @@ export function SiteFooter() {
         <Link href="/changelog/" className="hover:text-ink">
           Changelog
         </Link>
-        <a href={STATUS_URL} className="hover:text-ink">
-          Status
-        </a>
+        <StatusLink />
         <a href={GITHUB_URL} className="hover:text-ink">
           GitHub
         </a>

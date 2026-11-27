@@ -3,25 +3,14 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import { HEALTH_COLOR, HealthDot } from '@/components/status/health';
 import { formatCentralDateTime, formatDay } from '@/lib/status/format';
-import { type DayHealth, type Health, worstHealth } from '@/lib/status/menu-health';
-import { getMenuStatus } from '@/lib/status/menu-status';
-import { probeSupabase, probeWebsite } from '@/lib/status/probes';
-import { createAnonClient } from '@/lib/supabase/anon';
+import type { DayHealth, Health } from '@/lib/status/menu-health';
+import { getPublicSummary, STATUS_LABEL } from '@/lib/status/public-summary';
 
 export const revalidate = 120;
 
 export const metadata: Metadata = {
   title: 'UT Dining Status',
   description: 'Whether UT Dining menus, the app and the website are working right now.',
-};
-
-const WEBSITE_URL = process.env.STATUS_WEBSITE_URL ?? 'https://utdining.app';
-
-const STATUS_TEXT: Record<Health, string> = {
-  operational: 'Operational',
-  degraded: 'Partly working',
-  outage: 'Down',
-  unknown: 'No data',
 };
 
 const BANNER_TEXT: Record<Health, string> = {
@@ -31,12 +20,6 @@ const BANNER_TEXT: Record<Health, string> = {
   unknown: 'We could not check everything',
 };
 
-interface Component {
-  name: string;
-  description: string;
-  health: Health;
-}
-
 const dayTooltip = (day: DayHealth) => {
   if (day.expected === 0) return `${formatDay(day.date)}: no dining halls scheduled`;
   if (day.missing.length === 0) return `${formatDay(day.date)}: all ${day.expected} menus posted`;
@@ -44,51 +27,7 @@ const dayTooltip = (day: DayHealth) => {
 };
 
 export default async function PublicStatusPage() {
-  const supabase = createAnonClient();
-  const [menus, backend, website] = await Promise.all([
-    getMenuStatus(supabase),
-    probeSupabase(),
-    probeWebsite(WEBSITE_URL),
-  ]);
-
-  const today = menus.todayHealth;
-  const menuHealth: Health = menus.ok
-    ? worstHealth([menus.freshness, today?.health ?? 'unknown'])
-    : backend.health === 'operational'
-      ? 'unknown'
-      : 'outage';
-
-  const menuDescription = !menus.ok
-    ? 'Menu data could not be checked.'
-    : menus.freshness === 'outage'
-      ? `Menus have not been updated past ${menus.latestMenuDate ? formatDay(menus.latestMenuDate) : 'any day'}.`
-      : today && today.expected > 0
-        ? today.missing.length === 0
-          ? `Today's menus are posted for all ${today.expected} dining halls.`
-          : `Today's menus are posted for ${today.loaded} of ${today.expected} dining halls.`
-        : 'No dining halls with menus are open today.';
-
-  const components: Component[] = [
-    { name: 'Menus', description: menuDescription, health: menuHealth },
-    {
-      name: 'App service',
-      description:
-        backend.health === 'operational'
-          ? 'The app can load menus, hours and favorites.'
-          : 'The app may not load new menus or hours.',
-      health: backend.health,
-    },
-    {
-      name: 'Website',
-      description:
-        website.health === 'operational'
-          ? 'utdining.app is up.'
-          : 'utdining.app is not responding.',
-      health: website.health,
-    },
-  ];
-
-  const overall = worstHealth(components.map((component) => component.health));
+  const { overall, components, menus } = await getPublicSummary();
   const incidents = menus.history.filter(
     (day) => day.health === 'outage' || day.health === 'degraded',
   );
@@ -136,7 +75,7 @@ export default async function PublicStatusPage() {
                 <Group gap={8} wrap="nowrap">
                   <HealthDot health={component.health} />
                   <Text fz="sm" c={`${HEALTH_COLOR[component.health]}.8`} fw={500}>
-                    {STATUS_TEXT[component.health]}
+                    {STATUS_LABEL[component.health]}
                   </Text>
                 </Group>
               </Group>

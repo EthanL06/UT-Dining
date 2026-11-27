@@ -7,14 +7,14 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (isStatusHost(request.headers.get('host'))) {
-    if (pathname === '/status') return NextResponse.next();
+    if (pathname === '/status' || pathname === '/api/status') return NextResponse.next();
     const url = request.nextUrl.clone();
     url.pathname = '/status';
     url.search = '';
     return NextResponse.rewrite(url);
   }
 
-  if (pathname === '/status') {
+  if (pathname === '/status' || pathname === '/api/status') {
     return NextResponse.next();
   }
 
