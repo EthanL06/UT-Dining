@@ -31,6 +31,7 @@ import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
 import { getLocationName } from '~/utils/locations';
+import { log } from '~/utils/log';
 import { readCachedMenuData } from '~/utils/queries';
 import { type Theme, useTheme } from '~/utils/theme';
 import { formatTimeSinceSync, getLocationStatusText, timeOfDay } from '~/utils/time';
@@ -236,7 +237,7 @@ export default function Home() {
 
       await Promise.race([forceMenuSync(drizzleDb, queryClient), timeoutPromise]);
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      log.warn('Error refreshing data', { error });
       haptics.error();
     } finally {
       clearTimeout(timeoutId);

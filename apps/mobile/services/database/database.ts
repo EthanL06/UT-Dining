@@ -10,6 +10,7 @@ import { and, eq, sql } from 'drizzle-orm';
 import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import type { SQLiteBindValue, SQLiteDatabase } from 'expo-sqlite';
 import { getTodayInCentralTime } from '~/utils/date';
+import { log } from '~/utils/log';
 import { supabase } from '~/utils/supabase';
 import * as schema from './schema';
 import { allergens, food_item, location, menu, menu_category, nutrition } from './schema';
@@ -380,7 +381,7 @@ export const getLocationMenuData = async (
 
     return structuredData;
   } catch (e) {
-    console.warn('⚠️ Error fetching location menu data:', e);
+    log.warn('Error fetching location menu data', { error: e });
     try {
       const locationOnly = await db
         .select({
@@ -435,7 +436,7 @@ export const getLocationMenuData = async (
         display_order: locationOnly[0]?.location_display_order || 1000,
       };
     } catch (fallbackError) {
-      console.warn('⚠️ Error fetching fallback location info:', fallbackError);
+      log.warn('Error fetching fallback location info', { error: fallbackError });
       return null;
     }
   }
@@ -704,7 +705,7 @@ export const getLocationDetails = async (
       display_order: locationData[0].display_order || 1000,
     };
   } catch (error) {
-    console.error('❌ Error fetching location details:', error);
+    log.error('Error fetching location details', error);
     return null;
   }
 };
@@ -854,7 +855,7 @@ export const getCompleteLocationData = async (
 
     return structuredData;
   } catch (e) {
-    console.error('Error fetching complete location data:', e);
+    log.error('Error fetching complete location data', e);
     return null;
   }
 };
@@ -871,7 +872,7 @@ export const getAppInformation = async (
 
     return data[0] as schema.AppInformation;
   } catch (error) {
-    console.error('❌ Error fetching app information:', error);
+    log.error('Error fetching app information', error);
     return null;
   }
 };
@@ -971,7 +972,7 @@ export const insertNotification = async (
       .get();
 
     if (existingNotification) {
-      console.log('ℹ️  Notification already exists, skipping insert.');
+      log.debug('Notification already exists, skipping insert.');
       return;
     }
 
@@ -987,9 +988,9 @@ export const insertNotification = async (
       })
       .execute();
 
-    console.log('✅ Notification inserted into SQLite database:', notificationId);
+    log.debug('Notification inserted into SQLite database', { notificationId });
   } catch (error) {
-    console.error('❌ Error inserting notification into SQLite:', error);
+    log.error('Error inserting notification into SQLite', error);
     throw error;
   }
 };

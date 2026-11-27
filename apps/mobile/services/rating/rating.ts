@@ -1,6 +1,7 @@
 import * as StoreReview from 'expo-store-review';
 
 import { useAppLaunchStore } from '~/store/useAppLaunchStore';
+import { log } from '~/utils/log';
 
 export interface RatingService {
   checkAndShowRatingPrompt: () => Promise<void>;
@@ -18,17 +19,17 @@ class RatingServiceImpl implements RatingService {
 
       const canShow = await this.canShowRatingPrompt();
       if (!canShow) {
-        console.log('📱 Rating prompt not available on this device');
+        log.debug('Rating prompt not available on this device');
         markRatingPromptShown();
         return;
       }
 
-      console.log('⭐ Showing rating prompt');
+      log.debug('Showing rating prompt');
       await StoreReview.requestReview();
 
       markRatingPromptShown();
     } catch (error) {
-      console.error('❌ Error showing rating prompt:', error);
+      log.error('Error showing rating prompt', error);
       useAppLaunchStore.getState().markRatingPromptShown();
     }
   }
@@ -43,7 +44,7 @@ class RatingServiceImpl implements RatingService {
 
       return isAvailable;
     } catch (error) {
-      console.error('❌ Error checking rating prompt availability:', error);
+      log.error('Error checking rating prompt availability', error);
       return false;
     }
   }
