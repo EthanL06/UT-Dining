@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { formatCentral } from '@ut-dining/core';
 import * as Updates from 'expo-updates';
 import { CloudDownload, GitPullRequest, Hash, RefreshCcw, Undo2 } from 'lucide-react-native';
 import { Alert, Linking } from 'react-native';
@@ -21,7 +22,7 @@ const alertIfUpToDate = (result: LoadResult) => {
 };
 
 const formatUpdateTime = (date: Date | null) =>
-  date ? date.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'unknown';
+  date ? formatCentral(date, { dateStyle: 'short', timeStyle: 'short' }) : 'unknown';
 
 const previewSubtitle = (preview: PrPreview, compatible: boolean) => {
   if (!compatible) return 'Needs a new build. Tap to open its install page';
@@ -56,7 +57,7 @@ export const UpdatesSection = () => {
 
   const switchChannel = (key: string, next: string | null) => {
     if (isRunning(key)) return;
-    run(key, async () => alertIfUpToDate(await switchUpdateChannel(next)));
+    void run(key, async () => alertIfUpToDate(await switchUpdateChannel(next)));
   };
 
   const openPreview = (preview: PrPreview) => {
@@ -126,7 +127,7 @@ export const UpdatesSection = () => {
           detail={detail('check')}
           onPress={() => {
             if (!isRunning('check'))
-              run('check', async () => alertIfUpToDate(await loadLatestUpdate()));
+              void run('check', async () => alertIfUpToDate(await loadLatestUpdate()));
           }}
         />
         {onPrChannel && (

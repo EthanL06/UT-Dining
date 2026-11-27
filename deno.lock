@@ -1,0 +1,24 @@
+{
+  "version": "5",
+  "specifiers": {
+    "jsr:@deno/installer-shell-setup@*": "0.3.4"
+  },
+  "jsr": {
+    "@deno/installer-shell-setup@0.3.4": {
+      "integrity": "48665d1a737d487cce6874bc97bba70a5aeffa7053aca3f60df93c6fab8963b4"
+    }
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@biomejs/biome@2.6.9",
+        "npm:@commitlint/cli@^19.8.0",
+        "npm:@commitlint/config-conventional@^19.8.0",
+        "npm:lefthook@^2.2.2",
+        "npm:supabase@^2.122.0",
+        "npm:turbo@^2.11.10",
+        "npm:typescript@^7.0.2"
+      ]
+    }
+  }
+}

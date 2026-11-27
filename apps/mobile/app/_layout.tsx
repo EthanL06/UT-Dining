@@ -14,6 +14,7 @@ import { SheetProvider } from 'react-native-actions-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 import { useSyncQueries } from 'tanstack-query-dev-tools-expo-plugin';
+import { log } from '~/utils/log';
 
 import '../components/sheets/Sheets';
 
@@ -58,7 +59,9 @@ focusManager.setEventListener((handleFocus) => {
 });
 
 onlineManager.setEventListener((setOnline) => {
-  Network.getNetworkStateAsync().then((state) => setOnline(state.isConnected !== false));
+  Network.getNetworkStateAsync()
+    .then((state) => setOnline(state.isConnected !== false))
+    .catch((error) => log.warn('Network state read failed', { error }));
   const subscription = Network.addNetworkStateListener((state) => {
     setOnline(state.isConnected !== false);
   });
@@ -81,7 +84,7 @@ const AppContent = () => {
   useEffect(() => {
     if (success) {
       incrementLaunchCount();
-      ratingService.checkAndShowRatingPrompt();
+      void ratingService.checkAndShowRatingPrompt();
     }
   }, [success, incrementLaunchCount]);
 

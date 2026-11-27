@@ -1,11 +1,12 @@
 import { Stack } from 'expo-router';
 import { Wrench } from 'lucide-react-native';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import { BuildInfoSection } from '~/components/qa/BuildInfoSection';
 import { DataSection } from '~/components/qa/DataSection';
 import { PromptsSection } from '~/components/qa/PromptsSection';
 import { PushSection } from '~/components/qa/PushSection';
 import { UpdatesSection } from '~/components/qa/UpdatesSection';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { useTheme } from '~/utils/theme';
 
@@ -15,7 +16,8 @@ const QAScreen = () => {
   return (
     <>
       <Stack.Screen options={{ title: 'QA Menu', headerLargeTitle: false }} />
-      <ScrollView
+      <OverflowScrollView
+        divider={false}
         testID="qa-screen"
         contentInsetAdjustmentBehavior="automatic"
         style={{ flex: 1, backgroundColor: theme.background }}
@@ -35,7 +37,7 @@ const QAScreen = () => {
         <PushSection />
         <UpdatesSection />
         <BuildInfoSection />
-      </ScrollView>
+      </OverflowScrollView>
     </>
   );
 };

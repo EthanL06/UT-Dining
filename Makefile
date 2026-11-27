@@ -12,9 +12,9 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 
 .PHONY: help setup install doctor \
 	dev mobile ios android dashboard website scrape places admin mobile-preview \
-	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-psql db-studio \
+	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-sample db-fresh db-psql db-studio \
 	env-local env-dev \
-	check verify check-comments check-size check-state functions fix lint typecheck test build \
+	check verify pre-push check-staged check-comments check-size check-state check-unused functions fix lint typecheck test build \
 	sim sims e2e e2e-fixtures screenshots ios-app perf-build size-report \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
@@ -52,6 +52,8 @@ help:
 	'                  BASE=origin/staging. Leaves the local stack alone' \
 	'  db-seed         Scrape real UT menus into the local database. DAYS=3' \
 	'  db-fixtures     Load the fixed E2E test menus' \
+	'  db-sample       Load sample menus and edge-case places (no network)' \
+	'  db-fresh        Reset and load the sample data: a known local database in one command' \
 	'  db-psql         psql on the local database. ARGS="-c \"select count(*) from menu\""' \
 	'  db-studio       Print and open Supabase Studio' \
 	'  env-local       Point every app at local Supabase' \
@@ -60,10 +62,13 @@ help:
 	'Quality' \
 	'  verify          Fast check of what changed since BASE=origin/staging: Biome on changed files,' \
 	'                  comment check, typecheck and tests of affected packages, then what else to verify' \
-	'  check           Biome, typecheck and tests of everything (run before pushing)' \
+	'  check           Biome, typecheck and tests of everything' \
+	'  pre-push        What the pre-push hook runs: CI checks scoped to packages affected since BASE=origin/staging' \
+	'  check-staged    What the pre-commit hook runs on staged files: no env files, keys, secrets or files over 1 MB' \
 	'  check-comments  Fail on added code comments. ARGS="--base origin/staging" (default: staged diff)' \
 	'  check-size      Fail on any source file over 500 lines (MAX_LINES=n to try another cap)' \
 	'  check-state     Fail on implicit state machines (2+ boolean useState in one function, string-typed status)' \
+	'  check-unused    Fail on unused files, exports and dependencies (knip, config in knip.json)' \
 	'  functions       Typecheck and test the Supabase edge functions with Deno (CI runs it too)' \
 	'  fix             Biome safe fixes' \
 	'  lint | typecheck | test | build' \
@@ -159,6 +164,12 @@ db-seed:
 db-fixtures:
 	@$(DEV)/db.sh fixtures
 
+db-sample:
+	@$(DEV)/db.sh sample
+
+db-fresh:
+	@$(DEV)/db.sh fresh
+
 db-psql:
 	@$(DEV)/db.sh psql $(ARGS)
 
@@ -176,6 +187,12 @@ check:
 
 verify:
 	@$(DEV)/verify.sh
+
+pre-push:
+	@$(DEV)/pre-push.sh </dev/null
+
+check-staged:
+	@$(DEV)/check-staged.sh
 
 check-comments:
 	@$(DEV)/check-comments.sh $(ARGS)
@@ -200,6 +217,9 @@ check-size:
 
 check-state:
 	@$(DEV)/check-state-machines.sh
+
+check-unused:
+	@pnpm exec knip --no-progress --no-config-hints
 
 build:
 	@pnpm build

@@ -25,9 +25,10 @@ import {
   Wrench,
 } from 'lucide-react-native';
 import React from 'react';
-import { Linking, ScrollView, Switch, View } from 'react-native';
+import { Linking, Switch, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 import { GroupedRow, GroupedSection, IconSquare } from '~/components/ui/Grouped';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import { forceMenuSync } from '~/hooks/useMenuSync';
@@ -335,7 +336,8 @@ const SettingsPage = () => {
   return (
     <SheetProvider context="settings">
       <Stack.Screen options={{ title: 'Settings' }} />
-      <ScrollView
+      <OverflowScrollView
+        divider={false}
         contentInsetAdjustmentBehavior="automatic"
         style={{ flex: 1, backgroundColor: theme.background }}
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 40 }}
@@ -456,7 +458,7 @@ const SettingsPage = () => {
             </Text>
           )}
         </View>
-      </ScrollView>
+      </OverflowScrollView>
     </SheetProvider>
   );
 };

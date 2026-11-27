@@ -26,12 +26,12 @@ export const DataSection = () => {
 
   const syncNow = () => {
     if (isRunning('sync')) return;
-    run('sync', () => forceMenuSync(queryClient));
+    void run('sync', () => forceMenuSync(queryClient));
   };
 
   const redownload = () => {
     if (isRunning('redownload')) return;
-    run('redownload', async () => {
+    void run('redownload', async () => {
       setMenuDayVersions({});
       setSharedTablesVersion(null);
       await forceMenuSync(queryClient);

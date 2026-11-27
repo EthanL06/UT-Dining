@@ -16,6 +16,7 @@ import {
   LocationsHeader,
   LocationsTable,
 } from '@/components/dashboard/locations';
+import { log } from '@/lib/log';
 import type { Location, LocationType } from '@/types/location';
 
 interface Props {
@@ -47,14 +48,14 @@ export default function DashboardLocationsClient({
         ...prev,
         [locationId]: hasMenus,
       }));
-      console.log(`🍽️ Updated menu status for location ${locationId}:`, hasMenus);
+      log.info(`🍽️ Updated menu status for location ${locationId}:`, hasMenus);
     } catch (error) {
-      console.error(`Failed to refresh menu status for location ${locationId}:`, error);
+      log.error(`Failed to refresh menu status for location ${locationId}:`, error);
     }
   };
 
   const handleEditLocation = (location: Location) => {
-    console.log('📝 Edit location:', location);
+    log.info('📝 Edit location:', location);
     setEditor({ mode: 'editing', location });
   };
 
@@ -117,7 +118,7 @@ export default function DashboardLocationsClient({
           await refreshLocationMenuStatus(updated.id);
         }
 
-        console.log('✏️ Location updated successfully');
+        log.info('✏️ Location updated successfully');
       } else {
         const inserted = await addLocation(locationData);
         setLocations((prev) => [...prev, inserted]);
@@ -126,7 +127,7 @@ export default function DashboardLocationsClient({
           await refreshLocationMenuStatus(inserted.id);
         }
 
-        console.log('✅ Location added successfully');
+        log.info('✅ Location added successfully');
       }
 
       setEditor({ mode: 'closed' });
@@ -205,7 +206,7 @@ export default function DashboardLocationsClient({
       },
       onConfirm: async () => {
         try {
-          console.log(`🔒 ${currentState} force close for location:`, location.name);
+          log.info(`🔒 ${currentState} force close for location:`, location.name);
 
           const updated = await toggleForceClose(locationId, forceClose);
 
@@ -218,7 +219,7 @@ export default function DashboardLocationsClient({
             autoClose: 3000,
           });
 
-          console.log(`🔒 Location ${forceClose ? 'force closed' : 'reopened'}:`, updated.name);
+          log.info(`🔒 Location ${forceClose ? 'force closed' : 'reopened'}:`, updated.name);
         } catch (err) {
           notifications.show({
             title: 'Toggle Failed',
