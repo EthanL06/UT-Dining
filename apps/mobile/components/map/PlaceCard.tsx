@@ -1,6 +1,6 @@
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
-import { ChevronLeft, CircleAlert, MapPin, Navigation, Utensils, X } from 'lucide-react-native';
+import { CircleAlert, MapPin, Navigation, Utensils, X } from 'lucide-react-native';
 import { Platform, Pressable, View } from 'react-native';
 import { StatusDot } from '~/components/ui/Grouped';
 import { Text } from '~/components/ui/Text';
@@ -40,16 +40,12 @@ const Note = ({ text }: { text: string }) => {
 export const PlaceCard = ({
   place,
   userCoordinates,
-  backQuery,
   foods,
-  onBack,
   onClose,
 }: {
   place: Place;
   userCoordinates: Coordinates | null;
-  backQuery: string | null;
   foods: string[];
-  onBack: () => void;
   onClose: () => void;
 }) => {
   const theme = useTheme();
@@ -60,21 +56,6 @@ export const PlaceCard = ({
   return (
     <View className="flex-1">
       <View className="px-4 pb-3">
-        {backQuery !== null && (
-          <Pressable
-            testID="map-place-back"
-            accessibilityRole="button"
-            accessibilityLabel={`Back to results for ${backQuery}`}
-            hitSlop={8}
-            onPress={onBack}
-            className="mb-2 flex-row items-center self-start"
-          >
-            <ChevronLeft size={18} color={theme.tint} />
-            <Text variant="subheadline" tone="tint" numberOfLines={1}>
-              {`Results for “${backQuery}”`}
-            </Text>
-          </Pressable>
-        )}
         <View className="flex-row items-start gap-x-3">
           <PlaceIcon type={place.type} size={44} />
           <View className="flex-1">
