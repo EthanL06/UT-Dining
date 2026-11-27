@@ -9,8 +9,9 @@ Builds the release simulator app of com.ethanl06.ut-dining.dev (APP_VARIANT=deve
 <out> (default .context/app), arm64 only.
 
 The native build is kept in <shells>/<native key>/ (default $IOS_SHELL_DIR, then
-.context/ios-shell). The native key is the Expo fingerprint of apps/mobile plus the Xcode
-version, so it changes only when native code, native dependencies or app.config.js change.
+.context/ios-shell). The native key hashes the Xcode version, the lockfile, the package.json
+files, app.config.js and the app icons, so JavaScript changes reuse the native build and a
+dependency or config change builds it again.
 When a native build with the same key exists, the script copies it and rebuilds only the
 JavaScript bundle, its assets and the Expo config files inside it (a couple of minutes instead
 of a full Xcode build).
@@ -45,11 +46,15 @@ fail() { echo "ios-sim-app: $*" >&2; exit 1; }
 step() { echo "==> $*"; }
 
 native_key() {
-  local fingerprint xcode
-  fingerprint="$(cd "$MOBILE" && npx fingerprint fingerprint:generate --platform ios | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).hash))')"
+  local inputs xcode
+  inputs="$(cd "$ROOT" && {
+    find apps/mobile/assets/icons -type f
+    ls pnpm-lock.yaml pnpm-workspace.yaml package.json apps/mobile/package.json apps/mobile/app.config.js
+    ls -d patches/* 2>/dev/null || true
+  } | LC_ALL=C sort | while read -r file; do shasum "$file"; done | shasum | cut -c1-16)"
   xcode="$(xcodebuild -version 2>/dev/null | tr '\n' ' ' | shasum | cut -c1-8)"
-  [[ -n "$fingerprint" && -n "$xcode" ]] || fail "could not compute the native key."
-  echo "v1-$xcode-$fingerprint"
+  [[ -n "$inputs" && -n "$xcode" ]] || fail "could not compute the native key."
+  echo "v2-$xcode-$inputs"
 }
 
 find_hermesc() {
@@ -59,6 +64,26 @@ find_hermesc() {
     return
   fi
   (cd "$MOBILE" && node -p "require('path').join(require('path').dirname(require.resolve('hermes-compiler/package.json', {paths: [require('path').dirname(require.resolve('react-native/package.json'))]})), 'hermesc', 'osx-bin', 'hermesc')")
+}
+
+run_logged() {
+  local label="$1" log="$2" limit="$3" pid started elapsed
+  shift 3
+  started="$(date +%s)"
+  step "$label"
+  "$@" > "$log" 2>&1 &
+  pid=$!
+  while kill -0 "$pid" 2>/dev/null; do
+    elapsed=$(( $(date +%s) - started ))
+    if [[ "$elapsed" -ge "$limit" ]]; then
+      kill "$pid" 2>/dev/null || true
+      tail -50 "$log"
+      fail "$label took over $limit s and was stopped."
+    fi
+    sleep 2
+  done
+  wait "$pid" || { tail -50 "$log"; fail "$label failed."; }
+  echo "    done in $(( $(date +%s) - started )) s"
 }
 
 swap_bundle() {
@@ -71,21 +96,17 @@ swap_bundle() {
   updates="$(dirname "$(node -p "require.resolve('expo-updates/package.json')")")"
   constants="$(dirname "$(node -p "require.resolve('expo-constants/package.json')")")"
 
-  step "Bundling the JavaScript into $(basename "$app")"
   rm -rf "$app/assets" "$app/main.jsbundle"
   mkdir -p "$app/EXUpdates.bundle" "$app/EXConstants.bundle"
-  npx expo export:embed --platform ios --dev false --minify false --reset-cache \
-    --entry-file "$entry" --bundle-output "$tmp/main.jsbundle" --assets-dest "$app" > "$tmp/bundle.log" 2>&1 &
-  local bundle_pid=$!
-  node "$updates/utils/build/createUpdatesResources.js" ios "$PWD" "$app/EXUpdates.bundle" all "$entry" production > "$tmp/updates.log" 2>&1 &
-  local updates_pid=$!
-  node "$constants/scripts/getAppConfig.js" "$PWD" "$app/EXConstants.bundle" ios false production > "$tmp/constants.log" 2>&1 \
-    || { cat "$tmp/constants.log"; fail "could not write EXConstants.bundle/app.config."; }
-  wait "$bundle_pid" || { tail -50 "$tmp/bundle.log"; fail "the JavaScript bundle failed."; }
-  wait "$updates_pid" || { tail -50 "$tmp/updates.log"; fail "could not write EXUpdates.bundle/app.manifest."; }
-
-  "$hermesc" -emit-binary -max-diagnostic-width=80 -O -out "$app/main.jsbundle" "$tmp/main.jsbundle" > "$tmp/hermesc.log" 2>&1 \
-    || { tail -50 "$tmp/hermesc.log"; fail "hermesc failed."; }
+  run_logged "Bundling the JavaScript" "$tmp/bundle.log" 600 \
+    npx expo export:embed --platform ios --dev false --minify false --reset-cache \
+    --entry-file "$entry" --bundle-output "$tmp/main.jsbundle" --assets-dest "$app"
+  run_logged "Compiling it with hermesc" "$tmp/hermesc.log" 300 \
+    "$hermesc" -emit-binary -max-diagnostic-width=80 -O -out "$app/main.jsbundle" "$tmp/main.jsbundle"
+  run_logged "Writing EXUpdates.bundle/app.manifest" "$tmp/updates.log" 600 \
+    node "$updates/utils/build/createUpdatesResources.js" ios "$PWD" "$app/EXUpdates.bundle" all "$entry" production
+  run_logged "Writing EXConstants.bundle/app.config" "$tmp/constants.log" 120 \
+    node "$constants/scripts/getAppConfig.js" "$PWD" "$app/EXConstants.bundle" ios false production
   if [[ -d "$app/_CodeSignature" ]]; then
     codesign --force --sign - --timestamp=none "$app" >/dev/null
   fi
