@@ -3,12 +3,6 @@ import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import * as schema from './schema';
 import type { FoodItem } from './types';
 
-export const getFavorites = async (db: ExpoSQLiteDatabase<typeof schema>) => {
-  const data = await db.select().from(schema.favorites).execute();
-
-  return data;
-};
-
 const favoriteMatch = (foodName: string, locationName: string) =>
   and(eq(schema.favorites.name, foodName), eq(schema.favorites.location_name, locationName));
 

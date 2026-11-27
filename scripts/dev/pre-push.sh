@@ -55,6 +55,7 @@ run biome pnpm exec biome ci --error-on-warnings --max-diagnostics=20
 run comments scripts/dev/check-comments.sh --base "$merge_base"
 run file-size scripts/dev/check-file-size.sh
 run state scripts/dev/check-state-machines.sh
+run unused pnpm exec knip --no-progress --no-config-hints
 run typecheck-test env TURBO_SCM_BASE="$merge_base" pnpm exec turbo run typecheck test --affected --output-logs=errors-only
 if has '(^|/)package\.json$|^pnpm-(lock|workspace)\.yaml$'; then
   run lockfile pnpm install --frozen-lockfile --lockfile-only --ignore-scripts --reporter=silent
