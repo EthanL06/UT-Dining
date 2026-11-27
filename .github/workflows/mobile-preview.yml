@@ -93,6 +93,19 @@ jobs:
           SUPABASE_DEV_SERVICE_KEY: ${{ secrets.SUPABASE_DEV_SERVICE_KEY }}
         run: scripts/ci/mobile-preview.sh pr "${{ github.event.pull_request.number }}"
 
+  snapshot:
+    name: Refresh the status snapshot
+    needs: preview
+    if: always() && github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - run: gh workflow run status-snapshot.yml --repo "$GITHUB_REPOSITORY" --ref staging || echo "::notice::status-snapshot.yml is not on staging yet"
+
   remove:
     name: Remove PR preview from the QA menu
     if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository

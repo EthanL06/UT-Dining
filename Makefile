@@ -115,7 +115,7 @@ help:
 	'  clean-deps      Delete every node_modules (then make install)' \
 	'' \
 	'PRs and ops (GitHub REST through gh: works in cloud sessions and on the Mac)' \
-	'  status          Open PRs with CI and merge state, what waits on Ethan, what needs an agent, staging runs' \
+	'  status          Live open PRs (CI, merge state, OTA preview, dev build), EAS builds, staging OTA. ARGS="--out <dir>"' \
 	'  pr-ready        Merge staging in when behind, wait for the required checks, green or red with log tails.' \
 	'                  PR=<n> ARGS="--no-update --no-wait --timeout 40"' \
 	'  pr-setup        Attribution lines, assignee and review request, labels, inline images.' \
