@@ -103,7 +103,6 @@ jobs:
 
       - name: Create the preview Worker if it does not exist yet
         if: steps.secrets.outputs.ready == 'true' && steps.target.outputs.alias != ''
-        id: exists
         working-directory: apps/website
         run: |
           status=$(curl -sS -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
