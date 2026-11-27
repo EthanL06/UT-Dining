@@ -76,7 +76,7 @@ Website: [utdining.app](https://utdining.app) · Status: [status.utdining.app](h
 
 <img src="https://github.com/user-attachments/assets/f1264b22-d0ad-44e8-9342-ec53ec94d37b"><br>
 
-At the core of the system is a scheduled **GitHub Actions** workflow that runs every day at 7:00 AM UTC _(or 1:00 AM CST)_. It is responsible for scraping the dining menus from UT Austin, sourced from [this page](https://hf-foodpro.austin.utexas.edu/foodpro/location.aspx). Once the menus are scraped, the data is stored in a **Supabase** database. The web scraper lives in [`apps/scraper`](apps/scraper).
+At the core of the system is a scheduled **GitHub Actions** workflow that runs twice a day, at 1 AM and 9:17 AM Central. It is responsible for scraping the dining menus from UT Austin, sourced from [this page](https://hf-foodpro.austin.utexas.edu/foodpro/location.aspx). Once the menus are scraped, the data is stored in a **Supabase** database. The web scraper lives in [`apps/scraper`](apps/scraper), and a 5-day run finishes in under a minute ([performance](apps/scraper/README.md#performance)).
 
 Hours, force closes, support links, the changelog and push notifications are managed from the admin dashboard ([`apps/dashboard`](apps/dashboard)) or its command line twin ([`apps/cli`](apps/cli)), and both write to the same Supabase database.
 
@@ -182,7 +182,7 @@ UT-Dining/
 │   ├── dashboard/         # Admin dashboard (Next.js + Mantine, deployed on Vercel)
 │   ├── website/           # Public website, changelog and privacy policy (Next.js on Vercel, static copy on GitHub Pages)
 │   ├── cli/               # @ut-dining/cli: command line version of the dashboard (pnpm -s admin)
-│   └── scraper/           # Daily menu scraper (Node, runs on GitHub Actions at 07:00 UTC)
+│   └── scraper/           # Menu scraper (Node, runs on GitHub Actions twice a day)
 ├── packages/
 │   ├── core/              # @ut-dining/core: shared hours, open/closed status and Central-time logic
 │   ├── supabase/          # @ut-dining/supabase: generated database types shared by all apps
