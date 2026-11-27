@@ -81,12 +81,19 @@ YAML
       cat <<YAML
 - waitForAnimationToEnd:
     timeout: 8000
-- takeScreenshot: $OUT/$name-$theme
+- takeScreenshot: $name-$theme
 YAML
     done < "$LIST"
   done
 } > "$FLOW"
 
-"$ROOT/scripts/qa/mobile-e2e.sh" ${PASS[@]+"${PASS[@]}"} "$FLOW"
+RUN_DIR="$ROOT/.context/maestro/screenshots-$(date +%Y%m%d-%H%M%S)"
+E2E_OUT="$RUN_DIR" "$ROOT/scripts/qa/mobile-e2e.sh" ${PASS[@]+"${PASS[@]}"} "$FLOW"
+find "$RUN_DIR" -name '*.png' | while read -r png; do
+  base="$(basename "$png")"
+  for theme in $THEMES; do
+    case "$base" in *-"$theme".png) cp "$png" "$OUT/$base" ;; esac
+  done
+done
 echo "Screenshots: $OUT"
 ls "$OUT"/*.png
