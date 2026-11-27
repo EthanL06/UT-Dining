@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp } from 'lucide-react-native';
-import { LayoutAnimation, TouchableOpacity, View } from 'react-native';
+import { LayoutAnimation, Pressable, View } from 'react-native';
 import { Text } from '~/components/ui/Text';
 import type { ChangelogChange, ChangelogEntry } from '~/services/changelog/types';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -89,23 +89,23 @@ export const ChangelogEntryCard = ({
   };
 
   return (
-    <TouchableOpacity
+    <Pressable
       testID={`changelog-entry-${entry.version}`}
       accessibilityRole="button"
       accessibilityState={{ expanded }}
-      activeOpacity={0.7}
       onPress={toggle}
       className={cn(
         'px-4 pt-3',
         expanded ? 'gap-y-3.5 rounded-[18px] pb-[18px]' : 'rounded-[14px] pb-3',
         isDarkMode ? 'bg-[#1C1C1E]' : 'bg-white',
       )}
-      style={{
+      style={({ pressed }) => ({
+        opacity: pressed ? 0.7 : 1,
         shadowColor: '#000',
         shadowOpacity: expanded && !isDarkMode ? 0.05 : 0,
         shadowRadius: 2,
         shadowOffset: { width: 0, height: 1 },
-      }}
+      })}
     >
       <View className="min-h-8 flex-row items-center gap-x-2.5">
         <VersionBadge version={entry.version} isLatest={isLatest} />
@@ -144,6 +144,6 @@ export const ChangelogEntryCard = ({
       )}
       {expanded &&
         entry.changes.map((change) => <ChangelogChangeRow key={change.title} change={change} />)}
-    </TouchableOpacity>
+    </Pressable>
   );
 };
