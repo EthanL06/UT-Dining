@@ -26,7 +26,8 @@
     "ADMIN_ASC_START_YEAR",
     "FIXTURE_PORT",
     "UP",
-    "OUT"
+    "OUT",
+    "IMG_HOSTS"
   ],
   "tasks": {
     "typecheck": {
