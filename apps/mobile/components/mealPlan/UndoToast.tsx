@@ -1,18 +1,39 @@
-import { Pressable, View } from 'react-native';
-import Reanimated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
+import { useEffect } from 'react';
+import { View } from 'react-native';
+import Reanimated, {
+  Easing,
+  FadeInDown,
+  FadeOutDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import { useTheme } from '~/utils/theme';
+
+const DEFAULT_DURATION_MS = 4000;
 
 export const UndoToast = ({
   message,
   bottom,
+  duration = DEFAULT_DURATION_MS,
   onUndo,
 }: {
   message: string;
   bottom: number;
+  duration?: number;
   onUndo: () => void;
 }) => {
   const theme = useTheme();
+  const remaining = useSharedValue(1);
+
+  useEffect(() => {
+    remaining.value = 1;
+    remaining.value = withTiming(0, { duration, easing: Easing.linear });
+  }, [duration, remaining]);
+
+  const barStyle = useAnimatedStyle(() => ({ transform: [{ scaleX: remaining.value }] }));
   return (
     <Reanimated.View
       entering={FadeInDown.duration(200)}
@@ -34,10 +55,27 @@ export const UndoToast = ({
           shadowOffset: { width: 0, height: 4 },
         }}
       >
+        <Reanimated.View
+          testID="meal-plan-undo-progress"
+          pointerEvents="none"
+          style={[
+            {
+              position: 'absolute',
+              left: 22,
+              right: 22,
+              bottom: 4,
+              height: 2.5,
+              borderRadius: 1.25,
+              backgroundColor: theme.tint,
+              transformOrigin: 'left',
+            },
+            barStyle,
+          ]}
+        />
         <Text variant="subheadline" numberOfLines={1} className="flex-1" color={theme.toastLabel}>
           {message}
         </Text>
-        <Pressable
+        <PressableScale
           testID="meal-plan-undo-button"
           accessibilityRole="button"
           accessibilityLabel="Undo"
@@ -48,7 +86,7 @@ export const UndoToast = ({
           <Text variant="subheadline" emphasized tone="onTint">
             Undo
           </Text>
-        </Pressable>
+        </PressableScale>
       </View>
     </Reanimated.View>
   );
