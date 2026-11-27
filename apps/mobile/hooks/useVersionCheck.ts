@@ -153,16 +153,20 @@ export const useVersionCheck = () => {
 
   const handleIgnore = useCallback(
     (version: string) => {
+      const { prompt, hidePrompt } = useChangelogPromptStore.getState();
+      hidePrompt();
+      if (prompt?.preview) return;
       posthog.capture('update_ignored', { version });
       useChangelogStore.getState().ignoreUpdate(version);
-      useChangelogPromptStore.getState().hidePrompt();
     },
     [posthog],
   );
 
   const handleDismissWhatsNew = useCallback((version: string) => {
+    const { prompt, hidePrompt } = useChangelogPromptStore.getState();
+    hidePrompt();
+    if (prompt?.preview) return;
     useChangelogStore.getState().markVersionSeen(version);
-    useChangelogPromptStore.getState().hidePrompt();
   }, []);
 
   return { handleUpdate, handleIgnore, handleDismissWhatsNew };

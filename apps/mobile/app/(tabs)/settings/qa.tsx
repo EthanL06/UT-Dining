@@ -186,12 +186,18 @@ const PromptsSection = () => {
 
   const showWhatsNew = async () => {
     await refreshChangelog();
-    showPrompt({ kind: 'whats-new', version: latestVersion() });
+    showPrompt({ kind: 'whats-new', version: latestVersion(), preview: true });
   };
 
   const showUpdate = async (required: boolean) => {
     await refreshChangelog();
-    showPrompt({ kind: 'update', version: latestVersion(), required, releaseNotes: null });
+    showPrompt({
+      kind: 'update',
+      version: latestVersion(),
+      required,
+      releaseNotes: null,
+      preview: true,
+    });
   };
 
   return (
@@ -234,7 +240,7 @@ const PromptsSection = () => {
       <ActionRow
         testID="qa-reset-changelog"
         title="Reset Changelog State"
-        subtitle="What's New and dismissed updates show again"
+        subtitle="What's New and updates show again"
         Icon={History}
         color={COLORS.gray}
         detail={detail('changelog')}
@@ -464,7 +470,7 @@ const BuildInfoSection = () => {
     `Bundle: ${Application.applicationId}`,
     `Version: ${Application.nativeApplicationVersion} (${Application.nativeBuildVersion})`,
     `Commit: ${gitCommit ?? 'unknown'}`,
-    `JS: ${Updates.updateId ?? 'embedded'}`,
+    `JS: ${Updates.isEmbeddedLaunch ? 'embedded' : (Updates.updateId ?? 'unknown')}`,
     `Backend: ${backendLabel} ${backend.host}`,
     `Device ID: ${deviceId}`,
     `Device: ${Device.modelName ?? 'unknown'}, iOS ${Device.osVersion ?? '?'}`,
@@ -482,7 +488,7 @@ const BuildInfoSection = () => {
         value={gitCommit ?? 'unknown'}
         onPress={gitCommit ? () => share(gitCommit) : undefined}
       />
-      <InfoRow label="JS Bundle" value={Updates.updateId ? 'OTA update' : 'Embedded'} />
+      <InfoRow label="JS Bundle" value={Updates.isEmbeddedLaunch ? 'Embedded' : 'OTA update'} />
       <InfoRow
         testID="qa-backend"
         label="Backend"
