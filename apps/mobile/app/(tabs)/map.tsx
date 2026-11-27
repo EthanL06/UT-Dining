@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import * as Location from 'expo-location';
+import { useFocusEffect } from 'expo-router';
 import { LocateFixed } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
@@ -179,29 +180,33 @@ const MapPage = () => {
     retry: false,
   });
 
-  useEffect(() => {
-    let cancelled = false;
-    let subscription: Location.LocationSubscription | null = null;
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (cancelled) return;
-      if (status !== 'granted') {
-        setLocationAccess({ status: 'denied' });
-        return;
-      }
-      setLocationAccess({ status: 'granted', coordinates: null });
-      const sub = await Location.watchPositionAsync(
-        { accuracy: Location.Accuracy.Balanced, timeInterval: 10000, distanceInterval: 10 },
-        (location) => setLocationAccess({ status: 'granted', coordinates: location.coords }),
-      );
-      if (cancelled) sub.remove();
-      else subscription = sub;
-    })();
-    return () => {
-      cancelled = true;
-      subscription?.remove();
-    };
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      let subscription: Location.LocationSubscription | null = null;
+      (async () => {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (cancelled) return;
+        if (status !== 'granted') {
+          setLocationAccess({ status: 'denied' });
+          return;
+        }
+        setLocationAccess((current) =>
+          current.status === 'granted' ? current : { status: 'granted', coordinates: null },
+        );
+        const sub = await Location.watchPositionAsync(
+          { accuracy: Location.Accuracy.Balanced, timeInterval: 10000, distanceInterval: 10 },
+          (location) => setLocationAccess({ status: 'granted', coordinates: location.coords }),
+        );
+        if (cancelled) sub.remove();
+        else subscription = sub;
+      })();
+      return () => {
+        cancelled = true;
+        subscription?.remove();
+      };
+    }, []),
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: recompute open status after each sync and every minute
   const places: Place[] = useMemo(() => {

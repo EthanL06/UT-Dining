@@ -452,6 +452,8 @@ export const MapSheet = ({
                 variant="callout"
                 className="flex-1"
                 placeholder="Search campus dining"
+                autoCorrect={false}
+                autoCapitalize="none"
                 value={query}
                 onChangeText={onQueryChange}
                 onFocus={() => snapTo('full')}
