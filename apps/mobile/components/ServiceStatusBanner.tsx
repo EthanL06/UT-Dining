@@ -1,5 +1,6 @@
 import { ChevronRight } from 'lucide-react-native';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '~/components/ui/Text';
 import { openStatusPage, useServiceStatus } from '~/hooks/useServiceStatus';
 import { getServiceStatusBanner, SERVICE_STATUS_COLORS } from '~/utils/serviceStatus';
 import { useTheme } from '~/utils/theme';
@@ -31,10 +32,10 @@ export const ServiceStatusBanner = () => {
               style={{ backgroundColor: SERVICE_STATUS_COLORS[status.health] }}
             />
             <View className="flex-1">
-              <Text className="text-[15px] font-semibold" style={{ color: theme.label }}>
+              <Text variant="subheadline" emphasized>
                 {banner.title}
               </Text>
-              <Text className="text-[13px]" style={{ color: theme.secondaryLabel }}>
+              <Text variant="footnote" tone="secondary">
                 {banner.detail}
               </Text>
             </View>
