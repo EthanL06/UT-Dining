@@ -13,7 +13,7 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
   const sheetRef = useSheetRef();
   const theme = useTheme();
   const locationName = payload?.location?.name;
-  const { locationData, loading, error } = useLocationDetails(locationName || '');
+  const { status, locationData } = useLocationDetails(locationName || '');
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
   const displayName = useLocationName(locationName || '', useColloquialNames);
 
@@ -48,11 +48,11 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
         </Pressable>
       </View>
       <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 560 }}>
-        {loading ? (
+        {status === 'loading' ? (
           <View className="items-center py-10">
             <ActivityIndicator size="small" />
           </View>
-        ) : error || !locationData ? (
+        ) : !locationData ? (
           <Text variant="subheadline" tone="secondary" className="px-5 py-10 text-center">
             Unable to load details for this place.
           </Text>

@@ -40,6 +40,8 @@ const ONBOARDING_SCREENS = [
   ONBOARDING_STEPS.COMPLETE,
 ];
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 interface OnboardingScreenProps {
   isOnboardingComplete: boolean;
 }
@@ -52,12 +54,12 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
   const analytics = getSafePostHog(posthog);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollX = useSharedValue(0);
-  const currentStepShared = useSharedValue(0);
+  const { currentStep: savedStep, setCurrentStep, completeOnboarding } = useOnboardingStore();
+  const currentStep = Math.min(savedStep, ONBOARDING_SCREENS.length - 1);
+  const [initialStep] = React.useState(currentStep);
+  const currentStepShared = useSharedValue(currentStep);
   const isScrolling = useSharedValue(false);
-  const { currentStep, setCurrentStep, completeOnboarding } = useOnboardingStore();
-  const [hasDataSelection, setHasDataSelection] = React.useState(false);
   const [selectedMotivations, setSelectedMotivations] = React.useState<string[]>([]);
-  const [hasReferralSource, setHasReferralSource] = React.useState(false);
   const [referralSource, setReferralSource] = React.useState<string | null>(null);
   const [permissionStatus, setPermissionStatus] = React.useState<{
     location: string;
@@ -136,8 +138,8 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
           <DataCollectionScreen
             key={index}
             width={width}
-            onSelectionChange={setHasDataSelection}
-            onSelectionUpdate={setSelectedMotivations}
+            selected={selectedMotivations}
+            onChange={setSelectedMotivations}
           />
         );
       case ONBOARDING_STEPS.REFERRAL_SOURCE:
@@ -145,8 +147,8 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
           <ReferralSourceScreen
             key={index}
             width={width}
-            onSelectionChange={setHasReferralSource}
-            onSelectionUpdate={setReferralSource}
+            selected={referralSource}
+            onChange={setReferralSource}
           />
         );
       case ONBOARDING_STEPS.FEATURES_MENUS:
@@ -157,7 +159,12 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
         return <FavoritesFeatureScreen key={index} width={width} />;
       case ONBOARDING_STEPS.PERMISSIONS:
         return (
-          <PermissionsScreen key={index} width={width} onPermissionsChange={setPermissionStatus} />
+          <PermissionsScreen
+            key={index}
+            width={width}
+            isCurrentScreen={currentStep === index}
+            onPermissionsChange={setPermissionStatus}
+          />
         );
       case ONBOARDING_STEPS.COMPLETE:
         return (
@@ -173,7 +180,6 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
     }
   };
 
-  const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
 
@@ -244,6 +250,7 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             onScroll={scrollHandler}
+            contentOffset={{ x: initialStep * width, y: 0 }}
             scrollEventThrottle={16}
             contentContainerStyle={{ flexGrow: 1 }}
           >
@@ -262,8 +269,8 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
               <Text variant="headline" tone="onTint" className="py-1.5 text-center">
                 {currentStep === ONBOARDING_SCREENS.length - 1
                   ? 'Finish'
-                  : (currentStep === 1 && !hasDataSelection) ||
-                      (currentStep === 2 && !hasReferralSource)
+                  : (currentStep === 1 && selectedMotivations.length === 0) ||
+                      (currentStep === 2 && referralSource === null)
                     ? 'Skip'
                     : 'Continue'}
               </Text>

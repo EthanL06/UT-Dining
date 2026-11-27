@@ -6,7 +6,7 @@ import {
   type MealTime,
   type ServiceHours,
   type TimeRange,
-  toLocalTime,
+  toCentralTime,
   toMinutes,
   type Weekday,
 } from '@ut-dining/core';
@@ -24,9 +24,8 @@ export const timeOfDay = (
   date: Date,
   mealTimes?: MealTimes,
 ): 'morning' | 'afternoon' | 'evening' => {
-  const hour = date.getHours();
-  const minutes = date.getMinutes();
-  const currentTime = hour * 100 + minutes;
+  const currentTime = toCentralTime(date).time;
+  const hour = Math.floor(currentTime / 100);
 
   if (mealTimes && (mealTimes.breakfast || mealTimes.lunch || mealTimes.dinner)) {
     const breakfastEnd = mealTimes.breakfast?.closeTime ?? 1100;
@@ -47,7 +46,7 @@ export function getTodaySchedule(locationData: schema.Location | null, date: Dat
 
   const ranges = getOpenRanges(
     locationData.regular_service_hours as Partial<ServiceHours>,
-    toLocalTime(date).day,
+    toCentralTime(date).day,
   );
   if (!ranges) return null;
 
@@ -70,9 +69,9 @@ export function isLocationOpen(
 
   const ranges = getOpenRanges(
     locationData?.regular_service_hours as Partial<ServiceHours> | null,
-    toLocalTime(currentTime).day,
+    toCentralTime(currentTime).day,
   );
-  return isWithinRanges(ranges, toLocalTime(currentTime).time);
+  return isWithinRanges(ranges, toCentralTime(currentTime).time);
 }
 
 export function getLocationTimeMessage(
@@ -82,7 +81,7 @@ export function getLocationTimeMessage(
   const schedule = getTodaySchedule(locationData, currentTime);
   if (!schedule || schedule.intervals.length === 0) return 'Closed';
 
-  const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+  const currentMinutes = toMinutes(toCentralTime(currentTime).time);
 
   for (const { openTime, closeTime } of schedule.intervals) {
     const openM = toMinutes(openTime);
@@ -221,7 +220,7 @@ export function getLocationStatusText(
   isOpen: boolean,
   currentTime: Date = new Date(),
 ): string {
-  const { day, time } = toLocalTime(currentTime);
+  const { day, time } = toCentralTime(currentTime);
   const hours = locationData.regular_service_hours as Partial<ServiceHours> | null;
 
   if (isOpen) {
@@ -243,7 +242,7 @@ export function getCurrentMeal(
   currentTime: Date = new Date(),
 ): MealTime | null {
   const meals = (locationData.meal_times ?? []) as MealTime[];
-  const now = toMinutes(toLocalTime(currentTime).time);
+  const now = toMinutes(toCentralTime(currentTime).time);
   return (
     meals.find((meal) => now >= toMinutes(meal.start_time) && now < toMinutes(meal.end_time)) ??
     null

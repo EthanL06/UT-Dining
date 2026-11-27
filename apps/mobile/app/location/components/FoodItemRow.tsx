@@ -21,6 +21,7 @@ interface FoodItemRowProps {
   db: ExpoSQLiteDatabase<typeof schema>;
   favorites: schema.Favorite[];
   position: RowPosition;
+  canMealPlan: boolean;
   selecting: boolean;
   selected: boolean;
   onToggleSelect: (id: string) => void;
@@ -35,6 +36,7 @@ const FoodItemRow = ({
   db,
   favorites,
   position,
+  canMealPlan,
   selecting,
   selected,
   onToggleSelect,
@@ -55,6 +57,7 @@ const FoodItemRow = ({
       location={location}
       date={date}
       position={position}
+      canMealPlan={canMealPlan}
       selection={{
         selecting,
         selected,

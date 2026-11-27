@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import * as Location from 'expo-location';
+import { useFocusEffect } from 'expo-router';
 import { LocateFixed } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
@@ -154,7 +155,7 @@ const MapPage = () => {
   const [hasLocationPermission, setHasLocationPermission] = useState(false);
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState<Set<MapFilterId>>(new Set());
-  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const [selectedName, setSelectedName] = useState<string | null>(null);
   const [sheetHeight, setSheetHeight] = useState(0);
   const [mapSafeAreaBottom, setMapSafeAreaBottom] = useState(0);
   const bottomOffset = TAB_BAR_CLEARANCE + insets.bottom - 34;
@@ -173,25 +174,27 @@ const MapPage = () => {
     retry: false,
   });
 
-  useEffect(() => {
-    let cancelled = false;
-    let subscription: Location.LocationSubscription | null = null;
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (cancelled || status !== 'granted') return;
-      setHasLocationPermission(true);
-      const sub = await Location.watchPositionAsync(
-        { accuracy: Location.Accuracy.Balanced, timeInterval: 10000, distanceInterval: 10 },
-        (location) => setUserCoordinates(location.coords),
-      );
-      if (cancelled) sub.remove();
-      else subscription = sub;
-    })();
-    return () => {
-      cancelled = true;
-      subscription?.remove();
-    };
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      let subscription: Location.LocationSubscription | null = null;
+      (async () => {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (cancelled || status !== 'granted') return;
+        setHasLocationPermission(true);
+        const sub = await Location.watchPositionAsync(
+          { accuracy: Location.Accuracy.Balanced, timeInterval: 10000, distanceInterval: 10 },
+          (location) => setUserCoordinates(location.coords),
+        );
+        if (cancelled) sub.remove();
+        else subscription = sub;
+      })();
+      return () => {
+        cancelled = true;
+        subscription?.remove();
+      };
+    }, []),
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: recompute open status after each sync and every minute
   const places: Place[] = useMemo(() => {
@@ -203,6 +206,7 @@ const MapPage = () => {
         const isOpen = isLocationOpenNow(location, withMenus, now);
         return {
           name: getLocationName(db, location.name ?? '', useColloquialNames),
+          locationName: location.name ?? '',
           address: location.address,
           description: location.description,
           coordinates: {
@@ -227,6 +231,8 @@ const MapPage = () => {
     }));
     return [...dining, ...microwaves];
   }, [data, db, useColloquialNames, lastSyncedAt, minuteTick]);
+
+  const selectedPlace = places.find((place) => place.name === selectedName) ?? null;
 
   const filteredPlaces = useMemo(() => {
     const typeFilters: string[] = [...filters].filter((id) => id !== 'open');
@@ -274,7 +280,7 @@ const MapPage = () => {
 
   const focusPlace = useCallback((place: Place) => {
     haptics.tap();
-    setSelectedPlace(place);
+    setSelectedName(place.name);
     mapRef.current?.animateToRegion(
       { ...place.coordinates, latitudeDelta: 0.003, longitudeDelta: 0.003 },
       450,
@@ -393,7 +399,7 @@ const MapPage = () => {
         onToggleFilter={toggleFilter}
         selectedPlace={selectedPlace}
         onSelectPlace={focusPlace}
-        onClosePlace={() => setSelectedPlace(null)}
+        onClosePlace={() => setSelectedName(null)}
         userCoordinates={userCoordinates}
         bottomOffset={bottomOffset}
         onHeightChange={setSheetHeight}
