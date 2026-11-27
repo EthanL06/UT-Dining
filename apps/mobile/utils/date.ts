@@ -1,24 +1,14 @@
 import { toCentralTime } from '@ut-dining/core';
-import { addDays, format, isSameDay, isToday, startOfDay, subDays } from 'date-fns';
+import { addDays, differenceInCalendarDays, format, isToday, startOfDay, subDays } from 'date-fns';
 import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 
-export function formatDateForDisplay(date: Date): string {
-  if (isToday(date)) {
-    return 'Today';
-  }
-
-  const yesterday = subDays(new Date(), 1);
-  const tomorrow = addDays(new Date(), 1);
-
-  if (isSameDay(date, yesterday)) {
-    return 'Yesterday';
-  }
-
-  if (isSameDay(date, tomorrow)) {
-    return 'Tomorrow';
-  }
-
-  return format(date, 'MMM d');
+export function formatDateForDisplay(dateKey: string, today = getTodayInCentralTime()): string {
+  const day = createDateFromString(dateKey);
+  const offset = differenceInCalendarDays(day, createDateFromString(today));
+  if (offset === 0) return 'Today';
+  if (offset === -1) return 'Yesterday';
+  if (offset === 1) return 'Tomorrow';
+  return format(day, 'MMM d');
 }
 
 export function formatDateForAPI(date: Date): string {

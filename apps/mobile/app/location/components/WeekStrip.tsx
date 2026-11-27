@@ -26,7 +26,7 @@ const WeekStrip = ({ selectedDate, onDateChange }: WeekStripProps) => {
   return (
     <View>
       <Text variant="subheadline" emphasized testID="selected-date" className="mb-2">
-        {formatDateForDisplay(createDateFromString(selectedDate))}
+        {formatDateForDisplay(selectedDate)}
       </Text>
       <View className="flex-row justify-between">
         {DAY_OFFSETS.map((offset) => {

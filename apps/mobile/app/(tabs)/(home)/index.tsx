@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { toCentralTime } from '@ut-dining/core';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
 import * as Network from 'expo-network';
@@ -23,6 +24,7 @@ import { ServiceStatusBanner } from '~/components/ServiceStatusBanner';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
 import { Text } from '~/components/ui/Text';
 import { forceMenuSync, useMenuSync } from '~/hooks/useMenuSync';
+import { useNow } from '~/hooks/useNow';
 import type { DrizzleDB } from '~/services/database/database';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
@@ -82,7 +84,7 @@ const MEAL_MESSAGE = {
 };
 
 const greeting = (time: Date) => {
-  const hour = time.getHours();
+  const hour = Math.floor(toCentralTime(time).time / 100);
   if (hour < 11) return 'Good Morning! ☀️';
   if (hour < 18) return 'Good Afternoon! 🌤️';
   return 'Good Evening! 🌙';
@@ -171,7 +173,10 @@ const LocationRows = ({
         subtitle={getLocationStatusText(location, isOpen, currentTime)}
         showChevron
         onPress={() =>
-          router.push(location.has_menus ? `/location/${name}` : `/location_generic/${name}`)
+          router.push({
+            pathname: location.has_menus ? '/location/[location]' : '/location_generic/[location]',
+            params: { location: name },
+          })
         }
       />
     );
@@ -191,7 +196,7 @@ const CenteredMessage = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default function Home() {
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const currentTime = useNow();
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const [refreshing, setRefreshing] = useState(false);
   const isOnboardingComplete = useOnboardingStore((state) => state.isOnboardingComplete);
@@ -202,13 +207,6 @@ export default function Home() {
   const queryClient = useQueryClient();
 
   useDrizzleStudio(db);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000);
-    return () => clearInterval(interval);
-  }, []);
 
   const menuData = useQuery({
     queryKey: ['menuData'],

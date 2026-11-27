@@ -8,6 +8,7 @@ import { Pressable, View } from 'react-native';
 import { StatusDot } from '~/components/ui/Grouped';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
+import { useNow } from '~/hooks/useNow';
 import type { Location as LocationRow } from '~/services/database/schema';
 import { useMealStripStore } from '~/store/useMealStripStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -25,15 +26,6 @@ const distanceSquared = (a: Coords, b: LocationRow) =>
   b.latitude === null || b.longitude === null
     ? Number.POSITIVE_INFINITY
     : (a.latitude - b.latitude) ** 2 + (a.longitude - b.longitude) ** 2;
-
-const useNow = () => {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const interval = setInterval(() => setNow(new Date()), 60_000);
-    return () => clearInterval(interval);
-  }, []);
-  return now;
-};
 
 const useLastKnownCoords = () => {
   const [coords, setCoords] = useState<Coords | null>(null);
@@ -105,7 +97,7 @@ export const MealStrip = ({
       accessibilityRole="button"
       accessibilityLabel={`${strip.meal.name} at ${displayName}, until ${formatHhmm(strip.meal.end_time)}. Open menu.`}
       onPress={() => {
-        router.push(`/location/${locationName}`);
+        router.push({ pathname: '/location/[location]', params: { location: locationName } });
       }}
       className="h-full flex-row items-center gap-x-2.5 pr-2 pl-4"
     >
