@@ -113,8 +113,9 @@ export const PlanRow = ({
                 </Text>
                 <View className="flex-row flex-wrap items-center gap-x-1.5">
                   <Text variant="footnote" tone="secondary">
-                    {item.locationName} · {formatGrams(amount(item, 'protein'))} protein ·{' '}
-                    {formatGrams(amount(item, 'total_carbohydrates'))} carbs
+                    {formatGrams(amount(item, 'protein'))} protein ·{' '}
+                    {formatGrams(amount(item, 'total_carbohydrates'))} carbs ·{' '}
+                    {formatGrams(amount(item, 'total_fat'))} fat
                   </Text>
                   {allergens.length > 0 && (
                     <View className="flex-row items-center gap-x-1.5">
