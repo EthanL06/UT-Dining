@@ -1,0 +1,19 @@
+appId: com.ethanl06.ut-dining.dev
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- openLink: ut-dining://e2e-setup?frames=on
+- extendedWaitUntil:
+    visible: Open in .*
+    timeout: 10000
+    optional: true
+- tapOn:
+    text: Open
+    optional: true
+- runFlow: ../subflows/dismiss-alerts.yaml
+- extendedWaitUntil:
+    visible: 'J2 Dining(,.*)?'
+    timeout: 90000
+- waitForAnimationToEnd

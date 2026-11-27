@@ -25,6 +25,7 @@ import '../global.css';
 import * as Device from 'expo-device';
 import * as Network from 'expo-network';
 import { AppErrorScreen, MIGRATION_ERROR_COPY } from '~/components/AppErrorScreen';
+import { FrameMonitor } from '~/components/qa/FrameMonitor';
 import { VersionCheckProvider } from '~/components/VersionCheckProvider';
 import { usePostHogScreens } from '~/hooks/usePostHogScreens';
 import { POSTHOG_CONFIG, posthogClient } from '~/services/analytics/posthog';
@@ -32,6 +33,7 @@ import { PushNotificationsInitializer } from '~/services/notifications/notificat
 import { ratingService } from '~/services/rating/rating';
 import { useAppLaunchStore } from '~/store/useAppLaunchStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
+import { isDevVariant } from '~/utils/appVariant';
 import { getTheme } from '~/utils/theme';
 export const DATABASE_NAME = 'database.db';
 
@@ -113,6 +115,7 @@ const AppContent = () => {
             <SheetProvider>
               <VersionCheckProvider>
                 <PushNotificationsInitializer />
+                {isDevVariant && <FrameMonitor />}
                 <Stack
                   screenOptions={{
                     headerShown: false,

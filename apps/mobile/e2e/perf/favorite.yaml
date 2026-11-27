@@ -1,0 +1,13 @@
+appId: com.ethanl06.ut-dining.dev
+---
+- repeat:
+    times: 4
+    commands:
+      - swipe:
+          from:
+            text: '.*kcal.*'
+            index: 1
+          direction: LEFT
+          duration: 250
+- tapOn:
+    id: back-button

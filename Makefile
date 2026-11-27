@@ -15,7 +15,7 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-psql db-studio \
 	env-local env-dev \
 	check verify pre-push check-staged check-comments check-size check-state functions fix lint typecheck test build \
-	sim sims e2e e2e-fixtures screenshots ios-app perf-build size-report \
+	sim sims e2e e2e-fixtures screenshots ios-app perf-build frames size-report \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
 
@@ -81,6 +81,7 @@ help:
 	'  ios-app         Release simulator app into .context/app; reuses the native build unless native code changed' \
 	'  perf-build      Timing-harness test apps from a release .app. APP=<base .app> OUT=<dir> PERF_DEV_REF=<ref>' \
 	'                  The rest of the timing run is in scripts/qa/perf/README.md' \
+	'  frames          Dropped frames per scenario on a release app (SIM=<UDID>, ARGS="--runs 3 --label base")' \
 	'  mobile-preview  Dev app build (only if native code changed) + EAS Update. ARGS="staging" or ARGS="pr <n>"' \
 	'' \
 	'Worktrees' \
@@ -236,6 +237,10 @@ size-report:
 perf-build:
 	@test -n "$(APP)" -a -n "$(OUT)" || { echo 'usage: make perf-build APP=<base release .app> OUT=<dir> PERF_DEV_REF=<dev ref>' >&2; exit 2; }
 	@scripts/qa/perf/build.sh "$(APP)" "$(OUT)"
+
+frames:
+	@test -n "$(SIM)" || { echo 'usage: make frames SIM=<UDID> ARGS="--label <name>"' >&2; exit 2; }
+	@scripts/qa/perf/frames.sh --sim "$(SIM)" $(ARGS)
 
 mobile-preview:
 	@scripts/ci/mobile-preview.sh $(ARGS)

@@ -1,0 +1,14 @@
+appId: com.ethanl06.ut-dining.dev
+---
+- repeat:
+    times: 3
+    commands:
+      - tapOn: 'J2 Dining(,.*)?'
+      - extendedWaitUntil:
+          visible: '.*kcal.*'
+          timeout: 20000
+      - tapOn:
+          id: back-button
+      - extendedWaitUntil:
+          visible: 'J2 Dining(,.*)?'
+          timeout: 5000

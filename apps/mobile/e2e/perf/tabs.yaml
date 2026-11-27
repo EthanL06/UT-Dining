@@ -1,0 +1,13 @@
+appId: com.ethanl06.ut-dining.dev
+---
+- repeat:
+    times: 2
+    commands:
+      - tapOn:
+          id: map-tab
+      - tapOn:
+          id: notifications-tab
+      - tapOn:
+          id: settings-tab
+      - tapOn:
+          id: home-tab
