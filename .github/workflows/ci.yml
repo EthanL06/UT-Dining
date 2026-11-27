@@ -15,15 +15,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 2
+
+      - name: Scope
+        id: scope
+        run: |
+          if [[ "$EVENT" == pull_request ]] && git diff --name-only HEAD^1 HEAD | scripts/ci/docs-only.sh; then
+            echo "docs_only=true" >> "$GITHUB_OUTPUT"
+            echo "Docs-only change: skipping install, lint, typecheck, tests and builds." >> "$GITHUB_STEP_SUMMARY"
+          fi
+        env:
+          EVENT: ${{ github.event_name }}
 
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
+        if: steps.scope.outputs.docs_only != 'true'
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        if: steps.scope.outputs.docs_only != 'true'
         with:
           node-version-file: .node-version
           cache: pnpm
 
       - name: Restore Turborepo cache
+        if: steps.scope.outputs.docs_only != 'true'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: .turbo/cache
@@ -31,30 +46,39 @@ jobs:
           restore-keys: turbo-${{ runner.os }}-
 
       - run: pnpm install --frozen-lockfile
+        if: steps.scope.outputs.docs_only != 'true'
 
       - name: Lint and format
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm biome ci --error-on-warnings
 
       - name: No code comments
+        if: steps.scope.outputs.docs_only != 'true'
         run: scripts/dev/check-comments.sh --all
 
       - name: No source file over 500 lines
+        if: steps.scope.outputs.docs_only != 'true'
         run: scripts/dev/check-file-size.sh
 
       - name: No implicit state machines
+        if: steps.scope.outputs.docs_only != 'true'
         run: scripts/dev/check-state-machines.sh
 
       - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+        if: steps.scope.outputs.docs_only != 'true'
         with:
           deno-version: v2.x
 
       - name: Edge functions
+        if: steps.scope.outputs.docs_only != 'true'
         run: scripts/dev/functions-check.sh
 
       - name: Typecheck and test
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm turbo run typecheck test --cache-dir=.turbo/cache
 
       - name: Build web apps
+        if: steps.scope.outputs.docs_only != 'true'
         run: pnpm turbo run build --filter=@ut-dining/dashboard --filter=@ut-dining/website --cache-dir=.turbo/cache
         env:
           NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
