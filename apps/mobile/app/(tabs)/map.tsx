@@ -16,8 +16,8 @@ import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
+import { displayLocationName } from '~/utils/locationName';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
-import { getLocationName } from '~/utils/locations';
 import {
   type Cluster,
   type Coordinates,
@@ -213,7 +213,7 @@ const MapPage = () => {
       .map((location) => {
         const isOpen = isLocationOpenNow(location, withMenus, now);
         return {
-          name: getLocationName(db, location.name ?? '', useColloquialNames),
+          name: displayLocationName(location, useColloquialNames),
           locationName: location.name ?? '',
           address: location.address,
           description: location.description,
