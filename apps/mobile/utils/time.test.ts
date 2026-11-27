@@ -5,6 +5,7 @@ import type * as schema from '~/services/database/schema';
 import {
   formatTimeSinceSync,
   generateSchedule,
+  getLocationStatusText,
   getLocationTimeMessage,
   isLocationOpen,
   timeOfDay,
@@ -112,5 +113,13 @@ describe('formatTimeSinceSync', () => {
     [86_400_000, '1 day ago'],
   ])('%s ms is %s', (ms, expected) => {
     expect(formatTimeSinceSync(ms)).toBe(expected);
+  });
+});
+
+describe('getLocationStatusText', () => {
+  it('says closed today when a hall has no menu during its hours', () => {
+    expect(getLocationStatusText(location(), false, at('2026-11-23T12:00:00'))).toBe(
+      'Closed today',
+    );
   });
 });
