@@ -3,7 +3,7 @@ import { toCentralTime } from '@ut-dining/core';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
 import * as Network from 'expo-network';
-import { router, Stack } from 'expo-router';
+import { Link, router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Heart } from 'lucide-react-native';
@@ -163,22 +163,26 @@ const LocationRows = ({
   return entries.map(({ location, isOpen }, index) => {
     const name = location.name ?? '';
     return (
-      <GroupedRow
+      <Link
         key={location.id}
-        isFirst={index === 0}
-        separatorInset={37}
-        leading={<StatusDot open={isOpen} />}
-        title={getLocationName(db, name, useColloquialNames)}
-        titleColor={isOpen ? theme.label : theme.secondaryLabel}
-        subtitle={getLocationStatusText(location, isOpen, currentTime)}
-        showChevron
-        onPress={() =>
-          router.push({
-            pathname: location.has_menus ? '/location/[location]' : '/location_generic/[location]',
-            params: { location: name },
-          })
-        }
-      />
+        href={{
+          pathname: location.has_menus ? '/location/[location]' : '/location_generic/[location]',
+          params: { location: name },
+        }}
+        asChild
+      >
+        <Link.Trigger withAppleZoom>
+          <GroupedRow
+            isFirst={index === 0}
+            separatorInset={37}
+            leading={<StatusDot open={isOpen} />}
+            title={getLocationName(db, name, useColloquialNames)}
+            titleColor={isOpen ? theme.label : theme.secondaryLabel}
+            subtitle={getLocationStatusText(location, isOpen, currentTime)}
+            showChevron
+          />
+        </Link.Trigger>
+      </Link>
     );
   });
 };
