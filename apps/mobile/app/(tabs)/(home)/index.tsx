@@ -85,7 +85,7 @@ const MEAL_MESSAGE = {
 
 const greeting = (time: Date) => {
   const hour = Math.floor(toCentralTime(time).time / 100);
-  if (hour < 11) return 'Good Morning! ☀️';
+  if (hour < 12) return 'Good Morning! ☀️';
   if (hour < 18) return 'Good Afternoon! 🌤️';
   return 'Good Evening! 🌙';
 };
