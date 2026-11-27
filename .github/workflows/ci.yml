@@ -38,6 +38,13 @@ jobs:
       - name: No code comments
         run: scripts/dev/check-comments.sh --all
 
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Edge functions
+        run: scripts/dev/functions-check.sh
+
       - name: Typecheck and test
         run: pnpm turbo run typecheck test --cache-dir=.turbo/cache
 
