@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import type { ReactNode } from 'react';
 import { RefreshControl } from 'react-native';
+import { pushedScreenHeaderOptions } from '~/components/TabStack';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { useTheme } from '~/utils/theme';
 import { AdminGate } from './AdminGate';
@@ -23,26 +24,29 @@ export const AdminScreen = ({
   const theme = useTheme();
   return (
     <>
-      <Stack.Screen options={{ title, headerLargeTitle: false, headerRight }} />
-      <AdminGate>
-        {(email) => (
-          <OverflowScrollView
-            divider={false}
-            testID={testID}
-            contentInsetAdjustmentBehavior="automatic"
-            keyboardShouldPersistTaps="handled"
-            style={{ flex: 1, backgroundColor: theme.background }}
-            contentContainerStyle={{ paddingTop: 8, paddingBottom: 40 }}
-            refreshControl={
-              onRefresh ? (
-                <RefreshControl refreshing={refreshing === true} onRefresh={onRefresh} />
-              ) : undefined
-            }
-          >
-            {children(email)}
-          </OverflowScrollView>
-        )}
-      </AdminGate>
+      <Stack.Screen
+        options={{
+          ...pushedScreenHeaderOptions(theme),
+          title,
+          headerLargeTitle: false,
+          headerRight,
+        }}
+      />
+      <OverflowScrollView
+        divider={false}
+        testID={testID}
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
+        style={{ flex: 1, backgroundColor: theme.background }}
+        contentContainerStyle={{ paddingTop: 8, paddingBottom: 40 }}
+        refreshControl={
+          onRefresh ? (
+            <RefreshControl refreshing={refreshing === true} onRefresh={onRefresh} />
+          ) : undefined
+        }
+      >
+        <AdminGate>{children}</AdminGate>
+      </OverflowScrollView>
     </>
   );
 };
