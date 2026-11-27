@@ -73,7 +73,7 @@ stale_reason() {
   if [[ -n "$pr" ]]; then
     state="$(pr_closed "$pr")"
     [[ -n "$state" ]] && echo "PR #$pr is $state"
-    return
+    return 0
   fi
   branch="$(field "$udid" branch)"
   case "$branch" in
