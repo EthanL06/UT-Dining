@@ -5,6 +5,7 @@ import { haptics } from '~/utils/haptics';
 import { type Coordinates, type Place, walkFrom } from '~/utils/mapPlaces';
 import { browseView } from '~/utils/mapSheetView';
 import { useTheme } from '~/utils/theme';
+import { SHEET_CONTENT_GAP } from './PlaceCard';
 import { PlaceRow, RowGroup } from './PlaceRow';
 import { MAP_FILTERS, type MapFilterId } from './placeStyle';
 import { SkeletonRows } from './SkeletonRows';
@@ -16,7 +17,6 @@ export const BrowseList = ({
   isLoaded,
   filters,
   userCoordinates,
-  bottomOffset,
   onToggleFilter,
   onClearFilters,
   onSelectPlace,
@@ -25,7 +25,6 @@ export const BrowseList = ({
   isLoaded: boolean;
   filters: Set<MapFilterId>;
   userCoordinates: Coordinates | null;
-  bottomOffset: number;
   onToggleFilter: (id: MapFilterId) => void;
   onClearFilters: () => void;
   onSelectPlace: (place: Place) => void;
@@ -45,7 +44,8 @@ export const BrowseList = ({
     <OverflowScrollView
       containerStyle={{ flex: 1 }}
       keyboardShouldPersistTaps="handled"
-      contentContainerStyle={{ paddingBottom: bottomOffset + 24 }}
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{ paddingBottom: SHEET_CONTENT_GAP }}
     >
       <ScrollView
         horizontal

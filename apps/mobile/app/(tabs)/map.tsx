@@ -7,7 +7,6 @@ import { Keyboard, Pressable, StyleSheet, useWindowDimensions, View } from 'reac
 import type { Region } from 'react-native-maps';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useCurrentMealStrip } from '~/components/MealStrip';
 import { BrowseList } from '~/components/map/BrowseList';
 import { ClosedDot, ClusterPin, IconPin, LabelPin } from '~/components/map/MapPins';
 import { MapSheet, type MapSheetHandle, SHEET_HALF_FRACTION } from '~/components/map/MapSheet';
@@ -48,7 +47,6 @@ const INITIAL_REGION: Region = {
 const TAB_BAR_CLEARANCE = 92;
 const MAP_ATTRIBUTION_GAP = 10;
 const MAP_ATTRIBUTION_INSET = 4;
-const MEAL_STRIP_CLEARANCE = 60;
 
 const coordinatesMatch = (a: Coordinates | null, b: Coordinates) =>
   a !== null &&
@@ -81,8 +79,6 @@ const MapPage = () => {
   const [sheetHeight, setSheetHeight] = useState(0);
   const [mapSafeAreaBottom, setMapSafeAreaBottom] = useState(0);
   const bottomOffset = TAB_BAR_CLEARANCE + insets.bottom - 34;
-  const mealStrip = useCurrentMealStrip();
-  const contentBottomInset = bottomOffset + (mealStrip ? MEAL_STRIP_CLEARANCE : 0);
 
   const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
   const now = useNow();
@@ -383,7 +379,6 @@ const MapPage = () => {
               userCoordinates={userCoordinates}
               backQuery={search.status === 'place' ? search.query : null}
               foods={mapSearch.selectedFoods}
-              bottomInset={contentBottomInset}
               onBack={mapSearch.back}
               onClose={mapSearch.close}
             />
@@ -398,7 +393,6 @@ const MapPage = () => {
             menuMatches={mapSearch.menuMatches}
             recents={mapSearch.recents}
             userCoordinates={userCoordinates}
-            bottomOffset={contentBottomInset}
             onPickPlace={focusPlace}
             onRunQuery={runQuery}
             onClearQuery={() => mapSearch.setQuery('')}
@@ -410,7 +404,6 @@ const MapPage = () => {
             isLoaded={isLoaded}
             filters={filters}
             userCoordinates={userCoordinates}
-            bottomOffset={contentBottomInset}
             onToggleFilter={toggleFilter}
             onClearFilters={() => setFilters(new Set())}
             onSelectPlace={focusPlace}

@@ -20,6 +20,8 @@ const openDirections = (place: Place) => {
   if (url) Linking.openURL(url).catch((error) => log.warn('Could not open directions', { error }));
 };
 
+export const SHEET_CONTENT_GAP = 16;
+
 const Note = ({ text }: { text: string }) => {
   const theme = useTheme();
   return (
@@ -40,7 +42,6 @@ export const PlaceCard = ({
   userCoordinates,
   backQuery,
   foods,
-  bottomInset,
   onBack,
   onClose,
 }: {
@@ -48,7 +49,6 @@ export const PlaceCard = ({
   userCoordinates: Coordinates | null;
   backQuery: string | null;
   foods: string[];
-  bottomInset: number;
   onBack: () => void;
   onClose: () => void;
 }) => {
@@ -102,7 +102,8 @@ export const PlaceCard = ({
         testID="map-place-scroll"
         containerStyle={{ flex: 1 }}
         contentContainerClassName="px-4 pt-1"
-        contentContainerStyle={{ paddingBottom: bottomInset + 24 }}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingBottom: SHEET_CONTENT_GAP }}
       >
         {place.type !== 'microwave' && (
           <View className="flex-row items-center gap-x-2">

@@ -6,6 +6,7 @@ import { type Coordinates, type Place, walkFrom } from '~/utils/mapPlaces';
 import type { BuildingMatch, SearchMatch } from '~/utils/mapSearch';
 import { searchView } from '~/utils/mapSheetView';
 import { useTheme } from '~/utils/theme';
+import { SHEET_CONTENT_GAP } from './PlaceCard';
 import { PlaceRow, placeDetail, RowGroup, SheetRow } from './PlaceRow';
 import { PLACE_ICONS, usePlaceColor } from './placeStyle';
 import { SkeletonRows } from './SkeletonRows';
@@ -173,7 +174,6 @@ export const SearchPanel = ({
   menuMatches,
   recents,
   userCoordinates,
-  bottomOffset,
   onPickPlace,
   onRunQuery,
   onClearQuery,
@@ -187,7 +187,6 @@ export const SearchPanel = ({
   menuMatches: PlaceMenuMatch[];
   recents: ResolvedRecent[];
   userCoordinates: Coordinates | null;
-  bottomOffset: number;
   onPickPlace: (place: Place, foods?: string[]) => void;
   onRunQuery: (query: string) => void;
   onClearQuery: () => void;
@@ -208,7 +207,8 @@ export const SearchPanel = ({
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       contentContainerClassName="gap-y-5 pt-1"
-      contentContainerStyle={{ paddingBottom: bottomOffset + 24 }}
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{ paddingBottom: SHEET_CONTENT_GAP }}
     >
       {view.kind === 'suggestions' ? (
         <Suggestions
