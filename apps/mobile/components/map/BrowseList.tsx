@@ -42,6 +42,7 @@ export const BrowseList = ({
 
   return (
     <ScrollView
+      alwaysBounceVertical={false}
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ paddingBottom: bottomOffset + 24 }}
     >

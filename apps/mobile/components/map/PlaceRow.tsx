@@ -1,14 +1,14 @@
 import { ChevronRight, type LucideIcon } from 'lucide-react-native';
 import { Pressable, View } from 'react-native';
 import { Text } from '~/components/ui/Text';
-import type { Place } from '~/utils/mapPlaces';
+import { type Place, walkLabel } from '~/utils/mapPlaces';
 import { useTheme } from '~/utils/theme';
 import { PlaceIcon } from './placeStyle';
 
 export const placeDetail = (place: Place, walk: number | null) =>
   [
     place.type === 'microwave' ? place.description : place.status,
-    walk ? `${walk} min walk` : place.coordinates ? null : 'No fixed spot',
+    walk ? walkLabel(walk) : place.coordinates ? null : 'No fixed spot',
   ]
     .filter(Boolean)
     .join(' · ');

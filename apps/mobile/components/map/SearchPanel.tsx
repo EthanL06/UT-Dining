@@ -203,6 +203,7 @@ export const SearchPanel = ({
   return (
     <ScrollView
       testID="map-search-results"
+      alwaysBounceVertical={false}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       contentContainerClassName="gap-y-5 pt-1"

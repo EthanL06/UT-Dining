@@ -107,3 +107,12 @@ export const walkingMinutes = (from: Coordinates, to: Coordinates) => {
 
 export const walkFrom = (from: Coordinates | null, place: Place) =>
   from && place.coordinates ? walkingMinutes(from, place.coordinates) : null;
+
+const MAX_WALK_MINUTES = 45;
+const METERS_PER_MILE = 1609.344;
+
+export const walkLabel = (minutes: number) => {
+  if (minutes <= MAX_WALK_MINUTES) return `${minutes} min walk`;
+  const miles = (minutes * WALKING_METERS_PER_MINUTE) / WALKING_DETOUR / METERS_PER_MILE;
+  return miles < 10 ? `${miles.toFixed(1)} mi away` : `${Math.round(miles)} mi away`;
+};
