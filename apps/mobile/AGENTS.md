@@ -6,7 +6,7 @@ Expo SDK 58 iOS app (Android builds but is not tested). Read the root `AGENTS.md
 
 1. Supabase (`utils/supabase.ts`, typed with `@ut-dining/supabase`) is the source of truth. The anon role can read menus from 2 days ago to 3 days ahead (Central time).
 2. `hooks/useMenuSync.ts` runs `syncMenuData` in `utils/queries.ts` on launch, on focus and every 30 minutes. `@ut-dining/core` decides whether to sync (`decideSync`) and which menu days to fetch (`planMenuDays`); keep that logic in core, where it has tests.
-3. `services/database/database.ts` writes Supabase rows into a local SQLite cache (Drizzle over expo-sqlite, schema in `services/database/schema.ts`). The small tables are replaced every run; menu days are fetched only when their version changed, one transaction per day.
+3. `services/database/sync.ts` writes Supabase rows into a local SQLite cache (Drizzle over expo-sqlite, schema in `services/database/schema.ts`). The small tables are replaced every run; menu days are fetched only when their version changed, one transaction per day.
 4. Screens read only the SQLite cache, through TanStack Query hooks in `hooks/` (`useMenuData`, `useFoodData`, `useLocationDetails`). After each cache write the sync invalidates every query except `menuSync`, so screens refresh.
 5. Device state lives in Zustand stores in `store/`, persisted to MMKV (`store/rnmmkv-storage.ts`): settings (dark mode and the rest), filters, onboarding, data sync versions, changelog, app launch count, and the meal plan (keyed by Central date, past days read-only). Favorites are in SQLite, keyed by item name plus location name.
 
@@ -19,6 +19,8 @@ The app works offline from the cache. Never make a screen query Supabase directl
 | `app/` | Expo Router routes. `(tabs)/` is Home (`index`), Map, Notifications, Settings. `location/[location].tsx` is a dining hall menu, `location_generic/` a place with no menu, `food/[food].tsx` one item, plus `favorites`, `meal-plan`, `changelog` |
 | `app/e2e-setup.tsx` | Dev-build-only deep link `ut-dining://e2e-setup` that skips onboarding for Maestro. `?theme=dark` sets the theme and `?serviceStatus=degraded` (or `outage`) fakes the live status so the Home banner shows |
 | `components/` | Shared UI. `components/sheets/` are react-native-actions-sheet sheets registered in `Sheets.tsx` |
+| `services/database/` | SQLite cache: `sync.ts` (Supabase to SQLite), `menus.ts`, `locations.ts`, `favorites.ts`, `notifications.ts` (reads and writes), `types.ts`, `schema.ts`. `database.ts` re-exports them all, so existing `~/services/database/database` imports keep working |
+| `components/qa/` | Sections of the dev-only QA menu (`app/(tabs)/settings/qa.tsx`) |
 | `services/` | Side effects: database, PostHog analytics, push notifications, App Store version check, rating prompt, changelog (read from the Supabase `changelog` table) |
 | `utils/` | Helpers. `time.ts` and `date.ts` wrap `@ut-dining/core` for screens; `filter.ts` is the menu filters |
 | `drizzle/` | Generated SQLite migrations for the cache. Change `services/database/schema.ts`, then run `npx drizzle-kit generate` here; it also rewrites `drizzle/migrations.js`. Never edit these by hand |
