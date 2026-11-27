@@ -14,11 +14,10 @@ import PlaceDetails, { openPlaceDirections } from '~/components/PlaceDetails';
 import { Image } from '~/components/ui/Image';
 import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
-import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { analytics } from '~/services/analytics/posthog';
 import { useSettingsStore } from '~/store/useSettingsStore';
-import { getLocationName } from '~/utils/locations';
+import { displayLocationName } from '~/utils/locationName';
 import { useTheme } from '~/utils/theme';
 import { getLocationStatusText, isLocationOpen } from '~/utils/time';
 
@@ -30,7 +29,6 @@ export default function LocationGenericScreen() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
-  const db = useDatabase();
   const [imageFailed, setImageFailed] = useState(false);
   const scrollY = useSharedValue(0);
   const onScroll = useAnimatedScrollHandler((event) => {
@@ -88,7 +86,7 @@ export default function LocationGenericScreen() {
     );
   }
 
-  const displayName = getLocationName(db, location, useColloquialNames);
+  const displayName = displayLocationName(locationData, useColloquialNames) || location;
   const isOpen = isLocationOpen(locationData);
   const status = getLocationStatusText(locationData, isOpen);
   const showImage = !!locationData.image && !imageFailed;
@@ -114,6 +112,8 @@ export default function LocationGenericScreen() {
                 source={{ uri: locationData.image as string }}
                 style={{ width, height: COVER_HEIGHT }}
                 contentFit="cover"
+                transition={150}
+                cachePolicy="memory-disk"
                 onError={() => setImageFailed(true)}
               />
             ) : (
