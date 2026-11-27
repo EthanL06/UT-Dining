@@ -176,18 +176,23 @@ export type NearbyHistory = {
   zones: Record<string, ZonePresence>;
   sent: SentAlerts;
   muted: string[];
+  baseline: Record<string, number>;
 };
 
 export type ArrivalGate =
   | { kind: 'arrival' }
-  | { kind: 'skip'; reason: 'muted' | 'home' | 'recently_here' };
+  | {
+      kind: 'skip';
+      reason: 'baseline' | 'already_inside' | 'muted' | 'home' | 'recently_here';
+    };
 
-export const EMPTY_HISTORY: NearbyHistory = { zones: {}, sent: {}, muted: [] };
+export const EMPTY_HISTORY: NearbyHistory = { zones: {}, sent: {}, muted: [], baseline: {} };
 
 const HOUR_MS = 60 * 60 * 1000;
 export const AWAY_BEFORE_ARRIVAL_MS = 2 * HOUR_MS;
 export const HOME_MEMORY_MS = 14 * 24 * HOUR_MS;
 const OVERNIGHT_UTC_TIME = 'T08:30:00Z';
+export const BASELINE_MS = 15 * 1000;
 
 const presenceOf = (history: NearbyHistory, zoneId: string): ZonePresence =>
   history.zones[zoneId] ?? { insideSince: null, lastExitAt: null, lastOvernightAt: null };
@@ -208,13 +213,42 @@ export const spansOvernight = (from: number, to: number) => {
 export const isHome = (presence: ZonePresence, at: number) =>
   presence.lastOvernightAt !== null && at - presence.lastOvernightAt < HOME_MEMORY_MS;
 
+export const startBaseline = (
+  history: NearbyHistory,
+  zoneIds: string[],
+  at: number,
+): NearbyHistory => ({
+  ...history,
+  baseline: Object.fromEntries(zoneIds.map((zoneId) => [zoneId, at])),
+});
+
+const takeBaseline = (history: NearbyHistory, zoneId: string, at: number) => {
+  const startedAt = history.baseline[zoneId];
+  const { [zoneId]: _taken, ...baseline } = history.baseline;
+  return {
+    history: { ...history, baseline },
+    isBaseline: startedAt !== undefined && at - startedAt < BASELINE_MS,
+  };
+};
+
 export const recordEnter = (
   history: NearbyHistory,
   zoneId: string,
   at: number,
 ): { history: NearbyHistory; gate: ArrivalGate } => {
-  const presence = presenceOf(history, zoneId);
-  const next = withPresence(history, zoneId, { ...presence, insideSince: at });
+  const taken = takeBaseline(history, zoneId, at);
+  const presence = presenceOf(taken.history, zoneId);
+  if (taken.isBaseline) {
+    const insideSince = presence.insideSince ?? at;
+    return {
+      history: withPresence(taken.history, zoneId, { ...presence, insideSince }),
+      gate: { kind: 'skip', reason: 'baseline' },
+    };
+  }
+  if (presence.insideSince !== null) {
+    return { history: taken.history, gate: { kind: 'skip', reason: 'already_inside' } };
+  }
+  const next = withPresence(taken.history, zoneId, { ...presence, insideSince: at });
   if (history.muted.includes(zoneId))
     return { history: next, gate: { kind: 'skip', reason: 'muted' } };
   if (isHome(presence, at)) return { history: next, gate: { kind: 'skip', reason: 'home' } };
@@ -225,9 +259,14 @@ export const recordEnter = (
 };
 
 export const recordExit = (history: NearbyHistory, zoneId: string, at: number): NearbyHistory => {
-  const presence = presenceOf(history, zoneId);
-  const stayedOvernight = presence.insideSince !== null && spansOvernight(presence.insideSince, at);
-  return withPresence(history, zoneId, {
+  const taken = takeBaseline(history, zoneId, at);
+  const presence = presenceOf(taken.history, zoneId);
+  if (taken.isBaseline) {
+    return withPresence(taken.history, zoneId, { ...presence, insideSince: null });
+  }
+  if (presence.insideSince === null) return taken.history;
+  const stayedOvernight = spansOvernight(presence.insideSince, at);
+  return withPresence(taken.history, zoneId, {
     insideSince: null,
     lastExitAt: at,
     lastOvernightAt: stayedOvernight ? at : presence.lastOvernightAt,

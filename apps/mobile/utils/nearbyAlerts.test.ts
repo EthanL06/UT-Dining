@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   AWAY_BEFORE_ARRIVAL_MS,
+  BASELINE_MS,
   buildZones,
   decideNearbyAlert,
   EMPTY_HISTORY,
@@ -13,6 +14,7 @@ import {
   recordExit,
   recordSent,
   spansOvernight,
+  startBaseline,
 } from './nearbyAlerts';
 
 const weekdays = (timeRanges: { open: number; close: number }[]) => ({
@@ -209,7 +211,7 @@ describe('arrivals', () => {
   });
 
   it('ignores stepping out and back in within two hours', () => {
-    const away = recordExit(EMPTY_HISTORY, zone, mondayNoon);
+    const away = recordExit(recordEnter(EMPTY_HISTORY, zone, mondayNoon).history, zone, mondayNoon);
     expect(recordEnter(away, zone, mondayNoon + hour).gate).toEqual({
       kind: 'skip',
       reason: 'recently_here',
@@ -243,6 +245,30 @@ describe('arrivals', () => {
       mondayNoon + hour,
     );
     expect(recordEnter(visit, zone, mondayNoon + 5 * hour).gate).toEqual({ kind: 'arrival' });
+  });
+
+  it('treats the state iOS reports when monitoring starts as a baseline, not a visit', () => {
+    const started = startBaseline(EMPTY_HISTORY, [zone, 'Kins Dining'], mondayNoon);
+    const outside = recordExit(started, zone, mondayNoon + 1000);
+    expect(outside.zones[zone]?.lastExitAt).toBeNull();
+    expect(recordEnter(outside, zone, mondayNoon + 40 * 1000).gate).toEqual({ kind: 'arrival' });
+
+    const inside = recordEnter(started, 'Kins Dining', mondayNoon + 1000);
+    expect(inside.gate).toEqual({ kind: 'skip', reason: 'baseline' });
+    expect(inside.history.zones['Kins Dining']?.insideSince).toBe(mondayNoon + 1000);
+  });
+
+  it('stops treating events as a baseline after a few seconds', () => {
+    const started = startBaseline(EMPTY_HISTORY, [zone], mondayNoon);
+    expect(recordEnter(started, zone, mondayNoon + BASELINE_MS).gate).toEqual({ kind: 'arrival' });
+  });
+
+  it('ignores the repeated state iOS reports on every launch', () => {
+    const inside = recordEnter(EMPTY_HISTORY, zone, mondayNoon).history;
+    const relaunched = recordEnter(inside, zone, mondayNoon + hour);
+    expect(relaunched.gate).toEqual({ kind: 'skip', reason: 'already_inside' });
+    expect(relaunched.history.zones[zone]?.insideSince).toBe(mondayNoon);
+    expect(recordExit(EMPTY_HISTORY, zone, mondayNoon)).toEqual(EMPTY_HISTORY);
   });
 
   it('stays quiet for a muted hall', () => {

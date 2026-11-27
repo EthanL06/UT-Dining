@@ -18,6 +18,7 @@ import {
   recordEnter,
   recordExit,
   recordSent,
+  startBaseline,
 } from '~/utils/nearbyAlerts';
 
 export const NEARBY_TASK = 'nearby-dining-halls';
@@ -199,6 +200,13 @@ export const startNearbyAlerts = async (halls: NearbyHall[]) => {
   const regionsKey = JSON.stringify(regions);
   const isRunning = await Location.hasStartedGeofencingAsync(NEARBY_TASK);
   if (isRunning && storage.getString(REGIONS_KEY) === regionsKey) return;
+  writeHistory(
+    startBaseline(
+      readHistory(),
+      zones.map((zone) => zone.id),
+      Date.now(),
+    ),
+  );
   await Location.startGeofencingAsync(NEARBY_TASK, regions);
   storage.set(REGIONS_KEY, regionsKey);
   log.debug('Nearby alerts watching', { zones: zones.map((zone) => zone.id) });
