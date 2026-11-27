@@ -393,10 +393,8 @@ const MapPage = () => {
             <PlaceCard
               place={selectedPlace}
               userCoordinates={userCoordinates}
-              backQuery={search.status === 'place' ? search.query : null}
               foods={mapSearch.selectedFoods}
-              onBack={mapSearch.back}
-              onClose={mapSearch.close}
+              onClose={mapSearch.back}
             />
           </View>
         ) : search.status === 'searching' ? (
