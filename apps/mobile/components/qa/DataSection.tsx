@@ -16,6 +16,7 @@ export const DataSection = () => {
   const db = useDatabase();
   const queryClient = useQueryClient();
   const setMenuDayVersions = useDataSyncStore((state) => state.setMenuDayVersions);
+  const setSharedTablesVersion = useDataSyncStore((state) => state.setSharedTablesVersion);
   const resetFilters = useFiltersStore((state) => state.resetFilters);
   const setLastVisited = useNotificationsStore((state) => state.setLastVisited);
   const { run, detail, isRunning } = useActionStatus();
@@ -25,14 +26,15 @@ export const DataSection = () => {
 
   const syncNow = () => {
     if (isRunning('sync')) return;
-    run('sync', () => forceMenuSync(db, queryClient));
+    run('sync', () => forceMenuSync(queryClient));
   };
 
   const redownload = () => {
     if (isRunning('redownload')) return;
     run('redownload', async () => {
       setMenuDayVersions({});
-      await forceMenuSync(db, queryClient);
+      setSharedTablesVersion(null);
+      await forceMenuSync(queryClient);
     });
   };
 
