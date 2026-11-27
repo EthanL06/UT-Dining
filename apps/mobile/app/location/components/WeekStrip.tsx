@@ -8,6 +8,7 @@ import Reanimated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { RollingText } from '~/components/motion/RollingText';
 import { Text } from '~/components/ui/Text';
 
 import {
@@ -100,6 +101,11 @@ const WeekStrip = ({ selectedDate, onDateChange }: WeekStripProps) => {
   });
   const selectedIndex = days.findIndex((day) => day.value === selectedDate);
   const [frames, setFrames] = useState<Frames>({ dayX: {}, circle: null });
+  const [shownDate, setShownDate] = useState({ date: selectedDate, direction: 1 as 1 | -1 });
+  if (shownDate.date !== selectedDate) {
+    setShownDate({ date: selectedDate, direction: selectedDate > shownDate.date ? 1 : -1 });
+  }
+  const labelDirection = shownDate.direction;
   const left = useSharedValue(0);
   const placed = useSharedValue(false);
 
@@ -124,9 +130,14 @@ const WeekStrip = ({ selectedDate, onDateChange }: WeekStripProps) => {
 
   return (
     <View>
-      <Text variant="subheadline" emphasized testID="selected-date" className="mb-2">
-        {formatDateForDisplay(selectedDate)}
-      </Text>
+      <RollingText
+        text={formatDateForDisplay(selectedDate)}
+        direction={labelDirection}
+        variant="subheadline"
+        emphasized
+        testID="selected-date"
+        className="mb-2"
+      />
       <View>
         {ready && frames.circle !== null && (
           <Reanimated.View
