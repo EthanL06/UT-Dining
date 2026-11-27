@@ -16,6 +16,7 @@ import { useDebounce } from '~/hooks/useDebounce';
 import { useMenuData } from '~/hooks/useMenuData';
 import { MENU_SYNC_QUERY_KEY } from '~/hooks/useMenuSync';
 import { useMultiSelect } from '~/hooks/useMultiSelect';
+import { useRatingPromptOnMenuView } from '~/hooks/useRatingPromptOnMenuView';
 import { useScrollToTop } from '~/hooks/useScrollToTop';
 import * as schema from '~/services/database/schema';
 import { type FiltersState, useFiltersStore } from '~/store/useFiltersStore';
@@ -190,6 +191,8 @@ const Location = () => {
     db.select().from(schema.favorites).where(eq(schema.favorites.location_name, location)),
     [location],
   );
+
+  useRatingPromptOnMenuView(menuStatus === 'ready', flattenedItems, favorites);
 
   const activeFilters = useFiltersStore((state) => state.filters);
 
