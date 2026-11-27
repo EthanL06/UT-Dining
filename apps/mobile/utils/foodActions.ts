@@ -1,7 +1,11 @@
 import type { DrizzleDB, FoodItem } from '~/services/database/database';
-import { countFavorites, toggleFavorites } from '~/services/database/database';
+import { countFavorites, isFavoriteItem, setFavorite } from '~/services/database/database';
 import { ratingService } from '~/services/rating/rating';
+import { useFavoriteOverridesStore } from '~/store/useFavoriteOverridesStore';
 import { mealPlanItemId, todayKey, useMealPlanStore } from '~/store/useMealPlanStore';
+import { favoriteKey } from '~/utils/favoriteOverride';
+import { haptics } from '~/utils/haptics';
+import { log } from '~/utils/log';
 import { favoritesTrigger } from '~/utils/ratingPrompt';
 
 export type FoodContext = {
@@ -68,11 +72,13 @@ export const setFavoriteForFood = (
     .then(() => {
       overrides.markWritten(key, seq);
       setTimeout(() => overrides.clear(key, seq), SETTLE_MS);
+      return true;
     })
     .catch((error: unknown) => {
       overrides.clear(key, seq);
       haptics.error();
       log.error('favorite write failed', error, { food: food.name, location: context.location });
+      return false;
     })
     .finally(() => {
       if (writes.get(key) === write) writes.delete(key);
@@ -90,11 +96,13 @@ export const favoriteFoods = async (
   entries: { food: FoodItem; category: string; isFavorite: boolean }[],
   context: Omit<FoodContext, 'category'>,
 ) => {
-  const toAdd = entries.filter((entry) => !entry.isFavorite);
-  for (const { food, category } of toAdd) {
-    await toggleFavorites(db, food, context.location, context.menu, category);
-  }
-  if (toAdd.length > 0) askForRatingAfterFavorite(db);
+  const toAdd = entries.filter(
+    (entry) => !entry.isFavorite && !isFavoriteNow(db, entry.food.name as string, context.location),
+  );
+  const added = await Promise.all(
+    toAdd.map(({ food, category }) => setFavoriteForFood(db, food, { ...context, category }, true)),
+  );
+  if (added.some(Boolean)) askForRatingAfterFavorite(db);
   return toAdd.length;
 };
 
@@ -108,7 +116,8 @@ export const toggleFavoriteForFood = async (
   food: FoodItem,
   context: FoodContext,
 ) => {
-  const added = await toggleFavorites(db, food, context.location, context.menu, context.category);
-  if (added) askForRatingAfterFavorite(db);
-  return added;
+  const value = !isFavoriteNow(db, food.name as string, context.location);
+  const saved = await setFavoriteForFood(db, food, context, value);
+  if (value && saved) askForRatingAfterFavorite(db);
+  return value;
 };
