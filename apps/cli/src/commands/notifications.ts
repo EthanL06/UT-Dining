@@ -1,4 +1,4 @@
-import { fetchAllPages } from '@ut-dining/core';
+import { checkNotification, fetchAllPages } from '@ut-dining/core';
 import {
   arg,
   type Command,
@@ -111,8 +111,15 @@ const readMessage = async (ctx: Context, opts: Record<string, unknown>) => {
   const title = required(opts as never, 'title');
   const body = required(opts as never, 'body');
   const type = await findType(ctx, required(opts as never, 'type'));
-  const redirect = str(opts as never, 'redirect');
-  return { title, body, type, redirect };
+  const checked = checkNotification({ title, body, redirectUrl: str(opts as never, 'redirect') });
+  if (!checked.ok) throw new CliError(checked.error);
+  const { redirectUrl } = checked.value;
+  return {
+    title: checked.value.title,
+    body: checked.value.body,
+    type,
+    redirect: redirectUrl ?? undefined,
+  };
 };
 
 const PUSH_WARNING =
