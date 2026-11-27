@@ -35,6 +35,18 @@ The app works offline from the cache. Never make a screen query Supabase directl
 - Text: every raw string sits inside a `<Text>` (`noReactNativeRawText`). Use the shared typography components rather than React Native's `Text` once they exist; a Biome rule banning raw `Text` outside the typography module comes with them.
 - Pure helpers that do not import React Native, Expo or MMKV get a Vitest test next to them (`utils/*.test.ts`); `pnpm --filter @ut-dining/mobile test` runs them in about 1 s with `TZ=America/Chicago`.
 
+## Dev app, PR previews and OTA updates
+
+- `APP_VARIANT` picks the app. Unset (the `production` EAS profile) is the App Store app: bundle `com.ethanl06.ut-dining`, channel `production`, runtime version `appVersion`, prod Supabase. `development` and `preview` are both **UT Dining (Dev)**: bundle `com.ethanl06.ut-dining.dev`, dev Supabase (EAS environments `development` and `preview`), runtime version `fingerprint`, channel `staging`.
+- Dev and App Store builds can never share an update: different bundle, different channel, and a fingerprint runtime never equals an `appVersion` one. `scripts/ci/mobile-preview.sh` also refuses the `production` channel and checks the resolved bundle and runtime policy before it publishes.
+- OTA updates are on in the dev app only for EAS builds (`EAS_BUILD=true`) or a local build with `DEV_UPDATES=1`. Local, simulator, E2E and screenshot builds keep them off, so a test never runs JS downloaded from staging instead of the code under test.
+- `fingerprint.config.cjs` is the default `balanced` preset plus `ExpoConfigExtraSection`, because `extra.gitCommit` changes on every commit. Without it every commit would need a new build.
+- `.github/workflows/mobile-preview.yml` runs `scripts/ci/mobile-preview.sh` (`make mobile-preview ARGS="pr <n>"` locally, needs `EXPO_TOKEN`):
+  - Push to `staging`: publishes to channel `staging`, so the installed dev app picks the change up on its next launch.
+  - A PR: publishes to channel `pr-<n>` and posts one PR comment with the links. QA Menu > Load PR Preview switches the dev app to that channel (`Updates.setUpdateRequestHeadersOverride`), Back to Staging switches it back.
+  - Either way, when no `preview` build exists for the iOS fingerprint (native code changed), it starts one on EAS with `--no-wait` and links its install page. PRs opened by bots never start builds. The free plan has 15 iOS builds a month.
+- A change to native dependencies, config plugins or native parts of `app.config.js` changes the fingerprint and needs a new build installed before its OTA updates apply.
+
 ## Verifying
 
 - Static: `make verify` from the repo root.

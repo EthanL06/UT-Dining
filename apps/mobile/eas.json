@@ -8,6 +8,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "channel": "development",
+      "environment": "development",
       "env": {
         "APP_VARIANT": "development",
         "EAS_USE_CACHE": "1"
@@ -15,16 +16,18 @@
     },
     "preview": {
       "distribution": "internal",
+      "channel": "staging",
+      "environment": "preview",
+      "autoIncrement": true,
       "env": {
         "APP_VARIANT": "preview",
         "EAS_USE_CACHE": "1"
-      },
-      "autoIncrement": true,
-      "channel": "preview"
+      }
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "environment": "production"
     }
   },
   "submit": {

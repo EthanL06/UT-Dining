@@ -1,0 +1,90 @@
+name: Mobile preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - apps/mobile/**
+      - '!apps/mobile/e2e/**'
+      - packages/core/**
+      - packages/supabase/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - scripts/ci/mobile-preview.sh
+      - .github/workflows/mobile-preview.yml
+  push:
+    branches: [staging]
+    paths:
+      - apps/mobile/**
+      - '!apps/mobile/e2e/**'
+      - packages/core/**
+      - packages/supabase/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - scripts/ci/mobile-preview.sh
+      - .github/workflows/mobile-preview.yml
+  workflow_dispatch:
+
+concurrency:
+  group: mobile-preview-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  EAS_CLI_VERSION: 27.11.0
+
+jobs:
+  preview:
+    name: Dev build and OTA update
+    if: >-
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+      && (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/staging')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Check Expo token
+        id: secrets
+        run: |
+          if [ -n "$EXPO_TOKEN" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::EXPO_TOKEN is not set, so no mobile preview was published."
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - uses: pnpm/action-setup@v6
+        if: steps.secrets.outputs.ready == 'true'
+
+      - uses: actions/setup-node@v7
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - if: steps.secrets.outputs.ready == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - if: steps.secrets.outputs.ready == 'true'
+        run: npm install --global "eas-cli@$EAS_CLI_VERSION"
+
+      - name: Publish to staging
+        if: steps.secrets.outputs.ready == 'true' && github.event_name != 'pull_request'
+        run: scripts/ci/mobile-preview.sh staging
+
+      - name: Publish PR preview
+        if: steps.secrets.outputs.ready == 'true' && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MOBILE_PREVIEW_BUILDS: ${{ github.event.pull_request.user.type == 'Bot' && '0' || '1' }}
+        run: scripts/ci/mobile-preview.sh pr "${{ github.event.pull_request.number }}"
