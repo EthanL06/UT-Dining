@@ -1,5 +1,6 @@
 import { Heart } from 'lucide-react-native';
 import type React from 'react';
+import { memo } from 'react';
 import { View } from 'react-native';
 import ActionSheet, { ScrollView, type SheetProps, useSheetRef } from 'react-native-actions-sheet';
 import Reanimated, { useReducedMotion, ZoomIn, ZoomOut } from 'react-native-reanimated';
@@ -49,6 +50,42 @@ const Chip = ({
   );
 };
 
+const formatKey = (key: string) =>
+  key
+    .split('_')
+    .map((word) => word[0].toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+
+const allergens = Object.entries(ALLERGEN_ICONS).filter(([key]) => !ALLERGEN_EXCEPTIONS.has(key));
+
+const dietaryOptions = Object.entries(ALLERGEN_ICONS).filter(([key]) =>
+  ALLERGEN_EXCEPTIONS.has(key),
+);
+
+const IconChip = memo(
+  ({
+    id,
+    testID,
+    iconSource,
+    isOn,
+    onToggle,
+  }: {
+    id: string;
+    testID: string;
+    iconSource: number;
+    isOn: boolean;
+    onToggle: (id: string) => void;
+  }) => (
+    <Chip
+      testID={testID}
+      label={formatKey(id)}
+      isOn={isOn}
+      onPress={() => onToggle(id)}
+      icon={<Image source={iconSource} className="size-7 rounded-full" contentFit="contain" />}
+    />
+  ),
+);
+
 const SectionTitle = ({ title, subtitle }: { title: string; subtitle?: string }) => {
   return (
     <View className="mt-6 mb-2.5">
@@ -68,27 +105,12 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
   const theme = useTheme();
   const reduceMotion = useReducedMotion();
 
-  const {
-    filters,
-    toggleFavoriteFilter,
-    toggleMealPlanFilter,
-    toggleAllergenFilter,
-    toggleDietaryFilter,
-    resetFilters,
-  } = useFiltersStore();
-
-  const formatKey = (key: string) => {
-    return key
-      .split('_')
-      .map((word) => word[0].toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-  };
-
-  const allergens = Object.entries(ALLERGEN_ICONS).filter(([key]) => !ALLERGEN_EXCEPTIONS.has(key));
-
-  const dietaryOptions = Object.entries(ALLERGEN_ICONS).filter(([key]) =>
-    ALLERGEN_EXCEPTIONS.has(key),
-  );
+  const filters = useFiltersStore((state) => state.filters);
+  const toggleFavoriteFilter = useFiltersStore((state) => state.toggleFavoriteFilter);
+  const toggleMealPlanFilter = useFiltersStore((state) => state.toggleMealPlanFilter);
+  const toggleAllergenFilter = useFiltersStore((state) => state.toggleAllergenFilter);
+  const toggleDietaryFilter = useFiltersStore((state) => state.toggleDietaryFilter);
+  const resetFilters = useFiltersStore((state) => state.resetFilters);
 
   const activeCount =
     Number(filters.favorites) +
@@ -194,15 +216,13 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
           <SectionTitle title="Hide foods with" subtitle="Allergens to avoid" />
           <View className="flex-row flex-wrap gap-2">
             {allergens.map(([key, iconSource]) => (
-              <Chip
+              <IconChip
                 key={key}
+                id={key}
                 testID={`filter-allergen-${key}`}
-                label={formatKey(key)}
+                iconSource={iconSource}
                 isOn={!!filters.allergens[key]}
-                onPress={() => toggleAllergenFilter(key)}
-                icon={
-                  <Image source={iconSource} className="size-7 rounded-full" contentFit="contain" />
-                }
+                onToggle={toggleAllergenFilter}
               />
             ))}
           </View>
@@ -210,15 +230,13 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
           <SectionTitle title="Only show" subtitle="Dietary preferences" />
           <View className="flex-row flex-wrap gap-2">
             {dietaryOptions.map(([key, iconSource]) => (
-              <Chip
+              <IconChip
                 key={key}
+                id={key}
                 testID={`filter-diet-${key}`}
-                label={formatKey(key)}
+                iconSource={iconSource}
                 isOn={!!filters.dietary[key]}
-                onPress={() => toggleDietaryFilter(key)}
-                icon={
-                  <Image source={iconSource} className="size-7 rounded-full" contentFit="contain" />
-                }
+                onToggle={toggleDietaryFilter}
               />
             ))}
           </View>
