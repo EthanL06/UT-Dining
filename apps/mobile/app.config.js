@@ -75,9 +75,9 @@ export default {
         'expo-location',
         {
           locationWhenInUsePermission:
-            'UT Dining needs your location to show your location on the map.',
+            'UT Dining uses your location to show where you are on the campus map.',
           locationAlwaysAndWhenInUsePermission:
-            'UT Dining needs your location to show your location on the map.',
+            'UT Dining uses your location to show where you are on the map and, if you turn on Nearby Menus, to tell you when you reach an open dining hall. Your location stays on your phone.',
         },
       ],
       'expo-notifications',
@@ -103,11 +103,13 @@ export default {
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
         NSLocationWhenInUseUsageDescription:
-          'UT Dining needs your location to show your location on the map.',
+          'UT Dining uses your location to show where you are on the campus map.',
         NSLocationAlwaysAndWhenInUseUsageDescription:
-          'UT Dining needs your location to show your location on the map.',
+          'UT Dining uses your location to show where you are on the map and, if you turn on Nearby Menus, to tell you when you reach an open dining hall. Your location stays on your phone.',
+        NSLocationAlwaysUsageDescription:
+          'UT Dining uses your location to show where you are on the map and, if you turn on Nearby Menus, to tell you when you reach an open dining hall. Your location stays on your phone.',
         NSLocationUsageDescription:
-          'UT Dining needs your location to show your location on the map.',
+          'UT Dining uses your location to show where you are on the campus map.',
       },
     },
     android: {

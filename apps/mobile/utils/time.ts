@@ -111,7 +111,7 @@ export function getLocationTimeMessage(
   return 'Closed';
 }
 
-function formatTimeFromNumber(time: number): string {
+export function formatTimeFromNumber(time: number): string {
   const hour = Math.floor(time / 100);
   const minute = time % 100;
   const displayHour = hour % 12 === 0 ? 12 : hour % 12;

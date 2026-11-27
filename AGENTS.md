@@ -109,6 +109,33 @@ Lefthook (`lefthook.yml`) installs the hooks from the root `prepare` script, so 
 - Env files: each app commits `.env.example`; real values go in the gitignored `.env.local` (written by `scripts/env.ts`). Never commit keys.
 - Cloud sessions: the SessionStart hook installs deps and, when `SUPABASE_DEV_*` vars are set, points the apps at the hosted dev Supabase project. Never point a session at production.
 
+## Writing app copy
+
+Covers every word a user reads: screen and row titles, subtitles, settings footers, empty and error states, alerts, permission prompts, notifications, onboarding, the website and the status page. Read the copy around the screen you are changing and match it.
+
+Write from the user's side, never the code's. Describe what the user sees, does and gets, in the words a student would use, not how the app, iOS or the backend works. If a line would only make sense to someone who has read the code, rewrite it.
+
+- Lead with what the user gets. The title is the benefit, the body is the one thing to do plus anything that would worry them. Not what the app or iOS does behind the scenes.
+- Say it once. Each sentence adds something new. Cut a line that restates the title or another line.
+- Name the thing: "Nearby Menus", "your meal plan", "favorites". Never "this", "these features" or "all of these".
+- No technical words. Users never read about geofences, regions, background modes, sync, cache, OTA, servers, the database, IDs or error codes. Use the words iOS shows them, such as the Always option for location.
+- Keep it short. A title fits on one line, a body or footer is one or two short sentences, a row subtitle is a fragment with no period.
+- Talk to the user as "you" and the app as "we", with contractions. Calm and friendly. An exclamation mark only for a warm moment, never in an error.
+- State privacy as a plain fact ("Your location never leaves your phone."), not as a promise ("We take your privacy seriously.").
+- Errors say what happened and what to do next, in words. Never show a raw error message, and never stop at "Something went wrong".
+- Empty states say why it is empty and how to fill it. Loading never uses empty-state copy (see Conventions).
+- Title Case for screen titles, settings rows, section headers and buttons (`Dark Mode`, `Remove from Meal Plan`). Sentence case for prompt and empty-state titles, subtitles, footers and alert text. Hours keep leading zeros (`09:00 AM`). No em dashes or arrows: write two sentences.
+- A PR that adds or changes copy lists the new strings in its body so Ethan can review the wording.
+
+| Where | Do | Don't |
+| --- | --- | --- |
+| Location Always prompt | **See what's cooking when you walk in** Set location to Always and we'll show the menu when you arrive at a dining hall. Your location never leaves your phone. | **Allow background location** iOS needs Always access so the app can monitor geofence regions in the background. Your location stays on your device and is only used for these features. |
+| Settings footer | Nearby Menus works entirely on your phone. Your location is never sent anywhere. | All of these run on your device using region monitoring, so your location stays private and never leaves your device. |
+| Refreshing menus | Getting today's menus… | Syncing menu versions from the server… |
+| Empty meal plan | Press and hold a food on any menu to add it here. | No items. |
+| Missing menu | UT hasn't posted a menu here for this day. | Error: menu query returned 0 rows. |
+| Row subtitle | Shows where you are on the map | This setting enables the display of your current location on the map. |
+
 ## Cooking
 
 This repo uses [cook](https://github.com/EthanL06/cook).
