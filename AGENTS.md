@@ -7,7 +7,7 @@ This file is the agent guide for every tool (`CLAUDE.md` imports it). Each app w
 ## Start here
 
 1. `make verify` after every change: Biome on the changed files, the comment check, typecheck and tests of only the affected packages, then a list of what else to verify for this diff. About 3 s.
-2. `make check` once before you push (everything, the same as CI).
+2. `git push` runs the pre-push hook: the CI checks scoped to what changed, about 3 to 8 s. `make check` runs everything, the same as CI.
 3. Read `.agents/recipes/README.md` for gotchas in your area. Cloud sessions: read `.agents/recipes/cloud-sessions.md` first (GitHub writes, screenshots, Supabase projects, generated type conflicts).
 
 ## Layout
@@ -29,7 +29,7 @@ The `Makefile` is the front door. `make` prints every target. Every target is no
 - `make setup`: one command for a fresh clone or a stale one: Node, pnpm, deps, git hooks, `.env.local` files, local Supabase (Docker), a few days of scraped menus. Re-running keeps existing env files and data. `DB=local|dev|none`, `SEED=0`.
 - `make doctor`: checks the whole setup and exits 1 on a real problem (including any app pointing at production). Run it first when something is off.
 - `make verify`: the fast, scoped check (see Start here). `BASE=<ref>` changes the base from `origin/staging`.
-- `make check`: Biome + typecheck + tests of everything. Run it before pushing. `make fix`: Biome safe fixes. `make check-comments` fails on added code comments (the pre-commit hook runs it on the staged diff). `make check-state` fails on implicit state machines (see Conventions).
+- `make check`: Biome + typecheck + tests of everything. `make pre-push`: what the pre-push hook runs (see Git hooks). `make fix`: Biome safe fixes. `make check-comments` fails on added code comments (the pre-commit hook runs it on the staged diff). `make check-state` fails on implicit state machines (see Conventions).
 - Tests: Vitest in `packages/core`, `apps/scraper`, `apps/cli`, `apps/dashboard` (pure helpers such as `lib/status/*.test.ts` and `components/**/*-utils.test.ts`) and `apps/mobile` (pure helpers in `apps/mobile/utils` only, `*.test.ts` next to the source; anything that imports React Native or MMKV cannot run there). One file: `pnpm --filter @ut-dining/mobile exec vitest run utils/filter.test.ts`.
 - `make typecheck`: TypeScript 7 via the `tsgo` alias; `typescript` itself stays on 6.x because Expo tooling needs the JS API.
 - `make dev` (dashboard :3000, website :3001, Metro :8081), or one at a time: `make dashboard`, `make website`, `make mobile`, `make ios SIM=<name or UDID>`, `make scrape`.
@@ -49,6 +49,16 @@ When Ethan asks to change app data (hours, force close, locations, support links
 - Always ask Ethan before any production write. Show him the `--dry-run` output and wait for his OK, then add `--prod --confirm-prod yrmylgizphirqqkzgbth`.
 - Push notifications reach real phones. `notifications send` and `schedule` only preview unless `--send` is passed. Always show Ethan the exact title and body and get his OK before sending or scheduling, on any target.
 - Run `pnpm -s admin status` first. If the dev keys are missing, say which variables Ethan needs to add to the cloud environment; don't fall back to production.
+
+## Git hooks
+
+Lefthook (`lefthook.yml`) installs the hooks from the root `prepare` script, so `pnpm install`, `make setup` and the cloud SessionStart hook all set them up. `make doctor` warns when one is missing; `pnpm exec lefthook install` fixes it. They exist to catch CI failures before a push, so each mirrors a CI step.
+
+- pre-commit, on staged files, in parallel (about 2 s): Biome with `--write --error-on-warnings` like CI (YAML included), the no-comments check, and `scripts/dev/check-staged.sh` (no `.env` files, keys or certificates, likely secrets such as `sb_secret_`, GitHub tokens or JWTs, or files over 1 MB).
+- commit-msg: commitlint (conventional commits).
+- pre-push (`scripts/dev/pre-push.sh`, `make pre-push`): refuses pushes to `main` or `staging`, then runs in parallel against the merge base with `origin/staging`: `biome ci --error-on-warnings` on the whole repo (catches rules that arrived with a staging merge), comments, file size, state machines, and `turbo run typecheck test --affected`, which the local Turborepo cache makes instant for unchanged packages. It adds the lockfile check when a `package.json` changed, the Deno edge function check when `supabase/functions` changed, and the file checks of `make db-check` (`STATIC=1`, no Docker) when `supabase/` changed. Docs-only pushes skip it. Measured: about 3 s warm, 5 s for a cold app change, 8 s for a `packages/core` change. Builds, the Postgres migration check and E2E stay in CI.
+- It checks the working tree at `HEAD`, so commit or stash first for an exact result.
+- Never bypass a hook to get past a failure; fix it. `git push --no-verify` (or `LEFTHOOK=0`) is only for a push where the hook itself is wrong, and the PR says why. `ALLOW_PROTECTED_PUSH=1` allows a push to `main` or `staging` and is only for Ethan.
 
 ## Conventions
 
