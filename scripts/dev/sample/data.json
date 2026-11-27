@@ -1,0 +1,969 @@
+{
+  "menus": [
+    {
+      "location": "J2 Dining",
+      "days": [-2, -1, 0, 1, 2, 3, 4, 5, 6],
+      "meals": ["Breakfast", "Lunch", "Dinner"],
+      "emptyMeals": [
+        {
+          "day": 1,
+          "meal": "Breakfast"
+        }
+      ],
+      "categories": [
+        {
+          "name": "Comfort",
+          "foods": [
+            {
+              "name": "Scrambled Eggs",
+              "calories": "180",
+              "protein": "12g",
+              "carbs": "2g",
+              "flags": ["egg", "milk", "vegetarian"],
+              "meals": ["Breakfast"]
+            },
+            {
+              "name": "Buttermilk Pancakes",
+              "calories": "350",
+              "protein": "7g",
+              "carbs": "58g",
+              "flags": ["egg", "milk", "wheat", "vegetarian"],
+              "meals": ["Breakfast"]
+            },
+            {
+              "name": "Pork Sausage Links",
+              "calories": "210",
+              "protein": "9g",
+              "carbs": "1g",
+              "flags": ["pork"],
+              "meals": ["Breakfast"]
+            },
+            {
+              "name": "Chicken Tikka Masala",
+              "calories": "420",
+              "protein": "31g",
+              "carbs": "18g",
+              "flags": ["milk", "halal"],
+              "meals": ["Lunch", "Dinner"]
+            },
+            {
+              "name": "Beef Lasagna",
+              "calories": "510",
+              "protein": "28g",
+              "carbs": "42g",
+              "flags": ["beef", "milk", "wheat", "egg"],
+              "meals": ["Lunch", "Dinner"]
+            },
+            {
+              "name": "Steamed Jasmine Rice",
+              "calories": "200",
+              "protein": "4g",
+              "carbs": "44g",
+              "flags": ["vegan", "vegetarian"],
+              "meals": ["Lunch", "Dinner"]
+            }
+          ]
+        },
+        {
+          "name": "Grill",
+          "foods": [
+            {
+              "name": "Grilled Chicken Breast",
+              "calories": "240",
+              "protein": "38g",
+              "carbs": "0g",
+              "flags": ["halal"],
+              "meals": ["Lunch", "Dinner"]
+            },
+            {
+              "name": "Black Bean Burger",
+              "calories": "380",
+              "protein": "17g",
+              "carbs": "49g",
+              "flags": ["soy", "wheat", "vegan", "vegetarian"],
+              "meals": ["Lunch", "Dinner"]
+            },
+            {
+              "name": "Seasoned Fries",
+              "calories": "320",
+              "protein": "4g",
+              "carbs": "41g",
+              "flags": ["vegan", "vegetarian"],
+              "meals": ["Lunch", "Dinner"]
+            },
+            {
+              "name": "Crispy Chicken Sandwich with Spicy Chipotle Aioli, Pepper Jack Cheese, Pickled Red Onions and Shredded Lettuce on a Toasted Brioche Bun",
+              "calories": "690",
+              "protein": "34g",
+              "carbs": "61g",
+              "flags": ["egg", "milk", "wheat", "soy", "sesame_seeds"],
+              "meals": ["Lunch", "Dinner"]
+            }
+          ]
+        },
+        {
+          "name": "Allergen Test Kitchen",
+          "foods": [
+            {
+              "name": "Everything Bagel Platter",
+              "calories": "540",
+              "protein": "22g",
+              "carbs": "70g",
+              "flags": [
+                "beef",
+                "egg",
+                "fish",
+                "milk",
+                "peanuts",
+                "pork",
+                "shellfish",
+                "soy",
+                "tree_nuts",
+                "wheat",
+                "sesame_seeds"
+              ],
+              "meals": ["Lunch"]
+            },
+            {
+              "name": "House Salad",
+              "calories": "",
+              "protein": "",
+              "carbs": "",
+              "flags": ["vegan", "vegetarian"],
+              "meals": ["Lunch", "Dinner"],
+              "blankNutrition": true
+            },
+            {
+              "name": "Seasoned Fries",
+              "calories": "320",
+              "protein": "4g",
+              "carbs": "41g",
+              "flags": ["vegan", "vegetarian"],
+              "meals": ["Lunch"]
+            }
+          ]
+        },
+        {
+          "name": "Chef's Table",
+          "foods": [
+            {
+              "name": "Central Today Special",
+              "calories": "450",
+              "protein": "25g",
+              "carbs": "40g",
+              "flags": [],
+              "meals": ["Dinner"],
+              "days": [0]
+            },
+            {
+              "name": "Central Tomorrow Special",
+              "calories": "450",
+              "protein": "25g",
+              "carbs": "40g",
+              "flags": [],
+              "meals": ["Dinner"],
+              "days": [1]
+            },
+            {
+              "name": "Shrimp Pad Thai",
+              "calories": "520",
+              "protein": "24g",
+              "carbs": "66g",
+              "flags": ["shellfish", "peanuts", "egg", "soy", "fish"],
+              "meals": ["Dinner"],
+              "days": [-2, 0, 2, 4, 6]
+            },
+            {
+              "name": "Salmon with Lemon Butter",
+              "calories": "460",
+              "protein": "34g",
+              "carbs": "3g",
+              "flags": ["fish", "milk"],
+              "meals": ["Dinner"],
+              "days": [-1, 1, 3, 5]
+            }
+          ]
+        },
+        {
+          "name": "Desserts",
+          "foods": [
+            {
+              "name": "Chocolate Chip Cookie",
+              "calories": "210",
+              "protein": "2g",
+              "carbs": "29g",
+              "flags": ["egg", "milk", "wheat", "soy", "vegetarian"]
+            },
+            {
+              "name": "Seasonal Fruit Cup",
+              "calories": "60",
+              "protein": "1g",
+              "carbs": "15g",
+              "flags": ["vegan", "vegetarian"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "location": "JCL Dining",
+      "days": [-2, -1, 0, 1, 3, 4, 5, 6],
+      "meals": ["Lunch", "Dinner"],
+      "categories": [
+        {
+          "name": "Asian Kitchen",
+          "foods": [
+            {
+              "name": "Orange Chicken",
+              "calories": "480",
+              "protein": "22g",
+              "carbs": "52g",
+              "flags": ["egg", "soy", "wheat"]
+            },
+            {
+              "name": "Vegetable Lo Mein",
+              "calories": "390",
+              "protein": "11g",
+              "carbs": "62g",
+              "flags": ["soy", "wheat", "vegan", "vegetarian"]
+            },
+            {
+              "name": "Tofu Stir Fry",
+              "calories": "300",
+              "protein": "18g",
+              "carbs": "20g",
+              "flags": ["soy", "vegan", "vegetarian"]
+            }
+          ]
+        },
+        {
+          "name": "Halal Grill",
+          "foods": [
+            {
+              "name": "Chicken Shawarma Bowl",
+              "calories": "560",
+              "protein": "40g",
+              "carbs": "55g",
+              "flags": ["halal", "milk", "sesame_seeds"]
+            },
+            {
+              "name": "Falafel Wrap",
+              "calories": "470",
+              "protein": "15g",
+              "carbs": "58g",
+              "flags": ["wheat", "sesame_seeds", "vegan", "vegetarian"]
+            }
+          ]
+        },
+        {
+          "name": "Salad Bar",
+          "foods": [
+            {
+              "name": "Mixed Greens",
+              "calories": "15",
+              "protein": "1g",
+              "carbs": "3g",
+              "flags": ["vegan", "vegetarian"]
+            },
+            {
+              "name": "Candied Pecans",
+              "calories": "200",
+              "protein": "2g",
+              "carbs": "14g",
+              "flags": ["tree_nuts", "vegetarian"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "location": "Kins Dining",
+      "days": [-2, -1],
+      "meals": ["Breakfast", "Lunch", "Dinner"],
+      "categories": [
+        {
+          "name": "Home Style",
+          "foods": [
+            {
+              "name": "Biscuits and Gravy",
+              "calories": "560",
+              "protein": "12g",
+              "carbs": "50g",
+              "flags": ["milk", "wheat", "pork"],
+              "meals": ["Breakfast"]
+            },
+            {
+              "name": "Roast Turkey",
+              "calories": "260",
+              "protein": "36g",
+              "carbs": "2g",
+              "flags": [],
+              "meals": ["Lunch", "Dinner"]
+            },
+            {
+              "name": "Mashed Potatoes",
+              "calories": "220",
+              "protein": "4g",
+              "carbs": "30g",
+              "flags": ["milk", "vegetarian"],
+              "meals": ["Lunch", "Dinner"]
+            }
+          ]
+        },
+        {
+          "name": "Pizza",
+          "foods": [
+            {
+              "name": "Pepperoni Pizza",
+              "calories": "310",
+              "protein": "13g",
+              "carbs": "34g",
+              "flags": ["milk", "wheat", "pork", "beef"],
+              "meals": ["Lunch", "Dinner"]
+            },
+            {
+              "name": "Cheese Pizza",
+              "calories": "280",
+              "protein": "12g",
+              "carbs": "33g",
+              "flags": ["milk", "wheat", "vegetarian"],
+              "meals": ["Lunch", "Dinner"]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "places": [
+    {
+      "name": "J2 Dining",
+      "scenario": "Open every day, full menus, an empty Breakfast tomorrow and a different Chef's Table dish today and tomorrow (Central time)",
+      "set": {
+        "force_close": false,
+        "regular_service_hours": {
+          "monday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 1030
+              },
+              {
+                "open": 1100,
+                "close": 1400
+              },
+              {
+                "open": 1630,
+                "close": 2100
+              }
+            ]
+          },
+          "tuesday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 1030
+              },
+              {
+                "open": 1100,
+                "close": 1400
+              },
+              {
+                "open": 1630,
+                "close": 2100
+              }
+            ]
+          },
+          "wednesday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 1030
+              },
+              {
+                "open": 1100,
+                "close": 1400
+              },
+              {
+                "open": 1630,
+                "close": 2100
+              }
+            ]
+          },
+          "thursday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 1030
+              },
+              {
+                "open": 1100,
+                "close": 1400
+              },
+              {
+                "open": 1630,
+                "close": 2100
+              }
+            ]
+          },
+          "friday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 1030
+              },
+              {
+                "open": 1100,
+                "close": 1400
+              },
+              {
+                "open": 1630,
+                "close": 2100
+              }
+            ]
+          },
+          "saturday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 1030
+              },
+              {
+                "open": 1100,
+                "close": 1400
+              },
+              {
+                "open": 1630,
+                "close": 2100
+              }
+            ]
+          },
+          "sunday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 1030
+              },
+              {
+                "open": 1100,
+                "close": 1400
+              },
+              {
+                "open": 1630,
+                "close": 2100
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "JCL Dining",
+      "scenario": "Lunch and Dinner only; UT never posted the day after tomorrow",
+      "set": {
+        "force_close": false,
+        "regular_service_hours": {
+          "monday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 1100,
+                "close": 1400
+              },
+              {
+                "open": 1630,
+                "close": 2000
+              }
+            ]
+          },
+          "tuesday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 1100,
+                "close": 1400
+              },
+              {
+                "open": 1630,
+                "close": 2000
+              }
+            ]
+          },
+          "wednesday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 1100,
+                "close": 1400
+              },
+              {
+                "open": 1630,
+                "close": 2000
+              }
+            ]
+          },
+          "thursday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 1100,
+                "close": 1400
+              },
+              {
+                "open": 1630,
+                "close": 2000
+              }
+            ]
+          },
+          "friday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 1100,
+                "close": 1400
+              },
+              {
+                "open": 1630,
+                "close": 2000
+              }
+            ]
+          },
+          "saturday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 1100,
+                "close": 1400
+              },
+              {
+                "open": 1630,
+                "close": 2000
+              }
+            ]
+          },
+          "sunday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 1100,
+                "close": 1400
+              },
+              {
+                "open": 1630,
+                "close": 2000
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "Kins Dining",
+      "scenario": "Closed for a break: force closed, menus stop yesterday",
+      "set": {
+        "force_close": true,
+        "regular_service_hours": {
+          "monday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 2000
+              }
+            ]
+          },
+          "tuesday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 2000
+              }
+            ]
+          },
+          "wednesday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 2000
+              }
+            ]
+          },
+          "thursday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 2000
+              }
+            ]
+          },
+          "friday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 2000
+              }
+            ]
+          },
+          "saturday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 2000
+              }
+            ]
+          },
+          "sunday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 2000
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "Wendy's",
+      "scenario": "Late night hours split at midnight (00:00-04:00 and 10:00-23:59), colloquial name Jendy's",
+      "set": {
+        "force_close": false,
+        "colloquial_name": "Jendy's",
+        "regular_service_hours": {
+          "monday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 0,
+                "close": 400
+              },
+              {
+                "open": 1000,
+                "close": 2359
+              }
+            ]
+          },
+          "tuesday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 0,
+                "close": 400
+              },
+              {
+                "open": 1000,
+                "close": 2359
+              }
+            ]
+          },
+          "wednesday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 0,
+                "close": 400
+              },
+              {
+                "open": 1000,
+                "close": 2359
+              }
+            ]
+          },
+          "thursday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 0,
+                "close": 400
+              },
+              {
+                "open": 1000,
+                "close": 2359
+              }
+            ]
+          },
+          "friday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 0,
+                "close": 400
+              },
+              {
+                "open": 1000,
+                "close": 2359
+              }
+            ]
+          },
+          "saturday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 0,
+                "close": 400
+              },
+              {
+                "open": 1000,
+                "close": 2359
+              }
+            ]
+          },
+          "sunday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 0,
+                "close": 400
+              },
+              {
+                "open": 1000,
+                "close": 2359
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "Gabriel's Café",
+      "scenario": "Closes at 23:59, the last minute of the Central day",
+      "set": {
+        "force_close": false,
+        "regular_service_hours": {
+          "monday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 1100,
+                "close": 2359
+              }
+            ]
+          },
+          "tuesday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 1100,
+                "close": 2359
+              }
+            ]
+          },
+          "wednesday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 1100,
+                "close": 2359
+              }
+            ]
+          },
+          "thursday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 1100,
+                "close": 2359
+              }
+            ]
+          },
+          "friday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 1100,
+                "close": 2359
+              }
+            ]
+          },
+          "saturday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 1100,
+                "close": 2359
+              }
+            ]
+          },
+          "sunday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 1100,
+                "close": 2359
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "Papua Coffee",
+      "scenario": "No map pin (no coordinates)",
+      "set": {
+        "force_close": false,
+        "latitude": null,
+        "longitude": null,
+        "regular_service_hours": {
+          "monday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 800,
+                "close": 1700
+              }
+            ]
+          },
+          "tuesday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 800,
+                "close": 1700
+              }
+            ]
+          },
+          "wednesday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 800,
+                "close": 1700
+              }
+            ]
+          },
+          "thursday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 800,
+                "close": 1700
+              }
+            ]
+          },
+          "friday": {
+            "isClosed": false,
+            "timeRanges": [
+              {
+                "open": 800,
+                "close": 1700
+              }
+            ]
+          },
+          "saturday": {
+            "isClosed": true,
+            "timeRanges": [
+              {
+                "open": 800,
+                "close": 1700
+              }
+            ]
+          },
+          "sunday": {
+            "isClosed": true,
+            "timeRanges": [
+              {
+                "open": 800,
+                "close": 1700
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "Guatemala Love",
+      "scenario": "Food truck closed between semesters: every day closed, no map pin",
+      "set": {
+        "force_close": false,
+        "latitude": null,
+        "longitude": null,
+        "regular_service_hours": {
+          "monday": {
+            "isClosed": true,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 1000
+              }
+            ]
+          },
+          "tuesday": {
+            "isClosed": true,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 1000
+              }
+            ]
+          },
+          "wednesday": {
+            "isClosed": true,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 1000
+              }
+            ]
+          },
+          "thursday": {
+            "isClosed": true,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 1000
+              }
+            ]
+          },
+          "friday": {
+            "isClosed": true,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 1000
+              }
+            ]
+          },
+          "saturday": {
+            "isClosed": true,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 1000
+              }
+            ]
+          },
+          "sunday": {
+            "isClosed": true,
+            "timeRanges": [
+              {
+                "open": 700,
+                "close": 1000
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "Jester City Market",
+      "scenario": "Colloquial name Jarket, no accepted payment methods listed",
+      "set": {
+        "force_close": false,
+        "colloquial_name": "Jarket",
+        "methods_of_payment": []
+      }
+    }
+  ]
+}
