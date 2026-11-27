@@ -13,11 +13,11 @@ export default function NotFoundScreen() {
         className="flex-1 items-center justify-center gap-y-3 px-8"
         style={{ backgroundColor: theme.background }}
       >
-        <Text className="font-bold text-[22px]" style={{ color: theme.label }}>
+        <Text className="text-[22px] font-bold" style={{ color: theme.label }}>
           This screen doesn't exist.
         </Text>
         <Link href="/">
-          <Text className="font-semibold text-[17px]" style={{ color: theme.tint }}>
+          <Text className="text-[17px] font-semibold" style={{ color: theme.tint }}>
             Go to Home
           </Text>
         </Link>

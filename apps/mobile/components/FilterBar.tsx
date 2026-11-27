@@ -15,13 +15,12 @@ import { timeOfDay } from '~/utils/time';
 type FilterBarProps = {
   selectedItem: string;
   setSelectedItem: (item: FilterType) => void;
-  items: { id: string; title: string }[]; // Accepts dynamic items array
+  items: { id: string; title: string }[];
   mealTimes?: MealTimes;
   showFilterButton?: boolean;
   useTimeOfDayDefault?: boolean;
 };
 
-// Define the proper meal order
 const MEAL_ORDER = {
   Breakfast: 1,
   Lunch: 2,
@@ -39,7 +38,6 @@ const FilterBar = ({
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
   const theme = useTheme();
 
-  // Sort items based on meal order
   const sortedItems = useMemo(() => {
     return [...filterItems].sort((a, b) => {
       const orderA = MEAL_ORDER[a.title as keyof typeof MEAL_ORDER] || 999;
@@ -48,9 +46,7 @@ const FilterBar = ({
     });
   }, [filterItems]);
 
-  // When enabled, set default filter based on timeOfDay if none is selected.
   useEffect(() => {
-    // If there's only one item, automatically select it
     if (filterItems.length === 1 && !selectedItem) {
       setSelectedItem(filterItems[0].id as FilterType);
       return;
@@ -64,13 +60,11 @@ const FilterBar = ({
       else if (tod === 'afternoon') defaultFilter = 'Lunch';
       else if (tod === 'evening') defaultFilter = 'Dinner';
 
-      // Find item with matching title
       const matchingItem = filterItems.find((item) => item.title === defaultFilter);
 
       if (matchingItem) {
         setSelectedItem(matchingItem.id as FilterType);
       } else {
-        // Fallback to first item if no match
         setSelectedItem(filterItems[0]?.id as FilterType);
       }
     }
@@ -113,7 +107,7 @@ const FilterBar = ({
               >
                 <Text
                   numberOfLines={1}
-                  className={isSelected ? 'font-semibold text-[14px]' : 'font-medium text-[14px]'}
+                  className={isSelected ? 'text-[14px] font-semibold' : 'text-[14px] font-medium'}
                   style={{ color: theme.label }}
                 >
                   {item.title}
@@ -141,7 +135,7 @@ const FilterBar = ({
                 style={{ backgroundColor: isSelected ? theme.tint : theme.fill }}
               >
                 <Text
-                  className={isSelected ? 'font-semibold text-[14px]' : 'font-medium text-[14px]'}
+                  className={isSelected ? 'text-[14px] font-semibold' : 'text-[14px] font-medium'}
                   style={{ color: isSelected ? '#FFFFFF' : theme.label }}
                 >
                   {item.title}

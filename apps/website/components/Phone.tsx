@@ -10,7 +10,7 @@ type PhoneProps = {
 
 export function Phone({ src, alt, className = '', preload }: PhoneProps) {
   return (
-    <div className={`rounded-[40px] bg-bezel p-2 shadow-xl ${className}`}>
+    <div className={`bg-bezel rounded-[40px] p-2 shadow-xl ${className}`}>
       <Image
         src={asset(src)}
         alt={alt}

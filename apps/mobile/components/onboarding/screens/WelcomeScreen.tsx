@@ -37,7 +37,7 @@ const WelcomeScreen = ({ width }: { width: number }) => {
         />
         <Text
           testID="onboarding-welcome-title"
-          className="mt-5 mb-10 text-center font-bold text-[34px] leading-[40px]"
+          className="mt-5 mb-10 text-center text-[34px] leading-[40px] font-bold"
           style={{ color: theme.label }}
         >
           Welcome to{'\n'}
@@ -50,7 +50,7 @@ const WelcomeScreen = ({ width }: { width: number }) => {
                 <Icon size={30} color={theme.tint} />
               </View>
               <View className="flex-1">
-                <Text className="font-semibold text-[17px]" style={{ color: theme.label }}>
+                <Text className="text-[17px] font-semibold" style={{ color: theme.label }}>
                   {title}
                 </Text>
                 <Text

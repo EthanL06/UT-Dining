@@ -1,14 +1,5 @@
 name: Deploy website
 
-# The site has to stay at https://longhorn-developers.github.io/ut-dining-website/ because the
-# App Store privacy-policy link points there. That URL belongs to the
-# Longhorn-Developers/ut-dining-website repo, so this workflow builds apps/website here and pushes
-# the static export to that repo's gh-pages branch. That repo is now a publish-only mirror.
-#
-# Setup (once): add a WEBSITE_DEPLOY_KEY secret here holding the private half of a deploy key
-# with write access on Longhorn-Developers/ut-dining-website, then set that repo's Pages source
-# to "Deploy from a branch: gh-pages / (root)". Until the secret exists this workflow only builds.
-
 on:
   push:
     branches: [main]
@@ -58,7 +49,6 @@ jobs:
           external_repository: Longhorn-Developers/ut-dining-website
           publish_branch: gh-pages
           publish_dir: apps/website/out
-          # Keeps the _next/ folder working on Pages (no Jekyll processing).
           enable_jekyll: false
           user_name: github-actions[bot]
           user_email: 41898282+github-actions[bot]@users.noreply.github.com

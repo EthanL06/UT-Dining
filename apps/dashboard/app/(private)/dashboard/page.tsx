@@ -1,4 +1,3 @@
-// app/dashboard/page.tsx (Server Component)
 import { Suspense } from 'react';
 import DashboardSkeleton from '@/components/dashboard/dashboard-skeleton';
 import DashboardLocationsClient from '@/components/dashboard/locations/dashboard-locations-client';
@@ -34,7 +33,6 @@ async function getLocationMenuStatus(locations: Location[]): Promise<Record<stri
   const supabase = await createClient();
   const menuStatus: Record<string, boolean> = {};
 
-  // Get all location IDs
   const locationIds = locations.map((loc) => loc.id).filter(Boolean) as string[];
 
   if (locationIds.length === 0) {
@@ -42,7 +40,6 @@ async function getLocationMenuStatus(locations: Location[]): Promise<Record<stri
   }
 
   try {
-    // Fetch all menus for all locations in one query
     const { data, error } = await supabase
       .from('menu')
       .select('location_id')
@@ -50,22 +47,18 @@ async function getLocationMenuStatus(locations: Location[]): Promise<Record<stri
 
     if (error) {
       console.error('❌ Menu check error:', error.message);
-      // Default all locations to no menus on error
       locationIds.forEach((id) => {
         menuStatus[id] = false;
       });
     } else {
-      // Create a set of location IDs that have menus
       const locationsWithMenus = new Set(data?.map((menu) => menu.location_id) || []);
 
-      // Set menu status for each location
       locationIds.forEach((id) => {
         menuStatus[id] = locationsWithMenus.has(id);
       });
     }
   } catch (error) {
     console.error('❌ Failed to check menus for locations:', error);
-    // Default all locations to no menus on error
     locationIds.forEach((id) => {
       menuStatus[id] = false;
     });

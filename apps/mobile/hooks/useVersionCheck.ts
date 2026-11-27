@@ -23,8 +23,6 @@ export const useVersionCheck = () => {
   const rawPosthog = usePostHog();
   const posthog = useMemo(() => getSafePostHog(rawPosthog), [rawPosthog]);
   const lastAppStoreCheckRef = useRef(0);
-  // Decided once per launch: a new user who finishes onboarding during this launch has
-  // nothing new to see, even if a later check runs after onboarding is done.
   const launchedWithOnboardingDone = useRef(useOnboardingStore.getState().isOnboardingComplete);
 
   const checkForUpdate = useCallback(async () => {

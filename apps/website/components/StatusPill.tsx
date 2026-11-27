@@ -45,7 +45,7 @@ export function StatusPill() {
     <a
       href={STATUS_URL}
       aria-label={`Service status: ${LABEL[state]}`}
-      className="inline-flex items-center gap-2 rounded-full bg-bg py-1.5 pr-3 pl-2.75 font-medium text-[13px] text-ink hover:text-accent-text"
+      className="bg-bg text-ink hover:text-accent-text inline-flex items-center gap-2 rounded-full py-1.5 pr-3 pl-2.75 text-[13px] font-medium"
     >
       <span aria-hidden className="relative inline-flex size-2">
         {state === 'operational' && (

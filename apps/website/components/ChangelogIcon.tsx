@@ -40,7 +40,7 @@ const ICONS: Record<string, LucideIcon> = {
 export function ChangelogIcon({ icon }: { icon?: string }) {
   const Icon = (icon && ICONS[icon]) || Sparkles;
   return (
-    <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-accent-soft text-accent-text">
+    <span className="bg-accent-soft text-accent-text flex size-9 shrink-0 items-center justify-center rounded-[10px]">
       <Icon size={18} strokeWidth={2} aria-hidden />
     </span>
   );

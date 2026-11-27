@@ -81,7 +81,6 @@ export function CreditsSection({ initialConfig }: CreditsSectionProps) {
 
       const newContributors = arrayMove(config.contributors, oldIndex, newIndex);
 
-      // Update order numbers
       const updatedContributors = newContributors.map((contributor, index) => ({
         ...contributor,
         order: index + 1,
@@ -198,7 +197,6 @@ export function CreditsSection({ initialConfig }: CreditsSectionProps) {
                 onDragEnd={handleDragEnd}
               />
             ) : (
-              // Non-interactive version for SSR
               <Stack gap="sm">
                 {config.contributors.map((contributor) => (
                   <DraggableContributorItem

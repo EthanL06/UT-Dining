@@ -50,17 +50,14 @@ const mealTimeOptions = [
 ];
 
 function validateServiceHours(value: { timeRanges: TimeRange[]; isClosed: boolean }) {
-  // Skip validation if the day is marked as closed
   if (value.isClosed) {
     return null;
   }
 
-  // Check if at least one time range exists
   if (!value.timeRanges || value.timeRanges.length === 0) {
     return 'At least one time range is required when day is open';
   }
 
-  // Validate each time range
   for (let i = 0; i < value.timeRanges.length; i++) {
     const range = value.timeRanges[i];
 
@@ -73,7 +70,6 @@ function validateServiceHours(value: { timeRanges: TimeRange[]; isClosed: boolea
     }
   }
 
-  // Check for overlapping time ranges
   const sortedRanges = [...value.timeRanges].sort((a, b) => a.open - b.open);
   for (let i = 0; i < sortedRanges.length - 1; i++) {
     const current = sortedRanges[i];
@@ -83,7 +79,6 @@ function validateServiceHours(value: { timeRanges: TimeRange[]; isClosed: boolea
       return 'Time ranges cannot overlap';
     }
 
-    // Ensure at least 15 minutes gap between ranges
     if (current.close === next.open) {
       return 'Time ranges must have at least a 15-minute gap between them';
     }
@@ -92,20 +87,17 @@ function validateServiceHours(value: { timeRanges: TimeRange[]; isClosed: boolea
   return null;
 }
 
-// Convert military time (0-2359) to HH:MM format for time input
 function militaryToTimeInput(militaryTime: number): string {
   const hours = Math.floor(militaryTime / 100);
   const minutes = militaryTime % 100;
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 }
 
-// Convert HH:MM format from time input to military time (0-2359)
 function timeInputToMilitary(timeInput: string): number {
   const [hours, minutes] = timeInput.split(':').map(Number);
   return hours * 100 + minutes;
 }
 
-// Validate that at least one day has service hours
 function validateServiceHoursRequired(
   serviceHours: Location['regular_service_hours'],
 ): string | null {
@@ -116,7 +108,6 @@ function validateServiceHoursRequired(
   return null;
 }
 
-// Validate that at least one payment method is selected
 function validatePaymentMethodsRequired(paymentMethods: string[]): string | null {
   if (paymentMethods.length === 0) {
     return 'At least one payment method is required';
@@ -124,7 +115,6 @@ function validatePaymentMethodsRequired(paymentMethods: string[]): string | null
   return null;
 }
 
-// Validate meal times
 function validateMealTimes(mealTimes: MealTime[]): string | null {
   for (let i = 0; i < mealTimes.length; i++) {
     const mealTime = mealTimes[i];
@@ -136,7 +126,6 @@ function validateMealTimes(mealTimes: MealTime[]): string | null {
     }
   }
 
-  // Check for overlapping meal times
   const sortedMealTimes = [...mealTimes].sort((a, b) => a.start_time - b.start_time);
   for (let i = 0; i < sortedMealTimes.length - 1; i++) {
     const current = sortedMealTimes[i];
@@ -166,14 +155,12 @@ export function AddLocationModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copiedDay, setCopiedDay] = useState<string | null>(null);
 
-  // Track initial form state for change detection
   const [initialFormData, setInitialFormData] = useState<{
     formValues: Location;
     paymentMethods: string[];
     mealTimes: MealTime[];
   } | null>(null);
 
-  // Local state to preserve editing mode during modal close animation
   const [localEditingLocation, setLocalEditingLocation] = useState<Location | null>(null);
 
   const isEditing = !!localEditingLocation;
@@ -260,7 +247,6 @@ export function AddLocationModal({
     },
   });
 
-  // Initialize form data tracking when modal opens
   useEffect(() => {
     if (opened && !initialFormData) {
       setInitialFormData({
@@ -275,10 +261,8 @@ export function AddLocationModal({
     resetForm();
   });
 
-  // Reset form when modal closes
   useEffect(() => {
     if (!opened) {
-      // Small delay to ensure modal animation completes before resetting
       const timeoutId = setTimeout(() => {
         onModalClosed();
       }, 150);
@@ -287,7 +271,6 @@ export function AddLocationModal({
     }
   }, [opened]);
 
-  // Sync local editing location with prop when modal opens
   useEffect(() => {
     if (opened) {
       console.log('📝 Debug - editingLocation prop:', editingLocation);
@@ -307,36 +290,28 @@ export function AddLocationModal({
       setMealTimes([]);
     }
 
-    // Clear errors when modal opens
     setServiceHoursError(null);
     setPaymentMethodsError(null);
     setMealTimesError(null);
     setImageError(false);
 
-    // Reset initial form data when modal opens
     setInitialFormData(null);
   });
 
-  // Update form values and payment methods when editing location changes
   useEffect(() => {
-    // Only update form when modal is opening, not when closing
     if (opened) {
       populateForm(localEditingLocation);
     }
   }, [localEditingLocation, opened]);
 
-  // Function to check if form has changes
   const hasFormChanges = (): boolean => {
     if (!initialFormData) return false;
 
-    // Check form values changes
     const formChanged = JSON.stringify(form.values) !== JSON.stringify(initialFormData.formValues);
 
-    // Check payment methods changes
     const paymentMethodsChanged =
       JSON.stringify(selectedPaymentMethods) !== JSON.stringify(initialFormData.paymentMethods);
 
-    // Check meal times changes
     const mealTimesChanged =
       JSON.stringify(mealTimes) !== JSON.stringify(initialFormData.mealTimes);
 
@@ -344,14 +319,12 @@ export function AddLocationModal({
   };
 
   async function handleSubmit(values: Location) {
-    // Clear previous errors
     setServiceHoursError(null);
     setPaymentMethodsError(null);
     setMealTimesError(null);
     setIsSubmitting(true);
 
     try {
-      // Validate image if URL is provided
       if (values.image && values.image.trim() !== '' && imageError) {
         notifications.show({
           title: 'Image Error',
@@ -362,7 +335,6 @@ export function AddLocationModal({
         });
         return;
       }
-      // Validate service hours
       const serviceHoursValidationError = validateServiceHoursRequired(
         values.regular_service_hours,
       );
@@ -370,26 +342,22 @@ export function AddLocationModal({
         setServiceHoursError(serviceHoursValidationError);
       }
 
-      // Validate payment methods
       const paymentMethodsValidationError = validatePaymentMethodsRequired(selectedPaymentMethods);
       if (paymentMethodsValidationError) {
         setPaymentMethodsError(paymentMethodsValidationError);
       }
 
-      // Validate meal times
       const mealTimesValidationError = validateMealTimes(mealTimes);
       if (mealTimesValidationError) {
         setMealTimesError(mealTimesValidationError);
       }
 
-      // If there are validation errors, don't submit
       if (
         serviceHoursValidationError ||
         paymentMethodsValidationError ||
         mealTimesValidationError ||
         imageError
       ) {
-        // Show alert for validation errors
         notifications.show({
           title: 'Validation Error',
           message: 'Please fix the highlighted errors before submitting.',
@@ -407,7 +375,7 @@ export function AddLocationModal({
         longitude: Number(values.longitude),
         meal_times: mealTimes,
         methods_of_payment: selectedPaymentMethods,
-        id: localEditingLocation?.id, // Include ID for editing
+        id: localEditingLocation?.id,
       } as Location;
 
       await onSubmit(formData);
@@ -421,10 +389,8 @@ export function AddLocationModal({
         autoClose: 3000,
       });
 
-      // Close modal (reset will be handled by useEffect)
       onClose();
     } catch {
-      // Handle unexpected errors
       notifications.show({
         title: 'Submission Error',
         message: 'An unexpected error occurred. Please try again.',
@@ -444,7 +410,6 @@ export function AddLocationModal({
       setSelectedPaymentMethods((prev) => prev.filter((method) => method !== value));
     }
 
-    // Clear payment methods error when user makes changes
     if (paymentMethodsError) {
       setPaymentMethodsError(null);
     }
@@ -454,7 +419,6 @@ export function AddLocationModal({
     const allMethods = paymentMethodOptions.map((option) => option.value);
     setSelectedPaymentMethods(allMethods);
 
-    // Clear payment methods error when user selects all
     if (paymentMethodsError) {
       setPaymentMethodsError(null);
     }
@@ -463,16 +427,14 @@ export function AddLocationModal({
   function addTimeRange(day: keyof Location['regular_service_hours']) {
     const currentRanges = form.values.regular_service_hours[day].timeRanges;
 
-    // Smart default: use the previous range's end time as the new start time
-    let defaultStartTime = 700; // Default fallback
-    let defaultEndTime = 1000; // Default fallback
+    let defaultStartTime = 700;
+    let defaultEndTime = 1000;
 
     if (currentRanges.length > 0) {
       const lastRange = currentRanges[currentRanges.length - 1];
       defaultStartTime = lastRange.close + 100;
-      // Set end time to 1 hour after start time, or end of day if that would exceed it
-      const proposedEndTime = defaultStartTime + 100; // 1 hour later
-      defaultEndTime = proposedEndTime > 2359 ? 2359 : proposedEndTime;
+      const proposedEndTime = defaultStartTime + 100;
+      defaultEndTime = Math.min(proposedEndTime, 2359);
     }
 
     const newRange: TimeRange = {
@@ -482,7 +444,6 @@ export function AddLocationModal({
 
     form.setFieldValue(`regular_service_hours.${day}.timeRanges`, [...currentRanges, newRange]);
 
-    // Clear validation errors when adding time ranges
     if (form.errors[`regular_service_hours.${day}`]) {
       form.clearFieldError(`regular_service_hours.${day}`);
     }
@@ -494,19 +455,17 @@ export function AddLocationModal({
   function copyTimesToNextDay(currentDay: keyof Location['regular_service_hours']) {
     const currentDayIndex = daysOfWeek.indexOf(currentDay);
     if (currentDayIndex === -1 || currentDayIndex >= daysOfWeek.length - 1) {
-      return; // Can't copy from the last day or invalid day
+      return;
     }
 
     const nextDay = daysOfWeek[currentDayIndex + 1];
     const currentDayData = form.values.regular_service_hours[currentDay];
 
-    // Copy the time ranges and open/closed status
     form.setFieldValue(`regular_service_hours.${nextDay}.timeRanges`, [
       ...currentDayData.timeRanges,
     ]);
     form.setFieldValue(`regular_service_hours.${nextDay}.isClosed`, currentDayData.isClosed);
 
-    // Clear any validation errors for the next day
     if (form.errors[`regular_service_hours.${nextDay}`]) {
       form.clearFieldError(`regular_service_hours.${nextDay}`);
     }
@@ -515,7 +474,6 @@ export function AddLocationModal({
     }
   }
 
-  // Handle copy button tooltip state
   const getCopyTooltipLabel = (dayIndex: number): string => {
     const nextDay = daysOfWeek[dayIndex + 1];
     if (copiedDay === daysOfWeek[dayIndex]) {
@@ -528,7 +486,6 @@ export function AddLocationModal({
     copyTimesToNextDay(day);
     setCopiedDay(day);
 
-    // Reset tooltip after 3 seconds
     setTimeout(() => {
       setCopiedDay(null);
     }, 3000);
@@ -539,7 +496,6 @@ export function AddLocationModal({
     const newRanges = currentRanges.filter((_, i) => i !== index);
     form.setFieldValue(`regular_service_hours.${day}.timeRanges`, newRanges);
 
-    // Clear validation errors when removing time ranges
     if (form.errors[`regular_service_hours.${day}`]) {
       form.clearFieldError(`regular_service_hours.${day}`);
     }
@@ -558,12 +514,10 @@ export function AddLocationModal({
     currentRanges[index] = { ...currentRanges[index], [field]: value };
     form.setFieldValue(`regular_service_hours.${day}.timeRanges`, currentRanges);
 
-    // Clear validation errors for this day when user makes changes
     if (form.errors[`regular_service_hours.${day}`]) {
       form.clearFieldError(`regular_service_hours.${day}`);
     }
 
-    // Clear global service hours error
     if (serviceHoursError) {
       setServiceHoursError(null);
     }
@@ -589,14 +543,12 @@ export function AddLocationModal({
       return updated;
     });
 
-    // Clear meal times error when user makes changes
     if (mealTimesError) {
       setMealTimesError(null);
     }
   }
 
   function handleModalClose() {
-    // Only show confirmation if there are actual changes
     if (hasFormChanges()) {
       modals.openConfirmModal({
         title: 'Close form?',
@@ -612,7 +564,6 @@ export function AddLocationModal({
         },
       });
     } else {
-      // No changes, close directly
       onClose();
     }
   }
@@ -651,7 +602,6 @@ export function AddLocationModal({
     >
       <form
         onSubmit={form.onSubmit(handleSubmit, (errors) => {
-          // Handle form validation errors
           console.warn('Form validation errors:', errors);
           notifications.show({
             title: 'Form Validation Error',
@@ -758,7 +708,6 @@ export function AddLocationModal({
               {...form.getInputProps('image')}
               onChange={(event) => {
                 form.getInputProps('image').onChange(event);
-                // Reset image error when user changes the URL
                 if (imageError) {
                   setImageError(false);
                 }
@@ -888,8 +837,6 @@ export function AddLocationModal({
                               {form.values.regular_service_hours[day].timeRanges.map(
                                 (timeRange, rangeIndex) => (
                                   <Group key={rangeIndex} gap="xs" align="center">
-                                    {/* Range number label for accessibility */}
-
                                     <Text size="xs" c="dimmed" w={20}>
                                       #{rangeIndex + 1}
                                     </Text>
@@ -952,7 +899,6 @@ export function AddLocationModal({
                                 >
                                   Add Time Range
                                 </Button>
-                                {/* Copy to next day button - only show if not the last day */}
                                 <Tooltip
                                   label={getCopyTooltipLabel(index)}
                                   position="top"
@@ -1000,7 +946,6 @@ export function AddLocationModal({
                             const isOpen = event.currentTarget.checked;
                             form.setFieldValue(`regular_service_hours.${day}.isClosed`, !isOpen);
 
-                            // If marking as open and no time ranges exist, add a default one
                             if (
                               isOpen &&
                               form.values.regular_service_hours[day].timeRanges.length === 0
@@ -1010,7 +955,6 @@ export function AddLocationModal({
                               ]);
                             }
 
-                            // Clear service hours error when user makes changes
                             if (serviceHoursError) {
                               setServiceHoursError(null);
                             }
@@ -1019,7 +963,6 @@ export function AddLocationModal({
                       </Tooltip>
                     </Group>
 
-                    {/* Show validation error if present */}
                     {form.errors[`regular_service_hours.${day}`] && (
                       <Text size="xs" c="red" mt="xs">
                         {form.errors[`regular_service_hours.${day}`]}
@@ -1027,12 +970,10 @@ export function AddLocationModal({
                     )}
                   </Paper>
 
-                  {/* Add divider between days, but not after the last day */}
                   {index < daysOfWeek.length - 1 && <Divider />}
                 </div>
               ))}
             </Stack>
-            {/* Show service hours validation error if present */}
             {serviceHoursError && (
               <Text size="xs" c="red" mt="xs">
                 {serviceHoursError}
@@ -1071,9 +1012,7 @@ export function AddLocationModal({
                           label="Meal Name"
                           placeholder="Select meal type"
                           data={mealTimeOptions.filter((option) => {
-                            // Allow the current meal's name to be selected
                             if (option.value === mealTime.name) return true;
-                            // Filter out names that are already selected by other meals
                             return !mealTimes.some(
                               (meal, mealIndex) =>
                                 mealIndex !== index && meal.name === option.value,
@@ -1117,7 +1056,6 @@ export function AddLocationModal({
                       </Group>
                     </Paper>
 
-                    {/* Add divider between meal times, but not after the last one */}
                     {index < mealTimes.length - 1 && <Divider />}
                   </div>
                 ))}
@@ -1127,7 +1065,6 @@ export function AddLocationModal({
                 No meal times defined
               </Text>
             )}
-            {/* Show meal times validation error if present */}
             {mealTimesError && (
               <Text size="xs" c="red" mt="xs">
                 {mealTimesError}
@@ -1192,7 +1129,6 @@ export function AddLocationModal({
                 </Card>
               ))}
             </SimpleGrid>
-            {/* Show payment methods validation error if present */}
             {paymentMethodsError && (
               <Text size="xs" c="red" mt="xs">
                 {paymentMethodsError}

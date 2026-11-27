@@ -137,7 +137,6 @@ export const food_item = sqliteTable('food_item', {
 
 export const favorites = sqliteTable('favorites', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  // original_food_id: integer('original_food_id'), // Reference to original food item (optional)
   name: text('name').notNull(),
   location_name: text('location_name').notNull(),
   menu_name: text('menu_name').notNull(),
@@ -145,7 +144,6 @@ export const favorites = sqliteTable('favorites', {
   date_added: text('date_added').notNull(),
   link: text('link'),
 
-  // Embedded nutrition data (denormalized for quick access)
   serving_size: text('serving_size'),
   calories: text('calories'),
   total_fat: text('total_fat'),
@@ -163,7 +161,6 @@ export const favorites = sqliteTable('favorites', {
   ingredients: text('ingredients'),
   trans_fat: text('trans_fat'),
 
-  // Embedded allergen data (denormalized)
   beef: integer('beef', { mode: 'boolean' }),
   egg: integer('egg', { mode: 'boolean' }),
   fish: integer('fish', { mode: 'boolean' }),

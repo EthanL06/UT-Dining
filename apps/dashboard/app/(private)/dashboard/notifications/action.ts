@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/server';
 
-// Types
 export interface NotificationData {
   title: string;
   body: string;
@@ -12,7 +11,6 @@ export interface NotificationData {
   notification_type_id: string;
 }
 
-// Backend functions
 export async function sendNotification(data: NotificationData) {
   console.log('⏳ Sending notification...');
   const supabase = await createClient();
@@ -54,7 +52,6 @@ export async function scheduleNotification(data: NotificationData) {
 
   const supabase = await createClient();
 
-  // Ensure we have a valid Date object
   const scheduledAt =
     data.scheduledAt instanceof Date ? data.scheduledAt : new Date(data.scheduledAt);
 
@@ -65,7 +62,6 @@ export async function scheduleNotification(data: NotificationData) {
     };
   }
 
-  // Push to scheduled notifications table
   const { error } = await supabase.from('notifications').insert({
     title: data.title,
     body: data.body,

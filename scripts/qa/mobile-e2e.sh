@@ -23,6 +23,7 @@ Runs the Maestro flows in apps/mobile/e2e on an iOS Simulator against local Supa
                            exit code comes from the retry. Reports go to <output>/retry.
 
 Anything else goes to `maestro test`, for example a single flow file or `--include-tags smoke`.
+Output goes to .context/maestro/<timestamp>, or to $E2E_OUT when it is set.
 EOF
 }
 
@@ -59,7 +60,7 @@ step() { echo "==> $*"; }
 command -v xcrun >/dev/null || fail "xcrun not found. Install Xcode."
 command -v maestro >/dev/null || fail "maestro not found. Install it with: curl -fsSL https://get.maestro.mobile.dev | bash"
 
-OUT="$ROOT/.context/maestro/$(date +%Y%m%d-%H%M%S)"
+OUT="${E2E_OUT:-$ROOT/.context/maestro/$(date +%Y%m%d-%H%M%S)}"
 mkdir -p "$OUT"
 
 STARTED_METRO=false

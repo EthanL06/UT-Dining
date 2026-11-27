@@ -52,7 +52,7 @@ When Ethan asks to change app data (hours, force close, locations, support links
 
 ## Conventions
 
-- No code comments in code you write, workflow YAML and shell included (`biome-ignore` and `@ts-expect-error` directives are fine). Lefthook blocks a commit that adds one, and CI fails a PR that adds one.
+- No code comments in code you write, workflow YAML and shell included (`biome-ignore` and `@ts-expect-error` directives are fine). There are none in the repo, and `make check` and CI fail on any (`scripts/dev/check-comments.sh --all`, which parses TypeScript, JavaScript and CSS); Lefthook checks the staged diff. `node scripts/dev/comments.ts --write` removes them. Only `supabase/config.toml` (the Supabase CLI template), SQL migrations and generated files are exempt.
 - Biome rules that are errors on purpose, so agents get a clear failure instead of a review comment: no `any` (explicit or implicit `let`), no non-null `!`, no unused imports or variables, `===` only, `const` when never reassigned, no reassigned parameters, throw only `Error`s. Fix the code; do not add a `biome-ignore` unless the rule is wrong for that line, and say why in the ignore.
 - No AI attribution in commits, PR bodies or comments.
 - PRs target `staging` and are squash merged. Only Ethan promotes `staging` to `main`, which ships production.
@@ -60,6 +60,7 @@ When Ethan asks to change app data (hours, force close, locations, support links
 - Biome formats and lints everything: single quotes, 2 spaces, 100 columns.
 - Shared versions go in the `catalog:` in `pnpm-workspace.yaml`.
 - PR screenshots go on an orphan `assets/<topic>` branch. Include both `apps/dashboard/vercel.json` and `apps/website/vercel.json` containing `{ "git": { "deploymentEnabled": false } }` in that branch, or Vercel tries to build it, fails because the app folder is missing, and emails Ethan. `.agents/recipes/cloud-sessions.md` has the commands.
+- Vercel builds the dashboard and the website only when needed, to stay under the free plan's 100 deployments a day. Both `vercel.json` files run `scripts/vercel-ignore.mjs`: a preview builds only for `staging` or a branch with an open PR, and any build is skipped unless the diff touches the app, a workspace package it depends on, or a root build file (`package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `turbo.json`, `.node-version`). The diff base is the last deployed commit, or where the branch left `staging` when that commit is gone. A push made before its PR exists builds nothing, so push again after opening the PR to get a preview. When a new app or package path should trigger a build, update the script.
 - pnpm uses its default isolated `node_modules`. The app must list every package it imports directly (for example `react-native-css-interop`, which NativeWind's JSX runtime needs).
 - Before an Expo SDK bump, run `npx expo install expo@^<sdk> && npx expo install --fix` in `apps/mobile`, then `npx expo-doctor`.
 - Env files: each app commits `.env.example`; real values go in the gitignored `.env.local` (written by `scripts/env.ts`). Never commit keys.

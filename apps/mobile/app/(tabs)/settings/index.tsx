@@ -272,7 +272,7 @@ const InformationSection = ({ appInfo }: { appInfo: AppInformation }) => {
     <>
       <GroupedSection header="About">
         <View className="px-4 py-3.5">
-          <Text className="mb-1 font-semibold text-[17px]" style={{ color: theme.label }}>
+          <Text className="mb-1 text-[17px] font-semibold" style={{ color: theme.label }}>
             {appInfo.about_title}
           </Text>
           <Text className="text-[15px] leading-[22px]" style={{ color: theme.secondaryLabel }}>

@@ -12,7 +12,6 @@ export function useUnreadNotifications() {
   const lastSyncTime = useDataSyncStore((state) => state.lastSupabaseQueryTime);
   const lastVisited = useNotificationsStore((state) => state.lastVisited);
 
-  // Get notifications from database
   const { data: dbNotifications = [] } = useLiveQuery(
     db
       ?.select({
@@ -24,10 +23,8 @@ export function useUnreadNotifications() {
     [lastSyncTime],
   );
 
-  // Calculate unread count based on last visited timestamp
   const unreadCount = useMemo(() => {
     if (lastVisited === null) {
-      // If never visited, all notifications are unread
       return dbNotifications.length;
     }
 

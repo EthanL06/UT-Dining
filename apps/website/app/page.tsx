@@ -128,10 +128,10 @@ function FeatureTile({ tile }: { tile: Tile }) {
         preload={big}
         className={
           tile.layout === 'below'
-            ? '-translate-x-1/2 absolute top-34 left-1/2 w-55'
+            ? 'absolute top-34 left-1/2 w-55 -translate-x-1/2'
             : big
-              ? '-translate-x-1/2 absolute top-40 left-1/2 w-60 md:top-24 md:left-[66%] md:w-75'
-              : '-translate-x-1/2 absolute top-34 left-1/2 w-55 md:top-9 md:left-[72%]'
+              ? 'absolute top-40 left-1/2 w-60 -translate-x-1/2 md:top-24 md:left-[66%] md:w-75'
+              : 'absolute top-34 left-1/2 w-55 -translate-x-1/2 md:top-9 md:left-[72%]'
         }
       />
     </article>
@@ -186,11 +186,11 @@ export default async function Home() {
 
       <main>
         <section className="mx-auto max-w-290 px-6 pt-16 pb-14 md:pt-18">
-          <h1 className="max-w-225 font-bold text-[clamp(44px,8vw,80px)] leading-[0.98] tracking-[-0.045em]">
+          <h1 className="max-w-225 text-[clamp(44px,8vw,80px)] leading-[0.98] font-bold tracking-[-0.045em]">
             Hungry? Here's everything open on campus.
           </h1>
           <div className="mt-7 flex flex-wrap items-end justify-between gap-6">
-            <p className="max-w-120 text-[19px] text-muted leading-normal">
+            <p className="text-muted max-w-120 text-[19px] leading-normal">
               Your companion for dining at UT Austin. Browse menus, check hours, and find your next
               meal.
             </p>
@@ -208,8 +208,8 @@ export default async function Home() {
         </section>
 
         <section className="mx-auto mt-4 grid max-w-290 grid-cols-1 gap-4 px-6 md:grid-cols-2">
-          <div className="rounded-[28px] bg-tile p-10">
-            <h2 className="font-semibold text-accent-text text-sm">Why it exists</h2>
+          <div className="bg-tile rounded-[28px] p-10">
+            <h2 className="text-accent-text text-sm font-semibold">Why it exists</h2>
             <p className="mt-3 text-[22px] leading-[1.45] tracking-[-0.01em]">
               Figuring out where to eat on campus shouldn't be a chore. UT Dining gathers every
               spot, from dining halls to cafés and markets, into one simple app, built by students,
@@ -217,23 +217,23 @@ export default async function Home() {
             </p>
           </div>
           {latest && (
-            <div className="flex flex-col justify-between gap-6 rounded-[28px] bg-tile p-10">
+            <div className="bg-tile flex flex-col justify-between gap-6 rounded-[28px] p-10">
               <div>
-                <h2 className="font-semibold text-accent-text text-sm">
+                <h2 className="text-accent-text text-sm font-semibold">
                   What's new in {latest.version}
                 </h2>
                 {latest.summary && (
-                  <p className="mt-3 font-semibold text-[22px] tracking-[-0.01em]">
+                  <p className="mt-3 text-[22px] font-semibold tracking-[-0.01em]">
                     {latest.summary}
                   </p>
                 )}
-                <ul className="mt-3 space-y-1 text-[17px] text-muted leading-normal">
+                <ul className="text-muted mt-3 space-y-1 text-[17px] leading-normal">
                   {latest.changes.slice(0, 4).map((change) => (
                     <li key={change.title}>{change.title}</li>
                   ))}
                 </ul>
               </div>
-              <Link href="/changelog/" className="font-semibold hover:text-accent-text">
+              <Link href="/changelog/" className="hover:text-accent-text font-semibold">
                 See the changelog
               </Link>
             </div>

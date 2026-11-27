@@ -38,7 +38,7 @@ const Tile = ({ label, value, theme }: { label: string; value: string; theme: Th
     <Text className="text-[12.5px]" style={{ color: theme.secondaryLabel }}>
       {label}
     </Text>
-    <Text className="font-bold text-[21px]" style={{ color: theme.label }}>
+    <Text className="text-[21px] font-bold" style={{ color: theme.label }}>
       {value}
     </Text>
   </View>
@@ -139,7 +139,7 @@ const FoodScreen = () => {
             <>
               <View className="px-5 pb-3">
                 <Text
-                  className="font-bold text-[28px] leading-[33px]"
+                  className="text-[28px] leading-[33px] font-bold"
                   style={{ color: theme.label }}
                 >
                   {foodItem.name}
@@ -162,7 +162,7 @@ const FoodScreen = () => {
                     <Text className="text-[12.5px]" style={{ color: theme.secondaryLabel }}>
                       Calories · {displayNutrient(foodItem.nutrition?.serving_size)}
                     </Text>
-                    <Text className="font-bold text-[34px]" style={{ color: theme.label }}>
+                    <Text className="text-[34px] font-bold" style={{ color: theme.label }}>
                       {displayNutrient(foodItem.nutrition?.calories)}
                     </Text>
                   </View>
@@ -194,7 +194,7 @@ const FoodScreen = () => {
                         className="size-5 rounded-full"
                         resizeMode="contain"
                       />
-                      <Text className="font-medium text-[13px]" style={{ color: theme.label }}>
+                      <Text className="text-[13px] font-medium" style={{ color: theme.label }}>
                         {tag}
                       </Text>
                     </View>
@@ -228,7 +228,7 @@ const FoodScreen = () => {
                             {displayNutrient(item.value)}
                           </Text>
                           <Text
-                            className="w-10 text-right font-semibold text-[15px]"
+                            className="w-10 text-right text-[15px] font-semibold"
                             style={{ color: theme.label }}
                           >
                             {percent ?? ''}
@@ -282,7 +282,7 @@ const FoodScreen = () => {
                 color={isFavorite ? theme.tint : theme.label}
                 fill={isFavorite ? theme.tint : 'transparent'}
               />
-              <Text className="font-semibold text-[15px]" style={{ color: theme.label }}>
+              <Text className="text-[15px] font-semibold" style={{ color: theme.label }}>
                 {isFavorite ? 'Favorited' : 'Favorite'}
               </Text>
             </Pressable>
@@ -303,7 +303,7 @@ const FoodScreen = () => {
                 <ChefHat size={18} color="#FFFFFF" />
               )}
               <Text
-                className="font-semibold text-[15px]"
+                className="text-[15px] font-semibold"
                 style={{ color: isMealPlan ? theme.tint : '#FFFFFF' }}
               >
                 {isMealPlan ? 'In Meal Plan' : 'Add to Meal Plan'}

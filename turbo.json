@@ -2,6 +2,18 @@
   "$schema": "https://turborepo.com/schema.json",
   "ui": "stream",
   "globalDependencies": [".node-version", "packages/tsconfig/*.json"],
+  "globalPassThroughEnv": [
+    "SUPABASE_URL",
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_DEV_URL",
+    "SUPABASE_DEV_ANON_KEY",
+    "SUPABASE_DEV_SERVICE_KEY",
+    "EXPO_ACCESS_TOKEN",
+    "FIXTURE_PORT",
+    "UP",
+    "OUT"
+  ],
   "tasks": {
     "typecheck": {
       "dependsOn": ["^typecheck"],

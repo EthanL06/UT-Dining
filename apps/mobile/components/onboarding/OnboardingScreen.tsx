@@ -64,7 +64,6 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
   } | null>(null);
   const [hasTrackedStart, setHasTrackedStart] = React.useState(false);
 
-  // Track onboarding start only once
   React.useEffect(() => {
     if (!isOnboardingComplete && !hasTrackedStart) {
       analytics.capture('onboarding_start', {
@@ -189,7 +188,6 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
   };
 
   const handlePress = () => {
-    // Ensure animation resets on press
     scale.value = withSpring(1, { damping: 50, stiffness: 400 });
     opacity.value = withSpring(1, { damping: 50, stiffness: 400 });
 
@@ -260,7 +258,7 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
               className="w-full rounded-full p-3"
               style={[{ backgroundColor: theme.tint }, animatedStyle]}
             >
-              <Text className="py-1.5 text-center font-semibold text-[17px] text-white">
+              <Text className="py-1.5 text-center text-[17px] font-semibold text-white">
                 {currentStep === ONBOARDING_SCREENS.length - 1
                   ? 'Finish'
                   : (currentStep === 1 && !hasDataSelection) ||

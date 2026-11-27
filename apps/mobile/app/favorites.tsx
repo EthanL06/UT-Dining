@@ -161,7 +161,7 @@ const Favorites = () => {
         </View>
         <Text
           testID="favorites-title"
-          className="px-5 pt-3 pb-1 font-bold text-[34px]"
+          className="px-5 pt-3 pb-1 text-[34px] font-bold"
           style={{ color: theme.label }}
         >
           Favorites
@@ -175,7 +175,7 @@ const Favorites = () => {
         {sorted.length === 0 ? (
           <View className="mx-8 mt-12 items-center gap-y-2">
             <Heart size={36} color={theme.tertiaryLabel} />
-            <Text className="font-semibold text-[17px]" style={{ color: theme.label }}>
+            <Text className="text-[17px] font-semibold" style={{ color: theme.label }}>
               No Favorites Yet!
             </Text>
             <Text className="text-center text-[15px]" style={{ color: theme.secondaryLabel }}>
@@ -187,7 +187,7 @@ const Favorites = () => {
               className="mt-3 h-11 justify-center rounded-full px-5"
               style={{ backgroundColor: theme.tint }}
             >
-              <Text className="font-semibold text-[15px] text-white">Browse Dining Locations</Text>
+              <Text className="text-[15px] font-semibold text-white">Browse Dining Locations</Text>
             </Pressable>
           </View>
         ) : (
