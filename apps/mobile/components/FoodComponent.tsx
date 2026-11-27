@@ -5,6 +5,7 @@ import { MealPlanIcon } from '~/components/MealPlanIcon';
 import { Image } from '~/components/ui/Image';
 import { Text } from '~/components/ui/Text';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
+import { useFavorite } from '~/hooks/useFavorite';
 import type { FoodItem } from '~/services/database/database';
 import { todayKey, useIsMealPlanItem } from '~/store/useMealPlanStore';
 import { toggleMealPlanForFood } from '~/utils/foodActions';
@@ -37,7 +38,7 @@ const FoodComponent = ({
   location,
   date,
   onFavorite,
-  isFavorite,
+  isFavorite: savedFavorite,
   isFavoriteScreen = false,
   showExtraInfo = true,
   canMealPlan = true,
@@ -69,6 +70,7 @@ const FoodComponent = ({
     },
     planDate,
   );
+  const isFavorite = useFavorite(food.name as string, location, savedFavorite);
   const theme = useTheme();
   const context = { location, menu: selectedMenu, category: categoryName, date: planDate };
   const href = {
@@ -121,7 +123,7 @@ const FoodComponent = ({
           {selection.selected && <Check size={15} color="#FFFFFF" strokeWidth={3} />}
         </View>
       )}
-      <View className="flex-1 gap-y-0.5">
+      <View className="flex-1">
         <Text variant="callout" numberOfLines={2}>
           {food.name}
         </Text>
@@ -131,7 +133,7 @@ const FoodComponent = ({
           </Text>
         )}
         {showExtraInfo && subtitle === undefined && (
-          <View className="flex-row flex-wrap items-center gap-x-1.5">
+          <View className="flex-row flex-wrap items-center gap-x-1.5 gap-y-[3px]">
             <Text variant="footnote" tone="secondary">
               {displayNutrient(food.nutrition?.calories)} kcal ·{' '}
               {displayNutrient(food.nutrition?.protein)} protein ·{' '}

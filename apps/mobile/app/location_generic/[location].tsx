@@ -3,11 +3,15 @@ import { Link, router, useLocalSearchParams } from 'expo-router';
 import { MapPin, Navigation, X } from 'lucide-react-native';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { ActivityIndicator, Pressable, useWindowDimensions, View } from 'react-native';
+import Animated, {
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PLACE_ICONS, usePlaceColor } from '~/components/map/MapSheet';
 import PlaceDetails, { openPlaceDirections } from '~/components/PlaceDetails';
 import { Image } from '~/components/ui/Image';
-import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { analytics } from '~/services/analytics/posthog';
@@ -25,6 +29,19 @@ export default function LocationGenericScreen() {
   const { width } = useWindowDimensions();
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
   const [imageFailed, setImageFailed] = useState(false);
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
+  const coverStyle = useAnimatedStyle(() => {
+    const pull = Math.max(-scrollY.value, 0);
+    return {
+      transform: [{ translateY: -pull / 2 }, { scale: 1 + pull / COVER_HEIGHT }],
+    };
+  });
+  const closeStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: Math.min(scrollY.value, 0) }],
+  }));
 
   const { status: lookup, locationData } = useLocationDetails(location || '');
   const typeColor = usePlaceColor(locationData?.type ?? '');
@@ -77,35 +94,45 @@ export default function LocationGenericScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
-      <OverflowScrollView
-        divider={false}
+      <Animated.ScrollView
+        testID="place-scroll"
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        alwaysBounceVertical={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
       >
-        <View style={{ height: COVER_HEIGHT, backgroundColor: typeColor }}>
-          {showImage ? (
-            <Image
-              source={{ uri: locationData.image as string }}
-              style={{ width, height: COVER_HEIGHT }}
-              contentFit="cover"
-              transition={150}
-              cachePolicy="memory-disk"
-              onError={() => setImageFailed(true)}
-            />
-          ) : (
-            <View className="flex-1 items-center justify-center">
-              <TypeIcon size={72} color="rgba(255,255,255,0.75)" />
-            </View>
-          )}
-          <Pressable
-            testID="back-button"
-            accessibilityLabel="Close"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            className="absolute top-4 left-4 size-11 items-center justify-center rounded-full"
-            style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
+        <View style={{ height: COVER_HEIGHT, zIndex: 1 }}>
+          <Animated.View
+            testID="place-cover"
+            style={[{ width, height: COVER_HEIGHT, backgroundColor: typeColor }, coverStyle]}
           >
-            <X size={20} color="#FFFFFF" />
-          </Pressable>
+            {showImage ? (
+              <Image
+                source={{ uri: locationData.image as string }}
+                style={{ width, height: COVER_HEIGHT }}
+                contentFit="cover"
+                transition={150}
+                cachePolicy="memory-disk"
+                onError={() => setImageFailed(true)}
+              />
+            ) : (
+              <View className="flex-1 items-center justify-center">
+                <TypeIcon size={72} color="rgba(255,255,255,0.75)" />
+              </View>
+            )}
+          </Animated.View>
+          <Animated.View className="absolute top-4 left-4" style={closeStyle}>
+            <Pressable
+              testID="back-button"
+              accessibilityLabel="Close"
+              accessibilityRole="button"
+              onPress={() => router.back()}
+              className="size-11 items-center justify-center rounded-full"
+              style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
+            >
+              <X size={20} color="#FFFFFF" />
+            </Pressable>
+          </Animated.View>
         </View>
 
         <View className="px-5 pt-4 pb-3">
@@ -163,7 +190,7 @@ export default function LocationGenericScreen() {
             </Text>
           </Pressable>
         )}
-      </OverflowScrollView>
+      </Animated.ScrollView>
     </View>
   );
 }
