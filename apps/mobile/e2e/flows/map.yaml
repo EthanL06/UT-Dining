@@ -1,0 +1,40 @@
+appId: com.ethanl06.ut-dining.dev
+name: The map sheet filters places and opens a place card
+tags:
+  - smoke
+---
+- runFlow: ../subflows/start.yaml
+- tapOn:
+    id: map-tab
+- extendedWaitUntil:
+    visible:
+      id: map-search-input
+    timeout: 10000
+- takeScreenshot: map-sheet
+- tapOn:
+    id: map-filter-Dining Hall
+- scrollUntilVisible:
+    element: 'J2 Dining(,.*)?'
+    direction: DOWN
+- assertNotVisible: 'Burrito Factory(,.*)?'
+- tapOn: 'J2 Dining(,.*)?'
+- extendedWaitUntil:
+    visible:
+      id: map-directions-button
+    timeout: 5000
+- assertVisible: View Menu
+- takeScreenshot: map-place-card
+- waitForAnimationToEnd
+- tapOn:
+    id: map-view-place-button
+- extendedWaitUntil:
+    visible: 'Maestro Grill(,.*)?'
+    timeout: 20000
+- tapOn:
+    id: back-button
+- tapOn:
+    id: map-place-close
+- extendedWaitUntil:
+    visible:
+      id: map-search-input
+    timeout: 5000

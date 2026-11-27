@@ -1,19 +1,20 @@
-import { eq } from 'drizzle-orm';
 import * as Haptics from 'expo-haptics';
-import React, { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { ChefHat, ChevronLeft, Heart, Info } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
+import { SheetManager } from 'react-native-actions-sheet';
 import FilterBar from '~/components/FilterBar';
-import TopBar from '~/components/TopBar';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
-import { location as location_schema, menu } from '~/services/database/schema';
 import { useSettingsStore } from '~/store/useSettingsStore';
+import { getTodayInCentralTime } from '~/utils/date';
+import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
 import { useLocationName, useMealTimes } from '~/utils/locations';
-import { generateSchedule, isLocationOpen } from '~/utils/time';
-import { cn } from '~/utils/utils';
-import DateNavigator from './DateNavigator';
+import { type Theme, useTheme } from '~/utils/theme';
+import { getLocationStatusText } from '~/utils/time';
 import SearchBar from './SearchBar';
-import TimeSchedule from './TimeSchedule';
+import WeekStrip from './WeekStrip';
 
 interface LocationHeaderProps {
   location: string;
@@ -24,7 +25,38 @@ interface LocationHeaderProps {
   setQuery: (query: string) => void;
   selectedDate: string;
   onDateChange: (date: string) => void;
+  selecting: boolean;
+  onDoneSelecting: () => void;
 }
+
+const CircleButton = ({
+  testID,
+  label,
+  onPress,
+  theme,
+  children,
+}: {
+  testID: string;
+  label: string;
+  onPress: () => void;
+  theme: Theme;
+  children: React.ReactNode;
+}) => (
+  <Pressable
+    testID={testID}
+    accessibilityLabel={label}
+    accessibilityRole="button"
+    hitSlop={6}
+    onPress={() => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      onPress();
+    }}
+    className="size-11 items-center justify-center rounded-full"
+    style={{ backgroundColor: theme.card }}
+  >
+    {children}
+  </Pressable>
+);
 
 const LocationHeader = React.memo(
   ({
@@ -36,159 +68,133 @@ const LocationHeader = React.memo(
     setQuery,
     selectedDate,
     onDateChange,
+    selecting,
+    onDoneSelecting,
   }: LocationHeaderProps) => {
-    const [open, setOpen] = useState(false);
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const db = useDatabase();
-    const [timeDropdownOpen, setTimeDropdownOpen] = useState(false);
+    const theme = useTheme();
     const { locationData } = useLocationDetails(location);
-    const schedule = generateSchedule(locationData, true);
-
     const { useColloquialNames } = useSettingsStore();
     const displayName = useLocationName(location, useColloquialNames);
     const mealTimes = useMealTimes(location);
 
-    const isDarkMode = useSettingsStore((state) => state.isDarkMode);
-
-    useEffect(() => {
-      const checkOpen = async () => {
-        // Get location id
-        const locationDbData = db
-          .select()
-          .from(location_schema)
-          .where(eq(location_schema.name, location))
-          .get();
-
-        if (!locationDbData) {
-          setOpen(false);
-          return;
-        }
-
-        const res = db.select().from(menu).where(eq(menu.location_id, locationDbData.id)).get();
-
-        if (!res) {
-          setOpen(false);
-          return;
-        }
-
-        setOpen(isLocationOpen(locationData));
-      };
-
-      checkOpen();
-    }, [location, locationData, db.select]);
+    const now = new Date();
+    const isOpen = locationData
+      ? isLocationOpenNow(locationData, getLocationIdsWithMenus(db, getTodayInCentralTime()), now)
+      : false;
+    const status = locationData ? getLocationStatusText(locationData, isOpen, now) : '';
 
     return (
-      <View className="mx-6 mt-6 flex gap-y-5">
-        {/* Content that's hidden when search is focused */}
+      <View className="mx-4 mt-2 mb-3 gap-y-4">
         {!isSearchFocused && (
           <>
-            <TopBar variant="location" />
+            <View className="flex-row items-center justify-between">
+              <CircleButton
+                testID="back-button"
+                label="Back"
+                theme={theme}
+                onPress={() => router.back()}
+              >
+                <ChevronLeft size={22} color={theme.label} />
+              </CircleButton>
 
-            <View className="gap-y-4">
-              {/* Temporarily Closed Banner */}
-              {locationData?.force_close && (
-                <View className="rounded-lg bg-red-600 px-4 py-2">
-                  <Text className="text-center font-extrabold text-lg text-white tracking-wider">
-                    TEMPORARILY CLOSED
+              {selecting ? (
+                <Pressable
+                  testID="select-done-button"
+                  accessibilityRole="button"
+                  onPress={onDoneSelecting}
+                  className="h-11 justify-center rounded-full px-4"
+                  style={{ backgroundColor: theme.card }}
+                >
+                  <Text className="font-semibold text-[16px]" style={{ color: theme.tint }}>
+                    Done
                   </Text>
+                </Pressable>
+              ) : (
+                <View className="flex-row gap-x-2">
+                  <CircleButton
+                    testID="location-favorites-button"
+                    label="Favorites"
+                    theme={theme}
+                    onPress={() => router.push('/favorites')}
+                  >
+                    <Heart size={19} color={theme.label} />
+                  </CircleButton>
+                  <CircleButton
+                    testID="location-meal-plan-button"
+                    label="Meal Plan"
+                    theme={theme}
+                    onPress={() => router.push('/meal-plan')}
+                  >
+                    <ChefHat size={19} color={theme.label} />
+                  </CircleButton>
+                  <CircleButton
+                    testID="location-info-button"
+                    label="Hours and info"
+                    theme={theme}
+                    onPress={() => {
+                      if (!locationData) return;
+                      SheetManager.show('location-about', {
+                        payload: { location: locationData },
+                      });
+                    }}
+                  >
+                    <Info size={19} color={theme.label} />
+                  </CircleButton>
                 </View>
               )}
-
-              {/* Location Header */}
-              <View>
-                <View className="mb-1 w-full flex-row flex-wrap items-center gap-x-3 gap-y-1">
-                  <Text
-                    className={cn(
-                      'font-extrabold font-sans text-3xl',
-                      isDarkMode ? 'text-white' : 'text-black',
-                    )}
-                  >
-                    {displayName}
-                  </Text>
-                </View>
-                <View className="flex-row items-center gap-x-3">
-                  <Text className="font-semibold text-lg text-ut-burnt-orange">
-                    {open ? 'Open' : 'Closed'}
-                  </Text>
-
-                  <View
-                    className={cn(
-                      'size-1 rounded-full',
-                      isDarkMode ? 'bg-ut-grey-dark-mode' : 'bg-ut-burnt-orange',
-                    )}
-                  />
-
-                  {/* Location Type Pill */}
-                  {locationData?.type && (
-                    <View
-                      className={cn(
-                        'self-start rounded-full px-3 py-1',
-                        isDarkMode ? 'bg-ut-grey-dark-mode/10' : 'bg-ut-grey/5',
-                      )}
-                    >
-                      <Text
-                        className={cn(
-                          'font-bold text-xs uppercase',
-                          isDarkMode ? 'text-white' : 'text-black/75',
-                        )}
-                      >
-                        {locationData.type}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-
-              {/* Time Schedule */}
-              <TimeSchedule
-                schedule={schedule}
-                isOpen={timeDropdownOpen}
-                onToggle={() => {
-                  setTimeDropdownOpen((prev) => !prev);
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }}
-              />
-
-              <View
-                className={cn(
-                  'my-0 h-1 w-full border-b',
-                  isDarkMode ? 'border-neutral-800' : 'border-b-ut-grey/15',
-                )}
-              />
-
-              {/* Date Navigator */}
-              <DateNavigator selectedDate={selectedDate} onDateChange={onDateChange} />
             </View>
+
+            {locationData?.force_close && (
+              <View className="rounded-2xl bg-red-600 px-4 py-2.5">
+                <Text className="text-center font-bold text-[15px] text-white">
+                  Temporarily closed
+                </Text>
+              </View>
+            )}
+
+            <View>
+              <Text className="font-bold text-[34px] leading-[41px]" style={{ color: theme.label }}>
+                {displayName}
+              </Text>
+              {status !== '' && (
+                <Text className="text-[15px]" style={{ color: theme.secondaryLabel }}>
+                  <Text
+                    className="font-semibold"
+                    style={{ color: isOpen ? theme.tint : theme.secondaryLabel }}
+                  >
+                    {isOpen ? 'Open' : status}
+                  </Text>
+                  {isOpen ? status.replace(/^Open/, '') : ''}
+                  {locationData?.type ? ` · ${locationData.type}` : ''}
+                </Text>
+              )}
+            </View>
+
+            <WeekStrip selectedDate={selectedDate} onDateChange={onDateChange} />
           </>
         )}
 
-        {/* Search Bar - always visible when filters exist */}
         {filters && filters.length >= 1 && (
-          <View className="gap-y-3">
-            <SearchBar
-              query={query}
-              setQuery={setQuery}
-              onFocus={() => setIsSearchFocused(true)}
-              onBlur={() => setIsSearchFocused(false)}
-              isSearchFocused={isSearchFocused}
-            />
-          </View>
+          <SearchBar
+            query={query}
+            setQuery={setQuery}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
+            isSearchFocused={isSearchFocused}
+          />
         )}
 
-        {/* Filter Bar - only visible when search is not focused */}
         {!isSearchFocused && filters && filters.length >= 1 && (
-          <View className="gap-y-3">
-            <View className="flex-row items-center justify-between">
-              <FilterBar
-                selectedItem={selectedMenu as string}
-                setSelectedItem={setSelectedMenu}
-                useTimeOfDayDefault={filters.length > 1}
-                items={filters}
-                mealTimes={mealTimes || undefined}
-                showFilterButton
-              />
-            </View>
-          </View>
+          <FilterBar
+            selectedItem={selectedMenu as string}
+            setSelectedItem={setSelectedMenu}
+            useTimeOfDayDefault={filters.length > 1}
+            items={filters}
+            mealTimes={mealTimes || undefined}
+            showFilterButton
+          />
         )}
       </View>
     );

@@ -13,6 +13,7 @@ commands:
   setup: make setup
   doctor: make doctor
   check: make check
+  verify: make verify
   lint: make lint
   fix: make fix
   typecheck: make typecheck
@@ -25,6 +26,7 @@ commands:
   dev_dashboard: make dashboard
   dev_website: make website
   scrape: make scrape
+  admin: make admin
   db_start: make db-up
   db_stop: make db-down
   db_reset: make db-reset
@@ -59,15 +61,16 @@ Ports: Supabase API 54321 and Postgres 54322 by default (`make db-up` moves them
 - No AI attribution anywhere: no `Co-Authored-By` or session trailers in commits, no "Generated with" lines in PR bodies or comments.
 - Do not add code comments in code you write, including workflow YAML.
 - Commits and PR titles follow Conventional Commits. Lefthook runs commitlint and Biome on commit; never skip the hooks.
-- Run `pnpm check` before you push. CI runs the same checks plus a build of the dashboard and the website.
+- Run `make verify` after each change and `make check` before you push. CI runs the same checks plus a build of the dashboard and the website.
 - Use local Supabase (`make db-up`) for every verifier. Never point a build, test or verifier at the production Supabase project, and never write to the hosted dev project from a build. The scraper uploads only with `ENABLE_SUPABASE=true`; leave it unset unless `SUPABASE_URL` is the local `API_URL` from `pnpm exec supabase status -o env` (an `http://127.0.0.1:` address).
-- Never hand-edit `packages/supabase/src/database.types.ts`. Regenerate it with `pnpm db:types` after a migration.
+- Never hand-edit `packages/supabase/src/database.types.ts`. Regenerate it with `make db-types` after a migration; on a merge conflict follow `.agents/recipes/cloud-sessions.md`.
 - Never edit a migration that is already on `staging`. Add a new one with `pnpm db:new <name>`.
 - `packages/core` stays pure: no React, React Native or database imports. Its tests sit next to the source.
 - The website base path `/ut-dining-website` must stay, because the App Store privacy link points at it.
 - Keep `typescript` on 6.x. Typechecks run TypeScript 7 through the `tsgo` alias, and Expo tooling needs the 6.x JS API.
 - The mobile app needs a development build (`APP_VARIANT=development`, bundle id `com.ethanl06.ut-dining.dev`), not Expo Go. A change to native dependencies or `app.config.js` needs a new development build before it can be verified.
 - Before an Expo SDK bump, run `npx expo install expo@^<sdk> && npx expo install --fix` in `apps/mobile`, then `npx expo-doctor`.
+- Change app data (locations, hours, settings, changelog, push notifications) with `pnpm -s admin` (`apps/cli`), never by hand in SQL. Ask Ethan before any `--prod` write and before sending or scheduling any push notification.
 - Never commit keys. Each app commits `.env.example`, and real values go in the gitignored `.env.local` written by `scripts/env.ts`.
 
 ## Deploy steps

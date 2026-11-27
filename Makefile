@@ -11,11 +11,11 @@ DAYS ?= 3
 export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 
 .PHONY: help setup install doctor \
-	dev mobile ios android dashboard website scrape \
+	dev mobile ios android dashboard website scrape admin \
 	db-up db-down db-status db-reset db-migrate db-new db-types db-seed db-fixtures db-psql db-studio \
 	env-local env-dev \
-	check fix lint typecheck test build \
-	sim sims e2e e2e-fixtures screenshots \
+	check verify check-comments fix lint typecheck test build \
+	sim sims e2e e2e-fixtures screenshots perf-build \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
 
@@ -37,6 +37,7 @@ help:
 	'  dashboard       Dashboard on http://localhost:3000' \
 	'  website         Website on http://localhost:3001/ut-dining-website' \
 	'  scrape          Run the scraper once with apps/scraper/.env.local' \
+	'  admin           Dashboard data CLI (dev by default). ARGS="locations list --local". See apps/cli/README.md' \
 	'' \
 	'Database (local Supabase in Docker)' \
 	'  db-up           Start Docker and Supabase, point every app at it. Moves ports if 54321 is taken.' \
@@ -54,7 +55,10 @@ help:
 	'  env-dev         Point every app at the hosted dev project (needs SUPABASE_DEV_* vars)' \
 	'' \
 	'Quality' \
-	'  check           Biome, typecheck and tests (run before pushing)' \
+	'  verify          Fast check of what changed since BASE=origin/staging: Biome on changed files,' \
+	'                  comment check, typecheck and tests of affected packages, then what else to verify' \
+	'  check           Biome, typecheck and tests of everything (run before pushing)' \
+	'  check-comments  Fail on added code comments. ARGS="--base origin/staging" (default: staged diff)' \
 	'  fix             Biome safe fixes' \
 	'  lint | typecheck | test | build' \
 	'' \
@@ -64,6 +68,8 @@ help:
 	'  e2e             Maestro flows against local Supabase. ARGS="--shards 3 --retry-failed"' \
 	'  e2e-fixtures    Maestro flows against the fixture server, no Docker needed' \
 	'  screenshots     Every screen in apps/mobile/e2e/screenshots.txt, light and dark, into .context/screenshots' \
+	'  perf-build      Timing-harness test apps from a release .app. APP=<base .app> OUT=<dir> PERF_DEV_REF=<ref>' \
+	'                  The rest of the timing run is in scripts/qa/perf/README.md' \
 	'' \
 	'Worktrees' \
 	'  worktree        New worktree in .worktrees/ from origin/staging, env files and deps included. NAME=feat-x' \
@@ -107,6 +113,9 @@ website:
 scrape:
 	@pnpm --filter @ut-dining/scraper start $(ARGS)
 
+admin:
+	@node apps/cli/src/index.ts $(ARGS)
+
 db-up:
 	@$(DEV)/db.sh up
 
@@ -149,6 +158,12 @@ env-dev:
 check:
 	@pnpm check
 
+verify:
+	@$(DEV)/verify.sh
+
+check-comments:
+	@$(DEV)/check-comments.sh $(ARGS)
+
 fix:
 	@pnpm fix
 
@@ -178,6 +193,10 @@ e2e-fixtures:
 
 screenshots:
 	@scripts/qa/mobile-screenshots.sh $(if $(SIM),--sim "$$($(DEV)/sim.sh pick)") $(ARGS)
+
+perf-build:
+	@test -n "$(APP)" -a -n "$(OUT)" || { echo 'usage: make perf-build APP=<base release .app> OUT=<dir> PERF_DEV_REF=<dev ref>' >&2; exit 2; }
+	@scripts/qa/perf/build.sh "$(APP)" "$(OUT)"
 
 worktree:
 	@$(DEV)/worktree.sh new "$(NAME)" $(BASE)
