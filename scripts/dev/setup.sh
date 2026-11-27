@@ -115,13 +115,13 @@ else
     ok "$menus menus already in the local database, kept"
   elif ! "$ROOT/scripts/dev/db.sh" seed "$SEED_DAYS" >.context/seed.log 2>&1; then
     warn "scraping UT menus failed (offline?). See .context/seed.log. Retry with: make db-seed"
-    note "or load fixed test menus with: make db-fixtures"
+    note "or load sample menus with: make db-sample"
   else
     menus="$(psql_local -c "select count(*) from public.menu" 2>/dev/null || echo 0)"
     if [[ "$menus" -gt 0 ]]; then
       ok "scraped $SEED_DAYS day(s) of UT menus: $menus menus"
     else
-      warn "UT published no menus for the next $SEED_DAYS day(s). Load test menus with: make db-fixtures"
+      warn "UT published no menus for the next $SEED_DAYS day(s). Load sample menus with: make db-sample"
     fi
   fi
 fi

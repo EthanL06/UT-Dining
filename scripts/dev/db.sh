@@ -19,6 +19,8 @@ Usage: scripts/dev/db.sh <command>
   types           Regenerate packages/supabase from the local schema
   seed [days]     Scrape real UT menus into the local database (default 3 days)
   fixtures        Load the fixed E2E fixture menus into J2 Dining
+  sample          Load sample menus and edge-case places (scripts/dev/sample/data.json)
+  fresh           reset, then sample: a known local database in one command
   psql [args]     Open psql on the local database
   studio          Print (and on macOS open) Supabase Studio
 EOF
@@ -184,6 +186,18 @@ cmd_fixtures() {
   ok "fixtures loaded"
 }
 
+cmd_sample() {
+  require_local_api
+  step "Loading sample data"
+  node scripts/dev/sample/load.ts
+}
+
+cmd_fresh() {
+  cmd_reset
+  cmd_sample
+  ok "fresh local database: $(menu_count) menus. Scenarios: scripts/dev/sample/README.md"
+}
+
 cmd_psql() {
   db_running || die "local Supabase is not running. Run: make db-up"
   if [[ -t 0 && -t 1 ]]; then
@@ -212,6 +226,8 @@ case "$command" in
   types) cmd_types ;;
   seed) cmd_seed "$@" ;;
   fixtures) cmd_fixtures ;;
+  sample) cmd_sample ;;
+  fresh) cmd_fresh ;;
   psql) cmd_psql "$@" ;;
   studio) cmd_studio ;;
   ports) choose_ports ;;

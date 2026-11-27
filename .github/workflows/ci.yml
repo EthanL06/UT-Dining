@@ -64,6 +64,9 @@ jobs:
         if: steps.scope.outputs.docs_only != 'true'
         run: scripts/dev/check-state-machines.sh
 
+      - name: No unused files, exports or dependencies
+        run: pnpm knip --no-progress --no-config-hints
+
       - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
         if: steps.scope.outputs.docs_only != 'true'
         with:
