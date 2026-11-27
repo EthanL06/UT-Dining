@@ -21,6 +21,10 @@ export type CrashHealth =
   | { status: 'ready'; lastDay: number; lastWeek: number }
   | { status: 'unavailable' };
 
+export type DownloadsHealth =
+  | { status: 'ready'; total: number; checkedAt: string }
+  | { status: 'unavailable' };
+
 export interface HallFreshness {
   id: string;
   name: string;
@@ -36,6 +40,7 @@ export interface DatabaseHealth {
 export interface AdminHealth {
   scraper: ScraperHealth;
   crashes: CrashHealth;
+  downloads: DownloadsHealth;
   halls: HallFreshness[];
   database: DatabaseHealth;
 }
@@ -80,13 +85,16 @@ const fetchDatabase = async (): Promise<DatabaseHealth> => {
 
 export const fetchAdminHealth = async (): Promise<AdminHealth> => {
   const [tools, halls, database] = await Promise.all([
-    invokeTools<{ scraper: ScraperHealth; crashes: CrashHealth }>({ action: 'health' }),
+    invokeTools<{ scraper: ScraperHealth; crashes: CrashHealth; downloads?: DownloadsHealth }>({
+      action: 'health',
+    }),
     fetchHalls(),
     fetchDatabase(),
   ]);
   return {
     scraper: tools.scraper ?? { status: 'unavailable' },
     crashes: tools.crashes ?? { status: 'unavailable' },
+    downloads: tools.downloads ?? { status: 'unavailable' },
     halls,
     database,
   };

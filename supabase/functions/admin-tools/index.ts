@@ -10,6 +10,7 @@ import {
   toCrashCounts,
   toScraperRuns,
 } from '../_shared/admin-tools.ts';
+import { appStoreToken, countDownloads, reportPeriods } from '../_shared/app-store.ts';
 import { log } from '../_shared/log.ts';
 import { json } from '../_shared/push.ts';
 
@@ -37,6 +38,18 @@ const posthog = {
   project: Deno.env.get('ADMIN_POSTHOG_PROJECT_ID'),
   host: Deno.env.get('ADMIN_POSTHOG_HOST') ?? 'https://us.posthog.com',
 };
+
+const appStore = {
+  keyId: Deno.env.get('ADMIN_ASC_KEY_ID'),
+  issuerId: Deno.env.get('ADMIN_ASC_ISSUER_ID'),
+  privateKey: Deno.env.get('ADMIN_ASC_PRIVATE_KEY'),
+  vendor: Deno.env.get('ADMIN_ASC_VENDOR_NUMBER'),
+  appId: Deno.env.get('ADMIN_ASC_APP_ID'),
+  startYear: Number(Deno.env.get('ADMIN_ASC_START_YEAR') ?? '2023'),
+};
+
+const DOWNLOADS_CACHE_KEY = 'app_store_downloads';
+const DOWNLOADS_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 
 const service = createClient(supabaseUrl, serviceRoleKey);
 
@@ -90,8 +103,72 @@ const fetchCrashes = async () => {
   return { status: 'ready' as const, ...counts };
 };
 
+type Downloads = { status: 'ready'; total: number; checkedAt: string } | { status: 'unavailable' };
+
+const fetchReport = async (
+  token: string,
+  vendor: string,
+  period: ReturnType<typeof reportPeriods>[number],
+) => {
+  const params = new URLSearchParams({
+    'filter[frequency]': period.frequency,
+    'filter[reportType]': 'SALES',
+    'filter[reportSubType]': 'SUMMARY',
+    'filter[vendorNumber]': vendor,
+    'filter[reportDate]': period.reportDate,
+    'filter[version]': '1_0',
+  });
+  const response = await fetch(`https://api.appstoreconnect.apple.com/v1/salesReports?${params}`, {
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/a-gzip' },
+  });
+  if (response.status === 404) return 0;
+  if (!response.ok || !response.body) throw new Error(`App Store report ${response.status}`);
+  const text = await new Response(
+    response.body.pipeThrough(new DecompressionStream('gzip')),
+  ).text();
+  return countDownloads(text, appStore.appId);
+};
+
+const fetchDownloads = async (): Promise<Downloads> => {
+  const { keyId, issuerId, privateKey, vendor } = appStore;
+  if (!keyId || !issuerId || !privateKey || !vendor) return { status: 'unavailable' };
+
+  const { data: cached } = await service
+    .from('admin_cache')
+    .select('value, updated_at')
+    .eq('key', DOWNLOADS_CACHE_KEY)
+    .maybeSingle();
+  if (cached && Date.now() - Date.parse(cached.updated_at) < DOWNLOADS_MAX_AGE_MS) {
+    return cached.value as Downloads;
+  }
+
+  try {
+    const token = await appStoreToken({ keyId, issuerId, privateKey });
+    const today = new Date().toISOString().slice(0, 10);
+    const counts = await Promise.all(
+      reportPeriods(today, appStore.startYear).map((period) => fetchReport(token, vendor, period)),
+    );
+    const downloads: Downloads = {
+      status: 'ready',
+      total: counts.reduce((sum, count) => sum + count, 0),
+      checkedAt: new Date().toISOString(),
+    };
+    await service
+      .from('admin_cache')
+      .upsert({ key: DOWNLOADS_CACHE_KEY, value: downloads, updated_at: downloads.checkedAt });
+    return downloads;
+  } catch (error) {
+    log.warn('App Store downloads failed', error);
+    return cached ? (cached.value as Downloads) : { status: 'unavailable' };
+  }
+};
+
 const health = async () => {
-  const [runs, crashes] = await Promise.all([fetchRuns(), fetchCrashes()]);
+  const [runs, crashes, downloads] = await Promise.all([
+    fetchRuns(),
+    fetchCrashes(),
+    fetchDownloads(),
+  ]);
   return json({
     scraper:
       runs.status === 'ready'
@@ -103,6 +180,7 @@ const health = async () => {
           }
         : runs,
     crashes,
+    downloads,
   });
 };
 

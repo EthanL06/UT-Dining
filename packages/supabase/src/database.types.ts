@@ -23,6 +23,25 @@ export type Database = {
   };
   public: {
     Tables: {
+      admin_cache: {
+        Row: {
+          key: string;
+          updated_at: string;
+          value: NonNullable<Json>;
+        };
+        ComputedFields: never;
+        Insert: {
+          key: string;
+          updated_at?: string;
+          value: NonNullable<Json>;
+        };
+        Update: {
+          key?: string;
+          updated_at?: string;
+          value?: NonNullable<Json>;
+        };
+        Relationships: [];
+      };
       allergens: {
         Row: {
           beef: boolean | null;
