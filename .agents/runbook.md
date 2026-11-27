@@ -59,7 +59,8 @@ Decide with one question: did the iOS fingerprint change? It changes with native
 
 ## Local test data
 
-- Agents test against local Supabase, never dev or prod. `make db-up`, then `make db-reset` for the schema and the locations in `supabase/seed.sql`.
+- Agents test against local Supabase, never dev or prod. `make db-up`, then `make db-fresh`: the schema, the locations in `supabase/seed.sql`, and sample menus and places with the known edge cases, in about 40 s with no network. `SAMPLE_TODAY=YYYY-MM-DD` pins the date.
+- Hit an edge case the sample data lacks? Add it to `scripts/dev/sample/data.json` and its README table in the same PR.
 - Real menus: `make db-seed DAYS=3` scrapes UT's site into the local database. The fixed E2E menus: `make db-fixtures`.
 
 ## Production cutover (2.0.0)
