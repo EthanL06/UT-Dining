@@ -125,10 +125,10 @@ export const buildIssues = (input: IssueInput): Issue[] => {
   }
 
   const today = input.menus.todayHealth;
-  if (today && today.missing.length > 0) {
+  if (today && (today.health === 'degraded' || today.health === 'outage')) {
     issues.push({
       id: 'today-missing',
-      health: today.health === 'outage' ? 'outage' : 'degraded',
+      health: today.health,
       title: `Missing today's menus for ${plural(today.missing.length, 'location')}`,
       detail: today.missing.join(', '),
       headline: "Today's menus are incomplete",

@@ -13,6 +13,7 @@ import {
   SimpleGrid,
   Stack,
   Table,
+  TableScrollContainer,
   TableTbody,
   TableTd,
   TableTh,
@@ -67,8 +68,8 @@ interface DashboardStatus {
 }
 
 const WORKFLOWS = [
-  { file: 'scraper.yml', label: 'Scraper, production' },
-  { file: 'scraper-dev.yml', label: 'Scraper, dev' },
+  { file: 'scraper.yml', label: 'Production scraper' },
+  { file: 'scraper-dev.yml', label: 'Dev scraper' },
   { file: 'dev-supabase-keepalive.yml', label: 'Dev Supabase keepalive' },
   { file: 'ci.yml', label: 'CI' },
 ];
@@ -158,18 +159,22 @@ function CheckRow({
       style={{ borderBottom: '1px solid var(--mantine-color-gray-1)' }}
     >
       <HealthDot health={health} size={8} />
-      <Text fz="sm" style={{ flex: 1, minWidth: 0 }}>
-        {href ? (
-          <Anchor href={href} target="_blank" fz="sm" c="inherit">
-            {name}
-          </Anchor>
-        ) : (
-          name
+      <Stack gap={0} style={{ flex: 1, minWidth: 0 }}>
+        <Text fz="sm">
+          {href ? (
+            <Anchor href={href} target="_blank" fz="sm" c="inherit">
+              {name}
+            </Anchor>
+          ) : (
+            name
+          )}
+        </Text>
+        {detail && (
+          <Text fz="xs" c="dimmed">
+            {detail}
+          </Text>
         )}
-      </Text>
-      <Text fz="xs" c="dimmed" ta="right">
-        {detail}
-      </Text>
+      </Stack>
       <HealthBadge health={health} />
     </Group>
   );
@@ -190,7 +195,7 @@ const runDetail = (run: WorkflowRun) => {
       .join(' · ');
   }
   if (run.state === 'GitHub API 403') return 'GitHub rate limit';
-  if (run.state === 'Not on main') return 'Runs on Render until main';
+  if (run.state === 'Not on main') return 'Not on main yet';
   return run.state;
 };
 
@@ -354,7 +359,7 @@ export default async function StatusPage() {
             <Title order={3} fz="md" mb="sm">
               Menus by location, {formatDay(menus.today)}
             </Title>
-            <Table.ScrollContainer minWidth={480}>
+            <TableScrollContainer minWidth={480}>
               <Table verticalSpacing={8} fz="sm">
                 <TableThead>
                   <TableTr>
@@ -409,7 +414,7 @@ export default async function StatusPage() {
                   })}
                 </TableTbody>
               </Table>
-            </Table.ScrollContainer>
+            </TableScrollContainer>
 
             <Stack
               gap="xs"
