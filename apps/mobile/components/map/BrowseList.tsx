@@ -1,5 +1,4 @@
 import { Pressable, ScrollView, View } from 'react-native';
-import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { haptics } from '~/utils/haptics';
 import { type Coordinates, type Place, walkFrom } from '~/utils/mapPlaces';
@@ -8,6 +7,7 @@ import { useTheme } from '~/utils/theme';
 import { SHEET_CONTENT_GAP } from './PlaceCard';
 import { PlaceRow, RowGroup } from './PlaceRow';
 import { MAP_FILTERS, type MapFilterId } from './placeStyle';
+import { SheetScrollView } from './SheetScrollView';
 import { SkeletonRows } from './SkeletonRows';
 
 const rank = (place: Place) => (place.type === 'microwave' ? 2 : place.isOpen ? 0 : 1);
@@ -41,7 +41,7 @@ export const BrowseList = ({
   const view = browseView(isLoaded, visible.length);
 
   return (
-    <OverflowScrollView
+    <SheetScrollView
       containerStyle={{ flex: 1 }}
       keyboardShouldPersistTaps="handled"
       contentInsetAdjustmentBehavior="automatic"
@@ -107,6 +107,6 @@ export const BrowseList = ({
           ))}
         </RowGroup>
       )}
-    </OverflowScrollView>
+    </SheetScrollView>
   );
 };

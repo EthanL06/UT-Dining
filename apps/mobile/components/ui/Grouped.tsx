@@ -58,10 +58,12 @@ export const GroupedRow = ({
   titleColor,
   multilineSubtitle = false,
   onPress,
+  onLongPress,
   disabled,
   testID,
   detailTestID,
   selected,
+  accessibilityRole,
 }: {
   title: ReactNode;
   subtitle?: ReactNode;
@@ -74,21 +76,24 @@ export const GroupedRow = ({
   titleColor?: string;
   multilineSubtitle?: boolean;
   onPress?: () => void;
+  onLongPress?: () => void;
   disabled?: boolean;
   testID?: string;
   detailTestID?: string;
   selected?: boolean;
+  accessibilityRole?: 'button' | 'link';
 }) => {
   const theme = useTheme();
 
   return (
     <Pressable
       testID={testID}
-      accessible={!!onPress}
-      accessibilityRole={onPress ? 'button' : undefined}
+      accessible={!!onPress || !!accessibilityRole}
+      accessibilityRole={accessibilityRole ?? (onPress ? 'button' : undefined)}
       accessibilityState={selected === undefined ? undefined : { selected }}
       onPress={onPress}
-      disabled={disabled || !onPress}
+      onLongPress={onLongPress}
+      disabled={disabled || (!onPress && !accessibilityRole)}
     >
       {({ pressed }) => (
         <View style={{ backgroundColor: pressed ? theme.fill : 'transparent' }}>

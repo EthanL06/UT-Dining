@@ -3,7 +3,7 @@ import * as Location from 'expo-location';
 import { useFocusEffect } from 'expo-router';
 import { LocateFixed } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Keyboard, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Keyboard, StyleSheet, useWindowDimensions, View } from 'react-native';
 import type { Region } from 'react-native-maps';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,6 +13,7 @@ import { MapSheet, type MapSheetHandle, SHEET_HALF_FRACTION } from '~/components
 import { PlaceCard } from '~/components/map/PlaceCard';
 import type { MapFilterId } from '~/components/map/placeStyle';
 import { SearchPanel } from '~/components/map/SearchPanel';
+import { GlassButton, useLiquidGlass } from '~/components/ui/Glass';
 import { MICROWAVE_LOCATIONS } from '~/data/MicrowaveLocations';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useMapSearch } from '~/hooks/useMapSearch';
@@ -31,6 +32,7 @@ import {
   type PinnedPlace,
   type Place,
   regionAround,
+  stackOverlappingPins,
   zoomLevelFor,
 } from '~/utils/mapPlaces';
 import { searchPlaces } from '~/utils/mapSearch';
@@ -67,6 +69,7 @@ const NativeBottomInset = ({ onChange }: { onChange: (bottom: number) => void })
 
 const MapPage = () => {
   const theme = useTheme();
+  const hasGlass = useLiquidGlass();
   const insets = useSafeAreaInsets();
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
@@ -263,14 +266,19 @@ const MapPage = () => {
     });
   }, []);
 
-  const renderPlace = (place: PinnedPlace) => {
+  const stackedPins = useMemo(
+    () => (zoom === 'labels' ? stackOverlappingPins(pinnedPlaces, region, screen.width) : []),
+    [zoom, pinnedPlaces, region, screen.width],
+  );
+
+  const renderPlace = (place: PinnedPlace, coordinate: Coordinates = place.coordinates) => {
     const selected = selectedPlace?.name === place.name;
     const showLabel = zoom === 'labels' && place.isOpen && place.type !== 'microwave';
     const showDot = !place.isOpen && !selected;
     return (
       <Marker
         key={`${place.name}-${showLabel ? 'label' : showDot ? 'dot' : 'pin'}-${selected}`}
-        coordinate={place.coordinates}
+        coordinate={coordinate}
         tracksViewChanges={false}
         anchor={showLabel ? { x: 0.1, y: 0.5 } : { x: 0.5, y: 0.5 }}
         onPress={() => focusPlace(place)}
@@ -332,14 +340,15 @@ const MapPage = () => {
                 </Marker>
               ),
             )
-          : pinnedPlaces.map(renderPlace)}
+          : stackedPins.map((pin) => renderPlace(pin.place, pin.coordinates))}
       </MapView>
 
       {hasLocationPermission && userCoordinates && !isSheetAboveHalf && (
-        <Pressable
+        <GlassButton
           testID="map-locate-button"
           accessibilityLabel="Show my location"
-          accessibilityRole="button"
+          size={44}
+          fallbackColor={theme.card}
           onPress={() => {
             haptics.tap();
             mapRef.current?.animateToRegion(
@@ -347,18 +356,18 @@ const MapPage = () => {
               450,
             );
           }}
-          className="absolute right-4 size-11 items-center justify-center rounded-full"
-          style={{
-            bottom: bottomOffset + mapControlsHeight + 12,
-            backgroundColor: theme.card,
-            shadowColor: '#000',
-            shadowOpacity: 0.18,
-            shadowRadius: 8,
-            shadowOffset: { width: 0, height: 2 },
-          }}
+          style={[
+            { position: 'absolute', right: 16, bottom: bottomOffset + mapControlsHeight + 12 },
+            !hasGlass && {
+              shadowColor: '#000',
+              shadowOpacity: 0.18,
+              shadowRadius: 8,
+              shadowOffset: { width: 0, height: 2 },
+            },
+          ]}
         >
           <LocateFixed size={20} color={theme.tint} />
-        </Pressable>
+        </GlassButton>
       )}
 
       <MapSheet
@@ -378,10 +387,8 @@ const MapPage = () => {
             <PlaceCard
               place={selectedPlace}
               userCoordinates={userCoordinates}
-              backQuery={search.status === 'place' ? search.query : null}
               foods={mapSearch.selectedFoods}
-              onBack={mapSearch.back}
-              onClose={mapSearch.close}
+              onClose={mapSearch.back}
             />
           </View>
         ) : search.status === 'searching' ? (

@@ -2,7 +2,6 @@ import { and, eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Flame, Heart, Info, X } from 'lucide-react-native';
-import { usePostHog } from 'posthog-react-native';
 import { useEffect, useEffectEvent } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
@@ -19,8 +18,9 @@ import {
   INDENTED_NUTRITION,
 } from '~/data/AllergenInfo';
 import { useDatabase } from '~/hooks/useDatabase';
+import { useFavorite } from '~/hooks/useFavorite';
 import { useFoodData } from '~/hooks/useFoodData';
-import { getSafePostHog } from '~/services/analytics/posthog';
+import { analytics } from '~/services/analytics/posthog';
 import * as schema from '~/services/database/schema';
 import { todayKey, useIsMealPlanItem } from '~/store/useMealPlanStore';
 import { toggleFavoriteForFood, toggleMealPlanForFood } from '~/utils/foodActions';
@@ -54,7 +54,7 @@ const percentOfDailyValue = (key: string, value: unknown) => {
   return `${Math.round((Number.parseFloat(String(value)) / dailyValue) * 100)}%`;
 };
 
-const FoodScreen = () => {
+export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
   const params = useLocalSearchParams<{
     food: string;
     menu: string;
@@ -79,7 +79,7 @@ const FoodScreen = () => {
       ),
     [food, location],
   );
-  const isFavorite = favoriteRows.length > 0;
+  const isFavorite = useFavorite(food ?? '', location ?? '', favoriteRows.length > 0);
   const planDate = date || todayKey();
   const canMealPlan = planDate >= todayKey();
   const isMealPlan = useIsMealPlanItem(
@@ -96,7 +96,6 @@ const FoodScreen = () => {
     date,
   });
 
-  const analytics = getSafePostHog(usePostHog());
   const trackScreen = useEffectEvent(() => {
     analytics.screen(`${food}`, { location, menu, category });
   });
@@ -122,7 +121,10 @@ const FoodScreen = () => {
           divider={false}
           contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
         >
-          <View className="flex-row items-center justify-between px-4 pt-4 pb-2">
+          <View
+            className="flex-row items-center justify-between px-4 pb-2"
+            style={{ paddingTop: pushed ? insets.top + 8 : 16 }}
+          >
             <Pressable
               testID="back-button"
               accessibilityLabel="Close"
@@ -336,5 +338,7 @@ const FoodScreen = () => {
     </SheetProvider>
   );
 };
+
+const FoodScreen = () => <FoodDetail />;
 
 export default FoodScreen;

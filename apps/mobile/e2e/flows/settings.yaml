@@ -43,7 +43,7 @@ tags:
     id: settings-favorites
 - extendedWaitUntil:
     visible:
-      id: favorites-title
+      id: favorites-screen
     timeout: 5000
 - tapOn:
-    id: back-button
+    id: BackButton

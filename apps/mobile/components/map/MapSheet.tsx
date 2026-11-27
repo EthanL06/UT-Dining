@@ -1,5 +1,5 @@
 import { Search, X } from 'lucide-react-native';
-import { type ReactNode, type Ref, useEffect, useImperativeHandle } from 'react';
+import { type ReactNode, type Ref, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 import { Keyboard, Pressable, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Reanimated, {
@@ -9,9 +9,11 @@ import Reanimated, {
   withSpring,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { GlassSurface, useLiquidGlass } from '~/components/ui/Glass';
 import { Text, TextInput } from '~/components/ui/Text';
 import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
+import { SheetDragProvider } from './SheetScrollView';
 
 export { MAP_FILTERS, type MapFilterId, PLACE_ICONS, usePlaceColor } from './placeStyle';
 
@@ -52,6 +54,7 @@ export const MapSheet = ({
   children: ReactNode;
 }) => {
   const theme = useTheme();
+  const hasGlass = useLiquidGlass();
   const { height: windowHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const heights: Record<Detent, number> = {
@@ -64,10 +67,15 @@ export const MapSheet = ({
   };
   const height = useSharedValue(heights.half);
   const dragStart = useSharedValue(0);
+  const lastTranslation = useSharedValue(0);
+  const hasMoved = useSharedValue(false);
+  const scrollY = useSharedValue(0);
+  const [detent, setDetent] = useState<Detent>('half');
 
-  const snapTo = (detent: Detent) => {
-    height.value = withSpring(heights[detent], SPRING);
-    onHeightChange(heights[detent]);
+  const snapTo = (next: Detent) => {
+    height.value = withSpring(heights[next], SPRING);
+    setDetent(next);
+    onHeightChange(heights[next]);
   };
 
   useImperativeHandle(ref, () => ({ snapTo }));
@@ -80,121 +88,152 @@ export const MapSheet = ({
   useEffect(() => {
     if (placeKey) {
       height.value = withSpring(heights.half, SPRING);
+      setDetent('half');
       onHeightChange(heights.half);
     }
   }, [placeKey, height, heights.half, onHeightChange]);
 
-  const settle = (velocity: number) => {
-    const current = height.value - velocity * 0.12;
-    const nearest = (Object.keys(heights) as Detent[]).reduce((best, detent) =>
-      Math.abs(heights[detent] - current) < Math.abs(heights[best] - current) ? detent : best,
+  const settle = (velocityY: number) => {
+    const projected = height.value - velocityY * 0.12;
+    const nearest = (Object.keys(heights) as Detent[]).reduce((best, candidate) =>
+      Math.abs(heights[candidate] - projected) < Math.abs(heights[best] - projected)
+        ? candidate
+        : best,
     );
     if (heights[nearest] !== dragStart.value) haptics.selection();
     if (nearest !== 'full') Keyboard.dismiss();
     snapTo(nearest);
   };
 
-  const pan = Gesture.Pan()
-    .onStart(() => {
-      dragStart.value = height.value;
-    })
-    .onUpdate((event) => {
-      height.value = Math.min(
-        heights.full,
-        Math.max(heights.collapsed - 20, dragStart.value - event.translationY),
-      );
-    })
-    .onEnd((event) => {
-      runOnJS(settle)(-event.velocityY);
-    });
+  const { full, half, collapsed } = heights;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: shared values and settle are read inside worklets and runOnJS
+  const pan = useMemo(
+    () =>
+      Gesture.Pan()
+        .activeOffsetY([-8, 8])
+        .failOffsetX([-20, 20])
+        .onStart(() => {
+          dragStart.value = height.value;
+          lastTranslation.value = 0;
+          hasMoved.value = false;
+        })
+        .onUpdate((event) => {
+          const delta = event.translationY - lastTranslation.value;
+          lastTranslation.value = event.translationY;
+          if (delta < 0 && height.value >= full - 0.5) return;
+          if (delta > 0 && scrollY.value > 0) return;
+          hasMoved.value = true;
+          height.value = Math.min(full, Math.max(collapsed - 20, height.value - delta));
+        })
+        .onEnd((event) => {
+          if (hasMoved.value) runOnJS(settle)(event.velocityY);
+        }),
+    [full, half, collapsed],
+  );
 
   const style = useAnimatedStyle(() => ({ height: height.value + bottomOffset }));
 
   return (
-    <Reanimated.View
-      style={[
-        style,
-        {
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          borderTopLeftRadius: 34,
-          borderTopRightRadius: 34,
-          borderCurve: 'continuous',
-          backgroundColor: theme.background,
-          shadowColor: '#000',
-          shadowOpacity: 0.18,
-          shadowRadius: 20,
-          shadowOffset: { width: 0, height: -2 },
-          overflow: 'hidden',
-        },
-      ]}
-    >
+    <SheetDragProvider value={{ pan, scrollY, isExpanded: detent === 'full' }}>
       <GestureDetector gesture={pan}>
-        <View className="pt-2 pb-3">
-          <View
-            className="mb-2.5 h-[5px] w-9 self-center rounded-full"
-            style={{ backgroundColor: theme.tertiaryLabel }}
+        <Reanimated.View
+          style={[
+            style,
+            {
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              borderTopLeftRadius: 34,
+              borderTopRightRadius: 34,
+              borderCurve: 'continuous',
+              overflow: 'hidden',
+            },
+            !hasGlass && {
+              shadowColor: '#000',
+              shadowOpacity: 0.18,
+              shadowRadius: 20,
+              shadowOffset: { width: 0, height: -2 },
+            },
+          ]}
+        >
+          <GlassSurface
+            pointerEvents="none"
+            fallbackColor={theme.background}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              borderTopLeftRadius: 34,
+              borderTopRightRadius: 34,
+            }}
           />
-          {mode !== 'place' && (
-            <View className="mx-4 flex-row items-center gap-x-3">
-              <View
-                className="h-10 flex-1 flex-row items-center gap-x-2 rounded-full px-3"
-                style={{ backgroundColor: theme.fill }}
-              >
-                <Search size={17} color={theme.secondaryLabel} />
-                <TextInput
-                  testID="map-search-input"
-                  variant="callout"
-                  className="flex-1"
-                  placeholder="Places, foods or buildings"
-                  autoCorrect={false}
-                  autoCapitalize="none"
-                  value={query}
-                  onChangeText={onQueryChange}
-                  onFocus={() => {
-                    snapTo('full');
-                    onFocusSearch();
-                  }}
-                  onSubmitEditing={() => {
-                    snapTo('half');
-                    onSubmitSearch();
-                  }}
-                  returnKeyType="search"
-                />
-                {query.length > 0 && (
+          <View className="pt-2 pb-3">
+            <View
+              className="mb-2.5 h-[5px] w-9 self-center rounded-full"
+              style={{ backgroundColor: theme.tertiaryLabel }}
+            />
+            {mode !== 'place' && (
+              <View className="mx-4 flex-row items-center gap-x-3">
+                <View
+                  className="h-10 flex-1 flex-row items-center gap-x-2 rounded-full px-3"
+                  style={{ backgroundColor: theme.fill }}
+                >
+                  <Search size={17} color={theme.secondaryLabel} />
+                  <TextInput
+                    testID="map-search-input"
+                    variant="callout"
+                    className="flex-1"
+                    placeholder="Places, foods or buildings"
+                    autoCorrect={false}
+                    autoCapitalize="none"
+                    value={query}
+                    onChangeText={onQueryChange}
+                    onFocus={() => {
+                      snapTo('full');
+                      onFocusSearch();
+                    }}
+                    onSubmitEditing={() => {
+                      snapTo('half');
+                      onSubmitSearch();
+                    }}
+                    returnKeyType="search"
+                  />
+                  {query.length > 0 && (
+                    <Pressable
+                      testID="map-search-clear"
+                      accessibilityLabel="Clear search"
+                      hitSlop={8}
+                      onPress={() => onQueryChange('')}
+                    >
+                      <X size={16} color={theme.secondaryLabel} />
+                    </Pressable>
+                  )}
+                </View>
+                {mode === 'search' && (
                   <Pressable
-                    testID="map-search-clear"
-                    accessibilityLabel="Clear search"
+                    testID="map-search-cancel"
+                    accessibilityRole="button"
                     hitSlop={8}
-                    onPress={() => onQueryChange('')}
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      snapTo('half');
+                      onCancelSearch();
+                    }}
                   >
-                    <X size={16} color={theme.secondaryLabel} />
+                    <Text variant="callout" tone="tint">
+                      Cancel
+                    </Text>
                   </Pressable>
                 )}
               </View>
-              {mode === 'search' && (
-                <Pressable
-                  testID="map-search-cancel"
-                  accessibilityRole="button"
-                  hitSlop={8}
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    snapTo('half');
-                    onCancelSearch();
-                  }}
-                >
-                  <Text variant="callout" tone="tint">
-                    Cancel
-                  </Text>
-                </Pressable>
-              )}
-            </View>
-          )}
-        </View>
+            )}
+          </View>
+          <View style={{ flex: 1 }}>{children}</View>
+        </Reanimated.View>
       </GestureDetector>
-      <View style={{ flex: 1 }}>{children}</View>
-    </Reanimated.View>
+    </SheetDragProvider>
   );
 };

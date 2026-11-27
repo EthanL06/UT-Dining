@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { type ReactElement, useState } from 'react';
 import {
   ScrollView as NativeScrollView,
   type ScrollViewProps,
@@ -15,8 +15,10 @@ export const OverflowScrollView = ({
   containerClassName,
   style,
   onScroll,
+  wrap = (scroll) => scroll,
   ...props
 }: ScrollViewProps & {
+  wrap?: (scroll: ReactElement) => ReactElement;
   as?: typeof NativeScrollView;
   divider?: boolean;
   containerStyle?: StyleProp<ViewStyle>;
@@ -25,17 +27,17 @@ export const OverflowScrollView = ({
   const theme = useTheme();
   const [isScrolled, setIsScrolled] = useState(false);
 
-  const scroll = (
+  const scroll = wrap(
     <Scroll
+      scrollEventThrottle={32}
       {...props}
       style={divider ? [{ flexShrink: 1 }, style] : style}
       alwaysBounceVertical={false}
-      scrollEventThrottle={32}
       onScroll={(event) => {
         if (divider) setIsScrolled(event.nativeEvent.contentOffset.y > 0);
         onScroll?.(event);
       }}
-    />
+    />,
   );
 
   if (!divider) return scroll;
