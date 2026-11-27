@@ -1,7 +1,8 @@
 import { SlidersHorizontal } from 'lucide-react-native';
 import { useEffect, useMemo } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Platform, Pressable, ScrollView, View } from 'react-native';
 import { SheetManager } from 'react-native-actions-sheet';
+import { NativeSegmentedControl } from '~/components/NativeSegmentedControl';
 import { Text } from '~/components/ui/Text';
 
 export type FilterType = 'all' | string;
@@ -82,7 +83,14 @@ const FilterBar = ({
 
   return (
     <View className="flex-row items-center gap-x-2">
-      {segmented ? (
+      {segmented && Platform.OS === 'ios' ? (
+        <NativeSegmentedControl
+          testID="menu-meal-picker"
+          items={sortedItems}
+          selectedId={selectedItem}
+          onSelect={onPressItem}
+        />
+      ) : segmented ? (
         <View
           className="h-9 flex-1 flex-row rounded-full p-[3px]"
           style={{ backgroundColor: theme.fill }}

@@ -178,7 +178,7 @@ const Notifications = () => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background }}>
+    <>
       <Stack.Screen
         options={{
           title: 'Notifications',
@@ -204,12 +204,14 @@ const Notifications = () => {
       <OverflowScrollView
         divider={false}
         contentInsetAdjustmentBehavior="automatic"
+        style={{ flex: 1, backgroundColor: theme.background }}
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
       >
         {groups.length === 0 ? (
-          <View className="mt-16 items-center px-10">
+          <View className="mx-8 mt-12 items-center gap-y-2">
+            <Bell size={36} color={theme.tertiaryLabel} />
             <Text variant="headline">No Notifications Yet</Text>
-            <Text variant="subheadline" tone="secondary" className="mt-1.5 text-center">
+            <Text variant="subheadline" tone="secondary" className="text-center">
               We'll notify you about your favorite foods and dining location updates.
             </Text>
           </View>
@@ -229,7 +231,7 @@ const Notifications = () => {
           ))
         )}
       </OverflowScrollView>
-    </View>
+    </>
   );
 };
 

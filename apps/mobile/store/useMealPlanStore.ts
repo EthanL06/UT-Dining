@@ -34,6 +34,7 @@ interface MealPlanState {
 
   toggleMealPlanItem: (item: MealPlanItemInput, date?: string) => boolean;
   removeMealPlanItem: (id: string, date?: string) => void;
+  restoreMealPlanItem: (item: MealPlanItem, index: number, date: string) => void;
   updateMealPlanItemQuantity: (id: string, quantity: number, date?: string) => void;
   clearMealPlan: (date?: string) => void;
 }
@@ -122,6 +123,16 @@ export const useMealPlanStore = create<MealPlanState>()(
             (state.plans[date] ?? EMPTY_PLAN).filter((item) => item.id !== id),
           ),
         }));
+      },
+
+      restoreMealPlanItem: (item, index, date) => {
+        set((state) => {
+          const current = state.plans[date] ?? EMPTY_PLAN;
+          if (current.some((existing) => existing.id === item.id)) return state;
+          const items = [...current];
+          items.splice(Math.min(index, items.length), 0, item);
+          return { plans: withPlan(state.plans, date, items) };
+        });
       },
 
       updateMealPlanItemQuantity: (id, quantity, date = todayKey()) => {

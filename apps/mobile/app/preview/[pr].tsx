@@ -3,14 +3,14 @@ import * as Updates from 'expo-updates';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, View } from 'react-native';
 import { Text } from '~/components/ui/Text';
-import { fetchPrPreviews } from '~/services/qa/previews';
-import { switchUpdateChannel } from '~/services/qa/updates';
+import { fetchPreviewIndexEntry } from '~/services/qa/previews';
+import { consumeReloadReplay, switchUpdateChannel } from '~/services/qa/updates';
 import { isDevVariant } from '~/utils/appVariant';
 import { isCompatiblePreview, parsePrNumber } from '~/utils/previews';
 import { useTheme } from '~/utils/theme';
 
 const loadPreview = async (pr: number): Promise<string> => {
-  const preview = (await fetchPrPreviews().catch(() => [])).find((item) => item.pr === pr);
+  const preview = await fetchPreviewIndexEntry(pr);
   if (preview && !isCompatiblePreview(preview, Updates.runtimeVersion)) {
     if (preview.buildUrl) await Linking.openURL(preview.buildUrl);
     return `PR #${pr} changed native code. Install its build, then open the link again.`;
@@ -19,6 +19,11 @@ const loadPreview = async (pr: number): Promise<string> => {
   return result === 'up-to-date'
     ? `PR #${pr} is already running, or has no preview yet.`
     : `Loading PR #${pr}…`;
+};
+
+const isReloadReplay = async (pr: number) => {
+  const initialUrl = await Linking.getInitialURL().catch(() => null);
+  return parsePrNumber(initialUrl?.match(/preview\/(\d+)/)?.[1]) === pr && consumeReloadReplay();
 };
 
 type PreviewState = { status: 'loading' } | { status: 'done'; message: string };
@@ -34,8 +39,14 @@ export default function OpenPrPreview() {
       router.replace('/');
       return;
     }
-    loadPreview(number)
-      .then((message) => setPreview({ status: 'done', message }))
+    isReloadReplay(number)
+      .then((replay) => {
+        if (replay) router.replace('/');
+        return replay ? null : loadPreview(number);
+      })
+      .then((message) => {
+        if (message !== null) setPreview({ status: 'done', message });
+      })
       .catch((error: unknown) =>
         setPreview({
           status: 'done',
