@@ -9,6 +9,7 @@ import { formatGrams, formatNumber } from '~/components/mealPlan/format';
 import { PlanRow } from '~/components/mealPlan/PlanRow';
 import { UndoToast } from '~/components/mealPlan/UndoToast';
 import { CountUpText } from '~/components/motion/CountUpText';
+import { DaySlide } from '~/components/motion/DaySlide';
 import { pushedScreenHeaderOptions } from '~/components/TabStack';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { PressableScale } from '~/components/ui/PressableScale';
@@ -85,6 +86,7 @@ const MealPlan = () => {
   const removeItem = useMealPlanStore((state) => state.removeMealPlanItem);
   const restoreItem = useMealPlanStore((state) => state.restoreMealPlanItem);
   const [undo, setUndo] = useState<Undo>({ status: 'idle' });
+  const [travel, setTravel] = useState<1 | -1>(1);
 
   useEffect(() => {
     if (undo.status !== 'removed') return;
@@ -122,6 +124,7 @@ const MealPlan = () => {
   const goTo = (date: string) => {
     if (date === selectedDate) return;
     haptics.selection();
+    setTravel(date > selectedDate ? 1 : -1);
     setViewing(date === today ? { kind: 'today' } : { kind: 'date', date });
   };
 
@@ -211,82 +214,92 @@ const MealPlan = () => {
           />
         </View>
 
-        {items.length === 0 ? (
-          <View className="mx-8 mt-12 items-center gap-y-2">
-            <ChefHat size={36} color={theme.tertiaryLabel} />
-            <Text variant="headline">{editable ? 'Empty Meal Plan!' : 'Nothing logged'}</Text>
-            <Text variant="subheadline" paragraph tone="secondary" className="text-center">
-              {editable
-                ? 'Press and hold a food on any menu to add it here.'
-                : 'You had nothing in your meal plan this day.'}
-            </Text>
-          </View>
-        ) : (
-          <>
-            <View className="mx-4 mb-2">
-              <View
-                className="flex-row items-center justify-between px-4 py-3.5"
-                style={{ backgroundColor: theme.card, borderRadius: 22, borderCurve: 'continuous' }}
-              >
-                <View>
-                  <Text variant="caption" tone="secondary">
-                    Total for the day
-                  </Text>
-                  <CountUpText
-                    variant="display"
-                    value={sumNutrient(items, 'calories')}
-                    format={formatNumber}
-                  >
-                    <Text variant="callout" tone="secondary">
-                      {' '}
-                      kcal
-                    </Text>
-                  </CountUpText>
-                </View>
-                <Flame size={32} color={theme.tint} fill={theme.tint} />
-              </View>
+        <DaySlide day={selectedDate} direction={travel}>
+          {items.length === 0 ? (
+            <View className="mx-8 mt-12 items-center gap-y-2">
+              <ChefHat size={36} color={theme.tertiaryLabel} />
+              <Text variant="headline">{editable ? 'Empty Meal Plan!' : 'Nothing logged'}</Text>
+              <Text variant="subheadline" paragraph tone="secondary" className="text-center">
+                {editable
+                  ? 'Press and hold a food on any menu to add it here.'
+                  : 'You had nothing in your meal plan this day.'}
+              </Text>
             </View>
-            <View className="mx-4 mb-5 flex-row gap-x-2">
-              <Tile label="Protein" value={sumNutrient(items, 'protein')} theme={theme} />
-              <Tile label="Carbs" value={sumNutrient(items, 'total_carbohydrates')} theme={theme} />
-              <Tile label="Fat" value={sumNutrient(items, 'total_fat')} theme={theme} />
-            </View>
-
-            {meals.map((meal) => {
-              const mealItems = items.filter((item) => (item.menuName || 'Other') === meal);
-              return (
-                <View key={meal} className="mb-5">
-                  <View className="mx-9 mb-1.5 flex-row justify-between">
-                    <Text variant="footnote" tone="secondary">
-                      {meal}
+          ) : (
+            <>
+              <View className="mx-4 mb-2">
+                <View
+                  className="flex-row items-center justify-between px-4 py-3.5"
+                  style={{
+                    backgroundColor: theme.card,
+                    borderRadius: 22,
+                    borderCurve: 'continuous',
+                  }}
+                >
+                  <View>
+                    <Text variant="caption" tone="secondary">
+                      Total for the day
                     </Text>
                     <CountUpText
-                      variant="footnote"
-                      tone="secondary"
-                      value={sumNutrient(mealItems, 'calories')}
-                      format={(calories) => `${formatNumber(calories)} kcal`}
-                    />
+                      variant="display"
+                      value={sumNutrient(items, 'calories')}
+                      format={formatNumber}
+                    >
+                      <Text variant="callout" tone="secondary">
+                        {' '}
+                        kcal
+                      </Text>
+                    </CountUpText>
                   </View>
-                  <View
-                    className="mx-4 overflow-hidden"
-                    style={{ borderRadius: 26, borderCurve: 'continuous' }}
-                  >
-                    {mealItems.map((item, index) => (
-                      <PlanRow
-                        key={`${selectedDate}-${item.id}`}
-                        item={item}
-                        date={selectedDate}
-                        editable={editable}
-                        isFirst={index === 0}
-                        onRemove={removeFromPlan}
-                      />
-                    ))}
-                  </View>
+                  <Flame size={32} color={theme.tint} fill={theme.tint} />
                 </View>
-              );
-            })}
-          </>
-        )}
+              </View>
+              <View className="mx-4 mb-5 flex-row gap-x-2">
+                <Tile label="Protein" value={sumNutrient(items, 'protein')} theme={theme} />
+                <Tile
+                  label="Carbs"
+                  value={sumNutrient(items, 'total_carbohydrates')}
+                  theme={theme}
+                />
+                <Tile label="Fat" value={sumNutrient(items, 'total_fat')} theme={theme} />
+              </View>
+
+              {meals.map((meal) => {
+                const mealItems = items.filter((item) => (item.menuName || 'Other') === meal);
+                return (
+                  <View key={meal} className="mb-5">
+                    <View className="mx-9 mb-1.5 flex-row justify-between">
+                      <Text variant="footnote" tone="secondary">
+                        {meal}
+                      </Text>
+                      <CountUpText
+                        variant="footnote"
+                        tone="secondary"
+                        value={sumNutrient(mealItems, 'calories')}
+                        format={(calories) => `${formatNumber(calories)} kcal`}
+                      />
+                    </View>
+                    <View
+                      className="mx-4 overflow-hidden"
+                      style={{ borderRadius: 26, borderCurve: 'continuous' }}
+                    >
+                      {mealItems.map((item, index) => (
+                        <PlanRow
+                          key={`${selectedDate}-${item.id}`}
+                          item={item}
+                          date={selectedDate}
+                          editable={editable}
+                          isFirst={index === 0}
+                          onRemove={removeFromPlan}
+                        />
+                      ))}
+                    </View>
+                  </View>
+                );
+              })}
+            </>
+          )}
+        </DaySlide>
       </OverflowScrollView>
       {undo.status === 'removed' && (
         <UndoToast
