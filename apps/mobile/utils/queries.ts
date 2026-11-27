@@ -17,18 +17,21 @@ const rejectAfter = (ms: number) =>
     setTimeout(() => reject(new Error('Sync timed out')), ms);
   });
 
-const syncWithSupabase = singleFlight(async (db: DrizzleDB, { force, onCacheChange }: SyncRun) => {
+const syncWithSupabase = singleFlight(async ({ force, onCacheChange }: SyncRun) => {
   const store = useDataSyncStore.getState();
-  await Promise.race([
-    syncCacheWithSupabase(db, {
+  const changed = await Promise.race([
+    syncCacheWithSupabase({
       force,
       syncedVersions: store.menuDayVersions,
+      syncedSharedVersion: store.sharedTablesVersion,
       onVersionsChange: store.setMenuDayVersions,
+      onSharedVersionChange: store.setSharedTablesVersion,
       onCacheChange,
     }),
     rejectAfter(SYNC_DEADLINE_MS),
   ]);
   store.setLastSupabaseQueryTime(Date.now());
+  return changed;
 });
 
 export const readCachedMenuData = async (db: DrizzleDB) => {
@@ -50,10 +53,10 @@ export const readCachedMenuData = async (db: DrizzleDB) => {
   return { locations: data, locationTypes: types };
 };
 
-export const syncMenuData = async (
-  db: DrizzleDB,
-  { force = false, onCacheChange = () => {} }: Partial<SyncRun> = {},
-): Promise<boolean> => {
+export const syncMenuData = async ({
+  force = false,
+  onCacheChange = () => {},
+}: Partial<SyncRun> = {}): Promise<boolean> => {
   const decision = decideSync({
     isConnected: true,
     force,
@@ -63,6 +66,5 @@ export const syncMenuData = async (
   });
   if (decision.kind !== 'sync') return false;
 
-  await syncWithSupabase(db, { force, onCacheChange });
-  return true;
+  return syncWithSupabase({ force, onCacheChange });
 };
