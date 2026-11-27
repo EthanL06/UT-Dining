@@ -1,25 +1,18 @@
 import * as Device from 'expo-device';
+import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { MapPin, Navigation, X } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import { useEffect, useEffectEvent, useState } from 'react';
-import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  ScrollView,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PLACE_ICONS, usePlaceColor } from '~/components/map/MapSheet';
 import PlaceDetails, { openPlaceDirections } from '~/components/PlaceDetails';
 import { Text } from '~/components/ui/Text';
-import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { getSafePostHog } from '~/services/analytics/posthog';
 import { useSettingsStore } from '~/store/useSettingsStore';
-import { getLocationName } from '~/utils/locations';
+import { displayLocationName } from '~/utils/locationName';
 import { useTheme } from '~/utils/theme';
 import { getLocationStatusText, isLocationOpen } from '~/utils/time';
 
@@ -31,7 +24,6 @@ export default function LocationGenericScreen() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
-  const db = useDatabase();
   const [imageFailed, setImageFailed] = useState(false);
   const analytics = getSafePostHog(usePostHog());
 
@@ -77,7 +69,7 @@ export default function LocationGenericScreen() {
     );
   }
 
-  const displayName = getLocationName(db, location, useColloquialNames);
+  const displayName = displayLocationName(locationData, useColloquialNames) || location;
   const isOpen = isLocationOpen(locationData);
   const status = getLocationStatusText(locationData, isOpen);
   const showImage = !!locationData.image && !imageFailed;
@@ -92,7 +84,9 @@ export default function LocationGenericScreen() {
             <Image
               source={{ uri: locationData.image as string }}
               style={{ width, height: COVER_HEIGHT }}
-              resizeMode="cover"
+              contentFit="cover"
+              transition={150}
+              cachePolicy="memory-disk"
               onError={() => setImageFailed(true)}
             />
           ) : (
