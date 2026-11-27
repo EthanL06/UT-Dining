@@ -205,12 +205,13 @@ const Notifications = () => {
         divider={false}
         contentInsetAdjustmentBehavior="automatic"
         style={{ flex: 1, backgroundColor: theme.background }}
-        contentContainerStyle={{ flexGrow: 1, paddingTop: 8, paddingBottom: 32 }}
+        contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
       >
         {groups.length === 0 ? (
-          <View className="flex-1 items-center justify-center px-10">
+          <View className="mx-8 mt-12 items-center gap-y-2">
+            <Bell size={36} color={theme.tertiaryLabel} />
             <Text variant="headline">No Notifications Yet</Text>
-            <Text variant="subheadline" tone="secondary" className="mt-1.5 text-center">
+            <Text variant="subheadline" tone="secondary" className="text-center">
               We'll notify you about your favorite foods and dining location updates.
             </Text>
           </View>
