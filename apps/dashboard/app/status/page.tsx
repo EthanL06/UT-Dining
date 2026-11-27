@@ -153,10 +153,13 @@ export default async function PublicStatusPage() {
           )}
 
           <Stack gap="sm">
-            <Text fw={600}>Days with closed dining halls</Text>
-            <Text fz="sm" c="dimmed">
-              When UT doesn't post a menu, the dining hall is usually closed for a break or holiday.
-            </Text>
+            <Stack gap={2}>
+              <Text fw={600}>Days with closed dining halls</Text>
+              <Text fz="sm" c="dimmed">
+                When UT doesn't post a menu, the dining hall is usually closed for a break or
+                holiday.
+              </Text>
+            </Stack>
             {notes.length === 0 ? (
               <Text fz="sm" c="dimmed">
                 Every dining hall had a menu in the last 14 days.
@@ -167,7 +170,7 @@ export default async function PublicStatusPage() {
                 .reverse()
                 .map((day) => (
                   <Paper key={day.date} radius="md" withBorder p="md">
-                    <Group gap={8} mb={4}>
+                    <Group gap={8} mb={4} align="baseline">
                       <Text fw={600} fz="sm">
                         {day.loaded === 0
                           ? 'No menus'
