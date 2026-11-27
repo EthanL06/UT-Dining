@@ -31,7 +31,6 @@ import { VersionCheckProvider } from '~/components/VersionCheckProvider';
 import { usePostHogScreens } from '~/hooks/usePostHogScreens';
 import { POSTHOG_CONFIG, posthogClient } from '~/services/analytics/posthog';
 import { PushNotificationsInitializer } from '~/services/notifications/notifications';
-import { ratingService } from '~/services/rating/rating';
 import { useAppLaunchStore } from '~/store/useAppLaunchStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTheme } from '~/utils/theme';
@@ -94,7 +93,6 @@ const AppContent = () => {
   useEffect(() => {
     if (success) {
       incrementLaunchCount();
-      void ratingService.checkAndShowRatingPrompt();
     }
   }, [success, incrementLaunchCount]);
 

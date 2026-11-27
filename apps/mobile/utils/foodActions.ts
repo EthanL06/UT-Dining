@@ -1,6 +1,8 @@
 import type { DrizzleDB, FoodItem } from '~/services/database/database';
-import { toggleFavorites } from '~/services/database/database';
+import { countFavorites, toggleFavorites } from '~/services/database/database';
+import { ratingService } from '~/services/rating/rating';
 import { mealPlanItemId, todayKey, useMealPlanStore } from '~/store/useMealPlanStore';
+import { favoritesTrigger } from '~/utils/ratingPrompt';
 
 export type FoodContext = {
   location: string;
@@ -55,8 +57,21 @@ export const favoriteFoods = async (
   for (const { food, category } of toAdd) {
     await toggleFavorites(db, food, context.location, context.menu, category);
   }
+  if (toAdd.length > 0) askForRatingAfterFavorite(db);
   return toAdd.length;
 };
 
-export const toggleFavoriteForFood = (db: DrizzleDB, food: FoodItem, context: FoodContext) =>
-  toggleFavorites(db, food, context.location, context.menu, context.category);
+const askForRatingAfterFavorite = (db: DrizzleDB) => {
+  const trigger = favoritesTrigger(countFavorites(db));
+  if (trigger) ratingService.requestAfterHappyMoment(trigger);
+};
+
+export const toggleFavoriteForFood = async (
+  db: DrizzleDB,
+  food: FoodItem,
+  context: FoodContext,
+) => {
+  const added = await toggleFavorites(db, food, context.location, context.menu, context.category);
+  if (added) askForRatingAfterFavorite(db);
+  return added;
+};

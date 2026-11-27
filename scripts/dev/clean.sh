@@ -52,6 +52,9 @@ clean_sims() {
     xcrun simctl delete "$udid" && removed=$((removed + 1))
   done
   ok "deleted $removed E2E simulator clone(s)"
+  "$ROOT/scripts/dev/sim-lease.sh" reap
+  ok "reclaimed expired simulator leases (make sim-leases lists the rest)"
+  "$ROOT/scripts/dev/sim-lease.sh" idle --shutdown
   if [[ "${1:-}" == "all" ]]; then
     local booted
     booted="$(xcrun simctl list devices booted | grep -cE '\(Booted\)' || true)"
