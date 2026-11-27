@@ -3,8 +3,8 @@ packages:
   - packages/*
 
 catalog:
-  "@supabase/supabase-js": ^2.49.1
-  "@types/node": ^24.0.0
+  '@supabase/supabase-js': ^2.49.1
+  '@types/node': ^24.0.0
   typescript: ^6.0.3
 
 onlyBuiltDependencies:

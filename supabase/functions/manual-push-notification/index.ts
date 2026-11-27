@@ -19,9 +19,10 @@ const BATCH_SIZE = 100;
 
 console.log('🔍 Starting manual push notification function...');
 
-const isDashboardAdmin = async (req: Request) => {
+const isAllowedCaller = async (req: Request) => {
   const authorization = req.headers.get('Authorization');
   if (!authorization) return false;
+  if (authorization === `Bearer ${serviceRoleKey}`) return true;
   const caller = createClient(supabaseUrl, anonKey, {
     global: { headers: { Authorization: authorization } },
   });
@@ -30,7 +31,7 @@ const isDashboardAdmin = async (req: Request) => {
 };
 
 Deno.serve(async (req) => {
-  if (!(await isDashboardAdmin(req))) {
+  if (!(await isAllowedCaller(req))) {
     return new Response(JSON.stringify({ error: 'Forbidden' }), {
       status: 403,
       headers: { 'Content-Type': 'application/json' },

@@ -4,7 +4,7 @@ appId: com.ethanl06.ut-dining.dev
     timeout: 5000
 - repeat:
     while:
-      visible: ".*Would Like to Send You Notifications.*|.*to use your location.*|Enjoying.*|Open in .*"
+      visible: '.*Would Like to Send You Notifications.*|.*to use your location.*|Enjoying.*|Open in .*'
     times: 4
     commands:
       - runFlow:

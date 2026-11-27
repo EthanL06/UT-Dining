@@ -65,6 +65,7 @@ export default function Home() {
               </Link>
               <a
                 href="/about"
+                aria-label="Learn more about UT Dining"
                 className="hover:bg-secondary flex w-full items-center justify-center gap-2 rounded-full border px-6 py-3 transition-colors sm:w-auto"
               >
                 Learn More

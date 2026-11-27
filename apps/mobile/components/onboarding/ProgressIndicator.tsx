@@ -2,7 +2,7 @@ import type React from 'react';
 import { View } from 'react-native';
 import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
 
-import { useSettingsStore } from '~/store/useSettingsStore';
+import { useTheme } from '~/utils/theme';
 import { cn } from '~/utils/utils';
 
 interface ProgressIndicatorProps {
@@ -16,7 +16,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   totalSteps,
   className,
 }) => {
-  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+  const theme = useTheme();
 
   const progressStyle = useAnimatedStyle(() => {
     const progress = (step / (totalSteps - 1)) * 100;
@@ -31,13 +31,13 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
 
   return (
     <View
-      className={cn(
-        'h-1.5 w-full overflow-hidden rounded-full',
-        isDarkMode ? 'bg-neutral-700' : 'bg-neutral-200',
-        className,
-      )}
+      className={cn('h-1.5 w-full overflow-hidden rounded-full', className)}
+      style={{ backgroundColor: theme.fill }}
     >
-      <Animated.View className="bg-ut-burnt-orange/75 h-full rounded-full" style={progressStyle} />
+      <Animated.View
+        className="h-full rounded-full"
+        style={[{ backgroundColor: theme.tint }, progressStyle]}
+      />
     </View>
   );
 };

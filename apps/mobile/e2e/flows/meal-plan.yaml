@@ -4,13 +4,13 @@ name: Meal plan items can be added and removed
 - runFlow: ../subflows/start.yaml
 - runFlow: ../subflows/open-j2.yaml
 - scrollUntilVisible:
-    element: "Maestro Veggie Burger(,.*)?"
+    element: 'Maestro Veggie Burger(,.*)?'
     direction: DOWN
     visibilityPercentage: 100
 - swipe:
-    from: "Maestro Grilled Chicken(,.*)?"
+    from: 'Maestro Grilled Chicken(,.*)?'
     direction: RIGHT
-- tapOn: "Maestro Veggie Burger(,.*)?"
+- tapOn: 'Maestro Veggie Burger(,.*)?'
 - extendedWaitUntil:
     visible:
       id: food-meal-plan-button
@@ -28,26 +28,28 @@ name: Meal plan items can be added and removed
       - waitForAnimationToEnd
 - repeat:
     while:
-      notVisible: Your Meal Plan
+      notVisible:
+        id: meal-plan-title
     times: 3
     commands:
       - tapOn:
           id: location-meal-plan-button
       - waitForAnimationToEnd
-- assertVisible: Your Meal Plan
+- assertVisible:
+    id: meal-plan-title
 - extendedWaitUntil:
-    visible: "Maestro Grilled Chicken(,.*)?"
+    visible: 'Maestro Grilled Chicken(,.*)?'
     timeout: 5000
-- assertVisible: "Maestro Veggie Burger(,.*)?"
+- assertVisible: 'Maestro Veggie Burger(,.*)?'
 - takeScreenshot: meal-plan
 - swipe:
-    from: "Maestro Grilled Chicken(,.*)?"
+    from: 'Maestro Grilled Chicken(,.*)?'
     direction: RIGHT
 - extendedWaitUntil:
-    notVisible: "Maestro Grilled Chicken(,.*)?"
+    notVisible: 'Maestro Grilled Chicken(,.*)?'
     timeout: 5000
 - swipe:
-    from: "Maestro Veggie Burger(,.*)?"
+    from: 'Maestro Veggie Burger(,.*)?'
     direction: RIGHT
 - extendedWaitUntil:
     visible: Empty Meal Plan!
