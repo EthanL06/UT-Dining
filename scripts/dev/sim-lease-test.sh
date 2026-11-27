@@ -139,7 +139,7 @@ repo() {
 }
 
 sweep() {
-  "$SWEEP" sweep "$@" >"$T/sweep.log" 2>&1 || { cat "$T/sweep.log" >&2; die "sweep failed"; }
+  bash -x "$SWEEP" sweep "$@" >"$T/sweep.log" 2>&1 || { tail -n 60 "$T/sweep.log" >&2; die "sweep failed"; }
 }
 
 gh_answer() { printf '%s\n' "$2" >"$T/gh/$(tr '/?&=:' '_____' <<<"$1")"; }
