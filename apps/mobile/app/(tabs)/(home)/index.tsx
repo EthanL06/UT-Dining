@@ -173,6 +173,7 @@ const LocationRows = ({
       >
         <Link.Trigger withAppleZoom>
           <GroupedRow
+            accessibilityRole="button"
             isFirst={index === 0}
             separatorInset={37}
             leading={<StatusDot open={isOpen} />}
