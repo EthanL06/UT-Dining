@@ -9,9 +9,8 @@ let traffic = { req: 0, bytes: 0, first: 0, last: 0 };
 const profiles = { pass: { lat: 0, bps: 0 }, slow: { lat: 150, bps: 200000 } };
 let bucketFree = 0;
 const log = (o) => fs.appendFileSync(OUT, `${JSON.stringify(o)}\n`);
-const imageHosts = new Set(
-  [new URL(UP).host, ...(process.env.IMG_HOSTS ?? '').split(',')].filter(Boolean),
-);
+const upstream = new URL(UP);
+const imageHosts = [upstream.host, ...(process.env.IMG_HOSTS ?? '').split(',')].filter(Boolean);
 const imageTarget = (encoded) => {
   let url;
   try {
@@ -19,7 +18,8 @@ const imageTarget = (encoded) => {
   } catch {
     return null;
   }
-  return url.protocol === 'https:' && imageHosts.has(url.host) ? url.href : null;
+  const host = imageHosts.find((allowed) => allowed === url.host);
+  return url.protocol === 'https:' && host ? { host, path: `${url.pathname}${url.search}` } : null;
 };
 const agent = new https.Agent({ keepAlive: true, maxSockets: 16 });
 http
@@ -72,7 +72,10 @@ http
     const target = u.pathname.startsWith('/img/')
       ? imageTarget(u.pathname.slice(5))
       : u.pathname.startsWith('/sb/')
-        ? UP + req.url.slice(3)
+        ? {
+            host: upstream.host,
+            path: `${upstream.pathname.replace(/\/$/, '')}${req.url.slice(3)}`,
+          }
         : null;
     if (!target) {
       res.statusCode = 404;
@@ -95,33 +98,43 @@ http
         const h = { ...req.headers };
         delete h.host;
         delete h.connection;
-        const up = https.request(target, { method: req.method, headers: h, agent }, (r) => {
-          const rh = { ...r.headers };
-          delete rh.connection;
-          delete rh['transfer-encoding'];
-          res.writeHead(r.statusCode, rh);
-          r.on('data', (d) => {
-            traffic.bytes += d.length;
-            if (!bps) {
-              res.write(d);
-              return;
-            }
-            const now = Date.now();
-            bucketFree = Math.max(bucketFree, now) + (d.length / bps) * 1000;
-            r.pause();
-            setTimeout(() => {
-              res.write(d);
-              r.resume();
-            }, bucketFree - now);
-          });
-          r.on('end', () => {
-            const fin = () => {
-              res.end();
-              traffic.last = Date.now();
-            };
-            bps ? setTimeout(fin, Math.max(0, bucketFree - Date.now()) + lat / 2) : fin();
-          });
-        });
+        const up = https.request(
+          {
+            hostname: new URL(`https://${target.host}`).hostname,
+            port: new URL(`https://${target.host}`).port || 443,
+            path: target.path,
+            method: req.method,
+            headers: h,
+            agent,
+          },
+          (r) => {
+            const rh = { ...r.headers };
+            delete rh.connection;
+            delete rh['transfer-encoding'];
+            res.writeHead(r.statusCode, rh);
+            r.on('data', (d) => {
+              traffic.bytes += d.length;
+              if (!bps) {
+                res.write(d);
+                return;
+              }
+              const now = Date.now();
+              bucketFree = Math.max(bucketFree, now) + (d.length / bps) * 1000;
+              r.pause();
+              setTimeout(() => {
+                res.write(d);
+                r.resume();
+              }, bucketFree - now);
+            });
+            r.on('end', () => {
+              const fin = () => {
+                res.end();
+                traffic.last = Date.now();
+              };
+              bps ? setTimeout(fin, Math.max(0, bucketFree - Date.now()) + lat / 2) : fin();
+            });
+          },
+        );
         up.on('error', () => res.destroy());
         up.end(Buffer.concat(chunks));
       }, lat),
