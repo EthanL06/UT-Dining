@@ -5,6 +5,10 @@ on:
     branches: [main, staging]
   pull_request:
     branches: [main, staging]
+    paths-ignore:
+      - '**/*.md'
+      - .agents/**
+      - LICENSE
   schedule:
     - cron: '17 9 * * 1'
   workflow_dispatch:
