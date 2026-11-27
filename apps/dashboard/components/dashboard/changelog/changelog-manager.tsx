@@ -21,6 +21,7 @@ import { useForm } from '@mantine/form';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { IconArrowDown, IconArrowUp, IconEdit, IconPlus, IconTrash } from '@tabler/icons-react';
+import { formatCentralDateKey } from '@ut-dining/core';
 import { useState, useTransition } from 'react';
 import {
   deleteChangelogEntry,
@@ -45,7 +46,7 @@ const iconData = CHANGELOG_ICONS.map((value) => ({
 const emptyChange = () => ({ title: '', description: '', icon: 'sparkles' as ChangelogIcon });
 
 const formatDate = (date: string) =>
-  new Date(`${date}T12:00:00`).toLocaleDateString('en-US', {
+  formatCentralDateKey(date, {
     month: 'long',
     day: 'numeric',
     year: 'numeric',

@@ -10,7 +10,6 @@ import {
   toMinutes,
   type Weekday,
 } from '@ut-dining/core';
-import { format } from 'date-fns';
 
 import type * as schema from '~/services/database/schema';
 
@@ -18,7 +17,10 @@ import type { MealTimes } from '~/utils/locations';
 
 type WeekDay = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
 
-const weekdayName = (date: Date): WeekDay => format(date, 'EEEE') as WeekDay;
+const weekdayName = (date: Date): WeekDay => {
+  const { day } = toCentralTime(date);
+  return `${day.charAt(0).toUpperCase()}${day.slice(1)}` as WeekDay;
+};
 
 export const timeOfDay = (
   date: Date,
@@ -109,12 +111,12 @@ export function getLocationTimeMessage(
   return 'Closed';
 }
 
-function formatTimeFromNumber(time: number, referenceDate: Date): string {
+function formatTimeFromNumber(time: number): string {
   const hour = Math.floor(time / 100);
   const minute = time % 100;
-  const d = new Date(referenceDate);
-  d.setHours(hour, minute, 0, 0);
-  return format(d, 'hh:mm a');
+  const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+  const period = hour >= 12 && hour < 24 ? 'PM' : 'AM';
+  return `${String(displayHour).padStart(2, '0')}:${String(minute).padStart(2, '0')} ${period}`;
 }
 
 const dayAbbreviations: Record<WeekDay, string> = {
@@ -130,7 +132,6 @@ const dayAbbreviations: Record<WeekDay, string> = {
 export function generateSchedule(
   locationData: schema.Location | null,
   _todayFirst = true,
-  date: Date = new Date(),
 ): { dayRange: string; time: string }[] {
   if (!locationData?.regular_service_hours) return [];
 
@@ -157,8 +158,8 @@ export function generateSchedule(
     const ranges = rangesFor(weekDay);
     if (ranges) {
       const intervals = ranges.map((interval: TimeRange) => {
-        const openStr = formatTimeFromNumber(interval.open, date);
-        const closeStr = formatTimeFromNumber(interval.close, date);
+        const openStr = formatTimeFromNumber(interval.open);
+        const closeStr = formatTimeFromNumber(interval.close);
         return `${openStr} - ${closeStr}`;
       });
       const lines: string[] = [];

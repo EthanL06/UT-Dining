@@ -1,5 +1,3 @@
-import type { ImageSourcePropType } from 'react-native';
-
 const BeefIcon = require('../assets/allergen-icons/Beef.webp');
 const EggIcon = require('../assets/allergen-icons/Eggs.webp');
 const FishIcon = require('../assets/allergen-icons/Fish.webp');
@@ -31,7 +29,7 @@ export type AllergenKey =
   | 'halal'
   | 'milk';
 
-const ALLERGEN_ICONS: Record<AllergenKey, ImageSourcePropType> = {
+const ALLERGEN_ICONS: Record<AllergenKey, number> = {
   beef: BeefIcon,
   egg: EggIcon,
   fish: FishIcon,

@@ -1,6 +1,7 @@
 'use server';
 
-import { checkNotification } from '@ut-dining/core';
+import { checkNotification, formatCentral } from '@ut-dining/core';
+import { log } from '@/lib/log';
 import { createClient } from '@/lib/supabase/server';
 
 export interface NotificationData {
@@ -32,14 +33,14 @@ export async function sendNotification(data: NotificationData) {
   });
 
   if (error) {
-    console.error('❌ Error sending notification:', error);
+    log.error('❌ Error sending notification:', error);
     return {
       success: false,
       message: error.message,
     };
   }
 
-  console.log('✅ Notification sent successfully');
+  log.info('✅ Notification sent successfully');
 
   return {
     success: true,
@@ -75,18 +76,18 @@ export async function scheduleNotification(data: NotificationData) {
   });
 
   if (error) {
-    console.error('❌ Error scheduling notification:', error);
+    log.error('❌ Error scheduling notification:', error);
     return {
       success: false,
       message: error.message,
     };
   }
 
-  console.log('✅ Notification scheduled successfully');
+  log.info('✅ Notification scheduled successfully');
 
   return {
     success: true,
-    message: `Notification scheduled successfully for ${scheduledAt.toLocaleString()}`,
+    message: `Notification scheduled successfully for ${formatCentral(scheduledAt, { dateStyle: 'medium', timeStyle: 'short', timeZoneName: 'short' })}`,
   };
 }
 
@@ -100,7 +101,7 @@ export async function getScheduledNotifications() {
     .order('scheduled_at', { ascending: true });
 
   if (error) {
-    console.error('❌ Error fetching scheduled notifications:', error);
+    log.error('❌ Error fetching scheduled notifications:', error);
     return [];
   }
 
@@ -113,14 +114,14 @@ export async function deleteScheduledNotification(id: string) {
   const { error } = await supabase.from('notifications').delete().eq('id', id);
 
   if (error) {
-    console.error('❌ Error deleting scheduled notification:', error);
+    log.error('❌ Error deleting scheduled notification:', error);
     return {
       success: false,
       message: error.message,
     };
   }
 
-  console.log('✅ Scheduled notification deleted successfully');
+  log.info('✅ Scheduled notification deleted successfully');
 
   return {
     success: true,
@@ -137,7 +138,7 @@ export async function getNotificationTypes() {
     .order('name', { ascending: true });
 
   if (error) {
-    console.error('❌ Error fetching notification types:', error);
+    log.error('❌ Error fetching notification types:', error);
     return [];
   }
 
