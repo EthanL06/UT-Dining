@@ -1,6 +1,10 @@
-import type { FlashListRef } from '@shopify/flash-list';
 import { useCallback, useRef, useState } from 'react';
-import { Animated, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
+import {
+  Animated,
+  type FlatList,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from 'react-native';
 
 const SHOW_AFTER_OFFSET = 500;
 const BUTTON_BOTTOM = 40;
@@ -9,7 +13,7 @@ const BUTTON_SIZE = 48;
 export const SCROLL_TO_TOP_POSITION = { bottom: BUTTON_BOTTOM, size: BUTTON_SIZE };
 export const SCROLL_TO_TOP_CLEARANCE = BUTTON_BOTTOM + BUTTON_SIZE + 16;
 
-export const useScrollToTop = <T,>(listRef: React.RefObject<FlashListRef<T> | null>) => {
+export const useScrollToTop = <T,>(listRef: React.RefObject<FlatList<T> | null>) => {
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const scrollButtonAnimation = useRef(new Animated.Value(0)).current;
   const restingTopOffset = useRef<number | null>(null);

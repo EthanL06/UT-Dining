@@ -1,10 +1,9 @@
-import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { useIsFetching } from '@tanstack/react-query';
 import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, FlatList, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RowPosition } from '~/components/FoodComponent';
 import { pushedScreenHeaderOptions } from '~/components/TabStack';
@@ -136,7 +135,7 @@ const Location = () => {
   );
   const skeletonItems = useSkeletonItems();
 
-  const listRef = useRef<FlashListRef<ListItem>>(null);
+  const listRef = useRef<FlatList<ListItem>>(null);
   const {
     showScrollToTop,
     scrollButtonAnimation,
@@ -288,7 +287,7 @@ const Location = () => {
   }, [menuStatus, isSyncing, debouncedSearchQuery, activeFilters]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background }}>
+    <>
       <Stack.Screen
         options={{
           title: displayName,
@@ -318,7 +317,7 @@ const Location = () => {
           },
         }}
       />
-      <FlashList
+      <FlatList
         alwaysBounceVertical={false}
         contentInsetAdjustmentBehavior="automatic"
         keyboardDismissMode="on-drag"
@@ -345,8 +344,8 @@ const Location = () => {
         />
         ListEmptyComponent={<EmptyState />}
         renderItem={renderItem}
-        getItemType={(item) => ('type' in item ? item.type : 'unknown')}
         keyboardShouldPersistTaps="always"
+        style={{ flex: 1, backgroundColor: theme.background }}
       />
 
       {selecting ? (
@@ -386,7 +385,7 @@ const Location = () => {
           }}
         />
       )}
-    </View>
+    </>
   );
 };
 
