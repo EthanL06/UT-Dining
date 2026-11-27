@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   decideRatingPrompt,
   favoritesTrigger,
-  menuHasFavorite,
+  menuViewTrigger,
   type RatingPromptHistory,
 } from './ratingPrompt';
 
@@ -103,13 +103,41 @@ describe('favoritesTrigger', () => {
   });
 });
 
-describe('menuHasFavorite', () => {
-  it('matches a favorite by name', () => {
-    expect(menuHasFavorite(['Pizza', 'Tacos'], ['Tacos'])).toBe(true);
+describe('menuViewTrigger', () => {
+  const view = (
+    overrides: Partial<{
+      foodNames: (string | null)[];
+      favoriteNames: string[];
+      history: RatingPromptHistory;
+      now: number;
+    }> = {},
+  ) =>
+    menuViewTrigger({
+      foodNames: ['Pizza', 'Tacos'],
+      favoriteNames: [],
+      history: eligible,
+      now: first + 3 * DAY,
+      ...overrides,
+    });
+
+  it('fires for a menu with a favorite', () => {
+    expect(view({ favoriteNames: ['Tacos'] })).toBe('favorite_on_menu');
   });
 
-  it('is false with no favorites or no match', () => {
-    expect(menuHasFavorite(['Pizza'], [])).toBe(false);
-    expect(menuHasFavorite(['Pizza', null], ['Tacos'])).toBe(false);
+  it('ignores an empty menu', () => {
+    expect(view({ foodNames: [], favoriteNames: ['Tacos'] })).toBeNull();
+  });
+
+  it('waits for engagement when nothing on the menu is a favorite', () => {
+    expect(view()).toBeNull();
+    expect(view({ favoriteNames: ['Ramen'], foodNames: ['Pizza', null] })).toBeNull();
+    expect(view({ history: { ...eligible, launchCount: 10 }, now: first + 6 * DAY })).toBeNull();
+    expect(view({ history: { ...eligible, launchCount: 9 }, now: first + 30 * DAY })).toBeNull();
+  });
+
+  it('falls back to engaged users after 10 launches over 7 days', () => {
+    expect(view({ history: { ...eligible, launchCount: 10 }, now: first + 7 * DAY })).toBe(
+      'engaged_menu_view',
+    );
   });
 });
