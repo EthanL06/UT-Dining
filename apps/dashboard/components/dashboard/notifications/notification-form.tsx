@@ -109,6 +109,7 @@ export function NotificationForm({
           color: 'green',
         });
 
+        form.reset();
         close();
       } else {
         notifications.show({

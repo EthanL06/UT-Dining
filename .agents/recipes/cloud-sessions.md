@@ -9,6 +9,7 @@ Claude Code cloud sessions run in a Linux container behind a proxy. These limits
 - Blocked by the proxy: ruleset writes (`/rulesets` returns 403) and branch deletes (`git push --delete` and `DELETE git/refs`). For a ruleset, put the JSON in the PR or a project file and ask Ethan to apply it. For a branch you must delete, push a commit to it with a push-triggered workflow that deletes its own ref with `GITHUB_TOKEN` (`contents: write`), then delete that run. Usually just leave the branch: `branch-cleanup.yml` deletes it once its PR merges.
 - Force pushes are refused by the session's safety check. To update a PR branch, merge `staging` into it; PRs are squash merged, so the history does not matter.
 - `Fixes #N` does not close issues when a PR merges into `staging`, because it is not the default branch. Close them by hand with `state_reason=completed`.
+- Git hooks: the SessionStart hook's `pnpm install` installs them through Lefthook. If `make doctor` says one is missing (for example the session started before `pnpm install`), run `pnpm exec lefthook install`. Let the pre-push hook run on every push; a red CI run costs a minute and a Vercel deploy from the 100 a day, the hook a few seconds. AGENTS.md (Git hooks) has the details and the bypass rule.
 - CI (`ci.yml`) takes about a minute. The Maestro iOS workflow runs only on PRs from `staging` into `main` and on manual dispatch.
 
 ## Screenshots for a PR
@@ -28,7 +29,7 @@ git push -u origin assets/<topic>
 
 Embed them in the PR body as `https://raw.githubusercontent.com/EthanL06/UT-Dining/assets/<topic>/<file>.png`. Without both `vercel.json` files, Vercel tries to build the branch, fails, and emails Ethan.
 
-The container has no iOS Simulator. Screenshots of the iOS app come from Ethan's Mac through a Remote Control session, and the Mac's local permissions refuse to send image files out of it or to `git push`. Web screenshots work in the container: agent-browser with `AGENT_BROWSER_EXECUTABLE_PATH=/opt/pw-browsers/chromium AGENT_BROWSER_ARGS=--no-sandbox`.
+The container has no iOS Simulator. Screenshots of the iOS app come from Ethan's Mac through a Remote Control session that runs `make pr-screenshots PR=<n>` in the PR's worktree, which pushes and embeds them itself (`.agents/agent-permissions.json` allows it). If the Mac is unreachable, run `scripts/qa/pr-screenshots.sh <n> --ci` here: it adds the `screenshots` label and CI embeds the images in the PR body. Web screenshots work in the container: agent-browser with `AGENT_BROWSER_EXECUTABLE_PATH=/opt/pw-browsers/chromium AGENT_BROWSER_ARGS=--no-sandbox`.
 
 ## Which Supabase
 

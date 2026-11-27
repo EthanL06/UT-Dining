@@ -33,9 +33,10 @@ Website: [utdining.app](https://utdining.app) · Status: [status.utdining.app](h
 7. [Deployments](#deployments)
    - [Branches and releases](#branches-and-releases)
 8. [Status and Monitoring](#status-and-monitoring)
-9. [Frequently Asked Questions](#frequently-asked-questions)
-10. [Contributing](#contributing)
-11. [License](#license)
+9. [Open Data](#open-data)
+10. [Frequently Asked Questions](#frequently-asked-questions)
+11. [Contributing](#contributing)
+12. [License](#license)
 
 ## Features
 
@@ -174,7 +175,7 @@ Run `make` (or `make help`) for the full list. Variables go after the target, fo
 | `make scrape` | Run the scraper once with `apps/scraper/.env.local` |
 | `make admin ARGS="locations list"` | Run the admin CLI (same as `pnpm -s admin ...`, see [apps/cli](apps/cli/README.md)) |
 | `make verify` | Fast check of only what your diff touches: Biome, the comment check, typecheck and tests of the affected packages |
-| `make check` | Lint, format check, comment check, typecheck and tests for everything, the same as CI. Run it before you push. |
+| `make check` | Lint, format check, comment check, typecheck and tests for everything, the same as CI. The pre-push hook runs the same checks for what changed. |
 | `make fix` | Apply Biome's safe lint and format fixes |
 | `make typecheck` / `make test` / `make build` | One step of the checks |
 | `make db-up` / `make db-down` | Start or stop local Supabase (data is kept), and point the apps at it |
@@ -194,7 +195,7 @@ Run `make` (or `make help`) for the full list. Variables go after the target, fo
 
 The `pnpm` scripts in `package.json` (`pnpm check`, `pnpm db:reset` and so on) still work; the Makefile is a front door over them.
 
-Commits are checked by commitlint and staged files are formatted by Biome through [Lefthook](https://lefthook.dev) hooks, installed automatically by `pnpm install`. The repo has no code comments, and the pre-commit hook and CI fail on new ones; put context in a README, an `AGENTS.md` or the PR description instead.
+Commits are checked by commitlint, staged files are formatted and linted by Biome, and `git push` runs the CI checks for what changed, through [Lefthook](https://lefthook.dev) hooks installed automatically by `pnpm install` (see "Git hooks" in `AGENTS.md`). The repo has no code comments, and the pre-commit hook and CI fail on new ones; put context in a README, an `AGENTS.md` or the PR description instead.
 
 ### Editor
 
@@ -264,6 +265,10 @@ Vercel only builds an app when its files, a workspace package it uses or a root 
 - **Admin status**: `/dashboard/status` in the dashboard has the detailed view, including recent GitHub Actions runs.
 - **Uptime monitoring**: [EthanL06/ut-dining-uptime](https://github.com/EthanL06/ut-dining-uptime) runs [Upptime](https://upptime.js.org) on GitHub Actions. Every 5 minutes it checks the website, the dashboard, the status page, the status API and the production Supabase gateway from outside our own hosting. When a check fails it opens an issue in that repo, and it closes the issue on recovery. History and response times are at [ethanl06.github.io/ut-dining-uptime](https://ethanl06.github.io/ut-dining-uptime/).
 - **Dev database**: `dev-supabase-keepalive.yml` pings the dev Supabase project three times a week so the free plan doesn't pause it.
+
+## Open Data
+
+Every menu, dish, nutrition label, allergen flag and set of opening hours in the app is published as free JSON and CSV files in **[EthanL06/ut-dining-data](https://github.com/EthanL06/ut-dining-data)**, with every menu since July 2025. It updates after each scrape, twice a day, and its README documents the schema. The export lives in `apps/scraper/src/export.ts` and runs from `.github/workflows/open-data.yml`.
 
 ## Frequently Asked Questions
 

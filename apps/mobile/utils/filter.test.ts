@@ -4,7 +4,7 @@ import type { FoodItem } from '~/services/database/database';
 import type * as schema from '~/services/database/schema';
 import type { FiltersState } from '~/store/useFiltersStore';
 
-import { filterFoodItems, hasActiveFilters } from './filter';
+import { filterFoodItems, foodFilter, hasActiveFilters } from './filter';
 
 const item = (name: string, allergens: Record<string, boolean> = {}): FoodItem =>
   ({ name, link: '', allergens }) as unknown as FoodItem;
@@ -63,9 +63,38 @@ describe('filterFoodItems', () => {
     ).toEqual(['Tofu Bowl']);
   });
 
+  it('counts vegan items as vegetarian', () => {
+    const salad = item('Salad Bar', { vegan: true });
+    expect(
+      names(
+        filterFoodItems([...items, salad], { ...noFilters, dietary: { vegetarian: true } }, []),
+      ),
+    ).toEqual(['Pancakes', 'Tofu Bowl', 'Salad Bar']);
+  });
+
   it('drops items with no allergen data when a diet is selected', () => {
     const bare = { name: 'Mystery', link: '' } as unknown as FoodItem;
     expect(filterFoodItems([bare], { ...noFilters, dietary: { vegan: true } }, [])).toEqual([]);
+  });
+});
+
+describe('foodFilter', () => {
+  it('passes the category to the meal plan check', () => {
+    const passes = foodFilter(
+      { ...noFilters, mealPlan: true },
+      [],
+      (food, categoryId) => food.name === 'Brisket' && categoryId === 'Entrees',
+    );
+    expect(passes(items[2], 'Entrees')).toBe(true);
+    expect(passes(items[2], 'Sides')).toBe(false);
+  });
+
+  it('ignores cleared allergen and diet choices', () => {
+    const passes = foodFilter(
+      { ...noFilters, allergens: { egg: false }, dietary: { vegan: false } },
+      [],
+    );
+    expect(items.every((food) => passes(food))).toBe(true);
   });
 });
 

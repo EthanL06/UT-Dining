@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { toCentralTime, toLocalTime } from './central-time.ts';
+import {
+  daysBetweenDateKeys,
+  formatCentral,
+  formatCentralDateKey,
+  toCentralTime,
+} from './central-time.ts';
 
 describe('toCentralTime', () => {
   it('converts during daylight saving time (UTC-5)', () => {
@@ -32,8 +37,31 @@ describe('toCentralTime', () => {
   });
 });
 
-describe('toLocalTime', () => {
-  it('reads the weekday and time in the device time zone', () => {
-    expect(toLocalTime(new Date(2026, 9, 26, 9, 15))).toEqual({ day: 'monday', time: 915 });
+describe('formatCentral', () => {
+  it('formats an instant in Central time whatever the device zone', () => {
+    expect(formatCentral('2026-11-27T05:30:00Z', { hour: 'numeric', minute: '2-digit' })).toBe(
+      '11:30 PM',
+    );
+    expect(formatCentral('2026-11-27T05:30:00Z', { month: 'short', day: 'numeric' })).toBe(
+      'Nov 26',
+    );
+  });
+});
+
+describe('formatCentralDateKey', () => {
+  it('keeps the calendar day of the key', () => {
+    expect(formatCentralDateKey('2026-11-01', { month: 'long', year: 'numeric' })).toBe(
+      'November 2026',
+    );
+    expect(
+      formatCentralDateKey('2026-03-08', { weekday: 'long', month: 'short', day: 'numeric' }),
+    ).toBe('Sunday, Mar 8');
+  });
+});
+
+describe('daysBetweenDateKeys', () => {
+  it('counts calendar days across a DST change', () => {
+    expect(daysBetweenDateKeys('2026-03-07', '2026-03-09')).toBe(2);
+    expect(daysBetweenDateKeys('2026-11-27', '2026-11-26')).toBe(-1);
   });
 });
