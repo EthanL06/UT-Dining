@@ -15,6 +15,7 @@ import { SheetProvider } from 'react-native-actions-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
 import { useSyncQueries } from 'tanstack-query-dev-tools-expo-plugin';
+import { log } from '~/utils/log';
 
 import '../components/sheets/Sheets';
 
@@ -30,7 +31,6 @@ import { VersionCheckProvider } from '~/components/VersionCheckProvider';
 import { usePostHogScreens } from '~/hooks/usePostHogScreens';
 import { POSTHOG_CONFIG, posthogClient } from '~/services/analytics/posthog';
 import { PushNotificationsInitializer } from '~/services/notifications/notifications';
-import { ratingService } from '~/services/rating/rating';
 import { useAppLaunchStore } from '~/store/useAppLaunchStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { isDevVariant } from '~/utils/appVariant';
@@ -69,7 +69,9 @@ focusManager.setEventListener((handleFocus) => {
 });
 
 onlineManager.setEventListener((setOnline) => {
-  Network.getNetworkStateAsync().then((state) => setOnline(state.isConnected !== false));
+  Network.getNetworkStateAsync()
+    .then((state) => setOnline(state.isConnected !== false))
+    .catch((error) => log.warn('Network state read failed', { error }));
   const subscription = Network.addNetworkStateListener((state) => {
     setOnline(state.isConnected !== false);
   });
@@ -92,7 +94,6 @@ const AppContent = () => {
   useEffect(() => {
     if (success) {
       incrementLaunchCount();
-      ratingService.checkAndShowRatingPrompt();
     }
   }, [success, incrementLaunchCount]);
 

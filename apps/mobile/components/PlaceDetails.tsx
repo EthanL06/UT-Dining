@@ -1,6 +1,7 @@
 import { MapPin } from 'lucide-react-native';
-import { Image, Linking, Platform, View } from 'react-native';
+import { Linking, Platform, View } from 'react-native';
 import { GroupedRow, GroupedSection } from '~/components/ui/Grouped';
+import { Image } from '~/components/ui/Image';
 import { Text } from '~/components/ui/Text';
 import { PAYMENT_INFO_ICONS } from '~/data/PaymentInfo';
 import type { useLocationDetails } from '~/hooks/useLocationDetails';
@@ -51,9 +52,13 @@ const PlaceDetails = ({ place }: { place: PlaceData }) => {
               isFirst={index === 0}
               title={entry.dayRange}
               trailing={
-                <Text variant="subheadline" tone="secondary" className="text-right">
-                  {entry.time.replace(/, /g, '\n')}
-                </Text>
+                <View className="items-end gap-1">
+                  {entry.time.split(/, |\n/).map((range) => (
+                    <Text key={range} variant="subheadline" tone="secondary" className="text-right">
+                      {range}
+                    </Text>
+                  ))}
+                </View>
               }
             />
           ))}
@@ -72,7 +77,7 @@ const PlaceDetails = ({ place }: { place: PlaceData }) => {
                   <Image
                     source={PAYMENT_INFO_ICONS[method as keyof typeof PAYMENT_INFO_ICONS]}
                     className="size-7"
-                    resizeMode="contain"
+                    contentFit="contain"
                   />
                 ) : undefined
               }

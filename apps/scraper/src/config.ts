@@ -10,6 +10,11 @@ export const LOCATIONS = [
   { number: '08', name: 'Cypress Bend Cafe', param: 'Cypress+Bend+Cafe+' },
 ];
 
+const optionalPositiveInt = (value: string | undefined) => {
+  const parsed = Number.parseInt(value ?? '', 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+};
+
 const positiveInt = (value: string | undefined, fallback: number) => {
   const parsed = Number.parseInt(value ?? '', 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
@@ -20,6 +25,7 @@ export const config = {
   concurrency: positiveInt(process.env.CONCURRENCY, 32),
   upload: process.env.ENABLE_SUPABASE === 'true',
   startDate: process.env.START_DATE,
+  retentionDays: optionalPositiveInt(process.env.MENU_RETENTION_DAYS),
 };
 
 export const dateRange = (days: number, start = toCentralTime().date): string[] => {

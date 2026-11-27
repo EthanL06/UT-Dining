@@ -29,7 +29,7 @@ git push -u origin assets/<topic>
 
 Embed them in the PR body as `https://raw.githubusercontent.com/EthanL06/UT-Dining/assets/<topic>/<file>.png`. Without both `vercel.json` files, Vercel tries to build the branch, fails, and emails Ethan.
 
-The container has no iOS Simulator. Screenshots of the iOS app come from Ethan's Mac through a Remote Control session, and the Mac's local permissions refuse to send image files out of it or to `git push`. Web screenshots work in the container: agent-browser with `AGENT_BROWSER_EXECUTABLE_PATH=/opt/pw-browsers/chromium AGENT_BROWSER_ARGS=--no-sandbox`.
+The container has no iOS Simulator. Screenshots of the iOS app come from Ethan's Mac through a Remote Control session that runs `make pr-screenshots PR=<n>` in the PR's worktree, which pushes and embeds them itself (`.agents/agent-permissions.json` allows it). If the Mac is unreachable, run `scripts/qa/pr-screenshots.sh <n> --ci` here: it adds the `screenshots` label and CI embeds the images in the PR body. Web screenshots work in the container: agent-browser with `AGENT_BROWSER_EXECUTABLE_PATH=/opt/pw-browsers/chromium AGENT_BROWSER_ARGS=--no-sandbox`.
 
 ## Which Supabase
 

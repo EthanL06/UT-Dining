@@ -4,11 +4,13 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Flame, Heart, Info, X } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import { useEffect, useEffectEvent } from 'react';
-import { ActivityIndicator, Image, Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
 import { GroupedRow, GroupedSection } from '~/components/ui/Grouped';
+import { Image } from '~/components/ui/Image';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import {
   ALLERGEN_ICONS,
@@ -117,7 +119,10 @@ const FoodScreen = () => {
     <SheetProvider context="food">
       <View style={{ flex: 1, backgroundColor: theme.background }}>
         <Stack.Screen options={{ title: 'Food' }} />
-        <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}>
+        <OverflowScrollView
+          divider={false}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
+        >
           <View className="flex-row items-center justify-between px-4 pt-4 pb-2">
             <Pressable
               testID="back-button"
@@ -136,7 +141,7 @@ const FoodScreen = () => {
               accessibilityLabel="About nutrition info"
               accessibilityRole="button"
               onPress={() => {
-                SheetManager.show('food-info', { context: 'food' });
+                void SheetManager.show('food-info', { context: 'food' });
               }}
               className="size-11 items-center justify-center rounded-full"
               style={{ backgroundColor: theme.card }}
@@ -218,7 +223,7 @@ const FoodScreen = () => {
                       <Image
                         source={ALLERGEN_ICONS[iconKey(tag)]}
                         className="size-5 rounded-full"
-                        resizeMode="contain"
+                        contentFit="contain"
                       />
                       <Text variant="footnote">{tag}</Text>
                     </View>
@@ -268,7 +273,7 @@ const FoodScreen = () => {
               </GroupedSection>
             </>
           )}
-        </ScrollView>
+        </OverflowScrollView>
 
         {foodItem && (
           <View

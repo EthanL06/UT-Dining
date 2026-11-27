@@ -1,7 +1,7 @@
-import * as Updates from 'expo-updates';
 import { useEffect } from 'react';
 import { Pressable, View } from 'react-native';
 import { Text } from '~/components/ui/Text';
+import { reloadApp } from '~/services/qa/updates';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { log } from '~/utils/log';
 import { getTheme } from '~/utils/theme';
@@ -20,7 +20,7 @@ export const MIGRATION_ERROR_COPY = {
 };
 
 const restart = () => {
-  Updates.reloadAsync().catch((error) => log.error('Failed to restart the app', error));
+  reloadApp().catch((error) => log.error('Failed to restart the app', error));
 };
 
 export function AppErrorScreen({ title, message, error, source, onRetry }: AppErrorScreenProps) {

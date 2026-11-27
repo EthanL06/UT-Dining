@@ -3,7 +3,10 @@ import { join } from 'node:path';
 import { config, dateRange, LOCATIONS } from './config.ts';
 import { buildReport, formatReport } from './health.ts';
 import { createClient } from './http.ts';
+import { log } from './log.ts';
+import { pruneOldMenus } from './retention.ts';
 import { scrape } from './scrape.ts';
+import { createSupabase } from './supabase.ts';
 import { upload } from './upload.ts';
 
 const DATA_DIR = join(import.meta.dirname, '..', 'data');
@@ -13,7 +16,7 @@ const seconds = (since: number) => `${((performance.now() - since) / 1000).toFix
 const main = async () => {
   const started = performance.now();
   const dates = dateRange(config.days, config.startDate);
-  console.log(
+  log.info(
     `Scraping ${dates[0]}${dates.length > 1 ? ` to ${dates.at(-1)}` : ''} with ${config.concurrency} connections`,
   );
 
@@ -26,25 +29,23 @@ const main = async () => {
       sum + menu.menuCategories.reduce((count, category) => count + category.foods.length, 0),
     0,
   );
-  console.log(
+  log.info(
     `Scraped ${result.days.length} location-days, ${menus.length} menus, ${items} items, ${result.labels} unique labels in ${seconds(started)}`,
   );
-  console.log(
+  log.info(
     `HTTP: ${http.stats.requests} requests, ${http.stats.retries} retries, ${(http.stats.bytes / 1e6).toFixed(1)} MB`,
   );
 
   for (const day of result.days) {
-    console.log(
+    log.info(
       `  ${day.date} ${day.locationName}: ${day.menus.map((menu) => menu.type).join(', ') || 'no menus'}`,
     );
   }
   if (result.unrecognizedAllergens.size > 0) {
-    console.warn(`Unrecognized label allergens: ${[...result.unrecognizedAllergens].join(', ')}`);
+    log.warn(`Unrecognized label allergens: ${[...result.unrecognizedAllergens].join(', ')}`);
   }
   for (const failure of result.failures) {
-    console.error(
-      `Failed ${failure.stage} ${failure.locationName} ${failure.date}: ${failure.error}`,
-    );
+    log.error(`Failed ${failure.stage} ${failure.locationName} ${failure.date}: ${failure.error}`);
   }
 
   const report = buildReport({
@@ -60,9 +61,9 @@ const main = async () => {
   });
   for (const problem of report.problems) {
     const where = [problem.locationName, problem.date].filter(Boolean).join(' ');
-    console.error(`Health ${problem.kind}: ${where ? `${where}: ` : ''}${problem.detail}`);
+    log.error(`Health ${problem.kind}: ${where ? `${where}: ` : ''}${problem.detail}`);
   }
-  console.log(
+  log.info(
     report.healthy
       ? 'Health: FoodPro pages parsed cleanly'
       : `Health: ${report.problems.length} problems`,
@@ -73,15 +74,33 @@ const main = async () => {
   await writeFile(file, JSON.stringify(result.days, null, 2));
   await writeFile(join(DATA_DIR, 'health.json'), JSON.stringify(report, null, 2));
   await writeFile(join(DATA_DIR, 'health.md'), formatReport(report, process.env.RUN_URL));
-  console.log(`Saved ${file}`);
+  log.info(`Saved ${file}`);
 
   if (report.problems.some((problem) => problem.kind === 'layout')) process.exitCode = 1;
 
+  if (config.upload && config.retentionDays) {
+    const supabase = createSupabase();
+    const keepDays = config.retentionDays;
+    const retention = await pruneOldMenus(
+      (days, limit) => supabase.rpc('prune_old_menus', { arg_keep_days: days, arg_limit: limit }),
+      keepDays,
+    );
+    switch (retention.status) {
+      case 'done':
+        log.info(`Retention: removed ${retention.removed} menus older than ${keepDays} days`);
+        break;
+      case 'failed':
+        log.error(`Retention failed after removing ${retention.removed} menus: ${retention.error}`);
+        process.exitCode = 1;
+        break;
+    }
+  }
+
   if (items === 0) {
     if (report.healthy && report.notPosted === report.locationDays) {
-      console.log('UT has not posted any menus for these days');
+      log.info('UT has not posted any menus for these days');
     } else {
-      console.error('No menu items were scraped');
+      log.error('No menu items were scraped');
       process.exitCode = 1;
     }
     return;
@@ -91,21 +110,21 @@ const main = async () => {
     const uploadStarted = performance.now();
     const uploads = await upload(result.days);
     for (const { locationName, date, error, pruned } of uploads) {
-      if (error) console.error(`Upload failed for ${locationName} ${date}: ${error}`);
-      if (pruned > 0) console.log(`  Removed ${pruned} stale menus for ${locationName} ${date}`);
+      if (error) log.error(`Upload failed for ${locationName} ${date}: ${error}`);
+      if (pruned > 0) log.info(`  Removed ${pruned} stale menus for ${locationName} ${date}`);
     }
     const failed = uploads.filter((entry) => entry.error).length;
-    console.log(
+    log.info(
       `Uploaded ${uploads.length - failed}/${uploads.length} location-days in ${seconds(uploadStarted)}`,
     );
     if (failed > 0) process.exitCode = 1;
   }
 
   if (result.failures.length > 0) process.exitCode = 1;
-  console.log(`Done in ${seconds(started)}`);
+  log.info(`Done in ${seconds(started)}`);
 };
 
 main().catch((error) => {
-  console.error(error);
+  log.error(error);
   process.exitCode = 1;
 });

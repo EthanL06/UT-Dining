@@ -7,15 +7,21 @@ DEV := scripts/dev
 ARGS ?=
 NAME ?=
 SIM ?=
+PR ?=
+SCREENS ?=
+OWNER ?=
+TITLE ?=
+BODY_FILE ?=
 DAYS ?= 3
 export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 
 .PHONY: help setup install doctor \
 	dev mobile ios android dashboard website scrape places admin mobile-preview \
-	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-psql db-studio \
+	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-sample db-fresh db-psql db-studio \
 	env-local env-dev \
-	check verify pre-push check-staged check-comments check-size check-state functions fix lint typecheck test build \
-	sim sims e2e e2e-fixtures screenshots ios-app perf-build frames size-report \
+	check verify pre-push check-staged check-comments check-size check-state check-unused functions fix lint typecheck test build \
+	sim sims sim-lease sim-release sim-leases sims-idle sim-sweeper e2e e2e-fixtures screenshots pr-screenshots ios-app perf-build frames size-report \
+	merge-pr agent-permissions \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
 
@@ -52,6 +58,8 @@ help:
 	'                  BASE=origin/staging. Leaves the local stack alone' \
 	'  db-seed         Scrape real UT menus into the local database. DAYS=3' \
 	'  db-fixtures     Load the fixed E2E test menus' \
+	'  db-sample       Load sample menus and edge-case places (no network)' \
+	'  db-fresh        Reset and load the sample data: a known local database in one command' \
 	'  db-psql         psql on the local database. ARGS="-c \"select count(*) from menu\""' \
 	'  db-studio       Print and open Supabase Studio' \
 	'  env-local       Point every app at local Supabase' \
@@ -66,6 +74,7 @@ help:
 	'  check-comments  Fail on added code comments. ARGS="--base origin/staging" (default: staged diff)' \
 	'  check-size      Fail on any source file over 500 lines (MAX_LINES=n to try another cap)' \
 	'  check-state     Fail on implicit state machines (2+ boolean useState in one function, string-typed status)' \
+	'  check-unused    Fail on unused files, exports and dependencies (knip, config in knip.json)' \
 	'  functions       Typecheck and test the Supabase edge functions with Deno (CI runs it too)' \
 	'  fix             Biome safe fixes' \
 	'  lint | typecheck | test | build' \
@@ -75,14 +84,25 @@ help:
 	'iOS and E2E (macOS)' \
 	'  sim             Boot a simulator (SIM=<name or UDID>, else one with the dev build) and open it' \
 	'  sims            List simulators and which have the development build' \
+	'  sim-lease       Your own simulator clone for this session, prints "<UDID> <slot>". OWNER=<thread> ARGS="--wait 300"' \
+	'  sim-release     Delete a leased clone. SIM=<UDID>' \
+	'  sim-leases      Who holds which simulator slot' \
+	'  sims-idle       Shut down booted simulators no lease or running process uses, then quit Simulator' \
+	'  sim-sweeper     Install the launchd job that shuts down simulators idle for 20 min (every 5 min). ARGS=uninstall|status' \
 	'  e2e             Maestro flows against local Supabase. ARGS="--shards 3 --retry-failed"' \
 	'  e2e-fixtures    Maestro flows against the fixture server, no Docker needed' \
 	'  screenshots     Every screen in apps/mobile/e2e/screenshots.txt, light and dark, into .context/screenshots' \
+	'  pr-screenshots  Light and dark shots on a leased simulator, pushed and embedded in the PR body. Falls back' \
+	'                  to the CI workflow when every slot is busy or not on a Mac. PR=<n> SCREENS="home map" ARGS=--ci' \
 	'  ios-app         Release simulator app into .context/app; reuses the native build unless native code changed' \
 	'  perf-build      Timing-harness test apps from a release .app. APP=<base .app> OUT=<dir> PERF_DEV_REF=<ref>' \
 	'                  The rest of the timing run is in scripts/qa/perf/README.md' \
 	'  frames          Dropped frames per scenario on a release app (SIM=<UDID>, ARGS="--runs 3 --label base")' \
 	'  mobile-preview  Dev app build (only if native code changed) + EAS Update. ARGS="staging" or ARGS="pr <n>"' \
+	'' \
+	'Agents' \
+	'  merge-pr        Squash-merge a staging PR once Ethan said yes. PR=<n> TITLE="fix: ..." BODY_FILE=<file>' \
+	'  agent-permissions  Merge .agents/agent-permissions.json into ~/.claude/settings.json. Ethan runs it himself' \
 	'' \
 	'Worktrees' \
 	'  worktree        New worktree in .worktrees/ from origin/staging, env files and deps included. NAME=feat-x' \
@@ -93,7 +113,21 @@ help:
 	'  clean           Stop Metro, delete E2E simulator clones, remove merged clean worktrees, clear caches' \
 	'  stop            Stop Metro and local Supabase, shut down every simulator' \
 	'  clean-metro | clean-sims | clean-worktrees | clean-caches' \
-	'  clean-deps      Delete every node_modules (then make install)'
+	'  clean-deps      Delete every node_modules (then make install)' \
+	'' \
+	'PRs and ops (GitHub REST through gh: works in cloud sessions and on the Mac)' \
+	'  status          Open PRs with CI and merge state, what waits on Ethan, what needs an agent, staging runs' \
+	'  pr-ready        Merge staging in when behind, wait for the required checks, green or red with log tails.' \
+	'                  PR=<n> ARGS="--no-update --no-wait --timeout 40"' \
+	'  pr-setup        Attribution lines, assignee and review request, labels, inline images.' \
+	'                  PR=<n> THREAD=<url> LABELS="mobile" IMAGES=<dir>' \
+	'  update-prs      Merge staging into open PRs that share files with the latest staging change. ARGS="--all --dry-run"' \
+	'  ota-check       Follow the staging OTA update for a merge until it is live. PR=<merged n> or ARGS="--sha <sha>"' \
+	'  cleanup         Merged branches (remote and local), finished worktrees, stale simulator clones. YES=1 deletes' \
+	'  data-change     Admin CLI commands as one change: backup, dry run, apply, read back.' \
+	'                  PLAN=<file> TARGET=local|dev|prod APPLY=1 CONFIRM=<prod ref>' \
+	'  cutover         The 2.0.0 cutover steps from #25 and #64: checks, dry runs, one guarded prod step at a time.' \
+	'                  ARGS="--run <step> --confirm-prod <prod ref>"'
 
 setup:
 	@$(DEV)/setup.sh
@@ -112,7 +146,7 @@ mobile:
 	@pnpm --filter @ut-dining/mobile start $(ARGS)
 
 ios:
-	@pnpm --filter @ut-dining/mobile ios $(if $(SIM),--device "$(SIM)") $(ARGS)
+	@LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 pnpm --filter @ut-dining/mobile ios $(if $(SIM),--device "$(SIM)") $(ARGS)
 
 android:
 	@pnpm --filter @ut-dining/mobile android $(ARGS)
@@ -162,6 +196,12 @@ db-seed:
 db-fixtures:
 	@$(DEV)/db.sh fixtures
 
+db-sample:
+	@$(DEV)/db.sh sample
+
+db-fresh:
+	@$(DEV)/db.sh fresh
+
 db-psql:
 	@$(DEV)/db.sh psql $(ARGS)
 
@@ -210,6 +250,9 @@ check-size:
 check-state:
 	@$(DEV)/check-state-machines.sh
 
+check-unused:
+	@pnpm exec knip --no-progress --no-config-hints
+
 build:
 	@pnpm build
 
@@ -227,6 +270,30 @@ e2e-fixtures:
 
 screenshots:
 	@scripts/qa/mobile-screenshots.sh $(if $(SIM),--sim "$$($(DEV)/sim.sh pick)") $(ARGS)
+
+sim-lease:
+	@$(DEV)/sim-lease.sh acquire $(if $(OWNER),--owner "$(OWNER)") $(ARGS)
+
+sim-release:
+	@$(DEV)/sim-lease.sh release "$(SIM)"
+
+sim-leases:
+	@$(DEV)/sim-lease.sh list
+
+sims-idle:
+	@$(DEV)/sim-lease.sh idle --shutdown
+
+sim-sweeper:
+	@$(DEV)/sim-lease.sh sweeper $(if $(ARGS),$(ARGS),install)
+
+pr-screenshots:
+	@scripts/qa/pr-screenshots.sh $(PR) $(SCREENS) $(ARGS)
+
+merge-pr:
+	@$(DEV)/merge-pr.sh $(PR) --title "$(TITLE)" --body-file "$(BODY_FILE)"
+
+agent-permissions:
+	@node $(DEV)/agent-permissions.ts $(ARGS)
 
 ios-app:
 	@scripts/qa/ios-sim-app.sh $(ARGS)
@@ -274,3 +341,30 @@ clean-deps:
 
 stop:
 	@$(DEV)/clean.sh stop
+
+OPS := node scripts/dev/ops
+.PHONY: status pr-ready pr-setup update-prs ota-check cleanup data-change cutover
+
+status:
+	@$(OPS)/status.ts $(ARGS)
+
+pr-ready:
+	@$(OPS)/pr-ready.ts $(PR) $(ARGS)
+
+pr-setup:
+	@$(OPS)/pr-setup.ts $(PR) $(if $(THREAD),--thread "$(THREAD)") $(foreach label,$(LABELS),--label "$(label)") $(if $(IMAGES),--images "$(IMAGES)") $(ARGS)
+
+update-prs:
+	@$(OPS)/update-prs.ts $(ARGS)
+
+ota-check:
+	@$(OPS)/ota-check.ts $(if $(PR),--pr $(PR)) $(ARGS)
+
+cleanup:
+	@$(OPS)/cleanup.ts $(if $(filter 1,$(YES)),--yes) $(ARGS)
+
+data-change:
+	@$(OPS)/data-change.ts "$(PLAN)" $(if $(TARGET),--target $(TARGET)) $(if $(filter 1,$(APPLY)),--apply) $(if $(CONFIRM),--confirm-prod $(CONFIRM)) $(ARGS)
+
+cutover:
+	@$(OPS)/cutover.ts $(ARGS)

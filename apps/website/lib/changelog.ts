@@ -1,5 +1,6 @@
 import { compareVersions } from '@ut-dining/core';
 import fallback from '@/content/changelog.json';
+import { log } from '@/lib/log';
 
 export type ChangelogChange = {
   icon?: string;
@@ -36,13 +37,13 @@ export async function fetchPublished(source: ChangelogSource): Promise<Changelog
       },
     );
     if (!res.ok) {
-      console.warn(`Changelog fetch failed with ${res.status}, using content/changelog.json`);
+      log.warn(`Changelog fetch failed with ${res.status}, using content/changelog.json`);
       return null;
     }
     const rows = (await res.json()) as ChangelogEntry[];
     return rows.length > 0 ? rows : null;
   } catch (error) {
-    console.warn('Changelog fetch failed, using content/changelog.json', error);
+    log.warn('Changelog fetch failed, using content/changelog.json', error);
     return null;
   }
 }

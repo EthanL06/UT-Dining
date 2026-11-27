@@ -72,11 +72,11 @@ const PermissionsScreen = ({ width, isCurrentScreen, onPermissionsChange }: Prop
 
     if (isCurrentScreen && !hasAsked.current) {
       hasAsked.current = true;
-      readPermissions(true);
+      void readPermissions(true);
     }
 
     const subscription = AppState.addEventListener('change', (nextAppState) => {
-      if (nextAppState === 'active' && hasAsked.current) readPermissions(false);
+      if (nextAppState === 'active' && hasAsked.current) void readPermissions(false);
     });
 
     return () => subscription.remove();
