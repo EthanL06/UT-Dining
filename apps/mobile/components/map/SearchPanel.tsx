@@ -1,5 +1,6 @@
 import { Building2, Clock, Search, UtensilsCrossed } from 'lucide-react-native';
 import { Pressable, View } from 'react-native';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import { type Coordinates, type Place, walkFrom } from '~/utils/mapPlaces';
 import type { BuildingMatch, SearchMatch } from '~/utils/mapSearch';
@@ -36,7 +37,7 @@ const QuickSearch = ({
   const Icon = PLACE_ICONS[type];
   const color = usePlaceColor(type);
   return (
-    <Pressable
+    <PressableScale
       testID={`map-quick-${type}`}
       accessibilityRole="button"
       onPress={onPress}
@@ -52,7 +53,7 @@ const QuickSearch = ({
       <Text variant="subheadline" emphasized>
         {label}
       </Text>
-    </Pressable>
+    </PressableScale>
   );
 };
 
@@ -145,7 +146,7 @@ const NoResults = ({ query, onClear }: { query: string; onClear: () => void }) =
       <Text variant="subheadline" tone="secondary" className="text-center">
         Check the spelling, or try a food like “pizza” or a building like “Union”.
       </Text>
-      <Pressable
+      <PressableScale
         testID="map-search-empty-clear"
         accessibilityRole="button"
         onPress={onClear}
@@ -155,7 +156,7 @@ const NoResults = ({ query, onClear }: { query: string; onClear: () => void }) =
         <Text variant="subheadline" emphasized>
           Clear search
         </Text>
-      </Pressable>
+      </PressableScale>
     </View>
   );
 };

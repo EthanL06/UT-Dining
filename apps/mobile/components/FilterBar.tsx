@@ -1,12 +1,13 @@
 import { SlidersHorizontal } from 'lucide-react-native';
 import { useEffect, useMemo } from 'react';
-import { Platform, Pressable, ScrollView, View } from 'react-native';
+import { Platform, ScrollView, View } from 'react-native';
 import { SheetManager } from 'react-native-actions-sheet';
 import { NativeSegmentedControl } from '~/components/NativeSegmentedControl';
 import { Text } from '~/components/ui/Text';
 
 export type FilterType = 'all' | string;
 
+import { PressableScale } from '~/components/ui/PressableScale';
 import { useFiltersStore } from '~/store/useFiltersStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { hasActiveFilters } from '~/utils/filter';
@@ -98,7 +99,7 @@ const FilterBar = ({
           {sortedItems.map((item) => {
             const isSelected = selectedItem === item.id;
             return (
-              <Pressable
+              <PressableScale
                 key={item.id}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
@@ -119,7 +120,7 @@ const FilterBar = ({
                 <Text variant="subheadline" emphasized={isSelected} numberOfLines={1}>
                   {item.title}
                 </Text>
-              </Pressable>
+              </PressableScale>
             );
           })}
         </View>
@@ -133,7 +134,7 @@ const FilterBar = ({
           {sortedItems.map((item) => {
             const isSelected = selectedItem === item.id;
             return (
-              <Pressable
+              <PressableScale
                 key={item.id}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
@@ -144,7 +145,7 @@ const FilterBar = ({
                 <Text variant="subheadline" emphasized tone={isSelected ? 'onTint' : 'primary'}>
                   {item.title}
                 </Text>
-              </Pressable>
+              </PressableScale>
             );
           })}
         </ScrollView>
@@ -162,7 +163,7 @@ const FilterButton = () => {
   const hasFilters = hasActiveFilters(filters);
 
   return (
-    <Pressable
+    <PressableScale
       testID="menu-filters-button"
       accessibilityLabel={hasFilters ? 'Filters, on' : 'Filters'}
       accessibilityRole="button"
@@ -171,7 +172,7 @@ const FilterButton = () => {
       style={{ backgroundColor: hasFilters ? theme.tint : theme.fill }}
     >
       <SlidersHorizontal size={17} color={hasFilters ? '#FFFFFF' : theme.label} />
-    </Pressable>
+    </PressableScale>
   );
 };
 export default FilterBar;

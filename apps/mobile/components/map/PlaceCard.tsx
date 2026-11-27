@@ -4,6 +4,7 @@ import { CircleAlert, MapPin, Navigation, Utensils, X } from 'lucide-react-nativ
 import { Platform, Pressable, useWindowDimensions, View } from 'react-native';
 import { GlassButton } from '~/components/ui/Glass';
 import { StatusDot } from '~/components/ui/Grouped';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import { directionsUrl } from '~/utils/directions';
 import { log } from '~/utils/log';
@@ -101,7 +102,7 @@ export const PlaceCard = ({
 
         <View className={stackButtons ? 'mt-4 gap-y-2' : 'mt-4 flex-row gap-x-2'}>
           {pinned && (
-            <Pressable
+            <PressableScale
               testID="map-directions-button"
               accessibilityRole="button"
               onPress={() => openDirections(place)}
@@ -112,10 +113,10 @@ export const PlaceCard = ({
               <Text variant="callout" emphasized tone="onTint">
                 Directions
               </Text>
-            </Pressable>
+            </PressableScale>
           )}
           {place.type !== 'microwave' && (
-            <Pressable
+            <PressableScale
               testID="map-view-place-button"
               accessibilityRole="button"
               onPress={() => {
@@ -136,7 +137,7 @@ export const PlaceCard = ({
               <Text variant="callout" emphasized tone={pinned ? 'primary' : 'onTint'}>
                 {place.hasMenu ? 'View Menu' : 'Details'}
               </Text>
-            </Pressable>
+            </PressableScale>
           )}
         </View>
 

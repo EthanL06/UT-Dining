@@ -1,6 +1,6 @@
 import { Heart } from 'lucide-react-native';
 import type React from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import ActionSheet, { ScrollView, type SheetProps, useSheetRef } from 'react-native-actions-sheet';
 import Reanimated, { useReducedMotion, ZoomIn, ZoomOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,9 +8,9 @@ import { MealPlanIcon } from '~/components/MealPlanIcon';
 import { RollingNumber } from '~/components/motion/RollingNumber';
 import { Image } from '~/components/ui/Image';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import { ALLERGEN_EXCEPTIONS, ALLERGEN_ICONS } from '~/data/AllergenInfo';
-import { usePressScale } from '~/hooks/usePressScale';
 import { useFiltersStore } from '~/store/useFiltersStore';
 import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
@@ -29,28 +29,23 @@ const Chip = ({
   testID?: string;
 }) => {
   const theme = useTheme();
-  const press = usePressScale();
   return (
-    <Reanimated.View style={press.style}>
-      <Pressable
-        testID={testID}
-        accessibilityRole="button"
-        accessibilityState={{ selected: isOn }}
-        onPressIn={press.onPressIn}
-        onPressOut={press.onPressOut}
-        onPress={() => {
-          haptics.selection();
-          onPress();
-        }}
-        className="h-10 flex-row items-center gap-x-1.5 rounded-full pr-3.5 pl-1.5"
-        style={{ backgroundColor: isOn ? theme.tint : theme.card }}
-      >
-        {icon}
-        <Text variant="subheadline" emphasized tone={isOn ? 'onTint' : 'primary'}>
-          {label}
-        </Text>
-      </Pressable>
-    </Reanimated.View>
+    <PressableScale
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isOn }}
+      onPress={() => {
+        haptics.selection();
+        onPress();
+      }}
+      className="h-10 flex-row items-center gap-x-1.5 rounded-full pr-3.5 pl-1.5"
+      style={{ backgroundColor: isOn ? theme.tint : theme.card }}
+    >
+      {icon}
+      <Text variant="subheadline" emphasized tone={isOn ? 'onTint' : 'primary'}>
+        {label}
+      </Text>
+    </PressableScale>
   );
 };
 
@@ -116,7 +111,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
       useBottomSafeAreaPadding
     >
       <View className="flex-row items-center justify-between px-4 pt-1 pb-2">
-        <Pressable
+        <PressableScale
           testID="filters-reset-button"
           accessibilityRole="button"
           disabled={activeCount === 0}
@@ -128,7 +123,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
           style={{ backgroundColor: theme.card, opacity: activeCount === 0 ? 0.5 : 1 }}
         >
           <Text variant="subheadline">Reset</Text>
-        </Pressable>
+        </PressableScale>
         <View className="flex-row items-center gap-x-1.5">
           <Text variant="headline">Filters</Text>
           {activeCount > 0 && (
@@ -150,7 +145,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
             </Reanimated.View>
           )}
         </View>
-        <Pressable
+        <PressableScale
           testID="filters-done-button"
           accessibilityRole="button"
           onPress={() => sheetRef.current?.hide()}
@@ -160,7 +155,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
           <Text variant="subheadline" emphasized tone="tint">
             Done
           </Text>
-        </Pressable>
+        </PressableScale>
       </View>
       <OverflowScrollView as={ScrollView} showsVerticalScrollIndicator={false}>
         <View className="px-4 pb-6">

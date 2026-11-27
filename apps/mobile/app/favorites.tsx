@@ -3,10 +3,11 @@ import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, Stack } from 'expo-router';
 import { Heart } from 'lucide-react-native';
 import { useMemo } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import FoodComponent, { type RowPosition } from '~/components/FoodComponent';
 import { pushedScreenHeaderOptions } from '~/components/TabStack';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import type { DrizzleDB } from '~/services/database/database';
@@ -165,7 +166,7 @@ const Favorites = () => {
             <Text variant="subheadline" tone="secondary" className="text-center">
               Press and hold a food on any menu to save it here.
             </Text>
-            <Pressable
+            <PressableScale
               accessibilityRole="button"
               onPress={() => router.dismissTo('/')}
               className="mt-3 h-11 justify-center rounded-full px-5"
@@ -174,7 +175,7 @@ const Favorites = () => {
               <Text variant="subheadline" emphasized tone="onTint">
                 Browse Dining Locations
               </Text>
-            </Pressable>
+            </PressableScale>
           </View>
         ) : (
           <>
