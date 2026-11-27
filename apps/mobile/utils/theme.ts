@@ -10,9 +10,9 @@ const LIGHT = {
   fill: 'rgba(120, 120, 128, 0.14)',
   tint: '#BF5700',
   tintSoft: 'rgba(191, 87, 0, 0.12)',
-  toast: '#2C2C2E',
-  toastLabel: '#FFFFFF',
-  toastBorder: 'transparent',
+  toast: '#FFFFFF',
+  toastLabel: '#000000',
+  toastBorder: 'rgba(60, 60, 67, 0.18)',
 };
 
 const DARK: typeof LIGHT = {
