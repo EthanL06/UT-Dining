@@ -23,6 +23,9 @@ export const useVersionCheck = () => {
   const rawPosthog = usePostHog();
   const posthog = useMemo(() => getSafePostHog(rawPosthog), [rawPosthog]);
   const lastAppStoreCheckRef = useRef(0);
+  // Decided once per launch: a new user who finishes onboarding during this launch has
+  // nothing new to see, even if a later check runs after onboarding is done.
+  const launchedWithOnboardingDone = useRef(useOnboardingStore.getState().isOnboardingComplete);
 
   const checkForUpdate = useCallback(async () => {
     const currentVersion = Application.nativeApplicationVersion;
@@ -77,14 +80,13 @@ export const useVersionCheck = () => {
     }
   }, [db, posthog]);
 
-  const checkWhatsNew = useCallback(async (changelogLoaded: boolean) => {
+  const checkWhatsNew = useCallback(async (changelogLoaded: boolean, isReturningUser: boolean) => {
     const currentVersion = Application.nativeApplicationVersion;
     if (!currentVersion) return;
 
     const { lastSeenVersion, markVersionSeen } = useChangelogStore.getState();
     if (lastSeenVersion === currentVersion) return;
 
-    const isReturningUser = useOnboardingStore.getState().isOnboardingComplete;
     if (!isReturningUser) {
       markVersionSeen(currentVersion);
       return;
@@ -102,9 +104,10 @@ export const useVersionCheck = () => {
 
   useEffect(() => {
     const runChecks = async () => {
+      const isReturningUser = launchedWithOnboardingDone.current;
       const changelogLoaded = await refreshChangelog();
       const shown = await checkForUpdate();
-      if (!shown) await checkWhatsNew(changelogLoaded);
+      if (!shown) await checkWhatsNew(changelogLoaded, isReturningUser);
     };
 
     runChecks();

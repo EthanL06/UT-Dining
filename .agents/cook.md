@@ -26,6 +26,7 @@ commands:
   dev_dashboard: make dashboard
   dev_website: make website
   scrape: make scrape
+  admin: make admin
   db_start: make db-up
   db_stop: make db-down
   db_reset: make db-reset
@@ -69,6 +70,7 @@ Ports: Supabase API 54321 and Postgres 54322 by default (`make db-up` moves them
 - Keep `typescript` on 6.x. Typechecks run TypeScript 7 through the `tsgo` alias, and Expo tooling needs the 6.x JS API.
 - The mobile app needs a development build (`APP_VARIANT=development`, bundle id `com.ethanl06.ut-dining.dev`), not Expo Go. A change to native dependencies or `app.config.js` needs a new development build before it can be verified.
 - Before an Expo SDK bump, run `npx expo install expo@^<sdk> && npx expo install --fix` in `apps/mobile`, then `npx expo-doctor`.
+- Change app data (locations, hours, settings, changelog, push notifications) with `pnpm -s admin` (`apps/cli`), never by hand in SQL. Ask Ethan before any `--prod` write and before sending or scheduling any push notification.
 - Never commit keys. Each app commits `.env.example`, and real values go in the gitignored `.env.local` written by `scripts/env.ts`.
 
 ## Deploy steps

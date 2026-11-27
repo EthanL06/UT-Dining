@@ -15,7 +15,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { getSafePostHog } from '~/services/analytics/posthog';
 import { ONBOARDING_STEPS, useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
-import { COLORS } from '~/utils/colors';
+import { useTheme } from '~/utils/theme';
 import { cn } from '~/utils/utils';
 import { Container } from '../Container';
 import { ProgressIndicator } from './ProgressIndicator';
@@ -46,6 +46,7 @@ interface OnboardingScreenProps {
 const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
   const { width } = useWindowDimensions();
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+  const theme = useTheme();
   const posthog = usePostHog();
   const analytics = getSafePostHog(posthog);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
@@ -209,18 +210,22 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
   return (
     <Modal animationType="slide" presentationStyle="fullScreen" visible={!isOnboardingComplete}>
       <SafeAreaProvider>
-        <Container className={cn('mx-0', isDarkMode ? 'bg-neutral-900' : 'bg-white')}>
-          <View className="flex-row items-center px-6">
+        <Container className={cn('mx-0', isDarkMode ? 'bg-black' : 'bg-[#F2F2F7]')}>
+          <View className="flex-row items-center px-4">
             <TouchableOpacity
-              activeOpacity={0.8}
+              activeOpacity={0.7}
               onPress={goToPrevious}
               disabled={currentStep === 0}
-              className={cn('rounded-full', currentStep === 0 ? 'opacity-0' : 'opacity-100')}
+              accessibilityLabel="Back"
+              accessibilityRole="button"
+              accessibilityElementsHidden={currentStep === 0}
+              className={cn(
+                'size-11 items-center justify-center rounded-full',
+                currentStep === 0 ? 'opacity-0' : 'opacity-100',
+              )}
+              style={{ backgroundColor: theme.card }}
             >
-              <ChevronLeft
-                size={24}
-                color={isDarkMode ? COLORS['ut-grey-dark-mode'] : COLORS['ut-grey']}
-              />
+              <ChevronLeft size={22} color={theme.label} />
             </TouchableOpacity>
 
             <View className="flex-1 items-center justify-center px-4">
@@ -231,7 +236,7 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
               />
             </View>
 
-            <View className="w-6" />
+            <View className="size-11" />
           </View>
 
           <Animated.ScrollView
@@ -252,13 +257,10 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
               onPressIn={handlePressIn}
               onPressOut={handlePressOut}
               onPress={handlePress}
-              className={cn(
-                'w-full rounded-full p-3',
-                isDarkMode ? 'bg-ut-burnt-orange/90' : 'bg-ut-burnt-orange',
-              )}
-              style={[animatedStyle]}
+              className="w-full rounded-full p-3"
+              style={[{ backgroundColor: theme.tint }, animatedStyle]}
             >
-              <Text className="py-2 text-center font-semibold text-white">
+              <Text className="py-1.5 text-center font-semibold text-[17px] text-white">
                 {currentStep === ONBOARDING_SCREENS.length - 1
                   ? 'Finish'
                   : (currentStep === 1 && !hasDataSelection) ||

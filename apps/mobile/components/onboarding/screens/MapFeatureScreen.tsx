@@ -1,57 +1,19 @@
-import { Image } from 'expo-image';
-import { Text, View } from 'react-native';
-import { useSettingsStore } from '~/store/useSettingsStore';
-import { cn } from '~/utils/utils';
+import FeaturePage from './FeaturePage';
 
-type Props = {
-  width: number;
-};
+const images = [
+  {
+    light: require('~/assets/onboarding/map.webp'),
+    dark: require('~/assets/onboarding/map-dark.webp'),
+  },
+];
 
-const image = require('~/assets/onboarding/map.webp');
-
-const MapFeatureScreen = ({ width }: Props) => {
-  const isDark = useSettingsStore((state) => state.isDarkMode);
-
-  return (
-    <View
-      style={{ width }}
-      className={cn('flex-1 px-6 py-8', isDark ? 'bg-neutral-900' : 'bg-white')}
-    >
-      <View className="flex-1 items-center justify-center">
-        <Image
-          source={image}
-          style={{
-            width: '100%',
-            height: 512,
-            flexShrink: 1,
-            minHeight: 0,
-            marginBottom: 32,
-          }}
-          contentFit="contain"
-        />
-
-        <View>
-          <Text
-            className={cn(
-              'mb-4 text-center font-bold text-3xl',
-              isDark ? 'text-white' : 'text-gray-900',
-            )}
-          >
-            Find Food Near You
-          </Text>
-          <Text
-            className={cn(
-              'mx-auto max-w-[340px] text-center text-lg leading-6',
-              isDark ? 'text-gray-300' : 'text-gray-600',
-            )}
-          >
-            Discover 50+ locations — dining halls, food trucks, coffee shops, and more across
-            campus.{' '}
-          </Text>
-        </View>
-      </View>
-    </View>
-  );
-};
+const MapFeatureScreen = ({ width }: { width: number }) => (
+  <FeaturePage
+    width={width}
+    images={images}
+    title="Find Food Near You"
+    subtitle="Every dining hall, food truck and coffee shop on one map, with hours and walking times."
+  />
+);
 
 export default MapFeatureScreen;
