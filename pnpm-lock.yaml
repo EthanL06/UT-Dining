@@ -21,6 +21,11 @@ overrides:
   tanstack-query-dev-tools-expo-plugin>@expo/metro-runtime: ~58.0.15
   tanstack-query-dev-tools-expo-plugin>expo-device: ~58.0.5
 
+patchedDependencies:
+  expo-router@58.0.26:
+    hash: fede3737c1d0be2cebe6e62f810622491dcc07ab5e651de181578f8dbe7acfdb
+    path: patches/expo-router@58.0.26.patch
+
 importers:
 
   .:
@@ -266,7 +271,7 @@ importers:
         version: 58.1.6(expo@58.0.19)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0)(typescript@6.0.3)
       expo-router:
         specifier: ~58.0.26
-        version: 58.0.26(0e7787821b1be60f1a748eb64f51dc28)
+        version: 58.0.26(patch_hash=fede3737c1d0be2cebe6e62f810622491dcc07ab5e651de181578f8dbe7acfdb)(0e7787821b1be60f1a748eb64f51dc28)
       expo-splash-screen:
         specifier: ~58.0.11
         version: 58.0.11(expo@58.0.19)(typescript@6.0.3)
@@ -7379,7 +7384,7 @@ snapshots:
       ws: 8.18.2
       zod: 3.25.76
     optionalDependencies:
-      expo-router: 58.0.26(0e7787821b1be60f1a748eb64f51dc28)
+      expo-router: 58.0.26(patch_hash=fede3737c1d0be2cebe6e62f810622491dcc07ab5e651de181578f8dbe7acfdb)(0e7787821b1be60f1a748eb64f51dc28)
       react-native: 0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0)
     transitivePeerDependencies:
       - '@expo/dom-webview'
@@ -7734,7 +7739,7 @@ snapshots:
       react: 19.3.0
     optionalDependencies:
       '@expo/metro-runtime': 58.0.15(@expo/log-box@58.0.13)(expo@58.0.19)(react-dom@19.3.0(react@19.3.0))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0)
-      expo-router: 58.0.26(0e7787821b1be60f1a748eb64f51dc28)
+      expo-router: 58.0.26(patch_hash=fede3737c1d0be2cebe6e62f810622491dcc07ab5e651de181578f8dbe7acfdb)(0e7787821b1be60f1a748eb64f51dc28)
       react-dom: 19.3.0(react@19.3.0)
     transitivePeerDependencies:
       - supports-color
@@ -8438,9 +8443,7 @@ snapshots:
       metro-runtime: 0.87.1
     transitivePeerDependencies:
       - '@babel/core'
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@react-native/normalize-colors@0.74.89': {}
 
@@ -9798,7 +9801,7 @@ snapshots:
       - supports-color
       - typescript
 
-  expo-router@58.0.26(0e7787821b1be60f1a748eb64f51dc28):
+  expo-router@58.0.26(patch_hash=fede3737c1d0be2cebe6e62f810622491dcc07ab5e651de181578f8dbe7acfdb)(0e7787821b1be60f1a748eb64f51dc28):
     dependencies:
       '@expo/log-box': 58.0.13(@expo/dom-webview@58.0.2)(expo@58.0.19)(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0)
       '@expo/metro-runtime': 58.0.15(@expo/log-box@58.0.13)(expo@58.0.19)(react-dom@19.3.0(react@19.3.0))(react-native@0.88.0(@babel/core@7.29.7)(@react-native/metro-config@0.88.0(@babel/core@7.29.7))(@types/react@19.3.0)(react@19.3.0))(react@19.3.0)

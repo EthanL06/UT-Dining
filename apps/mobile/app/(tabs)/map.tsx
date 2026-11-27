@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Keyboard, StyleSheet, useWindowDimensions, View } from 'react-native';
 import type { Region } from 'react-native-maps';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
+import Reanimated, { FadeIn, FadeInDown, FadeOut } from 'react-native-reanimated';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BrowseList } from '~/components/map/BrowseList';
 import { ClosedDot, ClusterPin, IconPin, LabelPin } from '~/components/map/MapPins';
@@ -66,6 +67,10 @@ const NativeBottomInset = ({ onChange }: { onChange: (bottom: number) => void })
   useEffect(() => onChange(bottom), [bottom, onChange]);
   return null;
 };
+
+const PLACE_ENTERING = FadeInDown.springify().damping(22).stiffness(220);
+const LIST_ENTERING = FadeIn.duration(220);
+const CONTENT_EXITING = FadeOut.duration(140);
 
 const MapPage = () => {
   const theme = useTheme();
@@ -383,39 +388,58 @@ const MapPage = () => {
         onHeightChange={setSheetHeight}
       >
         {selectedPlace ? (
-          <View style={{ flex: 1 }}>
+          <Reanimated.View
+            key={`place-${selectedPlace.name}`}
+            entering={PLACE_ENTERING}
+            exiting={CONTENT_EXITING}
+            style={{ flex: 1 }}
+          >
             <PlaceCard
               place={selectedPlace}
               userCoordinates={userCoordinates}
               foods={mapSearch.selectedFoods}
               onClose={mapSearch.back}
             />
-          </View>
+          </Reanimated.View>
         ) : search.status === 'searching' ? (
-          <SearchPanel
-            query={mapSearch.query}
-            searchedQuery={mapSearch.searchedQuery}
-            isLoaded={isLoaded}
-            results={mapSearch.results}
-            buildings={mapSearch.buildings}
-            menuMatches={mapSearch.menuMatches}
-            recents={mapSearch.recents}
-            userCoordinates={userCoordinates}
-            onPickPlace={focusPlace}
-            onRunQuery={runQuery}
-            onClearQuery={() => mapSearch.setQuery('')}
-            onClearRecents={mapSearch.clearRecents}
-          />
+          <Reanimated.View
+            key="search"
+            entering={LIST_ENTERING}
+            exiting={CONTENT_EXITING}
+            style={{ flex: 1 }}
+          >
+            <SearchPanel
+              query={mapSearch.query}
+              searchedQuery={mapSearch.searchedQuery}
+              isLoaded={isLoaded}
+              results={mapSearch.results}
+              buildings={mapSearch.buildings}
+              menuMatches={mapSearch.menuMatches}
+              recents={mapSearch.recents}
+              userCoordinates={userCoordinates}
+              onPickPlace={focusPlace}
+              onRunQuery={runQuery}
+              onClearQuery={() => mapSearch.setQuery('')}
+              onClearRecents={mapSearch.clearRecents}
+            />
+          </Reanimated.View>
         ) : (
-          <BrowseList
-            places={filteredPlaces}
-            isLoaded={isLoaded}
-            filters={filters}
-            userCoordinates={userCoordinates}
-            onToggleFilter={toggleFilter}
-            onClearFilters={() => setFilters(new Set())}
-            onSelectPlace={focusPlace}
-          />
+          <Reanimated.View
+            key="browse"
+            entering={LIST_ENTERING}
+            exiting={CONTENT_EXITING}
+            style={{ flex: 1 }}
+          >
+            <BrowseList
+              places={filteredPlaces}
+              isLoaded={isLoaded}
+              filters={filters}
+              userCoordinates={userCoordinates}
+              onToggleFilter={toggleFilter}
+              onClearFilters={() => setFilters(new Set())}
+              onSelectPlace={focusPlace}
+            />
+          </Reanimated.View>
         )}
       </MapSheet>
     </View>
