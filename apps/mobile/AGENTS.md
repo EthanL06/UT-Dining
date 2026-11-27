@@ -40,6 +40,19 @@ The app works offline from the cache. Never make a screen query Supabase directl
 - Errors: `app/_layout.tsx` exports the Expo Router `ErrorBoundary`, which shows `components/AppErrorScreen.tsx` with Try again. A failed SQLite migration shows the same screen with Restart app instead of opening a broken cache. PostHog also captures uncaught exceptions and unhandled rejections (`services/analytics/posthog.ts`).
 - Pure helpers that do not import React Native, Expo or MMKV get a Vitest test next to them (`utils/*.test.ts`); `pnpm --filter @ut-dining/mobile test` runs them in about 1 s with `TZ=America/Chicago`.
 
+## Dev app, PR previews and OTA updates
+
+- `APP_VARIANT` picks the app. Unset (the `production` EAS profile) is the App Store app: bundle `com.ethanl06.ut-dining`, channel `production`, runtime version `appVersion`, prod Supabase. `development` and `preview` are both **UT Dining (Dev)**: bundle `com.ethanl06.ut-dining.dev`, dev Supabase (EAS environments `development` and `preview`), runtime version `fingerprint`, channel `staging`.
+- Dev and App Store builds can never share an update: different bundle, different channel, and a fingerprint runtime never equals an `appVersion` one. `scripts/ci/mobile-preview.sh` also refuses the `production` channel and checks the resolved bundle and runtime policy before it publishes.
+- OTA updates are on in the dev app only when `DEV_UPDATES=1`: the `preview` profile sets it in `eas.json` (so `eas build` and the EAS worker agree), `scripts/ci/mobile-preview.sh` exports it for `eas update`, and a local device build opts in with it. Local, simulator, E2E and screenshot builds leave it unset, so a test never runs JS downloaded from staging instead of the code under test. The value is part of the fingerprint, so a build and its updates must agree on it; EAS fails the build with "Runtime version mismatch" otherwise.
+- `fingerprint.config.cjs` is the default `balanced` preset plus `ExpoConfigExtraSection`, because `extra.gitCommit` changes on every commit. Without it every commit would need a new build.
+- `.github/workflows/mobile-preview.yml` runs `scripts/ci/mobile-preview.sh` (`make mobile-preview ARGS="pr <n>"` locally, needs `EXPO_TOKEN`):
+  - Push to `staging`: publishes to channel `staging`, so the installed dev app picks the change up on its next launch.
+  - A PR: publishes to channel `pr-<n>` and posts one PR comment with the links and a QR code for `ut-dining-dev://preview/<n>` (`app/preview/[pr].tsx`). The dev app also registers the `ut-dining-dev` scheme, because the App Store app owns `ut-dining`. Switching channels goes through `services/qa/updates.ts` (`Updates.setUpdateRequestHeadersOverride`); QA Menu > Back to Staging switches back.
+  - `scripts/ci/preview-index.sh` keeps the list the QA menu's PR Previews section shows: `previews.json` and `qr/pr-<n>.png` in the public `qa-previews` bucket of **dev** Supabase (it refuses prod). Each entry has the PR title, commit, fingerprint and build link, so the app greys out previews that need a newer build. Closing a PR removes its entry. Nothing in it is secret: it is PR titles from a public repo.
+  - Either way, when no `preview` build exists for the iOS fingerprint (native code changed), it starts one on EAS with `--no-wait` and links its install page. PRs opened by bots never start builds. The free plan has 15 iOS builds a month.
+- A change to native dependencies, config plugins or native parts of `app.config.js` changes the fingerprint and needs a new build installed before its OTA updates apply.
+
 ## Verifying
 
 - Static: `make verify` from the repo root.

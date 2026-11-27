@@ -7,7 +7,6 @@ import { useChangelogStore } from '~/store/useChangelogStore';
 import { haptics } from '~/utils/haptics';
 
 export const ROW_INSET = 58;
-export const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
 
 export const COLORS = {
   orange: '#BF5700',

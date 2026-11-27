@@ -5,6 +5,7 @@ import { BuildInfoSection } from '~/components/qa/BuildInfoSection';
 import { DataSection } from '~/components/qa/DataSection';
 import { PromptsSection } from '~/components/qa/PromptsSection';
 import { PushSection } from '~/components/qa/PushSection';
+import { UpdatesSection } from '~/components/qa/UpdatesSection';
 import { Text } from '~/components/ui/Text';
 import { useTheme } from '~/utils/theme';
 
@@ -32,6 +33,7 @@ const QAScreen = () => {
         <PromptsSection />
         <DataSection />
         <PushSection />
+        <UpdatesSection />
         <BuildInfoSection />
       </ScrollView>
     </>
