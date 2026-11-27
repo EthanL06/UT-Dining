@@ -1,4 +1,4 @@
-import { formatCentral } from '@ut-dining/core';
+import { toCentralTime } from '@ut-dining/core';
 import { GlassView } from 'expo-glass-effect';
 import { Check, CircleAlert, Utensils } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
@@ -37,6 +37,7 @@ import {
   refreshMessage,
 } from '~/utils/pullRefresh';
 import { useTheme } from '~/utils/theme';
+import { formatTimeFromNumber } from '~/utils/time';
 
 const AnimatedCircle = Reanimated.createAnimatedComponent(Circle);
 const AnimatedGlassView = Reanimated.createAnimatedComponent(GlassView);
@@ -52,7 +53,7 @@ const MIN_PILL_HEIGHT = 36;
 const LIGHT_SHADOW = '0px 4px 14px rgba(0, 0, 0, 0.12)';
 const DARK_SHADOW = '0px 4px 14px rgba(0, 0, 0, 0.5)';
 
-const timeLabel = () => formatCentral(Date.now(), { hour: '2-digit', minute: '2-digit' });
+const timeLabel = () => formatTimeFromNumber(toCentralTime().time);
 
 export const RefreshDrop = ({
   pull,
