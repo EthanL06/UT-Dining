@@ -123,6 +123,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           sparse-checkout: |
+            .node-version
             .github/perf-budgets.json
             scripts/qa/size-report.ts
           sparse-checkout-cone-mode: false

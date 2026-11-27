@@ -1,5 +1,5 @@
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { dirname, join, relative, sep } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
 type Size = { raw: number; gzip: number };
@@ -396,7 +396,7 @@ const render = (args: Record<string, string>) => {
   const body = [MARKER, '## Size and performance', '', intro, '', ...budgetLines, ...sections].join(
     '\n',
   );
-  writeFileSync(args.out, `${body.trimEnd()}\n`);
+  writeOut(args.out, `${body.trimEnd()}\n`);
   for (const warning of warnings)
     process.stdout.write(`::warning::${warning.replaceAll('`', '')}\n`);
   if (budgets.enforce && warnings.length > 0) process.exitCode = 1;
@@ -410,7 +410,12 @@ const compare = (args: Record<string, string>) => {
     base: base ? { sha: args['base-sha'], report: base } : null,
     head: { sha: args['head-sha'], report: head },
   };
-  writeFileSync(args.out, `${JSON.stringify(result)}\n`);
+  writeOut(args.out, `${JSON.stringify(result)}\n`);
+};
+
+const writeOut = (path: string, contents: string) => {
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, contents);
 };
 
 const parseArgs = (argv: string[]): Record<string, string> => {
@@ -426,9 +431,9 @@ const [command, ...rest] = process.argv.slice(2);
 const args = parseArgs(rest);
 
 if (command === 'mobile') {
-  writeFileSync(args.out, `${JSON.stringify(mobile(args.bytecode, args.js))}\n`);
+  writeOut(args.out, `${JSON.stringify(mobile(args.bytecode, args.js))}\n`);
 } else if (command === 'website') {
-  writeFileSync(args.out, `${JSON.stringify(website(args.dir, args.lighthouse ?? ''))}\n`);
+  writeOut(args.out, `${JSON.stringify(website(args.dir, args.lighthouse ?? ''))}\n`);
 } else if (command === 'compare') {
   compare(args);
 } else if (command === 'render') {
