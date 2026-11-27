@@ -31,6 +31,10 @@ export const zoomLevelFor = (region: Region): ZoomLevel =>
   region.latitudeDelta < LABELS_BELOW_DELTA ? 'labels' : 'pins';
 
 const CLUSTER_DISTANCE_POINTS = 50;
+const MARKER_CLUSTER_DISTANCE_POINTS = 30;
+const MAX_STACKED_LABELS = 3;
+const STACK_ALL_BELOW_DELTA = 0.0015;
+export const CLUSTER_ZOOM_DELTA = 0.0012;
 
 const centerOf = (places: PinnedPlace[]): Coordinates => ({
   latitude: places.reduce((sum, p) => sum + p.coordinates.latitude, 0) / places.length,
@@ -41,6 +45,7 @@ export const clusterPlaces = (
   places: PinnedPlace[],
   region: Region,
   screenWidth: number,
+  clusterDistance = CLUSTER_DISTANCE_POINTS,
 ): Cluster[] => {
   const pointsPerLng = screenWidth / region.longitudeDelta;
   const pointsPerLat = pointsPerLng / Math.cos((region.latitude * Math.PI) / 180);
@@ -62,7 +67,7 @@ export const clusterPlaces = (
     const next: Cluster[] = [];
     for (const cluster of clusters) {
       const near = next.find(
-        (other) => distance(other.coordinates, cluster.coordinates) < CLUSTER_DISTANCE_POINTS,
+        (other) => distance(other.coordinates, cluster.coordinates) < clusterDistance,
       );
       if (near) {
         near.places.push(...cluster.places);
@@ -82,11 +87,11 @@ const STACK_OVERLAP_X_POINTS = 140;
 
 export type PlacedPin = { place: PinnedPlace; coordinates: Coordinates };
 
-export const stackOverlappingPins = (
+const overlapGroups = (
   places: PinnedPlace[],
   region: Region,
   screenWidth: number,
-): PlacedPin[] => {
+): PinnedPlace[][] => {
   const pointsPerLng = screenWidth / region.longitudeDelta;
   const pointsPerLat = pointsPerLng / Math.cos((region.latitude * Math.PI) / 180);
   const overlaps = (a: Coordinates, b: Coordinates) =>
@@ -101,26 +106,87 @@ export const stackOverlappingPins = (
     for (const stack of touching) stacks.splice(stacks.indexOf(stack), 1);
     stacks.push([...touching.flat(), place]);
   }
-
-  return stacks.flatMap((stack) => {
-    if (stack.length === 1) return [{ place: stack[0], coordinates: stack[0].coordinates }];
-    const center = centerOf(stack);
-    const rowDegrees = STACK_ROW_POINTS / pointsPerLat;
-    return [...stack]
-      .sort(
-        (a, b) => b.coordinates.latitude - a.coordinates.latitude || a.name.localeCompare(b.name),
-      )
-      .map((place, index) => ({
-        place,
-        coordinates: {
-          latitude: center.latitude + ((stack.length - 1) / 2 - index) * rowDegrees,
-          longitude: center.longitude,
-        },
-      }));
-  });
+  return stacks;
 };
 
-export const regionAround = (places: PinnedPlace[]): Region => {
+const stackPositions = (stack: PinnedPlace[], region: Region, screenWidth: number): PlacedPin[] => {
+  if (stack.length === 1) return [{ place: stack[0], coordinates: stack[0].coordinates }];
+  const pointsPerLng = screenWidth / region.longitudeDelta;
+  const pointsPerLat = pointsPerLng / Math.cos((region.latitude * Math.PI) / 180);
+  const center = centerOf(stack);
+  const rowDegrees = STACK_ROW_POINTS / pointsPerLat;
+  return [...stack]
+    .sort((a, b) => b.coordinates.latitude - a.coordinates.latitude || a.name.localeCompare(b.name))
+    .map((place, index) => ({
+      place,
+      coordinates: {
+        latitude: center.latitude + ((stack.length - 1) / 2 - index) * rowDegrees,
+        longitude: center.longitude,
+      },
+    }));
+};
+
+export const stackOverlappingPins = (
+  places: PinnedPlace[],
+  region: Region,
+  screenWidth: number,
+): PlacedPin[] =>
+  overlapGroups(places, region, screenWidth).flatMap((stack) =>
+    stackPositions(stack, region, screenWidth),
+  );
+
+export const showsLabel = (place: Place) => place.isOpen && place.type !== 'microwave';
+
+export type MapMarker =
+  | { kind: 'place'; place: PinnedPlace; coordinates: Coordinates }
+  | { kind: 'cluster'; cluster: Cluster };
+
+const clusterMarkers = (clusters: Cluster[]): MapMarker[] =>
+  clusters.map((cluster) =>
+    cluster.places.length === 1
+      ? { kind: 'place', place: cluster.places[0], coordinates: cluster.places[0].coordinates }
+      : { kind: 'cluster', cluster },
+  );
+
+const labelZoomMarkers = (
+  places: PinnedPlace[],
+  region: Region,
+  screenWidth: number,
+): MapMarker[] => {
+  if (region.latitudeDelta < STACK_ALL_BELOW_DELTA) {
+    return stackOverlappingPins(places, region, screenWidth).map((pin) => ({
+      kind: 'place',
+      ...pin,
+    }));
+  }
+  const labels = overlapGroups(places.filter(showsLabel), region, screenWidth).flatMap(
+    (stack): MapMarker[] =>
+      stack.length > MAX_STACKED_LABELS
+        ? [
+            {
+              kind: 'cluster',
+              cluster: { id: stack[0].name, coordinates: centerOf(stack), places: stack },
+            },
+          ]
+        : stackPositions(stack, region, screenWidth).map((pin) => ({ kind: 'place', ...pin })),
+  );
+  const others = places.filter((place) => !showsLabel(place));
+  return [
+    ...labels,
+    ...clusterMarkers(clusterPlaces(others, region, screenWidth, MARKER_CLUSTER_DISTANCE_POINTS)),
+  ];
+};
+
+export const mapMarkers = (
+  places: PinnedPlace[],
+  region: Region,
+  screenWidth: number,
+): MapMarker[] =>
+  zoomLevelFor(region) === 'labels'
+    ? labelZoomMarkers(places, region, screenWidth)
+    : clusterMarkers(clusterPlaces(places, region, screenWidth));
+
+export const regionAround = (places: PinnedPlace[], minDelta = 0.004): Region => {
   const lats = places.map((p) => p.coordinates.latitude);
   const lngs = places.map((p) => p.coordinates.longitude);
   const minLat = Math.min(...lats);
@@ -130,8 +196,8 @@ export const regionAround = (places: PinnedPlace[]): Region => {
   return {
     latitude: (minLat + maxLat) / 2,
     longitude: (minLng + maxLng) / 2,
-    latitudeDelta: Math.max((maxLat - minLat) * 1.8, 0.004),
-    longitudeDelta: Math.max((maxLng - minLng) * 1.8, 0.004),
+    latitudeDelta: Math.max((maxLat - minLat) * 1.8, minDelta),
+    longitudeDelta: Math.max((maxLng - minLng) * 1.8, minDelta),
   };
 };
 

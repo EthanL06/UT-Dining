@@ -4,6 +4,8 @@ import type { Cluster, Place } from '~/utils/mapPlaces';
 import { useTheme } from '~/utils/theme';
 import { PLACE_ICONS, usePlaceColor } from './placeStyle';
 
+const CLOSED_GRAY = '#8E8E93';
+
 const shortCloseTime = (status: string) =>
   status.match(/until (\d+)(?::(\d+))? (AM|PM)/)
     ? status.replace(/^Open until (\d+)(?::00)? (AM|PM)$/, '$1 $2').replace(/^Open until /, '')
@@ -36,7 +38,7 @@ export const IconPin = ({ place, selected }: { place: Place; selected: boolean }
 export const ClosedDot = () => (
   <View
     className="size-3 rounded-full"
-    style={{ backgroundColor: '#8E8E93', borderWidth: 2, borderColor: '#FFFFFF' }}
+    style={{ backgroundColor: CLOSED_GRAY, borderWidth: 2, borderColor: '#FFFFFF' }}
   />
 );
 
@@ -76,13 +78,14 @@ export const LabelPin = ({ place }: { place: Place }) => {
 
 export const ClusterPin = ({ cluster }: { cluster: Cluster }) => {
   const size = Math.min(42, 32 + cluster.places.length);
+  const allClosed = cluster.places.every((place) => !place.isOpen);
   return (
     <View
       className="items-center justify-center rounded-full"
       style={{
         width: size,
         height: size,
-        backgroundColor: '#BF5700',
+        backgroundColor: allClosed ? CLOSED_GRAY : '#BF5700',
         borderWidth: 3,
         borderColor: '#FFFFFF',
         shadowColor: '#000',
