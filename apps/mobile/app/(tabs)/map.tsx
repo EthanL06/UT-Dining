@@ -154,7 +154,7 @@ const MapPage = () => {
   const [hasLocationPermission, setHasLocationPermission] = useState(false);
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState<Set<MapFilterId>>(new Set());
-  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const [selectedName, setSelectedName] = useState<string | null>(null);
   const [sheetHeight, setSheetHeight] = useState(0);
   const [mapSafeAreaBottom, setMapSafeAreaBottom] = useState(0);
   const bottomOffset = TAB_BAR_CLEARANCE + insets.bottom - 34;
@@ -203,6 +203,7 @@ const MapPage = () => {
         const isOpen = isLocationOpenNow(location, withMenus, now);
         return {
           name: getLocationName(db, location.name ?? '', useColloquialNames),
+          locationName: location.name ?? '',
           address: location.address,
           description: location.description,
           coordinates: {
@@ -227,6 +228,8 @@ const MapPage = () => {
     }));
     return [...dining, ...microwaves];
   }, [data, db, useColloquialNames, lastSyncedAt, minuteTick]);
+
+  const selectedPlace = places.find((place) => place.name === selectedName) ?? null;
 
   const filteredPlaces = useMemo(() => {
     const typeFilters: string[] = [...filters].filter((id) => id !== 'open');
@@ -274,7 +277,7 @@ const MapPage = () => {
 
   const focusPlace = useCallback((place: Place) => {
     haptics.tap();
-    setSelectedPlace(place);
+    setSelectedName(place.name);
     mapRef.current?.animateToRegion(
       { ...place.coordinates, latitudeDelta: 0.003, longitudeDelta: 0.003 },
       450,
@@ -393,7 +396,7 @@ const MapPage = () => {
         onToggleFilter={toggleFilter}
         selectedPlace={selectedPlace}
         onSelectPlace={focusPlace}
-        onClosePlace={() => setSelectedPlace(null)}
+        onClosePlace={() => setSelectedName(null)}
         userCoordinates={userCoordinates}
         bottomOffset={bottomOffset}
         onHeightChange={setSheetHeight}

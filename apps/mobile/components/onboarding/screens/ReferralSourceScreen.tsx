@@ -8,7 +8,6 @@ import {
   Search,
   Users,
 } from 'lucide-react-native';
-import { useState } from 'react';
 import { View } from 'react-native';
 
 import { useTheme } from '~/utils/theme';
@@ -17,8 +16,8 @@ import OnboardingHeader from './OnboardingHeader';
 
 type Props = {
   width: number;
-  onSelectionChange: (hasSelection: boolean) => void;
-  onSelectionUpdate: (selectedTag: string | null) => void;
+  selected: string | null;
+  onChange: (selected: string | null) => void;
 };
 
 const REFERRAL_SOURCES: Choice[] = [
@@ -32,15 +31,11 @@ const REFERRAL_SOURCES: Choice[] = [
   { id: 'other', label: 'Other', icon: HelpCircle },
 ];
 
-const ReferralSourceScreen = ({ width, onSelectionChange, onSelectionUpdate }: Props) => {
+const ReferralSourceScreen = ({ width, selected, onChange }: Props) => {
   const theme = useTheme();
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
   const toggleTag = (tagId: string) => {
-    const newSelection = selectedTag === tagId ? null : tagId;
-    setSelectedTag(newSelection);
-    onSelectionChange(newSelection !== null);
-    onSelectionUpdate(newSelection);
+    onChange(selected === tagId ? null : tagId);
   };
 
   return (
@@ -51,7 +46,7 @@ const ReferralSourceScreen = ({ width, onSelectionChange, onSelectionUpdate }: P
       />
       <ChoiceList
         choices={REFERRAL_SOURCES}
-        isSelected={(id) => selectedTag === id}
+        isSelected={(id) => selected === id}
         onToggle={toggleTag}
       />
     </View>

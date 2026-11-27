@@ -2,7 +2,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Flame, Heart, Info, X } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import { useEffect, useEffectEvent, useState } from 'react';
-import { Image, Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, ScrollView, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
@@ -65,19 +65,20 @@ const FoodScreen = () => {
   const db = useDatabase();
   const [isFavorite, setIsFavorite] = useState(false);
   const planDate = date || todayKey();
+  const canMealPlan = planDate >= todayKey();
   const isMealPlan = useIsMealPlanItem(
     { name: food, locationName: location, menuName: menu, categoryName: category },
     planDate,
   );
 
-  const { foodItem, nutritionData, allergenList, dietaryList } = useFoodData(
+  const { status, foodItem, nutritionData, allergenList, dietaryList } = useFoodData({
     location,
     menu,
     category,
     food,
-    favorite === 'true',
+    fromFavorites: favorite === 'true',
     date,
-  );
+  });
 
   useEffect(() => {
     if (foodItem) setIsFavorite(isFavoriteItem(db, foodItem.name as string, location));
@@ -132,6 +133,27 @@ const FoodScreen = () => {
               <Info size={20} color={theme.label} />
             </Pressable>
           </View>
+
+          {status === 'loading' && (
+            <View className="mt-16 items-center">
+              <ActivityIndicator size="small" />
+            </View>
+          )}
+
+          {(status === 'missing' || status === 'error') && (
+            <View className="mx-8 mt-16 items-center gap-y-1.5" testID="food-unavailable">
+              <Text variant="headline" className="text-center">
+                {status === 'missing'
+                  ? "This food isn't on the menu anymore"
+                  : "Couldn't load this food"}
+              </Text>
+              <Text variant="subheadline" tone="secondary" className="text-center">
+                {status === 'missing'
+                  ? 'The menu may have changed since you opened it.'
+                  : 'Close this and try again.'}
+              </Text>
+            </View>
+          )}
 
           {foodItem && (
             <>
@@ -270,27 +292,29 @@ const FoodScreen = () => {
                 {isFavorite ? 'Favorited' : 'Favorite'}
               </Text>
             </Pressable>
-            <Pressable
-              testID="food-meal-plan-button"
-              accessibilityLabel={isMealPlan ? 'Remove from meal plan' : 'Add to meal plan'}
-              accessibilityRole="button"
-              onPress={() => {
-                if (isMealPlan) haptics.remove();
-                else haptics.success();
-                toggleMealPlanForFood(foodItem, context);
-              }}
-              className="h-12 flex-[1.4] flex-row items-center justify-center gap-x-2 rounded-full"
-              style={{ backgroundColor: isMealPlan ? theme.tintSoft : theme.tint }}
-            >
-              <MealPlanIcon
-                size={18}
-                color={isMealPlan ? theme.tint : '#FFFFFF'}
-                filled={isMealPlan}
-              />
-              <Text variant="callout" emphasized color={isMealPlan ? theme.tint : '#FFFFFF'}>
-                {isMealPlan ? 'In Meal Plan' : 'Add to Meal Plan'}
-              </Text>
-            </Pressable>
+            {canMealPlan && (
+              <Pressable
+                testID="food-meal-plan-button"
+                accessibilityLabel={isMealPlan ? 'Remove from meal plan' : 'Add to meal plan'}
+                accessibilityRole="button"
+                onPress={() => {
+                  if (isMealPlan) haptics.remove();
+                  else haptics.success();
+                  toggleMealPlanForFood(foodItem, context);
+                }}
+                className="h-12 flex-[1.4] flex-row items-center justify-center gap-x-2 rounded-full"
+                style={{ backgroundColor: isMealPlan ? theme.tintSoft : theme.tint }}
+              >
+                <MealPlanIcon
+                  size={18}
+                  color={isMealPlan ? theme.tint : '#FFFFFF'}
+                  filled={isMealPlan}
+                />
+                <Text variant="callout" emphasized color={isMealPlan ? theme.tint : '#FFFFFF'}>
+                  {isMealPlan ? 'In Meal Plan' : 'Add to Meal Plan'}
+                </Text>
+              </Pressable>
+            )}
           </View>
         )}
       </View>
