@@ -61,3 +61,29 @@ Pages that fail to load after retries are listed too.
 ## Output
 
 The JSON shape, location names, meal names and allergen keys are the same as the previous scraper's, so the database function and the apps need no changes.
+
+## Restaurants, cafés, markets and food trucks
+
+`pnpm --filter @ut-dining/scraper places` (or `make places`) keeps the hours and payment methods of the places that UT runs in step with UT's own sites. Both scraper workflows run it after the menus, so production updates twice a day and dev nightly. The dining halls are left alone, and so are the private vendors (the Dobie food court, the AT&T Center, O's Campus Café and the rest), which no UT site lists.
+
+| Source | What it gives |
+| --- | --- |
+| [housing.utexas.edu/dining/hours-of-operation](https://housing.utexas.edu/dining/hours-of-operation) | Hours for every UHD restaurant, coffee shop, market and two food trucks, one table per date range: the semester, Thanksgiving, finals, closing week |
+| housing.utexas.edu `dining-locations/<list>/<slug>` pages | Methods of payment |
+| [universityunions.utexas.edu/eat/food-trucks](https://universityunions.utexas.edu/eat/food-trucks) and each truck's page | The current trucks and their weekly hours |
+
+How a run works:
+
+1. Fetch the pages above (about 35 requests, under 2 seconds) and the `location` rows.
+2. For each place in `src/places/sources.ts`, build `regular_service_hours` for the next seven days, starting today. Each day comes from the shortest UHD date range that covers it and lists the place, so a break week replaces the semester hours for the days it covers and the app shows breaks without an update. Food trucks without a UHD row use their Unions weekly hours, closed on days inside a UHD range named "Break", because the Unions page says trucks close for breaks. A day no range covers (UT has not posted next semester yet) keeps its current hours. Midnight is stored as 2359, as the dashboard does.
+3. Payment methods come from the UHD page of each place. Bevo Pay is gone since August 2026, so it drops out of every synced place.
+4. Only rows that changed are written, with `ENABLE_SUPABASE=true`. Without it the run only prints what would change.
+5. `data/places.json` has the computed week for every place, and `data/places-health.json` and `places-health.md` list what needs a person:
+   - **New on UT's sites**: a place on a UHD list, the Unions truck list or the hours table that `sources.ts` does not know. Add it with `pnpm -s admin locations add`, then a line in `sources.ts`.
+   - **No longer listed by UT**: a place in `sources.ts` that UT dropped. Check whether it closed.
+   - **Missing from the app**: a name in `sources.ts` with no `location` row of that name. `sources.ts` matches rows by name, so renaming a place in the dashboard needs the same change there.
+   - **Pages the scraper could not read** and **pages that failed to load**: these make the run exit 1, and nothing is written for the place they belong to.
+
+`scraper-dev.yml` turns that report into one issue labeled `places-health`, assigned to the repo owner, through `scripts/ci/health-issue.sh`. It comments only when the report changed and closes the issue on the first clean run. New, missing and dropped places open the issue without failing the job.
+
+To stop syncing a place, remove its line from `sources.ts`; its hours then stay as they are and can be edited in the dashboard again. Edits in the dashboard to a synced place are overwritten on the next run.
