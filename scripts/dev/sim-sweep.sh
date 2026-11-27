@@ -22,12 +22,12 @@ Keeps Ethan's Mac free of simulators and processes nobody is using.
                      --dry-run prints what it would do and changes nothing.
   idle [--shutdown] [--after <minutes>]
                      Booted simulators nobody is using, idle for <minutes> (default 0).
-                     A leased clone is busy only while a Maestro, xcodebuild, simctl or XCTest
-                     process names it or its lease was renewed in the last
-                     $SIM_IDLE_MINUTES (default 15) minutes; a Metro server left running
-                     (expo run:ios --device <UDID>) does not keep it alive, and releasing it
-                     stops that Metro. Any other simulator stays busy while any of those
-                     processes or Metro names it. --shutdown shuts them down (leases are
+                     A leased clone is busy while any process other than Metro names its UDID
+                     (Maestro, xcodebuild, simctl, a Python or Node driver script) or its lease
+                     was renewed in the last $SIM_IDLE_MINUTES (default 15) minutes; a Metro
+                     server left running (expo run:ios --device <UDID>) does not keep it alive,
+                     and releasing it stops that Metro. Any other simulator stays busy while
+                     any process, Metro included, names it. --shutdown shuts them down (leases are
                      released) and quits Simulator.app once nothing is booted.
   sweeper [install|uninstall|status]
                      The launchd job that runs "sweep" every 5 minutes. install copies these
@@ -36,7 +36,7 @@ EOF
 }
 
 IDLE_MINUTES="${SIM_IDLE_MINUTES:-15}"
-BUSY_RE='maestro|xcodebuild|simctl|xctest'
+METRO_RE='expo (run:ios|start)|metro|react-native start'
 TARGET_RE='maestro|xcodebuild|run:ios|--device|--udid|-destination'
 MARKS="$STATE/idle"
 ORPHANS="$STATE/orphans"
@@ -144,7 +144,7 @@ busy() {
   local udid="$1" procs="$2" grace="$3"
   if [[ -f "$STATE/$udid" ]]; then
     (($(age "$udid") < grace * 60)) && return 0
-    grep -F "$udid" <<<"$procs" | grep -qE "$BUSY_RE"
+    [[ -n "$(grep -F "$udid" <<<"$procs" | grep -vE "$METRO_RE" || true)" ]]
     return
   fi
   grep -qF "$udid" <<<"$procs"
@@ -162,7 +162,7 @@ idle() {
   local procs now udid name since any=false booted
   local grace=$((after > IDLE_MINUTES ? after : IDLE_MINUTES))
   mkdir -p "$MARKS"
-  procs="$(ps -axww -o command= 2>/dev/null | grep -E "$WORKER_RE" | grep -vE "$SELF_RE" || true)"
+  procs="$(ps -axww -o command= 2>/dev/null | grep -vE "$SELF_RE" || true)"
   now="$(date +%s)"
   booted="$(xcrun simctl list devices booted | grep -E "$UDID_RE" || true)"
   while IFS= read -r line; do
@@ -202,7 +202,7 @@ idle() {
     grep -qF "$udid" <<<"$booted" || rm -f "$MARKS/$udid"
   done
   [[ "$any" == true ]] || info "no idle booted simulators"
-  if [[ "$shutdown" == true && "$DRY" == false ]] && ! xcrun simctl list devices booted | grep -qE "$UDID_RE"; then
+  if [[ "$shutdown" == true && "$DRY" == false ]] && ! grep -qE "$UDID_RE" <<<"$(xcrun simctl list devices booted)"; then
     osascript -e 'quit app "Simulator"' >/dev/null 2>&1 || true
   fi
 }

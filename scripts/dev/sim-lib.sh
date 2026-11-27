@@ -39,7 +39,7 @@ mtime() { stat -f %m "$1"; }
 
 lease_files() { ls "$STATE" 2>/dev/null | grep -E "^$UDID_RE$" || true; }
 
-field() { sed -n "s/^$2=//p" "$STATE/$1" 2>/dev/null; }
+field() { sed -n "s/^$2=//p" "$STATE/$1" 2>/dev/null || true; }
 
 age() { echo $(($(date +%s) - $(mtime "$STATE/$1"))); }
 
@@ -87,9 +87,10 @@ drop() {
 }
 
 reap() {
-  local udid
+  local udid devices
+  devices="$(xcrun simctl list devices)"
   for udid in $(lease_files); do
-    if ! xcrun simctl list devices | grep -q "$udid"; then
+    if ! grep -qF "$udid" <<<"$devices"; then
       stop_pids "$(udid_pids "$udid") $(slot_pids "$(field "$udid" slot)")"
       rm -f "$STATE/$udid"
     elif (($(age "$udid") > TTL)); then
@@ -97,7 +98,7 @@ reap() {
       drop "$udid"
     fi
   done
-  for udid in $(xcrun simctl list devices | grep -F "$PREFIX" | grep -oE "$UDID_RE" || true); do
+  for udid in $(grep -F "$PREFIX" <<<"$devices" | grep -oE "$UDID_RE" || true); do
     [[ -f "$STATE/$udid" ]] || drop "$udid"
   done
 }
