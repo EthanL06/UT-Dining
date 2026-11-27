@@ -145,7 +145,7 @@ mobile:
 	@pnpm --filter @ut-dining/mobile start $(ARGS)
 
 ios:
-	@pnpm --filter @ut-dining/mobile ios $(if $(SIM),--device "$(SIM)") $(ARGS)
+	@LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 pnpm --filter @ut-dining/mobile ios $(if $(SIM),--device "$(SIM)") $(ARGS)
 
 android:
 	@pnpm --filter @ut-dining/mobile android $(ARGS)

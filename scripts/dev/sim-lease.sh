@@ -32,7 +32,9 @@ and is never booted by hand. Clones take seconds because APFS copies them lazily
                      A launchd job that runs "idle --shutdown --after 20" every 5 minutes, so a
                      session that crashed or went offline never leaves a simulator running.
 
-Slots: $SIM_MAX (default: 1 per 8 GB of RAM, between 1 and 4). Each slot also gets its
+Slots: $SIM_MAX (default: 1 per 8 GB of RAM, between 1 and 4), minus every other booted
+simulator, and none while the 5-minute load average is over $SIM_LOAD_FACTOR (default 2) times
+the core count, so a busy Mac sends callers to CI instead of starving every run. Each slot also gets its
 own ports, so parallel runs never share Metro or the fixture server: Metro 8090+slot,
 fixtures 54340+slot. State lives in $SIM_LEASE_DIR (default ~/Library/Caches/ut-dining/sim-leases).
 EOF
@@ -97,12 +99,36 @@ app_in_device() {
   return 1
 }
 
+is_dev_client() { [[ -d "$1/EXDevLauncher.bundle" ]]; }
+
+newest_iphone_type() {
+  xcrun simctl list runtimes -j | node -e '
+    const r = JSON.parse(require("fs").readFileSync(0, "utf8")).runtimes
+      .filter((x) => x.platform === "iOS" && x.isAvailable).pop();
+    const t = (r?.supportedDeviceTypes ?? []).filter((d) => /^iPhone \d+$/.test(d.name))
+      .sort((a, b) => Number(a.name.slice(7)) - Number(b.name.slice(7))).pop();
+    if (t) process.stdout.write(t.identifier);
+  '
+}
+
+booted_others() {
+  xcrun simctl list devices booted | grep -E "$UDID_RE" | grep -vcE "($GOLDEN|$PREFIX)" || true
+}
+
+overloaded() {
+  local load cpus
+  load="$(sysctl -n vm.loadavg | awk '{print int($2)}')"
+  cpus="$(sysctl -n hw.ncpu)"
+  ((load > cpus * ${SIM_LOAD_FACTOR:-2}))
+}
+
 device_plist() { echo "$HOME/Library/Developer/CoreSimulator/Devices/$1/device.plist"; }
 
 source_device() {
   local udid
   for udid in $(xcrun simctl list devices available | grep -vE "($GOLDEN|$PREFIX|UT Dining e2e shard)" | grep -oE "$UDID_RE"); do
-    if app_in_device "$udid" >/dev/null; then
+    local app
+    if app="$(app_in_device "$udid")" && is_dev_client "$app"; then
       echo "$udid"
       return 0
     fi
@@ -113,15 +139,17 @@ source_device() {
 build_golden() {
   local from="${1:-}" app device_type udid old
   if [[ -z "$from" ]]; then
-    from="$(source_device)" || die "no simulator has the development build. Install one with: make ios SIM=<name>"
+    from="$(source_device)" || die "no simulator has a development client of $APP_ID (release builds don't count). Build one on a lease: make sim-lease, then make ios SIM=<that UDID>, then sim-lease.sh golden --from <that UDID>"
   fi
   if [[ -d "$from" ]]; then
     app="$from"
-    device_type="$(xcrun simctl list devicetypes | grep -oE 'com\.apple\.CoreSimulator\.SimDeviceType\.iPhone-[0-9]+(-Pro)?\b' | tail -1)"
+    device_type="$(newest_iphone_type)"
   else
     app="$(app_in_device "$from")" || die "$from has no $APP_ID installed."
     device_type="$(plutil -extract deviceType raw "$(device_plist "$from")")"
   fi
+  is_dev_client "$app" || die "$app is a release build (no EXDevLauncher.bundle). The golden simulator needs a development client."
+  [[ -n "$device_type" ]] || die "could not pick a device type for the golden simulator."
   local copy="$STATE/golden-app"
   rm -rf "$copy"
   mkdir -p "$copy"
@@ -132,11 +160,12 @@ build_golden() {
     xcrun simctl delete "$old"
   fi
   info "==> Creating \"$GOLDEN\" ($device_type) with the development build from $from"
-  udid="$(xcrun simctl create "$GOLDEN" "$device_type")"
-  xcrun simctl boot "$udid"
-  xcrun simctl bootstatus "$udid" -b >/dev/null
-  xcrun simctl install "$udid" "$copy/"*.app
-  xcrun simctl shutdown "$udid"
+  udid="$(xcrun simctl create "$GOLDEN" "$device_type")" || die "simctl create $device_type failed."
+  [[ -n "$udid" ]] || die "simctl create returned no UDID."
+  xcrun simctl boot "$udid" || die "could not boot $udid."
+  xcrun simctl bootstatus "$udid" -b >/dev/null || die "$udid did not finish booting."
+  xcrun simctl install "$udid" "$copy/"*.app || die "could not install the app on $udid."
+  xcrun simctl shutdown "$udid" || die "could not shut down $udid."
   rm -rf "$copy"
   info "  ok    golden simulator $udid"
 }
@@ -192,13 +221,18 @@ acquire() {
       *) die "unknown option $1" ;;
     esac
   done
-  local max deadline slot golden udid
+  local max deadline slot golden udid others room
   max="$(max_slots)"
   deadline=$(($(date +%s) + wait))
   while true; do
     lock
     reap
-    if slot="$(free_slot "$max")"; then
+    others="$(booted_others)"
+    room=$((max - others))
+    ((room < 0)) && room=0
+    if overloaded; then
+      info "  busy  load average is over ${SIM_LOAD_FACTOR:-2}x the $(sysctl -n hw.ncpu) cores"
+    elif ((room > 0)) && slot="$(free_slot "$room")"; then
       golden="$(udid_of "$GOLDEN")"
       if [[ -z "$golden" ]]; then
         build_golden || { unlock; exit 1; }
@@ -212,7 +246,7 @@ acquire() {
     fi
     unlock
     if (($(date +%s) >= deadline)); then
-      info "all $max simulator slot(s) are leased:"
+      info "no simulator slot free: $max slot(s), $others other booted simulator(s), load $(sysctl -n vm.loadavg)"
       list >&2
       exit "$BUSY"
     fi
@@ -267,7 +301,7 @@ idle() {
   for udid in $(ls "$marks" 2>/dev/null); do
     xcrun simctl list devices booted | grep -q "$udid" || rm -f "$marks/$udid"
   done
-  [[ "$any" == true || "$shutdown" == true ]] || info "no idle booted simulators"
+  [[ "$any" == true ]] || info "no idle booted simulators"
   if [[ "$shutdown" == true ]] && ! xcrun simctl list devices booted | grep -qE "$UDID_RE"; then
     osascript -e 'quit app "Simulator"' >/dev/null 2>&1 || true
   fi
@@ -358,7 +392,11 @@ case "$cmd" in
   golden)
     lock
     trap unlock EXIT
-    [[ "${1:-}" == "--from" ]] && build_golden "$2" || build_golden
+    if [[ "${1:-}" == "--from" ]]; then
+      build_golden "${2:?--from needs a UDID or .app}"
+    else
+      build_golden
+    fi
     ;;
   reap)
     lock

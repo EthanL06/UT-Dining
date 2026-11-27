@@ -8,6 +8,7 @@ Usage: scripts/qa/pr-screenshots.sh <PR number> [screen ...] [--ci] [--wait <sec
 
 Light and dark iOS screenshots of the current worktree, pushed to assets/pr-<n> and embedded
 inline in the PR body (replacing the previous set). One command, safe to run from parallel threads.
+The worktree's .env.local files are restored afterwards, whatever the run points them at.
 
   screen             A name from apps/mobile/e2e/screenshots.txt, or name=<deep link path>
                      for a one-off screen (j2=location/J2%20Dining). Default: every listed screen.
@@ -99,7 +100,16 @@ case "$STATUS" in
 esac
 SIM="${LEASE% *}"
 SLOT="${LEASE#* }"
+ENV_FILES=()
+for f in "$ROOT"/apps/*/.env.local; do
+  [[ -f "$f" ]] || continue
+  ENV_FILES+=("$f")
+  cp "$f" "$WORK/$(basename "$(dirname "$f")").env.local"
+done
 release() {
+  for f in ${ENV_FILES[@]+"${ENV_FILES[@]}"}; do
+    cp "$WORK/$(basename "$(dirname "$f")").env.local" "$f" 2>/dev/null || true
+  done
   [[ "$KEEP" == true ]] || "$ROOT/scripts/dev/sim-lease.sh" release "$SIM" || true
   rm -rf "$WORK"
 }
@@ -119,7 +129,17 @@ else
 fi
 
 step "Screenshots on slot $SLOT ($SIM), Metro on :$METRO_PORT"
-"$ROOT/scripts/qa/mobile-screenshots.sh" "${ARGS[@]}"
+export MAESTRO_DRIVER_STARTUP_TIMEOUT="${MAESTRO_DRIVER_STARTUP_TIMEOUT:-300000}"
+set +e
+"$ROOT/scripts/qa/mobile-screenshots.sh" "${ARGS[@]}" 2>&1 | tee "$WORK/run.log"
+RUN_STATUS="${PIPESTATUS[0]}"
+set -e
+if [[ "$RUN_STATUS" -ne 0 ]]; then
+  if grep -qE 'driver not ready|Mach error|XCTest.*(failed|timed out)|Unable to launch' "$WORK/run.log"; then
+    ci_fallback "the Maestro iOS driver did not start on the Mac (usually an overloaded Mac)"
+  fi
+  fail "the screenshot run failed (exit $RUN_STATUS). The log is above."
+fi
 ls "$WORK/shots/"*.png >/dev/null 2>&1 || fail "no screenshots were taken."
 
 step "Pushing to assets/pr-$PR"
