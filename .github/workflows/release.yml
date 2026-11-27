@@ -73,6 +73,27 @@ jobs:
           BASE: ${{ steps.base.outputs.base }}
         run: node apps/cli/src/release/main.ts --out "$RUNNER_TEMP/release" ${BASE:+--base "$BASE"}
 
+      - name: Compare with the App Store
+        id: store
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+          TAG_EXISTS: ${{ steps.plan.outputs.tag_exists }}
+        run: |
+          store="$(curl -fsS --retry 3 'https://itunes.apple.com/lookup?bundleId=com.ethanl06.ut-dining&country=us' | jq -r '.results[0].version // empty' || true)"
+          echo "version=$store" >> "$GITHUB_OUTPUT"
+          if [ -z "$store" ]; then
+            echo "::warning::Could not read the App Store version, so it was not compared."
+            exit 0
+          fi
+          if [ "$TAG_EXISTS" = "true" ]; then
+            exit 0
+          fi
+          if [ "$store" = "$VERSION" ] || [ "$(printf '%s\n%s\n' "$store" "$VERSION" | sort -V | tail -1)" != "$VERSION" ]; then
+            echo "blocked=true" >> "$GITHUB_OUTPUT"
+            message="The app version $VERSION is not newer than $store on the App Store. Bump apps/mobile/app.config.js and apps/mobile/package.json before promoting."
+            echo "::warning::$message"
+          fi
+
       - name: Summarize
         env:
           DIR: ${{ steps.plan.outputs.dir }}
@@ -80,6 +101,8 @@ jobs:
           TAG: ${{ steps.plan.outputs.tag }}
           TAG_EXISTS: ${{ steps.plan.outputs.tag_exists }}
           VERSIONS_MATCH: ${{ steps.plan.outputs.versions_match }}
+          BLOCKED: ${{ steps.store.outputs.blocked }}
+          STORE_VERSION: ${{ steps.store.outputs.version }}
         run: |
           if [ "$TAG_EXISTS" = "true" ]; then
             echo "::warning::$TAG already exists, so nothing will be released. Bump the version in apps/mobile/app.config.js and apps/mobile/package.json to release."
@@ -91,6 +114,7 @@ jobs:
             if [ "$LIVE" = "true" ]; then echo "# Release $VERSION"; else echo "# Release preview: $VERSION (dry run)"; fi
             echo
             if [ "$TAG_EXISTS" = "true" ]; then echo "> $TAG already exists. Nothing will be released."; echo; fi
+            if [ "$BLOCKED" = "true" ]; then echo "> $VERSION is not newer than $STORE_VERSION on the App Store. Bump the version before promoting."; echo; fi
             cat "$DIR/notes.md"
             echo
             echo "## In-app changelog draft"
@@ -107,7 +131,7 @@ jobs:
 
       - name: Tag and draft the GitHub release
         id: release
-        if: env.LIVE == 'true' && steps.plan.outputs.tag_exists != 'true'
+        if: env.LIVE == 'true' && steps.plan.outputs.tag_exists != 'true' && steps.store.outputs.blocked != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           DIR: ${{ steps.plan.outputs.dir }}
@@ -143,6 +167,12 @@ jobs:
           fi
           pnpm -s admin changelog upsert "$VERSION" --file "$DIR/changelog.json" --draft --prod --confirm-prod yrmylgizphirqqkzgbth
           echo "::notice::Saved a hidden changelog draft for $VERSION. Review and publish it in the dashboard."
+
+      - name: Stop a release that is not newer than the App Store
+        if: env.LIVE == 'true' && steps.store.outputs.blocked == 'true'
+        run: |
+          echo "::error::Nothing was released because the app version is not newer than the App Store's. Bump it and push to main again."
+          exit 1
 
   build:
     name: Build for the App Store
