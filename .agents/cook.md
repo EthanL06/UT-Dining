@@ -61,10 +61,12 @@ Ports: Supabase API 54321 and Postgres 54322 by default (`make db-up` moves them
 - No AI attribution anywhere: no `Co-Authored-By` or session trailers in commits, no "Generated with" lines in PR bodies or comments.
 - Do not add code comments in code you write, including workflow YAML.
 - Commits and PR titles follow Conventional Commits. Lefthook runs commitlint and Biome on commit; never skip the hooks.
+- Biome warnings fail the build like errors (`--error-on-warnings` everywhere). The rule list and why each exists is under Conventions in the root `AGENTS.md`; do not add a `biome-ignore` to get green.
 - Run `make verify` after each change and `make check` before you push. CI runs the same checks plus a build of the dashboard and the website.
 - Use local Supabase (`make db-up`) for every verifier. Never point a build, test or verifier at the production Supabase project, and never write to the hosted dev project from a build. The scraper uploads only with `ENABLE_SUPABASE=true`; leave it unset unless `SUPABASE_URL` is the local `API_URL` from `pnpm exec supabase status -o env` (an `http://127.0.0.1:` address).
 - Never hand-edit `packages/supabase/src/database.types.ts`. Regenerate it with `make db-types` after a migration; on a merge conflict follow `.agents/recipes/cloud-sessions.md`.
-- Never edit a migration that is already on `staging`. Add a new one with `pnpm db:new <name>`.
+- Never edit a migration that is already on `staging`. Add a new one with `pnpm db:new <name>`. Migrations must be backwards compatible: additive only, nothing existing code reads is dropped, renamed or retyped.
+- UI PRs include screenshots, both themes for the app.
 - `packages/core` stays pure: no React, React Native or database imports. Its tests sit next to the source.
 - The GitHub Pages copy (`WEBSITE_STATIC_EXPORT=1`) keeps the base path `/ut-dining-website` and `/privacy-policy/`, because the App Store privacy link points at it until 2.0.0 ships.
 - Keep `typescript` on 6.x. Typechecks run TypeScript 7 through the `tsgo` alias, and Expo tooling needs the 6.x JS API.

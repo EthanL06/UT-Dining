@@ -53,10 +53,19 @@ When Ethan asks to change app data (hours, force close, locations, support links
 ## Conventions
 
 - No code comments in code you write, workflow YAML and shell included (`biome-ignore` and `@ts-expect-error` directives are fine). There are none in the repo, and `make check` and CI fail on any (`scripts/dev/check-comments.sh --all`, which parses TypeScript, JavaScript and CSS); Lefthook checks the staged diff. `node scripts/dev/comments.ts --write` removes them. Only `supabase/config.toml` (the Supabase CLI template), SQL migrations and generated files are exempt.
-- Biome rules that are errors on purpose, so agents get a clear failure instead of a review comment: no `any` (explicit or implicit `let`), no non-null `!`, no unused imports or variables, `===` only, `const` when never reassigned, no reassigned parameters, throw only `Error`s. Fix the code; do not add a `biome-ignore` unless the rule is wrong for that line, and say why in the ignore.
-- No AI attribution in commits, PR bodies or comments.
-- PRs target `staging` and are squash merged. Only Ethan promotes `staging` to `main`, which ships production.
-- Conventional commits (enforced by commitlint through Lefthook). Branches are `<type>-<kebab-description>`, e.g. `feat-meal-reminders`.
+- Lint is Biome only (`biome.json`), and warnings count: `make check`, `make lint`, `make verify` and CI all run with `--error-on-warnings`, so an unused `biome-ignore`, an unsorted Tailwind class list or any other warning fails the build. `make fix` applies the safe fixes. Rules that are errors on purpose, so agents get a clear failure instead of a review comment:
+  - Types: no `any` (explicit or implicit `let`), no non-null `!`, no `@ts-ignore` (use `@ts-expect-error`), no `enum` or `namespace`, `import type`/`export type` for type-only imports.
+  - Hygiene: no unused imports, variables or function parameters (prefix with `_` when a signature needs it), `===` only, `const` when never reassigned, no `var`, no reassigned parameters, throw only `Error`s, no `else` after `return`, template literals over string concatenation, `node:` prefix for Node built-ins, `T[]` array types.
+  - Tests: no `.only` or `.skip` left in a test file.
+  - Dependencies: every import must be listed in that package's `package.json` (pnpm's isolated `node_modules` breaks undeclared ones at runtime).
+  - Mobile (`apps/mobile`): haptics only through `~/utils/haptics` (never import `expo-haptics`), and only `services/` imports Supabase (`~/utils/supabase` or `@supabase/supabase-js`); screens, components, hooks and stores read the SQLite cache. Raw strings must sit inside a `<Text>` (`noReactNativeRawText`). More in `apps/mobile/AGENTS.md`.
+  - Fix the code. Do not add a `biome-ignore` unless the rule is wrong for that line, and say why in the ignore. A new rule goes in `biome.json` only when the repo passes it, or the same PR fixes every violation.
+- No AI attribution in commits, PR bodies or comments: no `Co-Authored-By` or session trailers, no "Generated with" lines.
+- PRs target `staging` and are squash merged with a hand-written message. Ask Ethan before merging. Only Ethan promotes `staging` to `main`, which ships production.
+- Conventional commits (enforced by commitlint through Lefthook) and conventional PR titles (the "Conventional PR title" check, required on `main`). Branches are `<type>-<kebab-description>`, e.g. `feat-meal-reminders`.
+- A PR that changes UI includes screenshots (both themes for the app; the `screenshots` label runs the mobile screenshot workflow).
+- Test only against local Supabase or the hosted dev project. Never point a test, build, script or session at production.
+- Migrations must be backwards compatible, because the shipped app and the deployed dashboard keep running against the new schema: add columns, tables and functions; do not drop, rename or change the type of anything existing code reads. Never edit a migration that is already on `staging`.
 - Biome formats and lints everything: single quotes, 2 spaces, 100 columns.
 - Shared versions go in the `catalog:` in `pnpm-workspace.yaml`.
 - PR screenshots go on an orphan `assets/<topic>` branch. Include both `apps/dashboard/vercel.json` and `apps/website/vercel.json` containing `{ "git": { "deploymentEnabled": false } }` in that branch, or Vercel tries to build it, fails because the app folder is missing, and emails Ethan. `.agents/recipes/cloud-sessions.md` has the commands.

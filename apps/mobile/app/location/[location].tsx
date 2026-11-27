@@ -357,9 +357,11 @@ const Location = () => {
     const subtitle = () => {
       if (error) {
         return 'There was an error loading the menu. Please try again.';
-      } else if (debouncedSearchQuery) {
+      }
+      if (debouncedSearchQuery) {
         return 'Try a different search term.';
-      } else if (
+      }
+      if (
         Object.values(activeFilters).some(
           (val) => val === true || (typeof val === 'object' && Object.values(val).some((v) => v)),
         )
