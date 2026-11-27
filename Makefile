@@ -15,7 +15,7 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 	db-up db-down db-status db-reset db-migrate db-new db-types db-seed db-fixtures db-psql db-studio \
 	env-local env-dev \
 	check verify check-comments fix lint typecheck test build \
-	sim sims e2e e2e-fixtures perf-build \
+	sim sims e2e e2e-fixtures screenshots perf-build \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
 
@@ -67,6 +67,7 @@ help:
 	'  sims            List simulators and which have the development build' \
 	'  e2e             Maestro flows against local Supabase. ARGS="--shards 3 --retry-failed"' \
 	'  e2e-fixtures    Maestro flows against the fixture server, no Docker needed' \
+	'  screenshots     Every screen in apps/mobile/e2e/screenshots.txt, light and dark, into .context/screenshots' \
 	'  perf-build      Timing-harness test apps from a release .app. APP=<base .app> OUT=<dir> PERF_DEV_REF=<ref>' \
 	'                  The rest of the timing run is in scripts/qa/perf/README.md' \
 	'' \
@@ -189,6 +190,9 @@ e2e:
 
 e2e-fixtures:
 	@scripts/qa/mobile-e2e.sh --fixture-server $(if $(SIM),--sim "$$($(DEV)/sim.sh pick)") $(ARGS)
+
+screenshots:
+	@scripts/qa/mobile-screenshots.sh $(if $(SIM),--sim "$$($(DEV)/sim.sh pick)") $(ARGS)
 
 perf-build:
 	@test -n "$(APP)" -a -n "$(OUT)" || { echo 'usage: make perf-build APP=<base release .app> OUT=<dir> PERF_DEV_REF=<dev ref>' >&2; exit 2; }
