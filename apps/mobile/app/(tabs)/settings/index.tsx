@@ -1,8 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
 import * as Application from 'expo-application';
 import { router, Stack } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import {
   Accessibility,
+  Activity,
   Bell,
   ChefHat,
   Code,
@@ -32,6 +34,7 @@ import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationPermissions } from '~/hooks/useLocationPermissions';
 import { forceMenuSync } from '~/hooks/useMenuSync';
 import { useNotificationPermissions } from '~/hooks/useNotificationPermissions';
+import { useServiceStatus } from '~/hooks/useServiceStatus';
 import { getAppInformation } from '~/services/database/database';
 import type { AppInformation } from '~/services/database/schema';
 import { getOrCreateDeviceId } from '~/services/device/deviceId';
@@ -40,6 +43,7 @@ import { useChangelogPromptStore, useChangelogStore } from '~/store/useChangelog
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
+import { SERVICE_STATUS_COLORS, STATUS_PAGE_URL } from '~/utils/serviceStatus';
 import { useTheme } from '~/utils/theme';
 import { formatTimeSinceSync } from '~/utils/time';
 
@@ -223,6 +227,39 @@ const PermissionRows = () => {
   );
 };
 
+const openStatusPage = () => {
+  WebBrowser.openBrowserAsync(STATUS_PAGE_URL).catch(() => Linking.openURL(STATUS_PAGE_URL));
+};
+
+const ServiceStatusRow = ({ isFirst }: { isFirst: boolean }) => {
+  const theme = useTheme();
+  const { data: status } = useServiceStatus();
+  return (
+    <GroupedRow
+      testID="settings-service-status"
+      isFirst={isFirst}
+      separatorInset={ROW_INSET}
+      leading={<IconSquare Icon={Activity} color={ICON_COLORS.green} />}
+      title="Service Status"
+      trailing={
+        status ? (
+          <View testID="settings-service-status-label" className="flex-row items-center gap-x-1.5">
+            <View
+              className="size-2 rounded-full"
+              style={{ backgroundColor: SERVICE_STATUS_COLORS[status.health] }}
+            />
+            <Text className="text-[15px]" style={{ color: theme.secondaryLabel }}>
+              {status.label}
+            </Text>
+          </View>
+        ) : null
+      }
+      showChevron
+      onPress={openStatusPage}
+    />
+  );
+};
+
 const InformationSection = ({ appInfo }: { appInfo: AppInformation }) => {
   const theme = useTheme();
   const supportLinks = [...appInfo.support_links].sort((a, b) => a.order - b.order);
@@ -271,26 +308,25 @@ const InformationSection = ({ appInfo }: { appInfo: AppInformation }) => {
         />
       </GroupedSection>
 
-      {supportLinks.length > 0 && (
-        <GroupedSection header="Help & Support">
-          {supportLinks.map((link, index) => {
-            const style = SUPPORT_ICONS[link.label] ?? {
-              Icon: HelpCircle,
-              color: ICON_COLORS.gray,
-            };
-            return (
-              <LinkRow
-                key={link.id}
-                isFirst={index === 0}
-                title={link.label}
-                Icon={style.Icon}
-                color={style.color}
-                onPress={() => Linking.openURL(link.url)}
-              />
-            );
-          })}
-        </GroupedSection>
-      )}
+      <GroupedSection header="Help & Support">
+        {supportLinks.map((link, index) => {
+          const style = SUPPORT_ICONS[link.label] ?? {
+            Icon: HelpCircle,
+            color: ICON_COLORS.gray,
+          };
+          return (
+            <LinkRow
+              key={link.id}
+              isFirst={index === 0}
+              title={link.label}
+              Icon={style.Icon}
+              color={style.color}
+              onPress={() => Linking.openURL(link.url)}
+            />
+          );
+        })}
+        <ServiceStatusRow isFirst={supportLinks.length === 0} />
+      </GroupedSection>
     </>
   );
 };

@@ -5,6 +5,7 @@ import {
   IconBug,
   IconCode,
   IconFlag,
+  IconHeartbeat,
   IconHistory,
   type IconHome2,
   IconLogout,
@@ -71,6 +72,7 @@ const mockdata = [
     href: '/dashboard/notifications',
   },
   { icon: IconHistory, label: 'Changelog', href: '/dashboard/changelog' },
+  { icon: IconHeartbeat, label: 'Status', href: '/dashboard/status' },
   {
     icon: IconSpeakerphone,
     label: 'Announcements',
