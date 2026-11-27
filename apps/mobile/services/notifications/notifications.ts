@@ -6,6 +6,7 @@ import { useEffect, useRef } from 'react';
 import { AppState, Platform } from 'react-native';
 import { useDatabase } from '~/hooks/useDatabase';
 import { getOrCreateDeviceId } from '~/services/device/deviceId';
+import { NEARBY_NOTIFICATION_TYPE } from '~/services/nearby/nearbyAlerts';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { usePushNotificationsStore } from '~/store/usePushNotificationsStore';
 import { log } from '~/utils/log';
@@ -24,6 +25,7 @@ Notifications.setNotificationHandler({
 
 const saveNotification = async (db: DrizzleDB, notification: Notifications.Notification) => {
   const { content, identifier } = notification.request;
+  if (content.data?.type === NEARBY_NOTIFICATION_TYPE) return;
   try {
     await insertNotification(db, {
       id: identifier,

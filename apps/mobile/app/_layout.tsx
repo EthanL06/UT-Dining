@@ -26,6 +26,7 @@ import '../global.css';
 import * as Device from 'expo-device';
 import * as Network from 'expo-network';
 import { AppErrorScreen, MIGRATION_ERROR_COPY } from '~/components/AppErrorScreen';
+import { NearbyAlertsInitializer } from '~/components/nearby/NearbyAlertsInitializer';
 import { VersionCheckProvider } from '~/components/VersionCheckProvider';
 import { usePostHogScreens } from '~/hooks/usePostHogScreens';
 import { POSTHOG_CONFIG, posthogClient } from '~/services/analytics/posthog';
@@ -116,6 +117,7 @@ const AppContent = () => {
             <SheetProvider>
               <VersionCheckProvider>
                 <PushNotificationsInitializer />
+                <NearbyAlertsInitializer />
                 <Stack
                   screenOptions={{
                     headerShown: false,
@@ -141,6 +143,16 @@ const AppContent = () => {
                     options={{
                       presentation: isTablet ? 'card' : 'modal',
                       sheetGrabberVisible: true,
+                      headerShown: false,
+                    }}
+                  />
+
+                  <Stack.Screen
+                    name="nearby"
+                    options={{
+                      presentation: isTablet ? 'card' : 'formSheet',
+                      sheetGrabberVisible: true,
+                      sheetAllowedDetents: 'fitToContents',
                       headerShown: false,
                     }}
                   />

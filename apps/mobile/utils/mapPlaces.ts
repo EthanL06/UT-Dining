@@ -77,6 +77,49 @@ export const clusterPlaces = (
   return clusters;
 };
 
+const STACK_ROW_POINTS = 40;
+const STACK_OVERLAP_X_POINTS = 140;
+
+export type PlacedPin = { place: PinnedPlace; coordinates: Coordinates };
+
+export const stackOverlappingPins = (
+  places: PinnedPlace[],
+  region: Region,
+  screenWidth: number,
+): PlacedPin[] => {
+  const pointsPerLng = screenWidth / region.longitudeDelta;
+  const pointsPerLat = pointsPerLng / Math.cos((region.latitude * Math.PI) / 180);
+  const overlaps = (a: Coordinates, b: Coordinates) =>
+    Math.abs(a.longitude - b.longitude) * pointsPerLng < STACK_OVERLAP_X_POINTS &&
+    Math.abs(a.latitude - b.latitude) * pointsPerLat < STACK_ROW_POINTS;
+
+  const stacks: PinnedPlace[][] = [];
+  for (const place of places) {
+    const touching = stacks.filter((stack) =>
+      stack.some((other) => overlaps(other.coordinates, place.coordinates)),
+    );
+    for (const stack of touching) stacks.splice(stacks.indexOf(stack), 1);
+    stacks.push([...touching.flat(), place]);
+  }
+
+  return stacks.flatMap((stack) => {
+    if (stack.length === 1) return [{ place: stack[0], coordinates: stack[0].coordinates }];
+    const center = centerOf(stack);
+    const rowDegrees = STACK_ROW_POINTS / pointsPerLat;
+    return [...stack]
+      .sort(
+        (a, b) => b.coordinates.latitude - a.coordinates.latitude || a.name.localeCompare(b.name),
+      )
+      .map((place, index) => ({
+        place,
+        coordinates: {
+          latitude: center.latitude + ((stack.length - 1) / 2 - index) * rowDegrees,
+          longitude: center.longitude,
+        },
+      }));
+  });
+};
+
 export const regionAround = (places: PinnedPlace[]): Region => {
   const lats = places.map((p) => p.coordinates.latitude);
   const lngs = places.map((p) => p.coordinates.longitude);

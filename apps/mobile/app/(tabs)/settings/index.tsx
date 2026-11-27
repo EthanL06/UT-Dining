@@ -27,6 +27,7 @@ import {
 import React from 'react';
 import { Linking, Switch, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
+import { NearbyAlertsRow } from '~/components/nearby/NearbyAlertsRow';
 import { GroupedRow, GroupedSection, IconSquare } from '~/components/ui/Grouped';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
@@ -221,6 +222,7 @@ const PermissionRows = () => {
         detail={label(location)}
         onPress={open(location)}
       />
+      <NearbyAlertsRow separatorInset={ROW_INSET} />
     </>
   );
 };
