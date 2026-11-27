@@ -69,6 +69,7 @@ export const ActionRow = ({
   isFirst,
   detail,
   onPress,
+  onLongPress,
   testID,
 }: {
   title: string;
@@ -78,6 +79,7 @@ export const ActionRow = ({
   isFirst?: boolean;
   detail?: string;
   onPress?: () => void;
+  onLongPress?: () => void;
   testID?: string;
 }) => (
   <GroupedRow
@@ -89,6 +91,7 @@ export const ActionRow = ({
     subtitle={subtitle}
     detail={detail}
     onPress={onPress}
+    onLongPress={onLongPress}
   />
 );
 
