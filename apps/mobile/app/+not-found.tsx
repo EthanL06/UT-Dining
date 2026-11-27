@@ -1,5 +1,6 @@
 import { Link, Stack } from 'expo-router';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '~/components/ui/Text';
 
 import { useTheme } from '~/utils/theme';
 
@@ -13,11 +14,9 @@ export default function NotFoundScreen() {
         className="flex-1 items-center justify-center gap-y-3 px-8"
         style={{ backgroundColor: theme.background }}
       >
-        <Text className="text-[22px] font-bold" style={{ color: theme.label }}>
-          This screen doesn't exist.
-        </Text>
+        <Text variant="title2">This screen doesn't exist.</Text>
         <Link href="/">
-          <Text className="text-[17px] font-semibold" style={{ color: theme.tint }}>
+          <Text variant="headline" tone="tint">
             Go to Home
           </Text>
         </Link>

@@ -8,14 +8,13 @@ import {
   Image,
   Pressable,
   ScrollView,
-  Text,
   useWindowDimensions,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 import { PLACE_ICONS, usePlaceColor } from '~/components/map/MapSheet';
 import PlaceDetails, { openPlaceDirections } from '~/components/PlaceDetails';
+import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { getSafePostHog } from '~/services/analytics/posthog';
@@ -97,18 +96,17 @@ export default function LocationGenericScreen() {
         <View className="px-5 pt-4 pb-3">
           {locationData.force_close && (
             <View className="mb-3 rounded-2xl bg-red-600 px-4 py-2.5">
-              <Text className="text-center text-[15px] font-bold text-white">
+              <Text variant="subheadline" emphasized tone="onTint" className="text-center">
                 Temporarily closed
               </Text>
             </View>
           )}
-          <Text className="text-[28px] leading-[33px] font-bold" style={{ color: theme.label }}>
-            {displayName}
-          </Text>
-          <Text className="mt-0.5 text-[15px]" style={{ color: theme.secondaryLabel }}>
+          <Text variant="title1">{displayName}</Text>
+          <Text variant="subheadline" tone="secondary" className="mt-0.5">
             <Text
-              className="font-semibold"
-              style={{ color: isOpen ? theme.tint : theme.secondaryLabel }}
+              variant="subheadline"
+              emphasized
+              color={isOpen ? theme.tint : theme.secondaryLabel}
             >
               {isOpen ? 'Open' : status}
             </Text>
@@ -126,7 +124,9 @@ export default function LocationGenericScreen() {
             style={{ backgroundColor: theme.tint }}
           >
             <Navigation size={17} color="#FFFFFF" />
-            <Text className="text-[16px] font-semibold text-white">Directions</Text>
+            <Text variant="callout" emphasized tone="onTint">
+              Directions
+            </Text>
           </Pressable>
         </View>
 
@@ -139,7 +139,7 @@ export default function LocationGenericScreen() {
             className="mx-4 mt-2 h-12 items-center justify-center rounded-full"
             style={{ backgroundColor: theme.fill }}
           >
-            <Text className="text-[16px] font-semibold" style={{ color: theme.label }}>
+            <Text variant="callout" emphasized>
               Back to Home
             </Text>
           </Pressable>

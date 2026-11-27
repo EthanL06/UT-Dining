@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '~/components/ui/Text';
 
 import {
   addDaysToDate,
@@ -24,11 +25,7 @@ const WeekStrip = ({ selectedDate, onDateChange }: WeekStripProps) => {
 
   return (
     <View>
-      <Text
-        testID="selected-date"
-        className="mb-2 text-[15px] font-semibold"
-        style={{ color: theme.label }}
-      >
+      <Text variant="subheadline" emphasized testID="selected-date" className="mb-2">
         {formatDateForDisplay(createDateFromString(selectedDate))}
       </Text>
       <View className="flex-row justify-between">
@@ -53,7 +50,7 @@ const WeekStrip = ({ selectedDate, onDateChange }: WeekStripProps) => {
               className="items-center gap-y-1"
               style={{ width: 46 }}
             >
-              <Text className="text-[12px]" style={{ color: theme.secondaryLabel }}>
+              <Text variant="caption" tone="secondary">
                 {format(day, 'EEEEE')}
               </Text>
               <View
@@ -65,8 +62,9 @@ const WeekStrip = ({ selectedDate, onDateChange }: WeekStripProps) => {
                 }}
               >
                 <Text
-                  className="text-[16px] font-semibold"
-                  style={{ color: isSelected ? '#FFFFFF' : isToday ? theme.tint : theme.label }}
+                  variant="callout"
+                  emphasized
+                  color={isSelected ? '#FFFFFF' : isToday ? theme.tint : theme.label}
                 >
                   {format(day, 'd')}
                 </Text>

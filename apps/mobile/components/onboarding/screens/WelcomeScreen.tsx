@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { Heart, type LucideIcon, Map as MapIcon, Utensils } from 'lucide-react-native';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '~/components/ui/Text';
 
 import { useTheme } from '~/utils/theme';
 
@@ -36,12 +37,14 @@ const WelcomeScreen = ({ width }: { width: number }) => {
           contentFit="contain"
         />
         <Text
+          variant="largeTitle"
           testID="onboarding-welcome-title"
-          className="mt-5 mb-10 text-center text-[34px] leading-[40px] font-bold"
-          style={{ color: theme.label }}
+          className="mt-5 mb-10 text-center"
         >
           Welcome to{'\n'}
-          <Text style={{ color: theme.tint }}>UT Dining</Text>
+          <Text variant="largeTitle" tone="tint">
+            UT Dining
+          </Text>
         </Text>
         <View className="gap-y-7">
           {FEATURES.map(({ Icon, title, subtitle }) => (
@@ -50,13 +53,8 @@ const WelcomeScreen = ({ width }: { width: number }) => {
                 <Icon size={30} color={theme.tint} />
               </View>
               <View className="flex-1">
-                <Text className="text-[17px] font-semibold" style={{ color: theme.label }}>
-                  {title}
-                </Text>
-                <Text
-                  className="text-[15px] leading-[21px]"
-                  style={{ color: theme.secondaryLabel }}
-                >
+                <Text variant="headline">{title}</Text>
+                <Text variant="subheadline" paragraph tone="secondary">
                   {subtitle}
                 </Text>
               </View>

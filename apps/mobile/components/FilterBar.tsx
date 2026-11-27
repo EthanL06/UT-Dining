@@ -1,7 +1,8 @@
 import { SlidersHorizontal } from 'lucide-react-native';
 import { useEffect, useMemo } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { SheetManager } from 'react-native-actions-sheet';
+import { Text } from '~/components/ui/Text';
 
 export type FilterType = 'all' | string;
 
@@ -106,11 +107,7 @@ const FilterBar = ({
                     : undefined
                 }
               >
-                <Text
-                  numberOfLines={1}
-                  className={isSelected ? 'text-[14px] font-semibold' : 'text-[14px] font-medium'}
-                  style={{ color: theme.label }}
-                >
+                <Text variant="subheadline" emphasized={isSelected} numberOfLines={1}>
                   {item.title}
                 </Text>
               </Pressable>
@@ -135,10 +132,7 @@ const FilterBar = ({
                 className="h-9 justify-center rounded-full px-3.5"
                 style={{ backgroundColor: isSelected ? theme.tint : theme.fill }}
               >
-                <Text
-                  className={isSelected ? 'text-[14px] font-semibold' : 'text-[14px] font-medium'}
-                  style={{ color: isSelected ? '#FFFFFF' : theme.label }}
-                >
+                <Text variant="subheadline" emphasized tone={isSelected ? 'onTint' : 'primary'}>
                   {item.title}
                 </Text>
               </Pressable>

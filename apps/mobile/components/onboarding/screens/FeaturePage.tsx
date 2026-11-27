@@ -1,5 +1,6 @@
 import { Image } from 'expo-image';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '~/components/ui/Text';
 
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { useTheme } from '~/utils/theme';
@@ -28,16 +29,10 @@ const FeaturePage = ({ width, title, subtitle, images }: Props) => {
         ))}
       </View>
       <View className="mt-6">
-        <Text
-          className="text-center text-[28px] leading-[33px] font-bold"
-          style={{ color: theme.label }}
-        >
+        <Text variant="title1" className="text-center">
           {title}
         </Text>
-        <Text
-          className="mx-auto mt-2 max-w-[320px] text-center text-[17px] leading-[23px]"
-          style={{ color: theme.secondaryLabel }}
-        >
+        <Text paragraph tone="secondary" className="mx-auto mt-2 max-w-[320px] text-center">
           {subtitle}
         </Text>
       </View>

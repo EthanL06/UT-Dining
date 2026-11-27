@@ -25,9 +25,9 @@ import {
   Wrench,
 } from 'lucide-react-native';
 import React from 'react';
-import { Alert, ScrollView, Share, Text, View } from 'react-native';
-
+import { Alert, ScrollView, Share, View } from 'react-native';
 import { GroupedRow, GroupedSection, IconSquare } from '~/components/ui/Grouped';
+import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import { forceMenuSync } from '~/hooks/useMenuSync';
 import { useServiceStatus } from '~/hooks/useServiceStatus';
@@ -155,7 +155,6 @@ const InfoRow = ({
   onPress?: () => void;
   testID?: string;
 }) => {
-  const theme = useTheme();
   return (
     <GroupedRow
       testID={testID}
@@ -164,9 +163,11 @@ const InfoRow = ({
       onPress={onPress}
       trailing={
         <Text
+          variant="subheadline"
           numberOfLines={1}
-          className="max-w-[60%] text-right text-[15px]"
-          style={{ color: valueColor ?? theme.secondaryLabel }}
+          className="max-w-[60%] text-right"
+          tone="secondary"
+          color={valueColor}
         >
           {value}
         </Text>
@@ -517,7 +518,7 @@ const BuildInfoSection = () => {
                 style={{ backgroundColor: SERVICE_STATUS_COLORS[status.health] }}
               />
             )}
-            <Text className="text-[15px]" style={{ color: theme.secondaryLabel }}>
+            <Text variant="subheadline" tone="secondary">
               {status?.label ?? 'Unavailable'}
             </Text>
           </View>
@@ -551,7 +552,7 @@ const QAScreen = () => {
           style={{ backgroundColor: theme.tintSoft }}
         >
           <Wrench size={18} color={theme.tint} />
-          <Text className="flex-1 text-[14px] leading-5" style={{ color: theme.label }}>
+          <Text variant="subheadline" paragraph className="flex-1">
             Only in UT Dining (Dev). These tools change data on this phone only.
           </Text>
         </View>
