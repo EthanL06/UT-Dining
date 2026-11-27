@@ -24,6 +24,7 @@ import Reanimated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusDot } from '~/components/ui/Grouped';
 import { Text, TextInput } from '~/components/ui/Text';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -261,6 +262,9 @@ const PlaceRow = ({
 
 type Detent = 'collapsed' | 'half' | 'full';
 
+const SHEET_TOP_GAP = 12;
+export const SHEET_HALF_FRACTION = 0.42;
+
 const SPRING = { damping: 22, stiffness: 220, mass: 0.6 };
 
 export const MapSheet = ({
@@ -290,10 +294,14 @@ export const MapSheet = ({
 }) => {
   const theme = useTheme();
   const { height: windowHeight } = useWindowDimensions();
+  const { top: topInset } = useSafeAreaInsets();
   const heights: Record<Detent, number> = {
     collapsed: 178,
-    half: Math.round(windowHeight * 0.42),
-    full: Math.round(windowHeight * 0.78),
+    half: Math.round(windowHeight * SHEET_HALF_FRACTION),
+    full: Math.min(
+      Math.round(windowHeight * 0.78),
+      windowHeight - topInset - SHEET_TOP_GAP - bottomOffset,
+    ),
   };
   const height = useSharedValue(heights.half);
   const dragStart = useSharedValue(0);
@@ -331,7 +339,7 @@ export const MapSheet = ({
     })
     .onUpdate((event) => {
       height.value = Math.min(
-        heights.full + 20,
+        heights.full,
         Math.max(heights.collapsed - 20, dragStart.value - event.translationY),
       );
     })
