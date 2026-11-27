@@ -9,6 +9,9 @@ on:
       days_to_scrape:
         description: Days to scrape, starting today (blank uses the DAYS_TO_SCRAPE variable)
         required: false
+      location:
+        description: Scrape only this dining location, by its app name (blank scrapes every location)
+        required: false
 
 concurrency:
   group: scrape-menus
@@ -52,6 +55,7 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           ENABLE_SUPABASE: 'true'
           DAYS_TO_SCRAPE: ${{ inputs.days_to_scrape || vars.DAYS_TO_SCRAPE }}
+          ONLY_LOCATION: ${{ inputs.location }}
           MENU_RETENTION_DAYS: ${{ vars.MENU_RETENTION_DAYS }}
           TZ: America/Chicago
         run: pnpm --filter @ut-dining/scraper start
@@ -63,6 +67,7 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           ENABLE_SUPABASE: 'true'
           DAYS_TO_SCRAPE: ${{ inputs.days_to_scrape || vars.DAYS_TO_SCRAPE }}
+          ONLY_LOCATION: ${{ inputs.location }}
           MENU_RETENTION_DAYS: ${{ vars.MENU_RETENTION_DAYS }}
           TZ: America/Chicago
         run: |
@@ -70,7 +75,7 @@ jobs:
           pnpm --filter @ut-dining/scraper start
 
       - name: Sync restaurants, cafés and food trucks
-        if: always()
+        if: always() && !inputs.location
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}

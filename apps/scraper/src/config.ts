@@ -20,12 +20,27 @@ const positiveInt = (value: string | undefined, fallback: number) => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
 
+type ScrapeLocation = (typeof LOCATIONS)[number];
+
+export const selectLocations = (only: string | undefined): ScrapeLocation[] => {
+  const name = only?.trim();
+  if (!name) return LOCATIONS;
+  const match = LOCATIONS.find((location) => location.name.toLowerCase() === name.toLowerCase());
+  if (!match) {
+    throw new Error(
+      `Unknown location "${name}". Use one of: ${LOCATIONS.map((location) => location.name).join(', ')}`,
+    );
+  }
+  return [match];
+};
+
 export const config = {
   days: positiveInt(process.env.DAYS_TO_SCRAPE, 1),
   concurrency: positiveInt(process.env.CONCURRENCY, 32),
   upload: process.env.ENABLE_SUPABASE === 'true',
   startDate: process.env.START_DATE,
   retentionDays: optionalPositiveInt(process.env.MENU_RETENTION_DAYS),
+  locations: selectLocations(process.env.ONLY_LOCATION),
 };
 
 export const dateRange = (days: number, start = toCentralTime().date): string[] => {
@@ -35,7 +50,7 @@ export const dateRange = (days: number, start = toCentralTime().date): string[] 
   );
 };
 
-export const shortMenuUrl = (location: (typeof LOCATIONS)[number], isoDate: string) => {
+export const shortMenuUrl = (location: ScrapeLocation, isoDate: string) => {
   const [year, month, day] = isoDate.split('-').map(Number);
   return `https://hf-foodpro.austin.utexas.edu/foodpro/shortmenu.aspx?sName=University+Housing+and+Dining&locationNum=${location.number}&locationName=${location.param}&naFlag=1&dtdate=${month}%2f${day}%2f${year}`;
 };

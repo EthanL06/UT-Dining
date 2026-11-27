@@ -23,6 +23,25 @@ export type Database = {
   };
   public: {
     Tables: {
+      admin_cache: {
+        Row: {
+          key: string;
+          updated_at: string;
+          value: NonNullable<Json>;
+        };
+        ComputedFields: never;
+        Insert: {
+          key: string;
+          updated_at?: string;
+          value: NonNullable<Json>;
+        };
+        Update: {
+          key?: string;
+          updated_at?: string;
+          value?: NonNullable<Json>;
+        };
+        Relationships: [];
+      };
       allergens: {
         Row: {
           beef: boolean | null;
@@ -546,6 +565,15 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      admin_menu_freshness: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          last_menu_write: string;
+          latest_menu_date: string;
+          location_id: string;
+          location_name: string;
+        }[];
+      };
       dashboard_status: { Args: Record<PropertyKey, never>; Returns: Json };
       insert_location_and_menus: { Args: { arg_data: Json }; Returns: boolean };
       insert_multiple_locations_and_menus: { Args: { arg_data_array: Json[] }; Returns: boolean };

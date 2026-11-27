@@ -20,6 +20,7 @@ Node runs the TypeScript directly. Environment variables come from `.env` or `.e
 | `CONCURRENCY`         | `32`    | Requests in flight to FoodPro at once                              |
 | `START_DATE`          | today   | First day to scrape as `YYYY-MM-DD`, for testing and backfill      |
 | `MENU_RETENTION_DAYS` | unset   | When uploading, delete menus older than this many days (minimum 7) |
+| `ONLY_LOCATION`       | unset   | Scrape one location by its app name (`Kins Dining`); the workflows' `location` input sets it |
 
 Every run also writes the scraped data to `data/ut_menus_<timestamp>.json`.
 
