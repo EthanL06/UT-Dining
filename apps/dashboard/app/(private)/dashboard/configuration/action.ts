@@ -63,7 +63,8 @@ export async function updateAppConfig(config: AppConfig): Promise<AppConfig> {
       title: insertData.about_title || config.title,
       description: insertData.about_description || config.description,
     };
-  } else if (fetchError) {
+  }
+  if (fetchError) {
     console.error('Error checking existing app configuration:', fetchError);
     return config;
   }
@@ -150,7 +151,8 @@ export async function updateCreditsConfig(config: CreditsConfig): Promise<Credit
         order: contributor.order,
       })),
     };
-  } else if (fetchError) {
+  }
+  if (fetchError) {
     console.error('Error checking existing credits configuration:', fetchError);
     return config;
   }
@@ -241,7 +243,8 @@ export async function updateHelpSupportConfig(
         order: link.order,
       })),
     };
-  } else if (fetchError) {
+  }
+  if (fetchError) {
     console.error('Error checking existing help & support configuration:', fetchError);
     return config;
   }

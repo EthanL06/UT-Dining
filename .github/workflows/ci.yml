@@ -33,7 +33,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Lint and format
-        run: pnpm biome ci
+        run: pnpm biome ci --error-on-warnings
 
       - name: No code comments
         run: scripts/dev/check-comments.sh --all
