@@ -86,6 +86,13 @@ YAML
     open_app false
     if [[ -n "${path:-}" ]]; then
       echo "- openLink: ut-dining://$path"
+    elif [[ -z "${wait:-}" ]]; then
+      cat <<YAML
+- extendedWaitUntil:
+    visible:
+      id: home-scroll
+    timeout: 60000
+YAML
     fi
     if [[ -n "${wait:-}" ]]; then
       cat <<YAML

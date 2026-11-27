@@ -103,7 +103,19 @@ const fetchCrashes = async () => {
   return { status: 'ready' as const, ...counts };
 };
 
-type Downloads = { status: 'ready'; total: number; checkedAt: string } | { status: 'unavailable' };
+type Downloads =
+  | { status: 'ready'; total: number; checkedAt: string }
+  | { status: 'not_configured'; missing: string[] }
+  | { status: 'failed'; detail: string };
+
+class AppStoreError extends Error {}
+
+const appleError = async (response: Response) => {
+  const body = await response.json().catch(() => null);
+  const first = (body as { errors?: { title?: string; detail?: string }[] } | null)?.errors?.[0];
+  const reason = [first?.title, first?.detail].filter(Boolean).join(': ');
+  return new AppStoreError(`Apple answered ${response.status}${reason ? ` (${reason})` : ''}`);
+};
 
 const fetchReport = async (
   token: string,
@@ -121,8 +133,8 @@ const fetchReport = async (
   const response = await fetch(`https://api.appstoreconnect.apple.com/v1/salesReports?${params}`, {
     headers: { Authorization: `Bearer ${token}`, Accept: 'application/a-gzip' },
   });
-  if (response.status === 404) return 0;
-  if (!response.ok || !response.body) throw new Error(`App Store report ${response.status}`);
+  if (response.status === 404) return null;
+  if (!response.ok || !response.body) throw await appleError(response);
   const text = await new Response(
     response.body.pipeThrough(new DecompressionStream('gzip')),
   ).text();
@@ -131,7 +143,15 @@ const fetchReport = async (
 
 const fetchDownloads = async (): Promise<Downloads> => {
   const { keyId, issuerId, privateKey, vendor } = appStore;
-  if (!keyId || !issuerId || !privateKey || !vendor) return { status: 'unavailable' };
+  const missing = Object.entries({
+    ADMIN_ASC_KEY_ID: keyId,
+    ADMIN_ASC_ISSUER_ID: issuerId,
+    ADMIN_ASC_PRIVATE_KEY: privateKey,
+    ADMIN_ASC_VENDOR_NUMBER: vendor,
+  })
+    .filter(([, value]) => !value)
+    .map(([name]) => name);
+  if (!keyId || !issuerId || !privateKey || !vendor) return { status: 'not_configured', missing };
 
   const { data: cached } = await service
     .from('admin_cache')
@@ -143,14 +163,23 @@ const fetchDownloads = async (): Promise<Downloads> => {
   }
 
   try {
-    const token = await appStoreToken({ keyId, issuerId, privateKey });
+    const token = await appStoreToken({ keyId, issuerId, privateKey }).catch(() => {
+      throw new AppStoreError(
+        "ADMIN_ASC_PRIVATE_KEY isn't a readable .p8 key. Set it to the whole file, including the BEGIN and END lines.",
+      );
+    });
     const today = new Date().toISOString().slice(0, 10);
     const counts = await Promise.all(
       reportPeriods(today, appStore.startYear).map((period) => fetchReport(token, vendor, period)),
     );
+    if (counts.every((count) => count === null)) {
+      throw new AppStoreError(
+        'Apple has no sales reports for this vendor number. Check ADMIN_ASC_VENDOR_NUMBER and ADMIN_ASC_START_YEAR.',
+      );
+    }
     const downloads: Downloads = {
       status: 'ready',
-      total: counts.reduce((sum, count) => sum + count, 0),
+      total: counts.reduce<number>((sum, count) => sum + (count ?? 0), 0),
       checkedAt: new Date().toISOString(),
     };
     await service
@@ -159,7 +188,11 @@ const fetchDownloads = async (): Promise<Downloads> => {
     return downloads;
   } catch (error) {
     log.warn('App Store downloads failed', error);
-    return cached ? (cached.value as Downloads) : { status: 'unavailable' };
+    if (cached) return cached.value as Downloads;
+    return {
+      status: 'failed',
+      detail: error instanceof AppStoreError ? error.message : 'Apple could not be reached',
+    };
   }
 };
 
