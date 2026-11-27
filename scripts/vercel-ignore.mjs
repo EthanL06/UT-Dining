@@ -35,9 +35,14 @@ const hasCommit = (root, sha) => {
   }
 };
 
-const fetchRef = (root, ref, depth = 1) => {
+const remoteFor = (env) =>
+  env.VERCEL_GIT_PROVIDER === 'github' && env.VERCEL_GIT_REPO_OWNER && env.VERCEL_GIT_REPO_SLUG
+    ? `https://github.com/${env.VERCEL_GIT_REPO_OWNER}/${env.VERCEL_GIT_REPO_SLUG}.git`
+    : 'origin';
+
+const fetchRef = (root, remote, ref, depth = 1) => {
   try {
-    git(root, ['fetch', '--quiet', '--no-tags', `--depth=${depth}`, 'origin', ref]);
+    git(root, ['fetch', '--quiet', '--no-tags', `--depth=${depth}`, remote, ref]);
     return git(root, ['rev-parse', 'FETCH_HEAD']);
   } catch {
     return null;
@@ -52,13 +57,13 @@ const mergeBase = (root, sha) => {
   }
 };
 
-const forkPoint = (root, branch) => {
-  const tip = fetchRef(root, FALLBACK_BASE_BRANCH, FORK_SEARCH_DEPTH);
+const forkPoint = (root, remote, branch) => {
+  const tip = fetchRef(root, remote, FALLBACK_BASE_BRANCH, FORK_SEARCH_DEPTH);
   if (!tip) return null;
   const found = mergeBase(root, tip);
   if (found || !branch) return found;
   try {
-    git(root, ['fetch', '--quiet', '--no-tags', `--deepen=${FORK_SEARCH_DEPTH}`, 'origin', branch]);
+    git(root, ['fetch', '--quiet', '--no-tags', `--deepen=${FORK_SEARCH_DEPTH}`, remote, branch]);
   } catch {
     return null;
   }
@@ -66,9 +71,10 @@ const forkPoint = (root, branch) => {
 };
 
 const resolveBase = (root, env, log) => {
+  const remote = remoteFor(env);
   const previous = env.VERCEL_GIT_PREVIOUS_SHA;
   if (previous) {
-    if (hasCommit(root, previous) || fetchRef(root, previous)) {
+    if (hasCommit(root, previous) || fetchRef(root, remote, previous)) {
       log(`Comparing against the last deployed commit ${previous.slice(0, 7)}`);
       return previous;
     }
@@ -77,7 +83,7 @@ const resolveBase = (root, env, log) => {
   if (env.VERCEL_ENV === 'production') return null;
   const branch = env.VERCEL_GIT_COMMIT_REF;
   if (branch === FALLBACK_BASE_BRANCH) return null;
-  const fork = forkPoint(root, branch);
+  const fork = forkPoint(root, remote, branch);
   if (fork) {
     log(`Comparing against where this branch left ${FALLBACK_BASE_BRANCH}, ${fork.slice(0, 7)}`);
     return fork;
