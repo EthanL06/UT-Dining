@@ -15,9 +15,9 @@ import { nearbyAlertsView } from '~/utils/nearbyAlerts';
 
 const PERMISSION_COPY = {
   needs_location: {
-    title: 'Allow Location “Always”',
+    title: 'See What’s Cooking When You Walk In',
     message:
-      'Nearby menus need location access set to Always, so iOS can tell UT Dining when you reach a dining hall. Your location stays on your phone.',
+      'Set location to Always and we’ll show the menu when you arrive at a dining hall. Your location never leaves your phone.',
   },
   needs_notifications: {
     title: 'Turn On Notifications',
