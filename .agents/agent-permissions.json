@@ -16,6 +16,8 @@
       "Bash(make sim-lease *)",
       "Bash(make sim-release *)",
       "Bash(make sim-leases)",
+      "Bash(make sim-sweeper*)",
+      "Bash(make sims-idle)",
       "Bash(make ios *)",
       "Bash(make ios)",
       "Bash(make ios-app*)",
