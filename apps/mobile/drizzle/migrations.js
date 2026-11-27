@@ -16,6 +16,7 @@ import m0012 from './0012_remarkable_nova.sql';
 import m0013 from './0013_eminent_wallop.sql';
 import m0014 from './0014_odd_midnight.sql';
 import m0015 from './0015_old_oracle.sql';
+import m0016 from './0016_cache_indexes.sql';
 import journal from './meta/_journal.json';
 
 export default {
@@ -37,5 +38,6 @@ export default {
     m0013,
     m0014,
     m0015,
+    m0016,
   },
 };
