@@ -15,7 +15,7 @@ import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStat
 import { getLocationName } from '~/utils/locations';
 import { containsPattern } from '~/utils/search';
 import { useTheme } from '~/utils/theme';
-import { getLocationStatusText } from '~/utils/time';
+import { getLocationStatusText, getMinutesUntilClose } from '~/utils/time';
 
 const RESULT_LIMIT = 50;
 
@@ -120,7 +120,12 @@ export default function Search() {
                       key={place.id}
                       isFirst={index === 0}
                       separatorInset={37}
-                      leading={<StatusDot open={isOpen} />}
+                      leading={
+                        <StatusDot
+                          open={isOpen}
+                          closesInMinutes={getMinutesUntilClose(place, now)}
+                        />
+                      }
                       title={getLocationName(db, name, useColloquialNames)}
                       subtitle={getLocationStatusText(place, isOpen, now)}
                       showChevron

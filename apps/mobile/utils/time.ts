@@ -111,6 +111,30 @@ export function getLocationTimeMessage(
   return 'Closed';
 }
 
+export const CLOSING_SOON_MINUTES = 30;
+
+export function getMinutesUntilClose(
+  locationData: schema.Location | null,
+  currentTime: Date = new Date(),
+): number | null {
+  const schedule = getTodaySchedule(locationData, currentTime);
+  if (!schedule) return null;
+  const currentMinutes = toMinutes(toCentralTime(currentTime).time);
+  const interval = schedule.intervals.find(
+    ({ openTime, closeTime }) =>
+      currentMinutes >= toMinutes(openTime) && currentMinutes < toMinutes(closeTime),
+  );
+  return interval ? toMinutes(interval.closeTime) - currentMinutes : null;
+}
+
+export type DotTone = 'open' | 'closingSoon' | 'closed';
+
+export const statusDotTone = (open: boolean, closesInMinutes: number | null = null): DotTone => {
+  if (!open) return 'closed';
+  if (closesInMinutes !== null && closesInMinutes <= CLOSING_SOON_MINUTES) return 'closingSoon';
+  return 'open';
+};
+
 export function formatTimeFromNumber(time: number): string {
   const hour = Math.floor(time / 100);
   const minute = time % 100;
@@ -229,7 +253,7 @@ export function getLocationStatusText(
     return range ? `Open until ${formatHhmm(range.close)}` : 'Open';
   }
   if (locationData.force_close) return 'Temporarily closed';
-  if (isWithinRanges(getOpenRanges(hours, day), time)) return 'No menu today';
+  if (isWithinRanges(getOpenRanges(hours, day), time)) return 'Closed today';
 
   const next = getNextOpening(hours, day, time);
   if (!next) return 'Closed';

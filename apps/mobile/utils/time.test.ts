@@ -5,8 +5,11 @@ import type * as schema from '~/services/database/schema';
 import {
   formatTimeSinceSync,
   generateSchedule,
+  getLocationStatusText,
   getLocationTimeMessage,
+  getMinutesUntilClose,
   isLocationOpen,
+  statusDotTone,
   timeOfDay,
 } from './time';
 
@@ -112,5 +115,40 @@ describe('formatTimeSinceSync', () => {
     [86_400_000, '1 day ago'],
   ])('%s ms is %s', (ms, expected) => {
     expect(formatTimeSinceSync(ms)).toBe(expected);
+  });
+});
+
+describe('getMinutesUntilClose', () => {
+  it('counts the minutes left in the current opening', () => {
+    expect(getMinutesUntilClose(location(), at('2026-11-23T20:40:00'))).toBe(20);
+    expect(getMinutesUntilClose(location(), at('2026-11-23T12:00:00'))).toBe(540);
+  });
+
+  it('is null while closed', () => {
+    expect(getMinutesUntilClose(location(), at('2026-11-23T21:00:00'))).toBeNull();
+    expect(getMinutesUntilClose(location(), at('2026-11-28T12:00:00'))).toBeNull();
+    expect(getMinutesUntilClose(null, at('2026-11-23T12:00:00'))).toBeNull();
+  });
+});
+
+describe('statusDotTone', () => {
+  it('turns amber in the last 30 minutes', () => {
+    expect(statusDotTone(true, 31)).toBe('open');
+    expect(statusDotTone(true, 30)).toBe('closingSoon');
+    expect(statusDotTone(true, 1)).toBe('closingSoon');
+  });
+
+  it('stays open without a known close time and closed when closed', () => {
+    expect(statusDotTone(true, null)).toBe('open');
+    expect(statusDotTone(true)).toBe('open');
+    expect(statusDotTone(false, 10)).toBe('closed');
+  });
+});
+
+describe('getLocationStatusText', () => {
+  it('says closed today when a hall has no menu during its hours', () => {
+    expect(getLocationStatusText(location(), false, at('2026-11-23T12:00:00'))).toBe(
+      'Closed today',
+    );
   });
 });
