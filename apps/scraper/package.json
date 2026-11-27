@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node --env-file-if-exists=.env --env-file-if-exists=.env.local src/index.ts",
+    "places": "node --env-file-if-exists=.env --env-file-if-exists=.env.local src/places.ts",
     "typecheck": "node ../../node_modules/tsgo/bin/tsc --noEmit",
     "test": "vitest run"
   },
