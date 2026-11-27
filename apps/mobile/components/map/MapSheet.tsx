@@ -25,6 +25,8 @@ export type SheetMode = 'browse' | 'search' | 'place';
 const SPRING = { damping: 22, stiffness: 220, mass: 0.6 };
 
 const SHEET_TOP_GAP = 12;
+const DISMISS_DISTANCE = 40;
+const PLACE_MIN_HEIGHT = 60;
 export const SHEET_HALF_FRACTION = 0.42;
 
 export const MapSheet = ({
@@ -36,6 +38,7 @@ export const MapSheet = ({
   onFocusSearch,
   onCancelSearch,
   onSubmitSearch,
+  onDismiss,
   bottomOffset,
   onHeightChange,
   children,
@@ -48,6 +51,7 @@ export const MapSheet = ({
   onFocusSearch: () => void;
   onCancelSearch: () => void;
   onSubmitSearch: () => void;
+  onDismiss: () => void;
   bottomOffset: number;
   onHeightChange: (height: number) => void;
   children: ReactNode;
@@ -93,6 +97,12 @@ export const MapSheet = ({
 
   const settle = (velocityY: number) => {
     const projected = height.value - velocityY * 0.12;
+    if (mode === 'place' && projected < heights.collapsed - DISMISS_DISTANCE) {
+      haptics.selection();
+      snapTo('collapsed');
+      onDismiss();
+      return;
+    }
     const nearest = (Object.keys(heights) as Detent[]).reduce((best, candidate) =>
       Math.abs(heights[candidate] - projected) < Math.abs(heights[best] - projected)
         ? candidate
@@ -104,6 +114,7 @@ export const MapSheet = ({
   };
 
   const { full, half, collapsed } = heights;
+  const minHeight = mode === 'place' ? PLACE_MIN_HEIGHT : collapsed - 20;
   // biome-ignore lint/correctness/useExhaustiveDependencies: shared values and settle are read inside worklets and runOnJS
   const pan = useMemo(
     () =>
@@ -121,12 +132,12 @@ export const MapSheet = ({
           if (delta < 0 && height.value >= full - 0.5) return;
           if (delta > 0 && scrollY.value > 0) return;
           hasMoved.value = true;
-          height.value = Math.min(full, Math.max(collapsed - 20, height.value - delta));
+          height.value = Math.min(full, Math.max(minHeight, height.value - delta));
         })
         .onEnd((event) => {
           if (hasMoved.value) runOnJS(settle)(event.velocityY);
         }),
-    [full, half, collapsed],
+    [full, half, collapsed, minHeight, mode, onDismiss],
   );
 
   const style = useAnimatedStyle(() => ({ height: height.value + bottomOffset }));
