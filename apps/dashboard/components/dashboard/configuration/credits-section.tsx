@@ -16,9 +16,10 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { ActionIcon, Button, Group, Paper, Stack, Text, Title } from '@mantine/core';
+import { useMounted } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconDeviceFloppy, IconPlus } from '@tabler/icons-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { updateCreditsConfig } from '@/app/(private)/dashboard/configuration/action';
 import type { Contributor, CreditsConfig } from '@/types/config';
 import { DraggableContributorItem } from './draggable-contributor-item';
@@ -65,12 +66,8 @@ function SortableContributorsList({
 
 export function CreditsSection({ initialConfig }: CreditsSectionProps) {
   const [config, setConfig] = useState<CreditsConfig>(initialConfig);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const [isSaving, setIsSaving] = useState(false);
+  const isClient = useMounted();
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -131,7 +128,7 @@ export function CreditsSection({ initialConfig }: CreditsSectionProps) {
   };
 
   const handleSave = async () => {
-    setIsLoading(true);
+    setIsSaving(true);
 
     try {
       const updatedConfig = await updateCreditsConfig(config);
@@ -153,7 +150,7 @@ export function CreditsSection({ initialConfig }: CreditsSectionProps) {
         autoClose: 5000,
       });
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -215,7 +212,7 @@ export function CreditsSection({ initialConfig }: CreditsSectionProps) {
           <Button
             leftSection={<IconDeviceFloppy size={16} />}
             onClick={handleSave}
-            loading={isLoading}
+            loading={isSaving}
           >
             Save
           </Button>

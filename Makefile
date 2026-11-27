@@ -14,7 +14,7 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 	dev mobile ios android dashboard website scrape places admin mobile-preview \
 	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-psql db-studio \
 	env-local env-dev \
-	check verify check-comments check-size functions fix lint typecheck test build \
+	check verify check-comments check-size check-state functions fix lint typecheck test build \
 	sim sims e2e e2e-fixtures screenshots ios-app perf-build size-report \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
@@ -63,6 +63,7 @@ help:
 	'  check           Biome, typecheck and tests of everything (run before pushing)' \
 	'  check-comments  Fail on added code comments. ARGS="--base origin/staging" (default: staged diff)' \
 	'  check-size      Fail on any source file over 500 lines (MAX_LINES=n to try another cap)' \
+	'  check-state     Fail on implicit state machines (2+ boolean useState in one function, string-typed status)' \
 	'  functions       Typecheck and test the Supabase edge functions with Deno (CI runs it too)' \
 	'  fix             Biome safe fixes' \
 	'  lint | typecheck | test | build' \
@@ -196,6 +197,9 @@ functions:
 
 check-size:
 	@$(DEV)/check-file-size.sh
+
+check-state:
+	@$(DEV)/check-state-machines.sh
 
 build:
 	@pnpm build

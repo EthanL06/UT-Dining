@@ -1,7 +1,9 @@
+import { and, eq } from 'drizzle-orm';
+import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Flame, Heart, Info, X } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
-import { useEffect, useEffectEvent, useState } from 'react';
+import { useEffect, useEffectEvent } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,7 +19,7 @@ import {
 import { useDatabase } from '~/hooks/useDatabase';
 import { useFoodData } from '~/hooks/useFoodData';
 import { getSafePostHog } from '~/services/analytics/posthog';
-import { isFavoriteItem } from '~/services/database/database';
+import * as schema from '~/services/database/schema';
 import { todayKey, useIsMealPlanItem } from '~/store/useMealPlanStore';
 import { toggleFavoriteForFood, toggleMealPlanForFood } from '~/utils/foodActions';
 import { haptics } from '~/utils/haptics';
@@ -63,7 +65,19 @@ const FoodScreen = () => {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const db = useDatabase();
-  const [isFavorite, setIsFavorite] = useState(false);
+  const { data: favoriteRows } = useLiveQuery(
+    db
+      .select({ id: schema.favorites.id })
+      .from(schema.favorites)
+      .where(
+        and(
+          eq(schema.favorites.name, food ?? ''),
+          eq(schema.favorites.location_name, location ?? ''),
+        ),
+      ),
+    [food, location],
+  );
+  const isFavorite = favoriteRows.length > 0;
   const planDate = date || todayKey();
   const canMealPlan = planDate >= todayKey();
   const isMealPlan = useIsMealPlanItem(
@@ -79,10 +93,6 @@ const FoodScreen = () => {
     fromFavorites: favorite === 'true',
     date,
   });
-
-  useEffect(() => {
-    if (foodItem) setIsFavorite(isFavoriteItem(db, foodItem.name as string, location));
-  }, [foodItem, db, location]);
 
   const analytics = getSafePostHog(usePostHog());
   const trackScreen = useEffectEvent(() => {
@@ -278,7 +288,7 @@ const FoodScreen = () => {
               onPress={async () => {
                 if (isFavorite) haptics.remove();
                 else haptics.success();
-                setIsFavorite(await toggleFavoriteForFood(db, foodItem, context));
+                await toggleFavoriteForFood(db, foodItem, context);
               }}
               className="h-12 flex-1 flex-row items-center justify-center gap-x-2 rounded-full"
               style={{ backgroundColor: theme.fill }}

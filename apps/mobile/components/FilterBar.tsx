@@ -8,6 +8,7 @@ export type FilterType = 'all' | string;
 
 import { useFiltersStore } from '~/store/useFiltersStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
+import { hasActiveFilters } from '~/utils/filter';
 import { haptics } from '~/utils/haptics';
 import type { MealTimes } from '~/utils/locations';
 import { useTheme } from '~/utils/theme';
@@ -150,13 +151,7 @@ const FilterButton = () => {
   const filters = useFiltersStore((state) => state.filters);
   const theme = useTheme();
 
-  const hasValues = <T extends Record<string, boolean>>(item: T): boolean =>
-    Array.isArray(item) ? item.length > 0 : Object.values(item).some(Boolean);
-  const hasFilters =
-    filters.favorites ||
-    filters.mealPlan ||
-    hasValues(filters.dietary) ||
-    hasValues(filters.allergens);
+  const hasFilters = hasActiveFilters(filters);
 
   return (
     <Pressable

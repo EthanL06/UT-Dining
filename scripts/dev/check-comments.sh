@@ -74,7 +74,7 @@ found="$("${diff_cmd[@]}" "${paths[@]}" | awk '
     if (trimmed ~ /^\{\/\*/) flagged = 1
     if (hashy && trimmed ~ /^#/) flagged = 1
     if (trimmed ~ /^\/\/\/ <reference/) flagged = 0
-    if (trimmed ~ /^(\/\/|\/\*|\{\/\*) *(biome-ignore|@ts-expect-error|@ts-ignore|@jsx|eslint-)/) flagged = 0
+    if (trimmed ~ /^(\/\/|\/\*|\{\/\*) *(biome-ignore|@ts-expect-error|@ts-ignore|@jsx|eslint-|state-machine-ok:)/) flagged = 0
     if (trimmed ~ /^#!/) flagged = 0
     if (trimmed ~ /^# yaml-language-server:/) flagged = 0
     if (flagged) printf "%s:%d: %s\n", file, line, trimmed
@@ -85,7 +85,7 @@ found="$("${diff_cmd[@]}" "${paths[@]}" | awk '
 if [[ -n "$found" ]]; then
   bad "added code comments (repo rule: no code comments; put the context in AGENTS.md, a README or the PR description)"
   printf '%s\n' "$found" | sed 's/^/        /'
-  note "allowed: biome-ignore, @ts-expect-error, shebangs and triple-slash references"
+  note "allowed: biome-ignore, @ts-expect-error, state-machine-ok:, shebangs and triple-slash references"
   exit 1
 fi
 ok "no added code comments"

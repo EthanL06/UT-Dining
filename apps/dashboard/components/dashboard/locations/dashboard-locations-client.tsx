@@ -1,7 +1,6 @@
 'use client';
 
 import { Badge, Group, Stack, Text } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
 import { useState } from 'react';
@@ -25,14 +24,19 @@ interface Props {
   initialLocationMenuStatus: Record<string, boolean>;
 }
 
+type LocationEditor =
+  | { mode: 'closed' }
+  | { mode: 'adding' }
+  | { mode: 'editing'; location: Location };
+
 export default function DashboardLocationsClient({
   initialLocations,
   locationTypes,
   initialLocationMenuStatus,
 }: Props) {
-  const [modalOpened, { open, close }] = useDisclosure(false);
+  const [editor, setEditor] = useState<LocationEditor>({ mode: 'closed' });
   const [locations, setLocations] = useState<Location[]>(initialLocations);
-  const [editingLocation, setEditingLocation] = useState<Location | null>(null);
+  const editingLocation = editor.mode === 'editing' ? editor.location : null;
   const [locationMenuStatus, setLocationMenuStatus] =
     useState<Record<string, boolean>>(initialLocationMenuStatus);
 
@@ -51,8 +55,7 @@ export default function DashboardLocationsClient({
 
   const handleEditLocation = (location: Location) => {
     console.log('📝 Edit location:', location);
-    setEditingLocation(location);
-    open();
+    setEditor({ mode: 'editing', location });
   };
 
   const handleDeleteLocation = (location: Location) => {
@@ -126,8 +129,7 @@ export default function DashboardLocationsClient({
         console.log('✅ Location added successfully');
       }
 
-      setEditingLocation(null);
-      close();
+      setEditor({ mode: 'closed' });
     } catch (err) {
       const action = editingLocation ? 'update' : 'add';
       throw new Error(`❌ Failed to ${action} location: ${(err as Error).message}`);
@@ -135,13 +137,11 @@ export default function DashboardLocationsClient({
   };
 
   const handleCloseModal = () => {
-    setEditingLocation(null);
-    close();
+    setEditor({ mode: 'closed' });
   };
 
   const handleAddLocation = () => {
-    setEditingLocation(null);
-    open();
+    setEditor({ mode: 'adding' });
   };
 
   const handleToggleForceClose = async (locationId: string, forceClose: boolean) => {
@@ -236,7 +236,7 @@ export default function DashboardLocationsClient({
       <LocationsHeader onAddLocation={handleAddLocation} />
 
       <AddLocationModal
-        opened={modalOpened}
+        opened={editor.mode !== 'closed'}
         onClose={handleCloseModal}
         onSubmit={handleSubmitLocation}
         editingLocation={editingLocation}

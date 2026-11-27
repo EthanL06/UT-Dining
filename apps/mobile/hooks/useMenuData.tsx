@@ -13,6 +13,7 @@ import {
   getTodayInCentralTime,
 } from '~/utils/date';
 import { getMealTimes } from '~/utils/locations';
+import type { MenuStatus } from '~/utils/menuList';
 import { useDatabase } from './useDatabase';
 
 const pickDefaultMenu = (
@@ -117,13 +118,16 @@ export function useMenuData(location: string, date?: string) {
     [menuNames],
   );
 
-  const loading = isLoadingMenuNames || isLoadingMenuData;
-  const error = menuNamesError || menuDataError;
+  const status: MenuStatus =
+    isLoadingMenuNames || isLoadingMenuData
+      ? 'loading'
+      : menuNamesError || menuDataError
+        ? 'error'
+        : 'ready';
 
   return {
     menuData: menuData as Location | null,
-    loading,
-    error,
+    status,
     selectedMenu: defaultMenu,
     setSelectedMenu,
     filters,
