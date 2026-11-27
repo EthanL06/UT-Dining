@@ -3,6 +3,7 @@ import { Wrench } from 'lucide-react-native';
 import { View } from 'react-native';
 import { BuildInfoSection } from '~/components/qa/BuildInfoSection';
 import { DataSection } from '~/components/qa/DataSection';
+import { NearbySection } from '~/components/qa/NearbySection';
 import { PromptsSection } from '~/components/qa/PromptsSection';
 import { PushSection } from '~/components/qa/PushSection';
 import { UpdatesSection } from '~/components/qa/UpdatesSection';
@@ -35,6 +36,7 @@ const QAScreen = () => {
         <PromptsSection />
         <DataSection />
         <PushSection />
+        <NearbySection />
         <UpdatesSection />
         <BuildInfoSection />
       </OverflowScrollView>

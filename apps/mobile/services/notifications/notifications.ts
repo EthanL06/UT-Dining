@@ -6,6 +6,11 @@ import { useEffect, useRef } from 'react';
 import { AppState, Platform } from 'react-native';
 import { useDatabase } from '~/hooks/useDatabase';
 import { getOrCreateDeviceId } from '~/services/device/deviceId';
+import {
+  muteNearbyZone,
+  NEARBY_MUTE_ACTION,
+  NEARBY_NOTIFICATION_TYPE,
+} from '~/services/nearby/nearbyAlerts';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { usePushNotificationsStore } from '~/store/usePushNotificationsStore';
 import { log } from '~/utils/log';
@@ -24,6 +29,7 @@ Notifications.setNotificationHandler({
 
 const saveNotification = async (db: DrizzleDB, notification: Notifications.Notification) => {
   const { content, identifier } = notification.request;
+  if (content.data?.type === NEARBY_NOTIFICATION_TYPE) return;
   try {
     await insertNotification(db, {
       id: identifier,
@@ -131,6 +137,11 @@ export function PushNotificationsInitializer() {
       if (handledResponses.current.has(id)) return;
       handledResponses.current.add(id);
       Notifications.clearLastNotificationResponse();
+      const nearbyZone = notification.request.content.data?.zone;
+      if (response.actionIdentifier === NEARBY_MUTE_ACTION && typeof nearbyZone === 'string') {
+        muteNearbyZone(nearbyZone);
+        return;
+      }
       setNotification(notification);
       if (db) await saveNotification(db, notification);
       const redirectUrl = notification.request.content.data?.redirect_url as Href | undefined;
