@@ -107,7 +107,8 @@ export const PlaceCard = ({
               accessibilityRole="button"
               onPress={() => openDirections(place)}
               className="min-h-12 flex-row items-center justify-center gap-x-2 rounded-full px-4 py-2.5"
-              style={[buttonFlex, { backgroundColor: theme.tint }]}
+              containerStyle={buttonFlex}
+              style={{ backgroundColor: theme.tint }}
             >
               <Navigation size={17} color="#FFFFFF" />
               <Text variant="callout" emphasized tone="onTint">
@@ -127,7 +128,8 @@ export const PlaceCard = ({
                 });
               }}
               className="min-h-12 flex-row items-center justify-center gap-x-2 rounded-full px-4 py-2.5"
-              style={[buttonFlex, { backgroundColor: pinned ? theme.fill : theme.tint }]}
+              containerStyle={buttonFlex}
+              style={{ backgroundColor: pinned ? theme.fill : theme.tint }}
             >
               {place.hasMenu ? (
                 <Utensils size={17} color={pinned ? theme.label : '#FFFFFF'} />

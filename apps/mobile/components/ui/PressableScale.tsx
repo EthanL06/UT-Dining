@@ -1,4 +1,3 @@
-import { cssInterop } from 'nativewind';
 import {
   type GestureResponderEvent,
   Pressable,
@@ -9,18 +8,15 @@ import {
 import Reanimated from 'react-native-reanimated';
 import { usePressScale } from '~/hooks/usePressScale';
 
-const AnimatedPressable = Reanimated.createAnimatedComponent(Pressable);
-cssInterop(AnimatedPressable, { className: 'style' });
-
-export type PressableScaleProps = Omit<PressableProps, 'style'> & {
-  style?: StyleProp<ViewStyle>;
+export type PressableScaleProps = PressableProps & {
   className?: string;
+  containerStyle?: StyleProp<ViewStyle>;
   scaleTo?: number;
 };
 
 export const PressableScale = ({
   scaleTo = 0.95,
-  style,
+  containerStyle,
   disabled,
   onPressIn,
   onPressOut,
@@ -28,18 +24,19 @@ export const PressableScale = ({
 }: PressableScaleProps) => {
   const press = usePressScale(scaleTo);
   return (
-    <AnimatedPressable
-      {...props}
-      disabled={disabled}
-      onPressIn={(event: GestureResponderEvent) => {
-        if (!disabled) press.onPressIn();
-        onPressIn?.(event);
-      }}
-      onPressOut={(event: GestureResponderEvent) => {
-        press.onPressOut();
-        onPressOut?.(event);
-      }}
-      style={[style, press.style]}
-    />
+    <Reanimated.View style={[containerStyle, press.style]}>
+      <Pressable
+        {...props}
+        disabled={disabled}
+        onPressIn={(event: GestureResponderEvent) => {
+          if (!disabled) press.onPressIn();
+          onPressIn?.(event);
+        }}
+        onPressOut={(event: GestureResponderEvent) => {
+          press.onPressOut();
+          onPressOut?.(event);
+        }}
+      />
+    </Reanimated.View>
   );
 };

@@ -299,7 +299,8 @@ export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
                 else haptics.success();
                 await toggleFavoriteForFood(db, foodItem, context);
               }}
-              className="h-12 flex-1 flex-row items-center justify-center gap-x-2 rounded-full"
+              containerStyle={{ flex: 1 }}
+              className="h-12 flex-row items-center justify-center gap-x-2 rounded-full"
               style={{ backgroundColor: theme.fill }}
             >
               <HeartPop
@@ -322,7 +323,8 @@ export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
                   else haptics.success();
                   toggleMealPlanForFood(foodItem, context);
                 }}
-                className="h-12 flex-[1.4] flex-row items-center justify-center gap-x-2 rounded-full"
+                containerStyle={{ flex: 1.4 }}
+                className="h-12 flex-row items-center justify-center gap-x-2 rounded-full"
                 style={{ backgroundColor: isMealPlan ? theme.tintSoft : theme.tint }}
               >
                 <MealPlanIcon

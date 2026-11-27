@@ -49,7 +49,8 @@ const SelectionBar = ({ count, calories, canMealPlan, onFavorite, onAddToMealPla
             accessibilityRole="button"
             disabled={empty}
             onPress={onAddToMealPlan}
-            className="h-11 flex-1 flex-row items-center justify-center gap-x-2 rounded-full"
+            containerStyle={{ flex: 1 }}
+            className="h-11 flex-row items-center justify-center gap-x-2 rounded-full"
             style={{ backgroundColor: theme.tint, opacity: empty ? 0.5 : 1 }}
           >
             <ChefHat size={18} color="#FFFFFF" />
@@ -66,7 +67,8 @@ const SelectionBar = ({ count, calories, canMealPlan, onFavorite, onAddToMealPla
           accessibilityRole="button"
           disabled={empty}
           onPress={onFavorite}
-          className="h-11 flex-1 flex-row items-center justify-center gap-x-2 rounded-full"
+          containerStyle={{ flex: 1 }}
+          className="h-11 flex-row items-center justify-center gap-x-2 rounded-full"
           style={{ backgroundColor: theme.tint, opacity: empty ? 0.5 : 1 }}
         >
           <Heart size={18} color="#FFFFFF" />

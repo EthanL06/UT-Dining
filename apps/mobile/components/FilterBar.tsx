@@ -104,6 +104,7 @@ const FilterBar = ({
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
                 onPress={() => onPressItem(item.id as FilterType)}
+                containerStyle={{ flex: 1 }}
                 className="flex-1 items-center justify-center rounded-full"
                 style={
                   isSelected
