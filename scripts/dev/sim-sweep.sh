@@ -144,7 +144,7 @@ busy() {
   local udid="$1" procs="$2" grace="$3"
   if [[ -f "$STATE/$udid" ]]; then
     (($(age "$udid") < grace * 60)) && return 0
-    grep -F "$udid" <<<"$procs" | grep -qvE "$METRO_RE"
+    [[ -n "$(grep -F "$udid" <<<"$procs" | grep -vE "$METRO_RE" || true)" ]]
     return
   fi
   grep -qF "$udid" <<<"$procs"
@@ -202,7 +202,7 @@ idle() {
     grep -qF "$udid" <<<"$booted" || rm -f "$MARKS/$udid"
   done
   [[ "$any" == true ]] || info "no idle booted simulators"
-  if [[ "$shutdown" == true && "$DRY" == false ]] && ! xcrun simctl list devices booted | grep -qE "$UDID_RE"; then
+  if [[ "$shutdown" == true && "$DRY" == false ]] && ! grep -qE "$UDID_RE" <<<"$(xcrun simctl list devices booted)"; then
     osascript -e 'quit app "Simulator"' >/dev/null 2>&1 || true
   fi
 }
