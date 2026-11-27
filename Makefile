@@ -10,6 +10,7 @@ SIM ?=
 PR ?=
 SCREENS ?=
 OWNER ?=
+BRANCH ?=
 TITLE ?=
 BODY_FILE ?=
 DAYS ?= 3
@@ -20,7 +21,7 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-sample db-fresh db-psql db-studio \
 	env-local env-dev \
 	check verify pre-push check-staged check-comments check-size check-state check-unused functions fix lint typecheck test build \
-	sim sims sim-lease sim-release sim-leases sims-idle sim-sweeper e2e e2e-fixtures screenshots pr-screenshots ios-app perf-build size-report \
+	sim sims sim-lease sim-release sim-leases sims-idle sim-sweep sim-sweeper test-sims e2e e2e-fixtures screenshots pr-screenshots ios-app perf-build size-report \
 	merge-pr agent-permissions \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
@@ -85,10 +86,13 @@ help:
 	'  sim             Boot a simulator (SIM=<name or UDID>, else one with the dev build) and open it' \
 	'  sims            List simulators and which have the development build' \
 	'  sim-lease       Your own simulator clone for this session, prints "<UDID> <slot>". OWNER=<thread> ARGS="--wait 300"' \
-	'  sim-release     Delete a leased clone. SIM=<UDID>' \
+	'  sim-release     Delete your leased clones and stop their Metro and Maestro. SIM=<UDID>, PR=<n>, BRANCH=, OWNER=,' \
+	'                  or nothing for every lease taken from this worktree' \
 	'  sim-leases      Who holds which simulator slot' \
 	'  sims-idle       Shut down booted simulators no lease or running process uses, then quit Simulator' \
-	'  sim-sweeper     Install the launchd job that shuts down simulators idle for 20 min (every 5 min). ARGS=uninstall|status' \
+	'  sim-sweep       What the sweeper runs: release leases of merged or closed PRs and idle ones, stop orphans. ARGS=--dry-run' \
+	'  sim-sweeper     Install the launchd job that runs sim-sweep every 5 min (idle = 15 min). ARGS=uninstall|status' \
+	'  test-sims       Tests of sim-lease.sh, sim-sweep.sh and merge-pr.sh against stubbed simctl (any OS, boots nothing)' \
 	'  e2e             Maestro flows against local Supabase. ARGS="--shards 3 --retry-failed"' \
 	'  e2e-fixtures    Maestro flows against the fixture server, no Docker needed' \
 	'  screenshots     Every screen in apps/mobile/e2e/screenshots.txt, light and dark, into .context/screenshots' \
@@ -274,16 +278,22 @@ sim-lease:
 	@$(DEV)/sim-lease.sh acquire $(if $(OWNER),--owner "$(OWNER)") $(ARGS)
 
 sim-release:
-	@$(DEV)/sim-lease.sh release "$(SIM)"
+	@$(DEV)/sim-lease.sh release $(if $(SIM),"$(SIM)",$(if $(PR),--pr "$(PR)") $(if $(BRANCH),--branch "$(BRANCH)") $(if $(OWNER),--owner "$(OWNER)") $(if $(PR)$(BRANCH)$(OWNER),,--here))
 
 sim-leases:
 	@$(DEV)/sim-lease.sh list
 
 sims-idle:
-	@$(DEV)/sim-lease.sh idle --shutdown
+	@$(DEV)/sim-sweep.sh idle --shutdown
+
+sim-sweep:
+	@$(DEV)/sim-sweep.sh sweep $(ARGS)
+
+test-sims:
+	@$(DEV)/sim-lease-test.sh
 
 sim-sweeper:
-	@$(DEV)/sim-lease.sh sweeper $(if $(ARGS),$(ARGS),install)
+	@$(DEV)/sim-sweep.sh sweeper $(if $(ARGS),$(ARGS),install)
 
 pr-screenshots:
 	@scripts/qa/pr-screenshots.sh $(PR) $(SCREENS) $(ARGS)
