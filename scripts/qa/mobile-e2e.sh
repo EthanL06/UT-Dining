@@ -79,6 +79,8 @@ OUT="${E2E_OUT:-$ROOT/.context/maestro/$(date +%Y%m%d-%H%M%S)}"
 mkdir -p "$OUT"
 
 STARTED_METRO=false
+ENV_OVERRIDE="$ROOT/apps/mobile/.env.development.local"
+WROTE_ENV_OVERRIDE=false
 FIXTURE_PID=""
 WAS_BOOTED=true
 CLONES=()
@@ -89,6 +91,9 @@ cleanup() {
   done
   if [[ "$STARTED_METRO" == true ]]; then
     kill $(lsof -tiTCP:"$METRO_PORT" -sTCP:LISTEN) 2>/dev/null || true
+  fi
+  if [[ "$WROTE_ENV_OVERRIDE" == true ]]; then
+    rm -f "$ENV_OVERRIDE"
   fi
   if [[ -n "$FIXTURE_PID" ]]; then
     kill "$FIXTURE_PID" 2>/dev/null || true
@@ -195,6 +200,9 @@ if [[ "$DEV_CLIENT" == true ]]; then
         "EXPO_PUBLIC_STATUS_API_URL=http://127.0.0.1:$FIXTURE_PORT/api/status"
         "EXPO_PUBLIC_SUPABASE_ANON_KEY=fixture"
       )
+      [[ ! -e "$ENV_OVERRIDE" ]] || fail "$ENV_OVERRIDE exists. Move it away: a development bundle reads it over the fixture server."
+      printf '%s\n' "${METRO_ENV[@]}" > "$ENV_OVERRIDE"
+      WROTE_ENV_OVERRIDE=true
     fi
     (cd "$ROOT" && env ${METRO_ENV[@]+"${METRO_ENV[@]}"} pnpm --filter @ut-dining/mobile start --port "$METRO_PORT" --clear > "$OUT/metro.log" 2>&1 &)
     STARTED_METRO=true
