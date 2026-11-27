@@ -1,0 +1,141 @@
+name: Mobile screenshots
+
+on:
+  pull_request:
+    types: [labeled, synchronize, reopened]
+  workflow_dispatch:
+
+concurrency:
+  group: mobile-screenshots-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build the iOS app
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (contains(github.event.pull_request.labels.*.name, 'screenshots') &&
+      github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: macos-26
+    timeout-minutes: 90
+    outputs:
+      key: ${{ steps.app.outputs.key }}
+    env:
+      APP_VARIANT: development
+      EXPO_PUBLIC_SUPABASE_URL: http://127.0.0.1:54331
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: fixture
+    steps:
+      - uses: actions/checkout@v7
+
+      - id: app
+        uses: ./.github/actions/ios-sim-app
+
+  screenshots:
+    name: Take screenshots
+    needs: build
+    runs-on: macos-26
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    env:
+      MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000
+      MAESTRO_VERSION: 2.12.1
+      TOPIC: ${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Create and boot a simulator
+        run: |
+          RUNTIME_JSON="$(xcrun simctl list runtimes -j | jq '[.runtimes[] | select(.platform == "iOS" and .isAvailable)] | last')"
+          RUNTIME="$(jq -r '.identifier' <<<"$RUNTIME_JSON")"
+          DEVICE_TYPE="$(jq -r '[.supportedDeviceTypes[] | select(.name | test("^iPhone [0-9]+$"))] | sort_by(.name | ltrimstr("iPhone ") | tonumber) | last | .identifier' <<<"$RUNTIME_JSON")"
+          echo "Runtime $RUNTIME, device type $DEVICE_TYPE"
+          SIM="$(xcrun simctl create screenshots "$DEVICE_TYPE" "$RUNTIME")"
+          xcrun simctl boot "$SIM"
+          echo "SIM=$SIM" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+
+      - name: Restore Maestro
+        id: maestro-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.maestro
+          key: maestro-${{ runner.os }}-${{ runner.arch }}-${{ env.MAESTRO_VERSION }}
+
+      - name: Install Maestro
+        if: steps.maestro-cache.outputs.cache-hit != 'true'
+        run: curl -fsSL https://get.maestro.mobile.dev | bash
+
+      - run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Restore the built app
+        uses: actions/cache/restore@v6
+        with:
+          path: .context/app
+          key: ${{ needs.build.outputs.key }}
+          fail-on-cache-miss: true
+
+      - name: Install the app once the simulator has booted
+        run: |
+          xcrun simctl bootstatus "$SIM" -b
+          xcrun simctl install "$SIM" .context/app/*.app
+          xcrun simctl status_bar "$SIM" override --time 9:41 --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3
+
+      - name: Take screenshots
+        run: ./scripts/qa/mobile-screenshots.sh --sim "$SIM" --release --fixture-server --out "$RUNNER_TEMP/screenshots"
+
+      - name: Upload Maestro output
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: maestro-screenshots
+          path: |
+            .context/maestro
+            ${{ runner.temp }}/screenshots
+          if-no-files-found: ignore
+
+      - name: Push the screenshots to assets/${{ env.TOPIC }}
+        env:
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          TOKEN: ${{ github.token }}
+        run: |
+          SHOTS="$RUNNER_TEMP/screenshots"
+          WORK="$RUNNER_TEMP/assets"
+          mkdir -p "$WORK/apps/dashboard" "$WORK/apps/website"
+          cp "$SHOTS"/*.png "$WORK/"
+          printf '{ "git": { "deploymentEnabled": false } }\n' > "$WORK/apps/dashboard/vercel.json"
+          cp "$WORK/apps/dashboard/vercel.json" "$WORK/apps/website/vercel.json"
+          cd "$WORK"
+          git init -q -b "assets/$TOPIC"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "chore: iOS screenshots of ${HEAD_SHA:0:7}"
+          SHA="$(git rev-parse HEAD)"
+          BASE_URL="https://raw.githubusercontent.com/$REPO/$SHA"
+          {
+            echo "iOS screenshots of $HEAD_SHA (fixture data)"
+            echo
+            echo "| Screen | Light | Dark |"
+            echo "|---|---|---|"
+            for light in *-light.png; do
+              name="${light%-light.png}"
+              dark="$name-dark.png"
+              cell_dark=""
+              [[ -f "$dark" ]] && cell_dark="<img src=\"$BASE_URL/$dark\" width=\"220\">"
+              echo "| $name | <img src=\"$BASE_URL/$light\" width=\"220\"> | $cell_dark |"
+            done
+          } > /tmp/index.md
+          cp /tmp/index.md index.md
+          git add index.md
+          git commit -q -m "chore: index of the screenshots"
+          git push -q --force "https://x-access-token:$TOKEN@github.com/$REPO.git" "HEAD:refs/heads/assets/$TOPIC"
+          {
+            echo "Branch: \`assets/$TOPIC\`. Paste this table into the PR, or read it at https://raw.githubusercontent.com/$REPO/assets/$TOPIC/index.md"
+            echo
+            cat /tmp/index.md
+          } >> "$GITHUB_STEP_SUMMARY"

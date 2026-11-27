@@ -1,0 +1,66 @@
+migration:
+  - changed-files:
+      - any-glob-to-any-file:
+          - supabase/migrations/**
+
+backend:
+  - changed-files:
+      - any-glob-to-any-file:
+          - supabase/**
+          - packages/supabase/**
+          - apps/scraper/**
+          - .github/workflows/scraper*.yml
+          - .github/workflows/dev-supabase-keepalive.yml
+
+mobile:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apps/mobile/**
+
+dashboard:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apps/dashboard/**
+
+website:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apps/website/**
+
+scraper:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apps/scraper/**
+
+cli:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apps/cli/**
+
+core:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/core/**
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/**
+
+tooling:
+  - changed-files:
+      - any-glob-to-any-file:
+          - scripts/**
+          - Makefile
+          - lefthook.yml
+          - turbo.json
+          - biome.json
+          - commitlint.config.js
+          - packages/tsconfig/**
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - pnpm-lock.yaml
+          - pnpm-workspace.yaml
+          - patches/**
