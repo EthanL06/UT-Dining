@@ -12,6 +12,8 @@ interface SettingsState {
   setDarkMode: (isDarkMode: boolean) => void;
   isColorBlindMode: boolean;
   toggleColorBlindMode: () => void;
+  isNearbyAlertsEnabled: boolean;
+  setNearbyAlertsEnabled: (isEnabled: boolean) => void;
 }
 
 const devicePrefersDarkMode = Appearance.getColorScheme() === 'dark';
@@ -39,6 +41,10 @@ export const useSettingsStore = create<SettingsState>()(
         set((state) => ({
           isColorBlindMode: !state.isColorBlindMode,
         }));
+      },
+      isNearbyAlertsEnabled: false,
+      setNearbyAlertsEnabled: (isNearbyAlertsEnabled) => {
+        set({ isNearbyAlertsEnabled });
       },
     }),
     {

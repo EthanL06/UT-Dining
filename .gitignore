@@ -32,7 +32,7 @@ android
 
 .context/
 .lavish/
-.worktrees/
-.claude/worktrees/
+/.worktrees/
+/.claude/worktrees/
 
 .lighthouseci/
