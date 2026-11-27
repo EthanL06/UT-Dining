@@ -1,17 +1,18 @@
 'use client';
 
+import { SERVICE_STATUS_COLORS, type ServiceHealth } from '@ut-dining/core';
 import { useEffect, useState } from 'react';
-import { STATUS_API_URL, STATUS_URL } from '@/lib/site';
+import { STATUS_URL } from '@/lib/site';
+import { fetchServiceHealth } from '@/lib/status';
 
-type Health = 'operational' | 'degraded' | 'outage';
-type State = Health | 'loading' | 'unavailable';
+type State = ServiceHealth | 'loading' | 'unavailable';
+
+const MUTED_DOT = '#9AA3AB';
 
 const DOT_COLOR: Record<State, string> = {
-  operational: '#2E9E4F',
-  degraded: '#E3A857',
-  outage: '#E0463F',
-  loading: '#9AA3AB',
-  unavailable: '#9AA3AB',
+  ...SERVICE_STATUS_COLORS,
+  loading: MUTED_DOT,
+  unavailable: MUTED_DOT,
 };
 
 const LABEL: Record<State, string> = {
@@ -22,22 +23,15 @@ const LABEL: Record<State, string> = {
   unavailable: 'View status',
 };
 
-const isHealth = (value: unknown): value is Health =>
-  value === 'operational' || value === 'degraded' || value === 'outage';
-
-export function StatusPill() {
-  const [state, setState] = useState<State>('loading');
+export function StatusPill({ initial = null }: { initial?: ServiceHealth | null }) {
+  const [state, setState] = useState<State>(initial ?? 'loading');
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch(STATUS_API_URL, { signal: controller.signal })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((body: { status?: unknown } | null) => {
-        setState(isHealth(body?.status) ? body.status : 'unavailable');
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) setState('unavailable');
-      });
+    fetchServiceHealth({ signal: controller.signal }).then((health) => {
+      if (controller.signal.aborted) return;
+      setState((current) => health ?? (current === 'loading' ? 'unavailable' : current));
+    });
     return () => controller.abort();
   }, []);
 
