@@ -1,6 +1,7 @@
 export const APP_STORE_ID = '6743042002';
 export const APP_STORE_URL = `https://apps.apple.com/us/app/ut-dining/id${APP_STORE_ID}`;
 export const GITHUB_URL = 'https://github.com/EthanL06/UT-Dining';
+export const STATUS_URL = 'https://status.utdining.app';
 export const SITE_NAME = 'UT Dining';
 export const SITE_DESCRIPTION =
   'Menus, hours, nutrition and a campus map for every dining hall, café, market and food truck at UT Austin. Free for iPhone.';
