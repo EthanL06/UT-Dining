@@ -325,3 +325,9 @@ entrypoint = "./functions/scheduled-push-notification/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/scheduled-push-notification/*.html" ]
+
+[functions.admin-tools]
+enabled = true
+verify_jwt = false
+import_map = "./functions/admin-tools/deno.json"
+entrypoint = "./functions/admin-tools/index.ts"

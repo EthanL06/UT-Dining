@@ -546,6 +546,15 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      admin_menu_freshness: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          last_menu_write: string;
+          latest_menu_date: string;
+          location_id: string;
+          location_name: string;
+        }[];
+      };
       dashboard_status: { Args: Record<PropertyKey, never>; Returns: Json };
       insert_location_and_menus: { Args: { arg_data: Json }; Returns: boolean };
       insert_multiple_locations_and_menus: { Args: { arg_data_array: Json[] }; Returns: boolean };
