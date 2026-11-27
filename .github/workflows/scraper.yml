@@ -67,6 +67,15 @@ jobs:
           sleep 600
           pnpm --filter @ut-dining/scraper start
 
+      - name: Sync restaurants, cafés and food trucks
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ENABLE_SUPABASE: 'true'
+          TZ: America/Chicago
+        run: pnpm --filter @ut-dining/scraper places
+
       - name: Upload scraped JSON
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

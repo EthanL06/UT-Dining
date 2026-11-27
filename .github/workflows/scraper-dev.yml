@@ -110,6 +110,33 @@ jobs:
           fi
           exit 1
 
+      - name: Sync restaurants, cafés and food trucks
+        id: places
+        if: always() && steps.scrape.outcome != 'skipped'
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_DEV_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_DEV_SERVICE_KEY }}
+          ENABLE_SUPABASE: 'true'
+          TZ: America/Chicago
+        run: pnpm --filter @ut-dining/scraper places
+
+      - name: Report places health
+        if: always() && steps.places.outcome != 'skipped' && (github.event_name == 'schedule' || github.ref == 'refs/heads/staging')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ASSIGNEE: ${{ github.repository_owner }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          LABEL: places-health
+          LABEL_DESCRIPTION: UT's restaurant, café or food truck pages changed or could not be read
+          TITLE: Restaurant and food truck info needs a look
+          REPORT: apps/scraper/data/places-health.json
+          BODY: apps/scraper/data/places-health.md
+          MISSING_TEXT: The places sync stopped before it could check UT's pages.
+          FAIL_ON_PROBLEMS: ${{ steps.places.outcome == 'failure' && '1' || '0' }}
+        run: scripts/ci/health-issue.sh
+
       - name: Upload scraped JSON
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
@@ -118,6 +145,7 @@ jobs:
           path: |
             apps/scraper/data/*.json
             apps/scraper/data/health.md
+            apps/scraper/data/places-health.md
           retention-days: 7
           if-no-files-found: ignore
 
