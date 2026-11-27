@@ -2,6 +2,7 @@ name: Website preview
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, closed]
     paths:
       - apps/website/**
       - package.json
@@ -29,7 +30,9 @@ env:
 jobs:
   preview:
     name: Cloudflare preview
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    if: >-
+      github.event.action != 'closed' &&
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -118,8 +121,8 @@ jobs:
           ALIAS: ${{ steps.target.outputs.alias }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          npx --yes "wrangler@$WRANGLER_VERSION" versions upload \
-            --preview-alias "$ALIAS" \
+          npx --yes "wrangler@$WRANGLER_VERSION" preview \
+            --name "$ALIAS" \
             --tag "${HEAD_SHA:0:7}" \
             --message "PR #${ALIAS#pr-} at ${HEAD_SHA:0:7}"
 
@@ -153,3 +156,43 @@ jobs:
           URL: ${{ steps.target.outputs.url }}
         run: |
           echo "Website preview: $URL/" >> "$GITHUB_STEP_SUMMARY"
+
+  cleanup:
+    name: Remove Cloudflare preview
+    if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+    steps:
+      - name: Delete the PR preview
+        id: delete
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::notice::CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID is not set, so there is no preview to remove."
+            exit 0
+          fi
+          if npx --yes "wrangler@$WRANGLER_VERSION" preview delete \
+            --worker-name "$WORKER_NAME" \
+            --name "pr-$PR_NUMBER" \
+            --skip-confirmation; then
+            echo "deleted=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::No preview named pr-$PR_NUMBER was deleted. Previews uploaded before the switch to wrangler preview expire on their own."
+          fi
+
+      - name: Update the preview comment
+        if: steps.delete.outputs.deleted == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          marker='<!-- website-cloudflare-preview -->'
+          existing=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
+            --jq "[.[] | select(.body | startswith(\"$marker\")) | .id] | first // empty")
+          if [ -n "$existing" ]; then
+            body=$(printf '%s\n**Website preview:** removed when this PR closed.' "$marker")
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$existing" -f body="$body" > /dev/null
+          fi
