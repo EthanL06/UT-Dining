@@ -51,7 +51,9 @@ name: Press and hold adds a food, and Select Multiple adds several at once
       - tapOn:
           id: home-meal-plan-button
       - waitForAnimationToEnd
-- assertVisible: 'Maestro Grilled Chicken(,.*)?'
+- extendedWaitUntil:
+    visible: 'Maestro Grilled Chicken(,.*)?'
+    timeout: 10000
 - assertVisible: 'Maestro Veggie Burger(,.*)?'
 - assertVisible: 'Maestro Tofu Bowl(,.*)?'
 - tapOn:

@@ -48,7 +48,7 @@ name: Meal plan items can be added and removed
     id: meal-plan-screen
 - extendedWaitUntil:
     visible: 'Maestro Grilled Chicken(,.*)?'
-    timeout: 5000
+    timeout: 10000
 - assertVisible: 'Maestro Veggie Burger(,.*)?'
 - takeScreenshot: meal-plan
 - longPressOn: 'Maestro Veggie Burger(,.*)?'

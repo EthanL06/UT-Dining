@@ -310,8 +310,6 @@ const Location = () => {
             obscureBackground: false,
             hideWhenScrolling: false,
             textColor: theme.label,
-            hintTextColor: theme.secondaryLabel,
-            headerIconColor: theme.secondaryLabel,
             tintColor: theme.tint,
             onChangeText: (event) => handleQueryChange(event.nativeEvent.text),
             onFocus: () => {
@@ -328,6 +326,7 @@ const Location = () => {
       <FlatList
         alwaysBounceVertical={false}
         contentInsetAdjustmentBehavior="automatic"
+        scrollToOverflowEnabled
         keyboardDismissMode="on-drag"
         extraData={[favoriteNames, canMealPlan, selecting, selectedIds]}
         ref={listRef}
