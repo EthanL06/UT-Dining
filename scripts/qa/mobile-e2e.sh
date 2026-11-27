@@ -5,7 +5,7 @@ usage() {
   cat <<'EOF'
 Usage: scripts/qa/mobile-e2e.sh [--sim <UDID>] [--release] [--port <metro port>]
                                 [--fixture-server [port]] [--shards <n>] [--retry-failed]
-                                [--status-bar] [--suite e2e|qa] [--affected[=<base>]]
+                                [--status-bar] [--build-app] [--suite e2e|qa] [--affected[=<base>]]
                                 [maestro test args...]
 
 Runs the Maestro flows in apps/mobile/e2e on an iOS Simulator against local Supabase.
@@ -22,6 +22,11 @@ Runs the Maestro flows in apps/mobile/e2e on an iOS Simulator against local Supa
   --shards <n>             Split the flows across n simulators that run at the same time. The
                            extra simulators are clones of --sim (app included) and are deleted
                            afterwards. Each one needs about 2 GB of RAM.
+  --build-app              Build a release app of the current worktree (scripts/qa/ios-sim-app.sh,
+                           which reuses the native build and the Metro cache, so only the JS is
+                           rebuilt) pointed at the fixture server, install it and skip Metro and
+                           the dev client. Implies --release and --fixture-server on port 54339
+                           (qa) or 54338 (e2e), shared by every run of the same suite on this Mac.
   --status-bar             Set a clean status bar (9:41, full battery) on every simulator used.
   --retry-failed           Run the flows that failed once more, in a fresh Maestro session. The
                            exit code comes from the retry. Reports go to <output>/retry.
@@ -47,6 +52,7 @@ METRO_PORT=8081
 SHARDS=1
 RETRIES=0
 SUITE=e2e
+BUILD_APP=false
 AFFECTED_BASE=""
 STATUS_BAR=false
 EXTRA_SIMS=()
@@ -56,6 +62,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --sim) SIM="$2"; shift 2 ;;
     --release) DEV_CLIENT=false; shift ;;
+    --build-app) BUILD_APP=true; DEV_CLIENT=false; shift ;;
     --port) METRO_PORT="$2"; shift 2 ;;
     --shards) SHARDS="$2"; shift 2 ;;
     --retry-failed) RETRIES=1; shift ;;
@@ -85,6 +92,10 @@ if [[ ${#MAESTRO_ARGS[@]} -eq 0 && -n "$AFFECTED_BASE" ]]; then
     exit 0
   fi
   step "Flows for this diff: ${MAESTRO_ARGS[*]##*/}"
+fi
+if [[ "$BUILD_APP" == true && -z "$FIXTURE_PORT" ]]; then
+  FIXTURE_PORT=54338
+  if [[ "$SUITE" == qa ]]; then FIXTURE_PORT=54339; fi
 fi
 [[ "$SHARDS" =~ ^[1-9][0-9]*$ ]] || { echo "mobile-e2e: --shards needs a whole number." >&2; exit 1; }
 
@@ -125,11 +136,23 @@ cleanup() {
 trap cleanup EXIT
 
 if [[ -n "$FIXTURE_PORT" ]]; then
-  step "Starting the fixture server on port $FIXTURE_PORT"
   FIXTURE_DATA=e2e
   if [[ "$SUITE" == qa ]]; then FIXTURE_DATA=sample; fi
-  node "$ROOT/scripts/qa/e2e-fixture-server.ts" "$FIXTURE_PORT" "$FIXTURE_DATA" > "$OUT/fixture-server.log" 2>&1 &
-  FIXTURE_PID=$!
+  RUNNING="$(curl -sf "http://127.0.0.1:$FIXTURE_PORT/health" 2>/dev/null || true)"
+  if [[ "$RUNNING" == *"\"data\":\"$FIXTURE_DATA\""* ]]; then
+    step "Reusing the $FIXTURE_DATA fixture server already on port $FIXTURE_PORT"
+  elif [[ -n "$RUNNING" ]] || lsof -tiTCP:"$FIXTURE_PORT" -sTCP:LISTEN >/dev/null 2>&1; then
+    fail "port $FIXTURE_PORT is taken by something other than the $FIXTURE_DATA fixture server."
+  elif [[ "$BUILD_APP" == true ]]; then
+    mkdir -p "$ROOT/.context"
+    step "Starting the shared $FIXTURE_DATA fixture server on port $FIXTURE_PORT (exits after 20 idle min)"
+    (nohup node "$ROOT/scripts/qa/e2e-fixture-server.ts" "$FIXTURE_PORT" "$FIXTURE_DATA" 20 \
+      > "$ROOT/.context/fixture-server-$FIXTURE_PORT.log" 2>&1 &)
+  else
+    step "Starting the fixture server on port $FIXTURE_PORT"
+    node "$ROOT/scripts/qa/e2e-fixture-server.ts" "$FIXTURE_PORT" "$FIXTURE_DATA" > "$OUT/fixture-server.log" 2>&1 &
+    FIXTURE_PID=$!
+  fi
   for _ in $(seq 1 20); do
     curl -sf "http://127.0.0.1:$FIXTURE_PORT/health" >/dev/null && break
     sleep 0.5
@@ -162,6 +185,26 @@ if [[ -z "$SIM" ]]; then
   SIM="$BOOTED"
 fi
 
+if [[ "$BUILD_APP" == true ]]; then
+  [[ -n "$FIXTURE_PORT" ]] || fail "--build-app needs the fixture server."
+  APP_OUT="$ROOT/.context/app-$SUITE"
+  step "Building the release app for the fixture server on port $FIXTURE_PORT into $APP_OUT"
+  (cd "$ROOT" && APP_VARIANT=development \
+    EXPO_PUBLIC_SUPABASE_URL="http://127.0.0.1:$FIXTURE_PORT" \
+    EXPO_PUBLIC_STATUS_API_URL="http://127.0.0.1:$FIXTURE_PORT/api/status" \
+    EXPO_PUBLIC_SUPABASE_ANON_KEY=fixture \
+    scripts/qa/ios-sim-app.sh --out "$APP_OUT") > "$OUT/build-app.log" 2>&1 \
+    || fail "the app build failed. See $OUT/build-app.log"
+  BUILT_APP="$(ls -d "$APP_OUT"/*.app | head -1)"
+  IFS=, read -r -a INSTALL_ON <<<"$SIM"
+  for device in "${INSTALL_ON[@]}"; do
+    step "Installing the release app on $device"
+    xcrun simctl boot "$device" 2>/dev/null || true
+    xcrun simctl bootstatus "$device" -b >/dev/null
+    xcrun simctl install "$device" "$BUILT_APP"
+  done
+fi
+
 if [[ "$SIM" == *,* ]]; then
   IFS=, read -r -a SIM_LIST <<<"$SIM"
   SIM="${SIM_LIST[0]}"
@@ -192,6 +235,7 @@ done
 for device in "${DEVICES[@]}"; do
   xcrun simctl bootstatus "$device" -b >/dev/null
   xcrun simctl ui "$device" appearance light
+  xcrun simctl spawn "$device" defaults write com.apple.Accessibility ReduceMotionEnabled -bool true
   if [[ "$STATUS_BAR" == true ]]; then
     xcrun simctl status_bar "$device" override --time 9:41 --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3
   fi

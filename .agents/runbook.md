@@ -82,7 +82,7 @@ Decide with one question: did the iOS fingerprint change? It changes with native
 
 - Before you hand over a change to the app, run `make qa SIM=<UDID>` on Ethan's Mac (through a Remote Control session, on your own simulator clone). It runs the flows in `apps/mobile/e2e/qa` against the sample data at fixed Central times, about 10 minutes. It loads the sample data into local Supabase itself (no reset); `make db-fresh` first if the database is in an unknown state. Add `ARGS="--fixture-server --port <free Metro port>"` to leave the shared local Supabase alone: the script serves the sample data itself and starts its own Metro pointed at it.
 - One flow: `make qa SIM=<UDID> ARGS=apps/mobile/e2e/qa/central-time.yaml`.
-- Only the flows your diff touches: `make qa SIM=<UDID> ARGS=--affected` (map in `scripts/qa/qa-affected.ts`). Use it while you iterate, and the full suite once before handing over.
+- Fastest loop: `make qa SIM=<UDID> ARGS="--build-app --affected"`. `--build-app` installs a cached release build pointed at a shared fixture server (no Metro, no dev client, no local Supabase), and `--affected` runs only the flows your diff touches (map in `scripts/qa/qa-affected.ts`). Run the full suite (`ARGS=--build-app`) once before handing over.
 - When the Mac is offline, add the `qa` label to the PR: `.github/workflows/mobile-qa.yml` runs the same suite on a GitHub macOS runner (about 30 to 60 minutes). It is optional and not a required check.
 - Fixed a bug you found by hand? Add a flow for it to `apps/mobile/e2e/qa` (and the edge case to the sample data) in the same PR.
 
