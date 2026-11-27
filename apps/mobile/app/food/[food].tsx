@@ -17,6 +17,7 @@ import {
   INDENTED_NUTRITION,
 } from '~/data/AllergenInfo';
 import { useDatabase } from '~/hooks/useDatabase';
+import { useFavorite } from '~/hooks/useFavorite';
 import { useFoodData } from '~/hooks/useFoodData';
 import { getSafePostHog } from '~/services/analytics/posthog';
 import * as schema from '~/services/database/schema';
@@ -77,7 +78,7 @@ const FoodScreen = () => {
       ),
     [food, location],
   );
-  const isFavorite = favoriteRows.length > 0;
+  const isFavorite = useFavorite(food ?? '', location ?? '', favoriteRows.length > 0);
   const planDate = date || todayKey();
   const canMealPlan = planDate >= todayKey();
   const isMealPlan = useIsMealPlanItem(

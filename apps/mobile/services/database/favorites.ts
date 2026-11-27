@@ -34,14 +34,15 @@ export const getFavoriteItem = (
   return db.select().from(schema.favorites).where(favoriteMatch(foodName, locationName)).get();
 };
 
-export const toggleFavorites = async (
+export const setFavorite = async (
   db: ExpoSQLiteDatabase<typeof schema>,
   foodItem: FoodItem,
   locationName: string,
   menuName: string,
   categoryName: string,
+  value: boolean,
 ) => {
-  if (isFavoriteItem(db, foodItem.name as string, locationName)) {
+  if (!value) {
     await db
       .delete(schema.favorites)
       .where(favoriteMatch(foodItem.name as string, locationName))
@@ -49,6 +50,8 @@ export const toggleFavorites = async (
 
     return false;
   }
+
+  if (isFavoriteItem(db, foodItem.name as string, locationName)) return true;
 
   const nutrition =
     (foodItem.nutrition?.id

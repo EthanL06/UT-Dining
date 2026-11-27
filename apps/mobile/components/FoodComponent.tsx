@@ -9,6 +9,7 @@ import ReanimatedSwipeable, {
 import { MealPlanIcon } from '~/components/MealPlanIcon';
 import { Text } from '~/components/ui/Text';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
+import { useFavorite } from '~/hooks/useFavorite';
 import type { FoodItem } from '~/services/database/database';
 import { todayKey, useIsMealPlanItem } from '~/store/useMealPlanStore';
 import { toggleMealPlanForFood } from '~/utils/foodActions';
@@ -42,7 +43,7 @@ const FoodComponent = ({
   location,
   date,
   onFavorite,
-  isFavorite,
+  isFavorite: savedFavorite,
   isFavoriteScreen = false,
   showExtraInfo = true,
   canMealPlan = true,
@@ -74,6 +75,7 @@ const FoodComponent = ({
     },
     planDate,
   );
+  const isFavorite = useFavorite(food.name as string, location, savedFavorite);
   const theme = useTheme();
   const swipeableRef = useRef<SwipeableMethods>(null);
   const context = { location, menu: selectedMenu, category: categoryName, date: planDate };
