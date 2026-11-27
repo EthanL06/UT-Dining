@@ -105,7 +105,11 @@ const QuickLink = ({
     className="flex-1 overflow-hidden"
     style={{ backgroundColor: theme.card, borderRadius: 22, borderCurve: 'continuous' }}
   >
-    <Pressable accessibilityRole="button" onPress={() => router.push(href)}>
+    <Pressable
+      testID={`home-${href.slice(1)}-button`}
+      accessibilityRole="button"
+      onPress={() => router.push(href)}
+    >
       {({ pressed }) => (
         <View
           className="flex-row items-center gap-x-2.5 px-4 py-3.5"

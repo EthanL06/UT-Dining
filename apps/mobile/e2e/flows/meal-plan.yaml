@@ -29,6 +29,12 @@ name: Meal plan items can be added and removed
       - tapOn:
           id: back-button
       - waitForAnimationToEnd
+- tapOn:
+    id: BackButton
+- scrollUntilVisible:
+    element:
+      id: home-meal-plan-button
+    direction: UP
 - repeat:
     while:
       notVisible:
@@ -36,7 +42,7 @@ name: Meal plan items can be added and removed
     times: 3
     commands:
       - tapOn:
-          id: location-meal-plan-button
+          id: home-meal-plan-button
       - waitForAnimationToEnd
 - assertVisible:
     id: meal-plan-screen

@@ -36,9 +36,11 @@ name: Press and hold adds a food, and Select Multiple adds several at once
     notVisible:
       id: select-done-button
     timeout: 5000
+- tapOn:
+    id: BackButton
 - scrollUntilVisible:
     element:
-      id: location-meal-plan-button
+      id: home-meal-plan-button
     direction: UP
 - repeat:
     while:
@@ -47,7 +49,7 @@ name: Press and hold adds a food, and Select Multiple adds several at once
     times: 3
     commands:
       - tapOn:
-          id: location-meal-plan-button
+          id: home-meal-plan-button
       - waitForAnimationToEnd
 - assertVisible: 'Maestro Grilled Chicken(,.*)?'
 - assertVisible: 'Maestro Veggie Burger(,.*)?'

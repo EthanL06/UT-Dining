@@ -59,7 +59,7 @@ Every flow except `onboarding.yaml` starts from a clean install on Home (`subflo
 
 ## Writing flows
 
-- Match on visible text when it is stable. For icon buttons, use the `testID` on the component (`back-button`, UIKit's `BackButton` on screens with a native header, `location-favorites-button`, `food-favorite-button`, `food-meal-plan-button`, `menu-day-1`, `select-done-button`, `select-add-meal-plan-button`, `settings-dark-mode-switch` and others).
+- Match on visible text when it is stable. For icon buttons, use the `testID` on the component (`back-button`, UIKit's `BackButton` on screens with a native header, `home-favorites-button`, `home-meal-plan-button`, `food-favorite-button`, `food-meal-plan-button`, `menu-day-1`, `select-done-button`, `select-add-meal-plan-button`, `settings-dark-mode-switch` and others).
 - Use the fixture items, never scraped menus, so a flow does not depend on what UT serves that day.
 - Run one flow with `maestro test <file>` while you write it, and `maestro studio` to inspect the screen.
 

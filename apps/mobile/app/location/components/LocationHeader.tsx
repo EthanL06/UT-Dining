@@ -1,5 +1,4 @@
-import { router } from 'expo-router';
-import { ChefHat, Heart, Info } from 'lucide-react-native';
+import { Info } from 'lucide-react-native';
 import React from 'react';
 import { Pressable, View } from 'react-native';
 import { SheetManager } from 'react-native-actions-sheet';
@@ -24,29 +23,6 @@ interface LocationHeaderProps {
   onDateChange: (date: string) => void;
   searching: boolean;
 }
-
-const HeaderIconButton = ({
-  testID,
-  label,
-  onPress,
-  children,
-}: {
-  testID: string;
-  label: string;
-  onPress: () => void;
-  children: React.ReactNode;
-}) => (
-  <Pressable
-    testID={testID}
-    accessibilityLabel={label}
-    accessibilityRole="button"
-    hitSlop={4}
-    onPress={onPress}
-    className="size-9 items-center justify-center"
-  >
-    {children}
-  </Pressable>
-);
 
 export const LocationHeaderButtons = ({
   location,
@@ -77,34 +53,21 @@ export const LocationHeaderButtons = ({
   }
 
   return (
-    <View className="flex-row items-center">
-      <HeaderIconButton
-        testID="location-favorites-button"
-        label="Favorites"
-        onPress={() => router.push('/favorites')}
-      >
-        <Heart size={20} color={theme.label} />
-      </HeaderIconButton>
-      <HeaderIconButton
-        testID="location-meal-plan-button"
-        label="Meal Plan"
-        onPress={() => router.push('/meal-plan')}
-      >
-        <ChefHat size={20} color={theme.label} />
-      </HeaderIconButton>
-      <HeaderIconButton
-        testID="location-info-button"
-        label="Hours and info"
-        onPress={() => {
-          if (!locationData) return;
-          void SheetManager.show('location-about', {
-            payload: { location: locationData },
-          });
-        }}
-      >
-        <Info size={20} color={theme.label} />
-      </HeaderIconButton>
-    </View>
+    <Pressable
+      testID="location-info-button"
+      accessibilityLabel="Hours and info"
+      accessibilityRole="button"
+      hitSlop={8}
+      onPress={() => {
+        if (!locationData) return;
+        void SheetManager.show('location-about', {
+          payload: { location: locationData },
+        });
+      }}
+      className="size-9 items-center justify-center"
+    >
+      <Info size={20} color={theme.label} />
+    </Pressable>
   );
 };
 
