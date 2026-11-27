@@ -4,8 +4,11 @@ import type { FiltersState } from '~/store/useFiltersStore';
 
 type Allergens = NonNullable<FoodItem['allergens']>;
 
-const flagged = (item: FoodItem, key: string) =>
+const hasFlag = (item: FoodItem, key: string) =>
   !!item.allergens && key in item.allergens && !!item.allergens[key as keyof Allergens];
+
+const matchesDiet = (item: FoodItem, diet: string) =>
+  hasFlag(item, diet) || (diet === 'vegetarian' && hasFlag(item, 'vegan'));
 
 export const foodFilter = (
   filters: FiltersState['filters'],
@@ -20,8 +23,8 @@ export const foodFilter = (
   return (item, categoryId = '') => {
     if (favoriteNames && !favoriteNames.has(item.name ?? '')) return false;
     if (filters.mealPlan && !isInMealPlan(item, categoryId)) return false;
-    if (avoid.some((key) => flagged(item, key))) return false;
-    return onlyWith.every((key) => flagged(item, key));
+    if (avoid.some((key) => hasFlag(item, key))) return false;
+    return onlyWith.every((diet) => matchesDiet(item, diet));
   };
 };
 
