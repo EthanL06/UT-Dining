@@ -1,6 +1,7 @@
 import { MapPin } from 'lucide-react-native';
-import { Image, Linking, Platform, View } from 'react-native';
+import { Linking, Platform, View } from 'react-native';
 import { GroupedRow, GroupedSection } from '~/components/ui/Grouped';
+import { Image } from '~/components/ui/Image';
 import { Text } from '~/components/ui/Text';
 import { PAYMENT_INFO_ICONS } from '~/data/PaymentInfo';
 import type { useLocationDetails } from '~/hooks/useLocationDetails';
@@ -72,7 +73,7 @@ const PlaceDetails = ({ place }: { place: PlaceData }) => {
                   <Image
                     source={PAYMENT_INFO_ICONS[method as keyof typeof PAYMENT_INFO_ICONS]}
                     className="size-7"
-                    resizeMode="contain"
+                    contentFit="contain"
                   />
                 ) : undefined
               }
