@@ -1,5 +1,4 @@
-import { Host, Picker, Text } from '@expo/ui/swift-ui';
-import { pickerStyle, tag } from '@expo/ui/swift-ui/modifiers';
+import { SegmentedControl } from '@expo/ui/community/segmented-control';
 import { useSettingsStore } from '~/store/useSettingsStore';
 
 export const NativeSegmentedControl = ({
@@ -14,25 +13,19 @@ export const NativeSegmentedControl = ({
   testID?: string;
 }) => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+  const selectedIndex = items.findIndex((item) => item.id === selectedId);
 
   return (
-    <Host
-      matchContents={{ vertical: true }}
-      colorScheme={isDarkMode ? 'dark' : 'light'}
+    <SegmentedControl
+      testID={testID}
       style={{ flex: 1 }}
-    >
-      <Picker
-        testID={testID}
-        selection={selectedId}
-        onSelectionChange={(id: string) => onSelect(id)}
-        modifiers={[pickerStyle('segmented')]}
-      >
-        {items.map((item) => (
-          <Text key={item.id} modifiers={[tag(item.id)]}>
-            {item.title}
-          </Text>
-        ))}
-      </Picker>
-    </Host>
+      appearance={isDarkMode ? 'dark' : 'light'}
+      values={items.map((item) => item.title)}
+      selectedIndex={selectedIndex === -1 ? undefined : selectedIndex}
+      onChange={(event) => {
+        const item = items[event.nativeEvent.selectedSegmentIndex];
+        if (item) onSelect(item.id);
+      }}
+    />
   );
 };
