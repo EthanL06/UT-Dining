@@ -2,6 +2,12 @@ import type { FoodItem } from '~/services/database/database';
 import type * as schema from '~/services/database/schema';
 import type { FiltersState } from '~/store/useFiltersStore';
 
+const hasFlag = (item: FoodItem, key: string) =>
+  !!item.allergens && key in item.allergens && !!item.allergens[key as keyof typeof item.allergens];
+
+const matchesDiet = (item: FoodItem, diet: string) =>
+  hasFlag(item, diet) || (diet === 'vegetarian' && hasFlag(item, 'vegan'));
+
 export const filterFoodItems = (
   foodItems: FoodItem[],
   filters: FiltersState['filters'],
@@ -33,11 +39,7 @@ export const filterFoodItems = (
     const dietaryFilters = Object.entries(filters.dietary).filter(([_, value]) => value);
     if (dietaryFilters.length > 0) {
       for (const [diet] of dietaryFilters) {
-        if (
-          !item.allergens ||
-          !(diet in item.allergens) ||
-          !item.allergens[diet as keyof typeof item.allergens]
-        ) {
+        if (!matchesDiet(item, diet)) {
           return false;
         }
       }

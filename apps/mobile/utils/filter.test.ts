@@ -63,6 +63,15 @@ describe('filterFoodItems', () => {
     ).toEqual(['Tofu Bowl']);
   });
 
+  it('counts vegan items as vegetarian', () => {
+    const salad = item('Salad Bar', { vegan: true });
+    expect(
+      names(
+        filterFoodItems([...items, salad], { ...noFilters, dietary: { vegetarian: true } }, []),
+      ),
+    ).toEqual(['Pancakes', 'Tofu Bowl', 'Salad Bar']);
+  });
+
   it('drops items with no allergen data when a diet is selected', () => {
     const bare = { name: 'Mystery', link: '' } as unknown as FoodItem;
     expect(filterFoodItems([bare], { ...noFilters, dietary: { vegan: true } }, [])).toEqual([]);
