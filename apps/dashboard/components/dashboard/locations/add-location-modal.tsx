@@ -43,6 +43,7 @@ export function AddLocationModal({
   const [serviceHoursError, setServiceHoursError] = useState<string | null>(null);
   const [paymentMethodsError, setPaymentMethodsError] = useState<string | null>(null);
   const [mealTimesError, setMealTimesError] = useState<string | null>(null);
+  // state-machine-ok: the image preview failing to load is independent of submitting the form
   const [imageError, setImageError] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copiedDay, setCopiedDay] = useState<string | null>(null);
