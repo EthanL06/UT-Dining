@@ -24,15 +24,17 @@ export const UndoToast = ({
         testID="meal-plan-undo-toast"
         className="min-h-[52px] flex-row items-center gap-x-3 rounded-full py-2 pr-2 pl-5"
         style={{
-          backgroundColor: theme.label,
+          backgroundColor: theme.toast,
+          borderWidth: 0.5,
+          borderColor: theme.toastBorder,
           borderCurve: 'continuous',
           shadowColor: '#000',
-          shadowOpacity: 0.2,
+          shadowOpacity: 0.3,
           shadowRadius: 12,
           shadowOffset: { width: 0, height: 4 },
         }}
       >
-        <Text variant="subheadline" numberOfLines={1} className="flex-1" color={theme.background}>
+        <Text variant="subheadline" numberOfLines={1} className="flex-1" color={theme.toastLabel}>
           {message}
         </Text>
         <Pressable
