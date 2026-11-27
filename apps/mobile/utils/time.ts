@@ -229,7 +229,7 @@ export function getLocationStatusText(
     return range ? `Open until ${formatHhmm(range.close)}` : 'Open';
   }
   if (locationData.force_close) return 'Temporarily closed';
-  if (isWithinRanges(getOpenRanges(hours, day), time)) return 'No menu today';
+  if (isWithinRanges(getOpenRanges(hours, day), time)) return 'Closed today';
 
   const next = getNextOpening(hours, day, time);
   if (!next) return 'Closed';
