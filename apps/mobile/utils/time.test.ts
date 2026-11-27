@@ -5,6 +5,7 @@ import type * as schema from '~/services/database/schema';
 import {
   formatTimeSinceSync,
   generateSchedule,
+  getLocationStatusText,
   getLocationTimeMessage,
   getMinutesUntilClose,
   isLocationOpen,
@@ -141,5 +142,13 @@ describe('statusDotTone', () => {
     expect(statusDotTone(true, null)).toBe('open');
     expect(statusDotTone(true)).toBe('open');
     expect(statusDotTone(false, 10)).toBe('closed');
+  });
+});
+
+describe('getLocationStatusText', () => {
+  it('says closed today when a hall has no menu during its hours', () => {
+    expect(getLocationStatusText(location(), false, at('2026-11-23T12:00:00'))).toBe(
+      'Closed today',
+    );
   });
 });

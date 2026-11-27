@@ -3,6 +3,7 @@ import * as Notifications from 'expo-notifications';
 import { Bell, Check, MapPin } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, AppState, Linking, View } from 'react-native';
+import { NearbyAlertsRow } from '~/components/nearby/NearbyAlertsRow';
 import { GroupedRow, GroupedSection, IconSquare } from '~/components/ui/Grouped';
 import { Text } from '~/components/ui/Text';
 import { log } from '~/utils/log';
@@ -93,9 +94,9 @@ const PermissionsScreen = ({ width, isCurrentScreen, onPermissionsChange }: Prop
     <View style={{ width, backgroundColor: theme.background }} className="flex-1 justify-center">
       <OnboardingHeader
         title="Enable Permissions"
-        subtitle="Two optional permissions make UT Dining more useful."
+        subtitle="All optional, and each one makes UT Dining more useful."
       />
-      <GroupedSection footer="You can change these at any time in Settings.">
+      <GroupedSection footer="Nearby Menus works entirely on your phone. Your location is never sent anywhere.">
         <GroupedRow
           isFirst
           separatorInset={58}
@@ -115,6 +116,7 @@ const PermissionsScreen = ({ width, isCurrentScreen, onPermissionsChange }: Prop
           trailing={<PermissionStatusLabel status={permissions.notifications} />}
           onPress={permissions.notifications === 'denied' ? openSettings : undefined}
         />
+        <NearbyAlertsRow separatorInset={58} />
       </GroupedSection>
     </View>
   );
