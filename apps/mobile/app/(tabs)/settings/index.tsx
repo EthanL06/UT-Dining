@@ -294,13 +294,6 @@ const InformationSection = ({ appInfo }: { appInfo: AppInformation }) => {
             multilineSubtitle
           />
         )}
-        <LinkRow
-          title="Longhorn Developers"
-          subtitle="Adopted by"
-          Icon={Code}
-          color={ICON_COLORS.indigo}
-          onPress={() => Linking.openURL('https://github.com/Longhorn-Developers')}
-        />
       </GroupedSection>
 
       <GroupedSection header="Help & Support">
