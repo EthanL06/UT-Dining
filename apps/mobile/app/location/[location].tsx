@@ -1,7 +1,7 @@
 import { useIsFetching } from '@tanstack/react-query';
 import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, usePreventZoomTransitionDismissal } from 'expo-router';
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -63,9 +63,12 @@ const useSkeletonItems = (): ListItem[] => {
   }, []);
 };
 
+const EDGE_SWIPE_WIDTH = 24;
+
 const Location = () => {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  usePreventZoomTransitionDismissal({ unstable_dismissalBoundsRect: { maxX: EDGE_SWIPE_WIDTH } });
   const setLastOpenedLocation = useMealStripStore((state) => state.setLastOpenedLocation);
   const { location } = useLocalSearchParams<{ location: string }>();
   const [selectedDate, setSelectedDate] = useState(getTodayInCentralTime());
