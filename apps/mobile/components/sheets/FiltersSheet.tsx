@@ -136,8 +136,15 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
               entering={reduceMotion ? undefined : ZoomIn.springify().damping(14)}
               exiting={reduceMotion ? undefined : ZoomOut.duration(140)}
               testID="filters-active-count"
-              className="h-[22px] min-w-[22px] items-center justify-center rounded-full px-1.5"
-              style={{ backgroundColor: theme.tint }}
+              style={{
+                height: 22,
+                minWidth: 22,
+                paddingHorizontal: 6,
+                borderRadius: 11,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: theme.tint,
+              }}
             >
               <RollingNumber value={activeCount} variant="footnote" emphasized tone="onTint" />
             </Reanimated.View>

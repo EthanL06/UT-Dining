@@ -222,8 +222,10 @@ export const StatusDot = ({
     >
       <Reanimated.View
         pointerEvents="none"
-        className="absolute size-[9px] rounded-full"
-        style={[{ backgroundColor: color }, haloStyle]}
+        style={[
+          { position: 'absolute', width: 9, height: 9, borderRadius: 4.5, backgroundColor: color },
+          haloStyle,
+        ]}
       />
       <View className="size-[9px] rounded-full" style={{ backgroundColor: color }} />
     </View>
