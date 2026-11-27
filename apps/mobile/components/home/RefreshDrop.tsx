@@ -49,6 +49,8 @@ const PILL_HOLD_MS = 1900;
 const PILL_PADDING_X = 26;
 const PILL_PADDING_Y = 14;
 const MIN_PILL_HEIGHT = 36;
+const LIGHT_SHADOW = '0px 4px 14px rgba(0, 0, 0, 0.12)';
+const DARK_SHADOW = '0px 4px 14px rgba(0, 0, 0, 0.5)';
 
 const timeLabel = () => formatCentral(Date.now(), { hour: '2-digit', minute: '2-digit' });
 
@@ -114,7 +116,6 @@ export const RefreshDrop = ({
     const text = refreshMessage(result, timeLabel());
     setMessage(text);
     AccessibilityInfo.announceForAccessibility(text);
-    cancelAnimation(rotation);
     pill.value = withTiming(1, { duration: 380, easing: Easing.out(Easing.cubic) });
     float.value = withDelay(
       120,
@@ -126,7 +127,7 @@ export const RefreshDrop = ({
         if (finished) runOnJS(onFinished)();
       }),
     );
-  }, [result, pill, float, retract, rotation, onFinished]);
+  }, [result, pill, float, retract, onFinished]);
 
   const frame = useDerivedValue(() =>
     dropFrame({
@@ -155,6 +156,7 @@ export const RefreshDrop = ({
   const corners = useAnimatedStyle(() => ({
     borderRadius: Math.min(frame.value.width, frame.value.height) / 2,
   }));
+  const shadow = isDarkMode ? DARK_SHADOW : LIGHT_SHADOW;
   const ink = useAnimatedStyle(() => ({ opacity: frame.value.ink }));
   const ring = useAnimatedStyle(() => ({
     opacity: frame.value.ringOpacity,
@@ -163,7 +165,7 @@ export const RefreshDrop = ({
   const glyph = useAnimatedStyle(() => ({ opacity: frame.value.ringOpacity }));
   const pillStyle = useAnimatedStyle(() => ({ opacity: frame.value.pillOpacity }));
   const arc = useAnimatedProps(() => {
-    const length = spin.value > 0 && pill.value === 0 ? SPIN_ARC : frame.value.progress;
+    const length = spin.value > 0 ? SPIN_ARC : frame.value.progress;
     return { strokeDashoffset: CIRCUMFERENCE * (1 - length) };
   });
 
@@ -202,14 +204,14 @@ export const RefreshDrop = ({
           <AnimatedGlassView
             glassEffectStyle="regular"
             colorScheme={isDarkMode ? 'dark' : 'light'}
-            style={[StyleSheet.absoluteFill, corners]}
+            style={[StyleSheet.absoluteFill, { boxShadow: shadow }, corners]}
           />
         ) : (
           <Reanimated.View
             style={[
               StyleSheet.absoluteFill,
               styles.fallback,
-              { backgroundColor: theme.card, borderColor: theme.separator },
+              { backgroundColor: theme.card, borderColor: theme.separator, boxShadow: shadow },
               corners,
             ]}
           />

@@ -89,7 +89,7 @@ export function dropFrame(input: DropInput): DropFrame {
       centerY: lerp(floatY, start.y, t),
       width: lerp(pillWidth, start.width, t),
       height: lerp(pillHeight, start.height, t),
-      ink: start.ink * t,
+      ink: start.ink * clamp01((t - 0.55) / 0.3),
       opacity: t >= 1 ? 0 : 1,
       ringOpacity: 0,
       pillOpacity: clamp01(1 - t * 2.5),
@@ -126,7 +126,7 @@ export function dropFrame(input: DropInput): DropFrame {
 
   const travel = easeOut(progress / 0.85);
   const stretch = progress < 1 ? Math.sin(Math.PI * progress) * 8 : 0;
-  const ink = start.ink * (1 - clamp01((progress - 0.15) / 0.45));
+  const ink = start.ink * (1 - clamp01((progress - 0.3) / 0.15));
   return {
     centerY: lerp(start.y, gapY, travel),
     width: lerp(start.width, BUBBLE_SIZE, clamp01(progress / 0.5)),

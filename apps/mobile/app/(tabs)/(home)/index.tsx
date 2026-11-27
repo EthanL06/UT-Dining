@@ -7,7 +7,7 @@ import { Link, router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Heart } from 'lucide-react-native';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -216,6 +216,7 @@ export default function Home() {
   const { top: safeTop } = useSafeAreaInsets();
   const pull = useSharedValue(0);
   const dragging = useSharedValue(false);
+  const refreshInFlight = useRef(false);
   const isOnboardingComplete = useOnboardingStore((state) => state.isOnboardingComplete);
   const theme = useTheme();
 
@@ -267,13 +268,17 @@ export default function Home() {
   };
 
   const handleRefresh = async () => {
+    if (refreshInFlight.current) return;
+    refreshInFlight.current = true;
     setRefreshStatus({ kind: 'refreshing' });
     const result = await syncNow();
+    refreshInFlight.current = false;
     setRefreshStatus({ kind: 'settled', result, at: Date.now() });
   };
 
   const finishRefresh = useCallback(() => setRefreshStatus({ kind: 'idle' }), []);
   const tapAtTrigger = useCallback(() => haptics.tap(), []);
+  const refreshOnRelease = () => void handleRefresh();
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -284,6 +289,7 @@ export default function Home() {
     },
     onEndDrag: () => {
       dragging.value = false;
+      if (pull.value >= PULL_TRIGGER) runOnJS(refreshOnRelease)();
     },
   });
 

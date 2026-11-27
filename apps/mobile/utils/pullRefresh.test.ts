@@ -89,7 +89,8 @@ describe('dropFrame', () => {
   it('retracts into the island and hides at the end', () => {
     const half = dropFrame({ ...base, pill: 1, float: 1, retract: 0.5 });
     expect(half.opacity).toBe(1);
-    expect(half.ink).toBeCloseTo(0.5);
+    expect(half.ink).toBe(0);
+    expect(dropFrame({ ...base, pill: 1, float: 1, retract: 0.85 }).ink).toBeCloseTo(1);
     const end = dropFrame({ ...base, pill: 1, float: 1, retract: 1 });
     expect(end.centerY).toBeCloseTo(29.5);
     expect(end.width).toBe(126);
