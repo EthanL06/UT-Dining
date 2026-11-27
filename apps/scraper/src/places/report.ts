@@ -31,7 +31,7 @@ const TITLES: Record<PlaceProblemKind, string> = {
 };
 
 const ADVICE: Partial<Record<PlaceProblemKind, string>> = {
-  new: 'Add each one with `pnpm -s admin locations add` and a line in `apps/scraper/src/places/sources.ts`.',
+  new: 'Add each one with `pnpm -s admin locations create --file <place.json>` and a line in `apps/scraper/src/places/sources.ts`.',
   gone: 'Check whether the place closed. If it did, remove it from the app and from `apps/scraper/src/places/sources.ts`.',
   missing:
     'The name in `sources.ts` matches no location in the database. Add the location, or fix the name in `sources.ts`.',
