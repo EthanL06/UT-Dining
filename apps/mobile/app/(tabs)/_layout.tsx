@@ -56,7 +56,6 @@ export default function Layout() {
         />
         <NativeTabs.Trigger.Label hidden>Settings</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
-      {/* biome-ignore lint/a11y/useSemanticElements: role sets the native iOS search tab, not an ARIA role */}
       <NativeTabs.Trigger
         name="search"
         role="search"
