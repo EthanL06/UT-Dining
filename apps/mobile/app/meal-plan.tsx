@@ -209,14 +209,18 @@ const PlanRow = ({
                   {item.locationName} · {formatGrams(amount(item, 'protein'))} protein ·{' '}
                   {formatGrams(amount(item, 'total_carbohydrates'))} carbs
                 </Text>
-                {allergens.map(([key]) => (
-                  <Image
-                    key={key}
-                    source={ALLERGEN_ICONS[key as keyof typeof ALLERGEN_ICONS]}
-                    className="size-[15px] rounded-full"
-                    contentFit="contain"
-                  />
-                ))}
+                {allergens.length > 0 && (
+                  <View className="flex-row items-center gap-x-1.5">
+                    {allergens.map(([key]) => (
+                      <Image
+                        key={key}
+                        source={ALLERGEN_ICONS[key as keyof typeof ALLERGEN_ICONS]}
+                        className="size-[15px] rounded-full"
+                        contentFit="contain"
+                      />
+                    ))}
+                  </View>
+                )}
               </View>
             </View>
             <View className="items-end gap-y-1">
