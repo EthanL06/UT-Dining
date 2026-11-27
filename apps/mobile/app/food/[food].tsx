@@ -1,12 +1,13 @@
 import { and, eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Flame, Heart, Info, X } from 'lucide-react-native';
+import { Flame, Info, X } from 'lucide-react-native';
 import { useEffect, useEffectEvent } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
+import { HeartPop } from '~/components/motion/HeartPop';
 import { GroupedRow, GroupedSection } from '~/components/ui/Grouped';
 import { Image } from '~/components/ui/Image';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
@@ -296,10 +297,11 @@ const FoodScreen = () => {
               className="h-12 flex-1 flex-row items-center justify-center gap-x-2 rounded-full"
               style={{ backgroundColor: theme.fill }}
             >
-              <Heart
+              <HeartPop
+                filled={isFavorite}
                 size={18}
                 color={isFavorite ? theme.tint : theme.label}
-                fill={isFavorite ? theme.tint : 'transparent'}
+                fillColor={theme.tint}
               />
               <Text variant="callout" emphasized>
                 {isFavorite ? 'Favorited' : 'Favorite'}

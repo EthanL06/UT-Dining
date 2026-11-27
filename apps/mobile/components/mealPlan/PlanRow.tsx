@@ -2,6 +2,8 @@ import { Link } from 'expo-router';
 import { Minus, Plus } from 'lucide-react-native';
 import { Pressable, View } from 'react-native';
 import { formatGrams, formatNumber } from '~/components/mealPlan/format';
+import { CountUpText } from '~/components/motion/CountUpText';
+import { RollingNumber } from '~/components/motion/RollingNumber';
 import { Image } from '~/components/ui/Image';
 import { Text } from '~/components/ui/Text';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
@@ -119,9 +121,12 @@ export const PlanRow = ({
                 </View>
               </View>
               <View className="items-end gap-y-1">
-                <Text variant="subheadline" emphasized>
-                  {formatNumber(amount(item, 'calories'))}
-                </Text>
+                <CountUpText
+                  variant="subheadline"
+                  emphasized
+                  value={amount(item, 'calories')}
+                  format={formatNumber}
+                />
                 {editable ? (
                   <View
                     className="h-8 flex-row items-center rounded-full"
@@ -138,14 +143,13 @@ export const PlanRow = ({
                     >
                       <Minus size={14} color={theme.label} />
                     </Pressable>
-                    <Text
+                    <RollingNumber
+                      value={quantity}
                       variant="subheadline"
                       emphasized
                       testID="meal-plan-quantity"
-                      className="min-w-5 text-center"
-                    >
-                      {quantity}
-                    </Text>
+                      className="min-w-5"
+                    />
                     <Pressable
                       accessibilityLabel="Add one serving"
                       hitSlop={6}
