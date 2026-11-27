@@ -31,7 +31,10 @@ import { PushNotificationsInitializer } from '~/services/notifications/notificat
 import { ratingService } from '~/services/rating/rating';
 import { useAppLaunchStore } from '~/store/useAppLaunchStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
+import { getTheme } from '~/utils/theme';
 export const DATABASE_NAME = 'database.db';
+
+Appearance.setColorScheme(useSettingsStore.getState().isDarkMode ? 'dark' : 'light');
 
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
@@ -114,7 +117,7 @@ const AppContent = () => {
                   screenOptions={{
                     headerShown: false,
                     contentStyle: {
-                      backgroundColor: 'white',
+                      backgroundColor: getTheme(isDarkMode).background,
                     },
                     gestureEnabled: true,
                   }}

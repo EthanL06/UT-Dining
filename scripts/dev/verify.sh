@@ -20,7 +20,7 @@ failed=0
 step "Biome on changed files"
 files=()
 while IFS= read -r f; do [[ -f "$f" ]] && files+=("$f"); done <<<"$changed"
-if [[ ${#files[@]} -gt 0 ]] && pnpm exec biome check --no-errors-on-unmatched --files-ignore-unknown=true "${files[@]}"; then
+if [[ ${#files[@]} -gt 0 ]] && pnpm exec biome check --error-on-warnings --no-errors-on-unmatched --files-ignore-unknown=true "${files[@]}"; then
   ok "biome"
 else
   bad "biome (make fix applies the safe fixes)"
