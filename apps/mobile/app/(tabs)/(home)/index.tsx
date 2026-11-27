@@ -32,8 +32,8 @@ import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
 import { homeView, toSyncStatus } from '~/utils/homeView';
+import { displayLocationName } from '~/utils/locationName';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
-import { getLocationName } from '~/utils/locations';
 import { log } from '~/utils/log';
 import { readCachedMenuData } from '~/utils/queries';
 import { type Theme, useTheme } from '~/utils/theme';
@@ -151,11 +151,9 @@ const TypeChip = ({
 const LocationRows = ({
   entries,
   currentTime,
-  db,
 }: {
   entries: LocationEntry[];
   currentTime: Date;
-  db: DrizzleDB;
 }) => {
   const theme = useTheme();
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
@@ -168,7 +166,7 @@ const LocationRows = ({
         isFirst={index === 0}
         separatorInset={37}
         leading={<StatusDot open={isOpen} />}
-        title={getLocationName(db, name, useColloquialNames)}
+        title={displayLocationName(location, useColloquialNames)}
         titleColor={isOpen ? theme.label : theme.secondaryLabel}
         subtitle={getLocationStatusText(location, isOpen, currentTime)}
         showChevron
@@ -391,12 +389,12 @@ export default function Home() {
 
           {open.length > 0 && (
             <GroupedSection header="Open now">
-              <LocationRows entries={open} currentTime={currentTime} db={drizzleDb} />
+              <LocationRows entries={open} currentTime={currentTime} />
             </GroupedSection>
           )}
           {closed.length > 0 && (
             <GroupedSection header="Closed">
-              <LocationRows entries={closed} currentTime={currentTime} db={drizzleDb} />
+              <LocationRows entries={closed} currentTime={currentTime} />
             </GroupedSection>
           )}
         </ScrollView>
