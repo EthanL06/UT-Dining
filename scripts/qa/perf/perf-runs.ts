@@ -122,12 +122,12 @@ const menuTaps = async () => {
   const filters = () => useFiltersStore.getState();
   for (let i = 0; i < 5; i++) {
     out.push(
-      await act('Vegetarian chip on', () => filters().toggleDietaryFilter('Vegetarian'), 0, 'Chip'),
+      await act('Vegetarian chip on', () => filters().toggleDietaryFilter('vegetarian'), 0, 'Chip'),
     );
     out.push(
       await act(
         'Vegetarian chip off',
-        () => filters().toggleDietaryFilter('Vegetarian'),
+        () => filters().toggleDietaryFilter('vegetarian'),
         0,
         'Chip',
       ),
@@ -181,8 +181,8 @@ const menuActions = async (word: string) => {
   hooks.loc.setSearchQuery('');
   await sleep(800);
   const filters = useFiltersStore.getState();
-  out.push(await act('toggle Vegetarian filter', () => filters.toggleDietaryFilter('Vegetarian')));
-  filters.toggleDietaryFilter('Vegetarian');
+  out.push(await act('toggle Vegetarian filter', () => filters.toggleDietaryFilter('vegetarian')));
+  filters.toggleDietaryFilter('vegetarian');
   await sleep(500);
   const first = foodRows(hooks.loc.items)[0];
   out.push(await act('enter multi-select', () => hooks.loc.startSelecting(first.id)));
