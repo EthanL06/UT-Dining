@@ -32,6 +32,7 @@ import {
   type PinnedPlace,
   type Place,
   regionAround,
+  stackOverlappingPins,
   zoomLevelFor,
 } from '~/utils/mapPlaces';
 import { searchPlaces } from '~/utils/mapSearch';
@@ -265,14 +266,19 @@ const MapPage = () => {
     });
   }, []);
 
-  const renderPlace = (place: PinnedPlace) => {
+  const stackedPins = useMemo(
+    () => (zoom === 'labels' ? stackOverlappingPins(pinnedPlaces, region, screen.width) : []),
+    [zoom, pinnedPlaces, region, screen.width],
+  );
+
+  const renderPlace = (place: PinnedPlace, coordinate: Coordinates = place.coordinates) => {
     const selected = selectedPlace?.name === place.name;
     const showLabel = zoom === 'labels' && place.isOpen && place.type !== 'microwave';
     const showDot = !place.isOpen && !selected;
     return (
       <Marker
         key={`${place.name}-${showLabel ? 'label' : showDot ? 'dot' : 'pin'}-${selected}`}
-        coordinate={place.coordinates}
+        coordinate={coordinate}
         tracksViewChanges={false}
         anchor={showLabel ? { x: 0.1, y: 0.5 } : { x: 0.5, y: 0.5 }}
         onPress={() => focusPlace(place)}
@@ -334,7 +340,7 @@ const MapPage = () => {
                 </Marker>
               ),
             )
-          : pinnedPlaces.map(renderPlace)}
+          : stackedPins.map((pin) => renderPlace(pin.place, pin.coordinates))}
       </MapView>
 
       {hasLocationPermission && userCoordinates && !isSheetAboveHalf && (
