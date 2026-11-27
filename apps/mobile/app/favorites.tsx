@@ -1,11 +1,11 @@
 import { and, eq, inArray } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, Stack } from 'expo-router';
-import { ChevronLeft, Heart } from 'lucide-react-native';
+import { Heart } from 'lucide-react-native';
 import { useMemo } from 'react';
 import { Pressable, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FoodComponent, { type RowPosition } from '~/components/FoodComponent';
+import { pushedScreenHeaderOptions } from '~/components/TabStack';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
@@ -120,7 +120,6 @@ const FavoriteSection = ({
 const Favorites = () => {
   const db = useDatabase();
   const theme = useTheme();
-  const insets = useSafeAreaInsets();
   const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
   const { data: favorites } = useLiveQuery(db.select().from(schema.favorites));
 
@@ -144,30 +143,18 @@ const Favorites = () => {
   const notToday = sorted.filter((item) => !matches.has(matchKey(item.name, item.location_name)));
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: insets.top }}>
-      <Stack.Screen options={{ title: 'Favorites', headerShown: false }} />
+    <>
+      <Stack.Screen options={{ title: 'Favorites', ...pushedScreenHeaderOptions(theme) }} />
       <OverflowScrollView
+        style={{ flex: 1, backgroundColor: theme.background }}
+        testID="favorites-screen"
         divider={false}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingBottom: 32 }}
       >
-        <View className="px-4 pt-2">
-          <Pressable
-            testID="back-button"
-            accessibilityLabel="Back"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            className="size-11 items-center justify-center rounded-full"
-            style={{ backgroundColor: theme.card }}
-          >
-            <ChevronLeft size={22} color={theme.label} />
-          </Pressable>
-        </View>
-        <Text variant="largeTitle" testID="favorites-title" className="px-5 pt-3 pb-1">
-          Favorites
-        </Text>
         {sorted.length > 0 && (
-          <Text variant="subheadline" tone="secondary" className="px-5 pb-4">
-            Swipe left on a favorite to remove it.
+          <Text variant="subheadline" tone="secondary" className="px-5 pt-1 pb-4">
+            Press and hold a favorite to remove it.
           </Text>
         )}
 
@@ -176,7 +163,7 @@ const Favorites = () => {
             <Heart size={36} color={theme.tertiaryLabel} />
             <Text variant="headline">No Favorites Yet!</Text>
             <Text variant="subheadline" tone="secondary" className="text-center">
-              Press and hold a food on any menu, or swipe left on it, to save it here.
+              Press and hold a food on any menu to save it here.
             </Text>
             <Pressable
               accessibilityRole="button"
@@ -196,7 +183,7 @@ const Favorites = () => {
           </>
         )}
       </OverflowScrollView>
-    </View>
+    </>
   );
 };
 
