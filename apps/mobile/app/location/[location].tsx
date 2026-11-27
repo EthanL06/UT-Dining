@@ -3,7 +3,6 @@ import { useIsFetching } from '@tanstack/react-query';
 import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { usePostHog } from 'posthog-react-native';
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,6 +17,7 @@ import { MENU_SYNC_QUERY_KEY } from '~/hooks/useMenuSync';
 import { useMultiSelect } from '~/hooks/useMultiSelect';
 import { useRatingPromptOnMenuView } from '~/hooks/useRatingPromptOnMenuView';
 import { useScrollToTop } from '~/hooks/useScrollToTop';
+import { analytics } from '~/services/analytics/posthog';
 import type { FoodItem } from '~/services/database/database';
 import * as schema from '~/services/database/schema';
 import { useFiltersStore } from '~/store/useFiltersStore';
@@ -84,8 +84,6 @@ const Location = () => {
     stop: stopSelecting,
   } = useMultiSelect();
   const canMealPlan = selectedDate >= getTodayInCentralTime();
-
-  const posthog = usePostHog();
 
   useEffect(() => {
     if (location) setLastOpenedLocation(location);
@@ -161,10 +159,8 @@ const Location = () => {
   }, [resetExpandedCategories]);
 
   useEffect(() => {
-    if (posthog) {
-      void posthog.screen(location);
-    }
-  }, [location, posthog]);
+    analytics.screen(location);
+  }, [location]);
 
   const displayedItems: ListItem[] =
     menuStatus === 'loading' ? skeletonItems : menuStatus === 'error' ? [] : rows;

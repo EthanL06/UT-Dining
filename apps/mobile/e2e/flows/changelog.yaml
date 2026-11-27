@@ -26,5 +26,5 @@ tags:
       id: changelog-entry-1.2.0
     direction: DOWN
 - tapOn:
-    id: back-button
+    id: BackButton
 - assertVisible: 'Changelog(,.*)?'

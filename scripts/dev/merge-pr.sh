@@ -10,6 +10,8 @@ Squash-merges a PR into staging with a hand-written message, only after Ethan sa
 Refuses a PR whose base is not staging, a draft, a PR that is not mergeable, and a message with
 AI attribution (Co-authored-by, Claude-Session, Generated with). The merge is pinned to the head
 commit you saw, so a push that lands meanwhile makes it fail instead of merging unreviewed code.
+On the Mac it then releases every simulator leased for that PR or its branch, with its Metro and
+Maestro processes.
 EOF
 }
 
@@ -41,6 +43,7 @@ STATE="$(pr_field 'p.state' <<<"$JSON")"
 DRAFT="$(pr_field 'p.draft' <<<"$JSON")"
 MERGEABLE="$(pr_field 'p.mergeable_state' <<<"$JSON")"
 HEAD="$(pr_field 'p.head.sha' <<<"$JSON")"
+HEAD_REF="$(pr_field 'p.head.ref' <<<"$JSON")"
 
 [[ "$BASE" == "staging" ]] || die "#$PR targets $BASE. Only PRs into staging merge this way; main is Ethan's promotion."
 [[ "$STATE" == "open" ]] || die "#$PR is $STATE."
@@ -56,3 +59,11 @@ gh api -X PUT "repos/$REPO/pulls/$PR/merge" \
   -f merge_method=squash -f sha="$HEAD" \
   -f commit_title="$TITLE (#$PR)" -f commit_message="$BODY" --jq .sha
 ok "merged #$PR"
+
+if is_mac && xcrun simctl help >/dev/null 2>&1; then
+  step "Releasing the simulators leased for #$PR ($HEAD_REF)"
+  "$ROOT/scripts/dev/sim-lease.sh" release --pr "$PR" --branch "$HEAD_REF" \
+    || warn "could not release them. Run: make sim-release PR=$PR"
+else
+  note "not on the Mac: its sweeper releases the leases of #$PR within 5 minutes"
+fi
