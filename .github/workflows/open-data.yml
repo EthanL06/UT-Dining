@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       from:
-        description: First menu date to export as YYYY-MM-DD, or "all" for a full backfill (blank exports from two days ago)
+        description: First menu date to export as YYYY-MM-DD, or "all" for a full backfill (blank catches up from two days before the last published change)
         required: false
 
 concurrency:
@@ -24,7 +24,6 @@ jobs:
     timeout-minutes: 60
     env:
       HAS_DEPLOY_KEY: ${{ secrets.DATA_REPO_DEPLOY_KEY != '' }}
-      BACKFILL: ${{ github.event_name == 'workflow_dispatch' && inputs.from != '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -49,12 +48,29 @@ jobs:
           ssh-key: ${{ secrets.DATA_REPO_DEPLOY_KEY }}
           path: open-data
 
+      - name: Pick the first date to export
+        id: from
+        env:
+          INPUT_FROM: ${{ inputs.from }}
+          TZ: America/Chicago
+        run: |
+          if [ -n "$INPUT_FROM" ]; then
+            echo "from=$INPUT_FROM" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          last=$(git -C open-data log -1 --format=%cd --date=format-local:%F)
+          from=$(date -d "$last -2 days" +%F)
+          recent=$(date -d '-2 days' +%F)
+          if [[ "$recent" < "$from" ]]; then from=$recent; fi
+          echo "Last published $last, exporting from $from"
+          echo "from=$from" >> "$GITHUB_OUTPUT"
+
       - name: Export menus, dishes and locations
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ env.BACKFILL == 'true' && secrets.SUPABASE_SERVICE_KEY || secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           EXPORT_DIR: ${{ github.workspace }}/open-data
-          EXPORT_FROM: ${{ inputs.from }}
+          EXPORT_FROM: ${{ steps.from.outputs.from }}
           TZ: America/Chicago
         run: |
           pnpm --filter @ut-dining/scraper export

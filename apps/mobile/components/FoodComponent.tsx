@@ -135,7 +135,8 @@ const FoodComponent = ({
             <Text variant="footnote" tone="secondary">
               {displayNutrient(food.nutrition?.calories)} kcal ·{' '}
               {displayNutrient(food.nutrition?.protein)} protein ·{' '}
-              {displayNutrient(food.nutrition?.total_carbohydrates)} carbs
+              {displayNutrient(food.nutrition?.total_carbohydrates)} carbs ·{' '}
+              {displayNutrient(food.nutrition?.total_fat)} fat
             </Text>
             {food.allergens &&
               Object.entries(food.allergens).map(([key, value]) =>
