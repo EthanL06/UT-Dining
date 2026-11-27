@@ -1,0 +1,8 @@
+home
+map map
+notifications notifications
+settings settings
+favorites favorites
+meal-plan meal-plan
+changelog changelog
+j2-dining location/J2%20Dining
