@@ -1,9 +1,10 @@
 import { Heart } from 'lucide-react-native';
 import type React from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import ActionSheet, { ScrollView, type SheetProps, useSheetRef } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
+import { Image } from '~/components/ui/Image';
 import { Text } from '~/components/ui/Text';
 
 import { ALLERGEN_EXCEPTIONS, ALLERGEN_ICONS } from '~/data/AllergenInfo';
@@ -176,7 +177,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
                 isOn={!!filters.allergens[key]}
                 onPress={() => toggleAllergenFilter(key)}
                 icon={
-                  <Image source={iconSource} className="size-7 rounded-full" resizeMode="contain" />
+                  <Image source={iconSource} className="size-7 rounded-full" contentFit="contain" />
                 }
               />
             ))}
@@ -192,7 +193,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
                 isOn={!!filters.dietary[key]}
                 onPress={() => toggleDietaryFilter(key)}
                 icon={
-                  <Image source={iconSource} className="size-7 rounded-full" resizeMode="contain" />
+                  <Image source={iconSource} className="size-7 rounded-full" contentFit="contain" />
                 }
               />
             ))}

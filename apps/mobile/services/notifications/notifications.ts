@@ -117,9 +117,9 @@ export function PushNotificationsInitializer() {
       }
     };
 
-    register();
+    void register();
     const appState = AppState.addEventListener('change', (state) => {
-      if (state === 'active') register();
+      if (state === 'active') void register();
     });
     return () => appState.remove();
   }, [isOnboardingComplete, setDeviceId, setExpoPushToken]);
@@ -138,14 +138,16 @@ export function PushNotificationsInitializer() {
     };
 
     const launchResponse = Notifications.getLastNotificationResponse();
-    if (launchResponse) openResponse(launchResponse);
+    if (launchResponse) void openResponse(launchResponse);
 
     const received = Notifications.addNotificationReceivedListener((notification) => {
       log.debug('Notification foreground received', { notification });
       setNotification(notification);
-      if (db) saveNotification(db, notification);
+      if (db) void saveNotification(db, notification);
     });
-    const responses = Notifications.addNotificationResponseReceivedListener(openResponse);
+    const responses = Notifications.addNotificationResponseReceivedListener((response) => {
+      void openResponse(response);
+    });
 
     return () => {
       received.remove();

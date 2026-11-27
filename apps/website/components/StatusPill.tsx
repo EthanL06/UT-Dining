@@ -28,7 +28,7 @@ export function StatusPill({ initial = null }: { initial?: ServiceHealth | null 
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchServiceHealth({ signal: controller.signal }).then((health) => {
+    void fetchServiceHealth({ signal: controller.signal }).then((health) => {
       if (controller.signal.aborted) return;
       setState((current) => health ?? (current === 'loading' ? 'unavailable' : current));
     });

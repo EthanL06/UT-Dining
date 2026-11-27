@@ -235,7 +235,7 @@ const Location = () => {
 
   useEffect(() => {
     if (posthog) {
-      posthog.screen(location);
+      void posthog.screen(location);
     }
   }, [location, posthog]);
 

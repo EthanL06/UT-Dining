@@ -133,7 +133,7 @@ const LocationHeader = React.memo(
                     theme={theme}
                     onPress={() => {
                       if (!locationData) return;
-                      SheetManager.show('location-about', {
+                      void SheetManager.show('location-about', {
                         payload: { location: locationData },
                       });
                     }}
