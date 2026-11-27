@@ -1,4 +1,4 @@
-import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { index, integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const notification_types = sqliteTable('notification_type', {
   id: text('id').primaryKey(),
@@ -48,18 +48,26 @@ export const location = sqliteTable('location', {
   updated_at: text('updated_at').default('CURRENT_TIMESTAMP'),
 });
 
-export const menu = sqliteTable('menu', {
-  id: integer('id').primaryKey(),
-  name: text('name'),
-  location_id: text('location_id').references(() => location.id),
-  date: text('date').notNull(),
-});
+export const menu = sqliteTable(
+  'menu',
+  {
+    id: integer('id').primaryKey(),
+    name: text('name'),
+    location_id: text('location_id').references(() => location.id),
+    date: text('date').notNull(),
+  },
+  (table) => [index('menu_date_location_idx').on(table.date, table.location_id)],
+);
 
-export const menu_category = sqliteTable('menu_category', {
-  id: integer('id').primaryKey(),
-  menu_id: integer('menu_id').references(() => menu.id),
-  title: text('title'),
-});
+export const menu_category = sqliteTable(
+  'menu_category',
+  {
+    id: integer('id').primaryKey(),
+    menu_id: integer('menu_id').references(() => menu.id),
+    title: text('title'),
+  },
+  (table) => [index('menu_category_menu_idx').on(table.menu_id)],
+);
 
 export const nutrition = sqliteTable('nutrition', {
   id: integer('id').primaryKey(),
@@ -126,14 +134,18 @@ export const allergens = sqliteTable('allergens', {
   }),
 });
 
-export const food_item = sqliteTable('food_item', {
-  id: integer('id').primaryKey(),
-  name: text('name'),
-  link: text('link'),
-  menu_category_id: integer('menu_category_id').references(() => menu_category.id),
-  nutrition_id: integer('nutrition_id').references(() => nutrition.id),
-  allergens_id: integer('allergens_id').references(() => allergens.id),
-});
+export const food_item = sqliteTable(
+  'food_item',
+  {
+    id: integer('id').primaryKey(),
+    name: text('name'),
+    link: text('link'),
+    menu_category_id: integer('menu_category_id').references(() => menu_category.id),
+    nutrition_id: integer('nutrition_id').references(() => nutrition.id),
+    allergens_id: integer('allergens_id').references(() => allergens.id),
+  },
+  (table) => [index('food_item_category_idx').on(table.menu_category_id)],
+);
 
 export const favorites = sqliteTable('favorites', {
   id: integer('id').primaryKey({ autoIncrement: true }),

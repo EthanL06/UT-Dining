@@ -1,11 +1,21 @@
 import { ChevronRight, type LucideIcon } from 'lucide-react-native';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { Pressable, View } from 'react-native';
+import Reanimated, {
+  cancelAnimation,
+  Easing,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 import { Text } from '~/components/ui/Text';
 
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getColor } from '~/utils/colors';
 import { useTheme } from '~/utils/theme';
+import { statusDotTone } from '~/utils/time';
 
 export const GroupedSection = ({
   header,
@@ -63,6 +73,7 @@ export const GroupedRow = ({
   testID,
   detailTestID,
   selected,
+  accessibilityRole,
 }: {
   title: ReactNode;
   subtitle?: ReactNode;
@@ -80,18 +91,19 @@ export const GroupedRow = ({
   testID?: string;
   detailTestID?: string;
   selected?: boolean;
+  accessibilityRole?: 'button' | 'link';
 }) => {
   const theme = useTheme();
 
   return (
     <Pressable
       testID={testID}
-      accessible={!!onPress}
-      accessibilityRole={onPress ? 'button' : undefined}
+      accessible={!!onPress || !!accessibilityRole}
+      accessibilityRole={accessibilityRole ?? (onPress ? 'button' : undefined)}
       accessibilityState={selected === undefined ? undefined : { selected }}
       onPress={onPress}
       onLongPress={onLongPress}
-      disabled={disabled || !onPress}
+      disabled={disabled || (!onPress && !accessibilityRole)}
     >
       {({ pressed }) => (
         <View style={{ backgroundColor: pressed ? theme.fill : 'transparent' }}>
@@ -154,18 +166,68 @@ export const IconSquare = ({ Icon, color }: { Icon: LucideIcon; color: string })
   </View>
 );
 
-export const StatusDot = ({ open }: { open: boolean }) => {
+const PULSE_MS = 2200;
+
+export const StatusDot = ({
+  open,
+  closesInMinutes = null,
+}: {
+  open: boolean;
+  closesInMinutes?: number | null;
+}) => {
   const isColorBlindMode = useSettingsStore((state) => state.isColorBlindMode);
   const theme = useTheme();
+  const reduceMotion = useReducedMotion();
+  const tone = statusDotTone(open, closesInMinutes);
+  const pulse = useSharedValue(0);
+  const pulsing = tone !== 'closed' && !reduceMotion;
 
+  useEffect(() => {
+    if (!pulsing) {
+      cancelAnimation(pulse);
+      pulse.value = 0;
+      return;
+    }
+    pulse.value = withRepeat(
+      withTiming(1, { duration: PULSE_MS, easing: Easing.out(Easing.quad) }),
+      -1,
+      false,
+    );
+    return () => cancelAnimation(pulse);
+  }, [pulsing, pulse]);
+
+  const haloStyle = useAnimatedStyle(() => ({
+    opacity: pulse.value === 0 ? 0 : 0.45 * (1 - pulse.value),
+    transform: [{ scale: 1 + pulse.value * 1.4 }],
+  }));
+
+  if (tone === 'closed') {
+    return (
+      <View
+        testID="status-dot-closed"
+        className="size-[9px] rounded-full"
+        style={{ borderWidth: 1.5, borderColor: theme.secondaryLabel }}
+      />
+    );
+  }
+
+  const color = getColor(
+    tone === 'closingSoon' ? 'status-closing' : 'status-open',
+    isColorBlindMode,
+  );
   return (
     <View
-      className="size-[9px] rounded-full"
-      style={
-        open
-          ? { backgroundColor: getColor('status-open', isColorBlindMode) }
-          : { borderWidth: 1.5, borderColor: theme.secondaryLabel }
-      }
-    />
+      testID={tone === 'closingSoon' ? 'status-dot-closing' : 'status-dot-open'}
+      className="size-[9px] items-center justify-center"
+    >
+      <Reanimated.View
+        pointerEvents="none"
+        style={[
+          { position: 'absolute', width: 9, height: 9, borderRadius: 4.5, backgroundColor: color },
+          haloStyle,
+        ]}
+      />
+      <View className="size-[9px] rounded-full" style={{ backgroundColor: color }} />
+    </View>
   );
 };

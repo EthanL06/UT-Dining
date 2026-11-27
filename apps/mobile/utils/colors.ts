@@ -3,6 +3,7 @@ export const COLORS = {
   'ut-grey': '#333F48',
   'ut-grey-dark-mode': '#9CA3AF',
   'status-open': '#22c55e',
+  'status-closing': '#f59e0b',
   'status-closed': '#ef4444',
 };
 
@@ -11,6 +12,7 @@ export const COLORBLIND_COLORS = {
   'ut-grey': '#333F48',
   'ut-grey-dark-mode': '#9CA3AF',
   'status-open': '#005AB5',
+  'status-closing': '#E69F00',
   'status-closed': '#8F0000',
 };
 

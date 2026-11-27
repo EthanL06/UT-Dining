@@ -7,8 +7,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { formatGrams, formatNumber } from '~/components/mealPlan/format';
 import { PlanRow } from '~/components/mealPlan/PlanRow';
 import { UndoToast } from '~/components/mealPlan/UndoToast';
+import { CountUpText } from '~/components/motion/CountUpText';
 import { pushedScreenHeaderOptions } from '~/components/TabStack';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import {
   type MealPlanItem,
@@ -48,7 +50,7 @@ const formatPlanDay = (date: string) => {
   return formatCentralDateKey(date, { weekday: 'long', month: 'short', day: 'numeric' });
 };
 
-const Tile = ({ label, value, theme }: { label: string; value: string; theme: Theme }) => (
+const Tile = ({ label, value, theme }: { label: string; value: number; theme: Theme }) => (
   <View
     className="flex-1 px-3.5 py-3"
     style={{ backgroundColor: theme.card, borderRadius: 22, borderCurve: 'continuous' }}
@@ -56,7 +58,7 @@ const Tile = ({ label, value, theme }: { label: string; value: string; theme: Th
     <Text variant="caption" tone="secondary">
       {label}
     </Text>
-    <Text variant="title3">{value}</Text>
+    <CountUpText variant="title3" value={value} format={formatGrams} />
   </View>
 );
 
@@ -75,7 +77,7 @@ const DayArrow = ({
 }) => {
   const theme = useTheme();
   return (
-    <Pressable
+    <PressableScale
       testID={testID}
       accessibilityLabel={label}
       accessibilityRole="button"
@@ -87,7 +89,7 @@ const DayArrow = ({
       style={{ backgroundColor: theme.card, opacity: target ? 1 : 0.4 }}
     >
       {children}
-    </Pressable>
+    </PressableScale>
   );
 };
 
@@ -253,33 +255,24 @@ const MealPlan = () => {
                   <Text variant="caption" tone="secondary">
                     Total for the day
                   </Text>
-                  <Text variant="display">
-                    {formatNumber(sumNutrient(items, 'calories'))}
+                  <CountUpText
+                    variant="display"
+                    value={sumNutrient(items, 'calories')}
+                    format={formatNumber}
+                  >
                     <Text variant="callout" tone="secondary">
                       {' '}
                       kcal
                     </Text>
-                  </Text>
+                  </CountUpText>
                 </View>
                 <Flame size={32} color={theme.tint} fill={theme.tint} />
               </View>
             </View>
             <View className="mx-4 mb-5 flex-row gap-x-2">
-              <Tile
-                label="Protein"
-                value={formatGrams(sumNutrient(items, 'protein'))}
-                theme={theme}
-              />
-              <Tile
-                label="Carbs"
-                value={formatGrams(sumNutrient(items, 'total_carbohydrates'))}
-                theme={theme}
-              />
-              <Tile
-                label="Fat"
-                value={formatGrams(sumNutrient(items, 'total_fat'))}
-                theme={theme}
-              />
+              <Tile label="Protein" value={sumNutrient(items, 'protein')} theme={theme} />
+              <Tile label="Carbs" value={sumNutrient(items, 'total_carbohydrates')} theme={theme} />
+              <Tile label="Fat" value={sumNutrient(items, 'total_fat')} theme={theme} />
             </View>
 
             {meals.map((meal) => {
@@ -290,9 +283,12 @@ const MealPlan = () => {
                     <Text variant="footnote" tone="secondary">
                       {meal}
                     </Text>
-                    <Text variant="footnote" tone="secondary">
-                      {formatNumber(sumNutrient(mealItems, 'calories'))} kcal
-                    </Text>
+                    <CountUpText
+                      variant="footnote"
+                      tone="secondary"
+                      value={sumNutrient(mealItems, 'calories')}
+                      format={(calories) => `${formatNumber(calories)} kcal`}
+                    />
                   </View>
                   <View
                     className="mx-4 overflow-hidden"
@@ -320,6 +316,7 @@ const MealPlan = () => {
           key={`${undo.date}-${undo.item.id}`}
           message={`Removed ${undo.item.name}`}
           bottom={insets.bottom + 16}
+          duration={UNDO_MS}
           onUndo={undoRemove}
         />
       )}

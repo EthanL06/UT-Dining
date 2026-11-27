@@ -3,11 +3,11 @@ import { toCentralTime } from '@ut-dining/core';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
 import * as Network from 'expo-network';
-import { router, Stack } from 'expo-router';
+import { Link, router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Heart } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -16,12 +16,21 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Reanimated, {
+  runOnJS,
+  useAnimatedReaction,
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { FilterType } from '~/components/FilterBar';
+import { RefreshDrop } from '~/components/home/RefreshDrop';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
 import OnboardingScreen from '~/components/onboarding/OnboardingScreen';
 import { ServiceStatusBanner } from '~/components/ServiceStatusBanner';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
 import { Image } from '~/components/ui/Image';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import { forceMenuSync, useMenuSync } from '~/hooks/useMenuSync';
 import { useNow } from '~/hooks/useNow';
@@ -35,9 +44,15 @@ import { homeView, toSyncStatus } from '~/utils/homeView';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
 import { getLocationName } from '~/utils/locations';
 import { log } from '~/utils/log';
+import { PULL_TRIGGER, type RefreshResult, type RefreshStatus } from '~/utils/pullRefresh';
 import { readCachedMenuData } from '~/utils/queries';
 import { type Theme, useTheme } from '~/utils/theme';
-import { formatTimeSinceSync, getLocationStatusText, timeOfDay } from '~/utils/time';
+import {
+  formatTimeSinceSync,
+  getLocationStatusText,
+  getMinutesUntilClose,
+  timeOfDay,
+} from '~/utils/time';
 import * as schema from '../../../services/database/schema';
 
 const SPLASH_SCREEN_DURATION = 200;
@@ -136,7 +151,7 @@ const TypeChip = ({
   onPress: () => void;
   theme: Theme;
 }) => (
-  <Pressable
+  <PressableScale
     accessibilityRole="button"
     accessibilityState={{ selected }}
     onPress={() => {
@@ -149,7 +164,7 @@ const TypeChip = ({
     <Text variant="subheadline" emphasized tone={selected ? 'onTint' : 'primary'}>
       {title}
     </Text>
-  </Pressable>
+  </PressableScale>
 );
 
 const LocationRows = ({
@@ -167,22 +182,32 @@ const LocationRows = ({
   return entries.map(({ location, isOpen }, index) => {
     const name = location.name ?? '';
     return (
-      <GroupedRow
+      <Link
         key={location.id}
-        isFirst={index === 0}
-        separatorInset={37}
-        leading={<StatusDot open={isOpen} />}
-        title={getLocationName(db, name, useColloquialNames)}
-        titleColor={isOpen ? theme.label : theme.secondaryLabel}
-        subtitle={getLocationStatusText(location, isOpen, currentTime)}
-        showChevron
-        onPress={() =>
-          router.push({
-            pathname: location.has_menus ? '/location/[location]' : '/location_generic/[location]',
-            params: { location: name },
-          })
-        }
-      />
+        href={{
+          pathname: location.has_menus ? '/location/[location]' : '/location_generic/[location]',
+          params: { location: name },
+        }}
+        asChild
+      >
+        <Link.Trigger withAppleZoom>
+          <GroupedRow
+            accessibilityRole="button"
+            isFirst={index === 0}
+            separatorInset={37}
+            leading={
+              <StatusDot
+                open={isOpen}
+                closesInMinutes={getMinutesUntilClose(location, currentTime)}
+              />
+            }
+            title={getLocationName(db, name, useColloquialNames)}
+            titleColor={isOpen ? theme.label : theme.secondaryLabel}
+            subtitle={getLocationStatusText(location, isOpen, currentTime)}
+            showChevron
+          />
+        </Link.Trigger>
+      </Link>
     );
   });
 };
@@ -202,7 +227,11 @@ const CenteredMessage = ({ children }: { children: React.ReactNode }) => {
 export default function Home() {
   const currentTime = useNow();
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
-  const [refreshing, setRefreshing] = useState(false);
+  const [refreshStatus, setRefreshStatus] = useState<RefreshStatus>({ kind: 'idle' });
+  const { top: safeTop } = useSafeAreaInsets();
+  const pull = useSharedValue(0);
+  const dragging = useSharedValue(false);
+  const refreshInFlight = useRef(false);
   const isOnboardingComplete = useOnboardingStore((state) => state.isOnboardingComplete);
   const theme = useTheme();
 
@@ -229,14 +258,13 @@ export default function Home() {
   });
   const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
+  const syncNow = async (): Promise<RefreshResult> => {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     try {
       const networkState = await Network.getNetworkStateAsync();
       if (!networkState.isConnected) {
         haptics.error();
-        return;
+        return 'offline';
       }
 
       const timeoutPromise = new Promise((_, reject) => {
@@ -244,14 +272,48 @@ export default function Home() {
       });
 
       await Promise.race([forceMenuSync(queryClient), timeoutPromise]);
+      return 'updated';
     } catch (error) {
       log.warn('Error refreshing data', { error });
       haptics.error();
+      return 'failed';
     } finally {
       clearTimeout(timeoutId);
-      setRefreshing(false);
     }
   };
+
+  const handleRefresh = async () => {
+    if (refreshInFlight.current) return;
+    refreshInFlight.current = true;
+    setRefreshStatus({ kind: 'refreshing' });
+    const result = await syncNow();
+    refreshInFlight.current = false;
+    setRefreshStatus({ kind: 'settled', result, at: Date.now() });
+  };
+
+  const finishRefresh = useCallback(() => setRefreshStatus({ kind: 'idle' }), []);
+  const tapAtTrigger = useCallback(() => haptics.tap(), []);
+  const refreshOnRelease = () => void handleRefresh();
+
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      pull.value = Math.max(0, -event.contentOffset.y - safeTop);
+    },
+    onBeginDrag: () => {
+      dragging.value = true;
+    },
+    onEndDrag: () => {
+      dragging.value = false;
+      if (pull.value >= PULL_TRIGGER) runOnJS(refreshOnRelease)();
+    },
+  });
+
+  useAnimatedReaction(
+    () => dragging.value && pull.value >= PULL_TRIGGER,
+    (armed, wasArmed) => {
+      if (armed && wasArmed === false) runOnJS(tapAtTrigger)();
+    },
+  );
 
   const cacheLoading = view.kind === 'loading';
   useEffect(() => {
@@ -275,7 +337,7 @@ export default function Home() {
           If you just updated the app, close and reopen the app.
         </Text>
         <TouchableOpacity
-          onPress={handleRefresh}
+          onPress={() => void syncNow()}
           className="rounded-full px-4 py-2"
           style={{ backgroundColor: theme.tint }}
         >
@@ -329,15 +391,18 @@ export default function Home() {
           </TouchableOpacity>
         </CenteredMessage>
       ) : (
-        <ScrollView
+        <Reanimated.ScrollView
+          testID="home-scroll"
           contentInsetAdjustmentBehavior="automatic"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
           refreshControl={
             <RefreshControl
-              refreshing={refreshing}
+              refreshing={refreshStatus.kind === 'refreshing'}
               onRefresh={handleRefresh}
-              tintColor={theme.secondaryLabel}
+              tintColor="transparent"
             />
           }
         >
@@ -403,7 +468,10 @@ export default function Home() {
               <LocationRows entries={closed} currentTime={currentTime} db={drizzleDb} />
             </GroupedSection>
           )}
-        </ScrollView>
+        </Reanimated.ScrollView>
+      )}
+      {view.kind === 'ready' && (
+        <RefreshDrop pull={pull} status={refreshStatus} onFinished={finishRefresh} />
       )}
     </View>
   );

@@ -1,15 +1,17 @@
 import { and, eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Flame, Heart, Info, X } from 'lucide-react-native';
+import { Flame, Info, X } from 'lucide-react-native';
 import { useEffect, useEffectEvent } from 'react';
-import { ActivityIndicator, Pressable, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
+import { HeartPop } from '~/components/motion/HeartPop';
 import { GroupedRow, GroupedSection } from '~/components/ui/Grouped';
 import { Image } from '~/components/ui/Image';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import {
   ALLERGEN_ICONS,
@@ -18,6 +20,7 @@ import {
   INDENTED_NUTRITION,
 } from '~/data/AllergenInfo';
 import { useDatabase } from '~/hooks/useDatabase';
+import { useFavorite } from '~/hooks/useFavorite';
 import { useFoodData } from '~/hooks/useFoodData';
 import { analytics } from '~/services/analytics/posthog';
 import * as schema from '~/services/database/schema';
@@ -53,7 +56,7 @@ const percentOfDailyValue = (key: string, value: unknown) => {
   return `${Math.round((Number.parseFloat(String(value)) / dailyValue) * 100)}%`;
 };
 
-const FoodScreen = () => {
+export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
   const params = useLocalSearchParams<{
     food: string;
     menu: string;
@@ -78,7 +81,7 @@ const FoodScreen = () => {
       ),
     [food, location],
   );
-  const isFavorite = favoriteRows.length > 0;
+  const isFavorite = useFavorite(food ?? '', location ?? '', favoriteRows.length > 0);
   const planDate = date || todayKey();
   const canMealPlan = planDate >= todayKey();
   const isMealPlan = useIsMealPlanItem(
@@ -120,8 +123,11 @@ const FoodScreen = () => {
           divider={false}
           contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
         >
-          <View className="flex-row items-center justify-between px-4 pt-4 pb-2">
-            <Pressable
+          <View
+            className="flex-row items-center justify-between px-4 pb-2"
+            style={{ paddingTop: pushed ? insets.top + 8 : 16 }}
+          >
+            <PressableScale
               testID="back-button"
               accessibilityLabel="Close"
               accessibilityRole="button"
@@ -132,8 +138,8 @@ const FoodScreen = () => {
               style={{ backgroundColor: theme.card }}
             >
               <X size={20} color={theme.label} />
-            </Pressable>
-            <Pressable
+            </PressableScale>
+            <PressableScale
               testID="food-info-button"
               accessibilityLabel="About nutrition info"
               accessibilityRole="button"
@@ -144,7 +150,7 @@ const FoodScreen = () => {
               style={{ backgroundColor: theme.card }}
             >
               <Info size={20} color={theme.label} />
-            </Pressable>
+            </PressableScale>
           </View>
 
           {status === 'loading' && (
@@ -284,7 +290,7 @@ const FoodScreen = () => {
               shadowOffset: { width: 0, height: 6 },
             }}
           >
-            <Pressable
+            <PressableScale
               testID="food-favorite-button"
               accessibilityLabel={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
               accessibilityRole="button"
@@ -293,20 +299,22 @@ const FoodScreen = () => {
                 else haptics.success();
                 await toggleFavoriteForFood(db, foodItem, context);
               }}
-              className="h-12 flex-1 flex-row items-center justify-center gap-x-2 rounded-full"
+              containerStyle={{ flex: 1 }}
+              className="h-12 flex-row items-center justify-center gap-x-2 rounded-full"
               style={{ backgroundColor: theme.fill }}
             >
-              <Heart
+              <HeartPop
+                filled={isFavorite}
                 size={18}
                 color={isFavorite ? theme.tint : theme.label}
-                fill={isFavorite ? theme.tint : 'transparent'}
+                fillColor={theme.tint}
               />
               <Text variant="callout" emphasized>
                 {isFavorite ? 'Favorited' : 'Favorite'}
               </Text>
-            </Pressable>
+            </PressableScale>
             {canMealPlan && (
-              <Pressable
+              <PressableScale
                 testID="food-meal-plan-button"
                 accessibilityLabel={isMealPlan ? 'Remove from meal plan' : 'Add to meal plan'}
                 accessibilityRole="button"
@@ -315,7 +323,8 @@ const FoodScreen = () => {
                   else haptics.success();
                   toggleMealPlanForFood(foodItem, context);
                 }}
-                className="h-12 flex-[1.4] flex-row items-center justify-center gap-x-2 rounded-full"
+                containerStyle={{ flex: 1.4 }}
+                className="h-12 flex-row items-center justify-center gap-x-2 rounded-full"
                 style={{ backgroundColor: isMealPlan ? theme.tintSoft : theme.tint }}
               >
                 <MealPlanIcon
@@ -326,7 +335,7 @@ const FoodScreen = () => {
                 <Text variant="callout" emphasized color={isMealPlan ? theme.tint : '#FFFFFF'}>
                   {isMealPlan ? 'In Meal Plan' : 'Add to Meal Plan'}
                 </Text>
-              </Pressable>
+              </PressableScale>
             )}
           </View>
         )}
@@ -334,5 +343,7 @@ const FoodScreen = () => {
     </SheetProvider>
   );
 };
+
+const FoodScreen = () => <FoodDetail />;
 
 export default FoodScreen;

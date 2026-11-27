@@ -1,6 +1,7 @@
 import { ChefHat, Heart } from 'lucide-react-native';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import { useTheme } from '~/utils/theme';
 import { displayNutrient } from '~/utils/utils';
@@ -32,7 +33,7 @@ const SelectionBar = ({ count, calories, canMealPlan, onFavorite, onAddToMealPla
     >
       {canMealPlan ? (
         <>
-          <Pressable
+          <PressableScale
             testID="select-favorite-button"
             accessibilityLabel="Add selected to favorites"
             accessibilityRole="button"
@@ -42,13 +43,14 @@ const SelectionBar = ({ count, calories, canMealPlan, onFavorite, onAddToMealPla
             style={{ backgroundColor: theme.fill }}
           >
             <Heart size={20} color={theme.label} />
-          </Pressable>
-          <Pressable
+          </PressableScale>
+          <PressableScale
             testID="select-add-meal-plan-button"
             accessibilityRole="button"
             disabled={empty}
             onPress={onAddToMealPlan}
-            className="h-11 flex-1 flex-row items-center justify-center gap-x-2 rounded-full"
+            containerStyle={{ flex: 1 }}
+            className="h-11 flex-row items-center justify-center gap-x-2 rounded-full"
             style={{ backgroundColor: theme.tint, opacity: empty ? 0.5 : 1 }}
           >
             <ChefHat size={18} color="#FFFFFF" />
@@ -57,22 +59,23 @@ const SelectionBar = ({ count, calories, canMealPlan, onFavorite, onAddToMealPla
                 ? 'Select items'
                 : `Add ${count} to Meal Plan · ${displayNutrient(String(Math.round(calories)))} kcal`}
             </Text>
-          </Pressable>
+          </PressableScale>
         </>
       ) : (
-        <Pressable
+        <PressableScale
           testID="select-favorite-button"
           accessibilityRole="button"
           disabled={empty}
           onPress={onFavorite}
-          className="h-11 flex-1 flex-row items-center justify-center gap-x-2 rounded-full"
+          containerStyle={{ flex: 1 }}
+          className="h-11 flex-row items-center justify-center gap-x-2 rounded-full"
           style={{ backgroundColor: theme.tint, opacity: empty ? 0.5 : 1 }}
         >
           <Heart size={18} color="#FFFFFF" />
           <Text variant="subheadline" emphasized tone="onTint">
             {empty ? 'Select items' : `Add ${count} to Favorites`}
           </Text>
-        </Pressable>
+        </PressableScale>
       )}
     </View>
   );
