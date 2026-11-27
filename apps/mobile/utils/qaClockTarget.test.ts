@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseQaClock } from './qaClockTarget';
+import { centralInstant, parseQaClock } from './qaClockTarget';
 
 const REAL_NOW = Date.parse('2026-11-27T18:09:00Z');
 
@@ -38,5 +38,16 @@ describe('parseQaClock', () => {
     expect(parseQaClock({ clock: '25:00' }, REAL_NOW)).toEqual({ kind: 'none' });
     expect(parseQaClock({ clock: '9:00' }, REAL_NOW)).toEqual({ kind: 'none' });
     expect(parseQaClock({ clock: '09:00', days: 'x' }, REAL_NOW)).toEqual({ kind: 'none' });
+  });
+});
+
+describe('centralInstant', () => {
+  it('handles both sides of the fall daylight saving change', () => {
+    expect(centralInstant('2026-11-01', '00:30')).toBe(Date.parse('2026-11-01T05:30:00Z'));
+    expect(centralInstant('2026-11-01', '12:00')).toBe(Date.parse('2026-11-01T18:00:00Z'));
+  });
+
+  it('handles summer time', () => {
+    expect(centralInstant('2026-07-04', '20:30')).toBe(Date.parse('2026-07-05T01:30:00Z'));
   });
 });
