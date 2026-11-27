@@ -1,5 +1,11 @@
 import type { DrizzleDB, FoodItem } from '~/services/database/database';
-import { countFavorites, isFavoriteItem, setFavorite } from '~/services/database/database';
+import {
+  countFavorites,
+  isFavoriteItem,
+  restoreFavoriteRow,
+  setFavorite,
+} from '~/services/database/database';
+import type { Favorite } from '~/services/database/schema';
 import { ratingService } from '~/services/rating/rating';
 import { useFavoriteOverridesStore } from '~/store/useFavoriteOverridesStore';
 import { mealPlanItemId, todayKey, useMealPlanStore } from '~/store/useMealPlanStore';
@@ -55,18 +61,15 @@ export const addFoodsToMealPlan = (
 const SETTLE_MS = 1500;
 const writes = new Map<string, Promise<unknown>>();
 
-export const setFavoriteForFood = (
-  db: DrizzleDB,
-  food: FoodItem,
-  context: FoodContext,
+const queueFavoriteWrite = (
+  key: string,
   value: boolean,
+  run: () => Promise<unknown>,
+  details: Record<string, string>,
 ) => {
-  const key = favoriteKey(food.name as string, context.location);
   const overrides = useFavoriteOverridesStore.getState();
   const seq = overrides.begin(key, value);
-  const write = (writes.get(key) ?? Promise.resolve())
-    .catch(() => undefined)
-    .then(() => setFavorite(db, food, context.location, context.menu, context.category, value));
+  const write = (writes.get(key) ?? Promise.resolve()).catch(() => undefined).then(run);
   writes.set(key, write);
   return write
     .then(() => {
@@ -77,13 +80,34 @@ export const setFavoriteForFood = (
     .catch((error: unknown) => {
       overrides.clear(key, seq);
       haptics.error();
-      log.error('favorite write failed', error, { food: food.name, location: context.location });
+      log.error('favorite write failed', error, details);
       return false;
     })
     .finally(() => {
       if (writes.get(key) === write) writes.delete(key);
     });
 };
+
+export const setFavoriteForFood = (
+  db: DrizzleDB,
+  food: FoodItem,
+  context: FoodContext,
+  value: boolean,
+) =>
+  queueFavoriteWrite(
+    favoriteKey(food.name as string, context.location),
+    value,
+    () => setFavorite(db, food, context.location, context.menu, context.category, value),
+    { food: food.name as string, location: context.location },
+  );
+
+export const restoreFavorite = (db: DrizzleDB, row: Favorite) =>
+  queueFavoriteWrite(
+    favoriteKey(row.name, row.location_name),
+    true,
+    () => restoreFavoriteRow(db, row),
+    { food: row.name, location: row.location_name },
+  );
 
 export const isFavoriteNow = (db: DrizzleDB, foodName: string, locationName: string) => {
   const override =

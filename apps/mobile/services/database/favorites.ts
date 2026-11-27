@@ -112,5 +112,14 @@ export const setFavorite = async (
   return true;
 };
 
+export const restoreFavoriteRow = async (
+  db: ExpoSQLiteDatabase<typeof schema>,
+  row: schema.Favorite,
+) => {
+  if (isFavoriteItem(db, row.name, row.location_name)) return true;
+  await db.insert(schema.favorites).values(row).execute();
+  return true;
+};
+
 export const countFavorites = (db: ExpoSQLiteDatabase<typeof schema>) =>
   db.select({ value: count() }).from(schema.favorites).get()?.value ?? 0;
