@@ -10,13 +10,20 @@ usage() {
     '' \
     'add reads PREVIEW_TITLE, PREVIEW_SHA, PREVIEW_RUNTIME, PREVIEW_BUILD_URL and PREVIEW_UPDATE_URL,' \
     'and prints the public URL of the QR code. remove drops the PR from the list.' \
-    'With GH_TOKEN set, both also drop every PR that is no longer open, so a lost write heals itself.' \
+    'With GH_TOKEN set, both also drop every PR that is no longer open.' \
+    '' \
+    'Each PR has its own entry file (entries/pr-<n>.json), so parallel jobs never overwrite each' \
+    'other. previews.json is rebuilt from the entry files, then read back after a short wait and' \
+    'rebuilt again until it matches them, so a concurrent rebuild cannot drop an entry.' \
     '' \
     'Needs SUPABASE_DEV_URL and SUPABASE_DEV_SERVICE_KEY. Refuses the production project.'
 }
 
-BUCKET=qa-previews
+BUCKET="${PREVIEW_INDEX_BUCKET:-qa-previews}"
 INDEX=previews.json
+ENTRIES=entries
+MAX_ATTEMPTS="${PREVIEW_INDEX_ATTEMPTS:-6}"
+SETTLE_SECONDS="${PREVIEW_INDEX_SETTLE_SECONDS:-4}"
 PROD_REF=yrmylgizphirqqkzgbth
 
 die() {
@@ -55,7 +62,9 @@ api() {
 
 if ! api -o /dev/null "$url/storage/v1/bucket/$BUCKET" 2>/dev/null; then
   api -o /dev/null -X POST "$url/storage/v1/bucket" -H 'Content-Type: application/json' \
-    -d "{\"id\":\"$BUCKET\",\"name\":\"$BUCKET\",\"public\":true}"
+    -d "{\"id\":\"$BUCKET\",\"name\":\"$BUCKET\",\"public\":true}" 2>/dev/null ||
+    api -o /dev/null "$url/storage/v1/bucket/$BUCKET" ||
+    die "could not create the $BUCKET bucket"
 fi
 
 upload() {
@@ -66,9 +75,30 @@ upload() {
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
-if ! api -o "$work/current.json" "$url/storage/v1/object/$BUCKET/$INDEX" 2>/dev/null ||
-  ! jq -e '.previews | type == "array"' "$work/current.json" >/dev/null 2>&1; then
-  echo '{"previews":[]}' >"$work/current.json"
+fetch() {
+  api -H 'cache-control: no-cache' -o "$2" "$url/storage/v1/object/$BUCKET/$1?t=$(date +%s%N)" 2>/dev/null
+}
+
+list_entries() {
+  api -X POST "$url/storage/v1/object/list/$BUCKET" -H 'Content-Type: application/json' \
+    -d "{\"prefix\":\"$ENTRIES/\",\"limit\":1000,\"offset\":0}" |
+    jq -r '.[].name | select(test("^pr-[0-9]+\\.json$"))'
+}
+
+read_index() {
+  if ! fetch "$INDEX" "$1" || ! jq -e '.previews | type == "array"' "$1" >/dev/null 2>&1; then
+    echo '{"previews":[]}' >"$1"
+  fi
+}
+
+if [[ -z "$(list_entries)" ]]; then
+  read_index "$work/legacy.json"
+  jq -c '.previews[]' "$work/legacy.json" | while IFS= read -r entry; do
+    n="$(jq -r '.pr' <<<"$entry")"
+    [[ "$n" == "$pr" ]] && continue
+    printf '%s\n' "$entry" >"$work/legacy-$n.json"
+    upload "$ENTRIES/pr-$n.json" application/json "$work/legacy-$n.json"
+  done
 fi
 
 now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -80,45 +110,70 @@ if [[ "$mode" == add ]]; then
   upload "$qr_path" image/png "$work/qr.png"
   qr_url="$url/storage/v1/object/public/$BUCKET/$qr_path"
 
-  jq --argjson pr "$pr" \
+  jq -n --argjson pr "$pr" \
     --arg title "${PREVIEW_TITLE:-PR #$pr}" \
     --arg sha "${PREVIEW_SHA:-}" \
     --arg runtime "${PREVIEW_RUNTIME:-}" \
     --arg buildUrl "${PREVIEW_BUILD_URL:-}" \
     --arg updateUrl "${PREVIEW_UPDATE_URL:-}" \
     --arg now "$now" \
-    '.updatedAt = $now
-     | .previews = ([.previews[] | select(.pr != $pr)] + [{
-         pr: $pr, title: $title, channel: "pr-\($pr)", sha: $sha, runtime: $runtime,
-         buildUrl: $buildUrl, updateUrl: $updateUrl, updatedAt: $now
-       }] | sort_by(.updatedAt) | reverse)' \
-    "$work/current.json" >"$work/next.json"
+    '{pr: $pr, title: $title, channel: "pr-\($pr)", sha: $sha, runtime: $runtime,
+      buildUrl: $buildUrl, updateUrl: $updateUrl, updatedAt: $now}' >"$work/entry.json"
+  upload "$ENTRIES/pr-$pr.json" application/json "$work/entry.json"
 else
-  jq --argjson pr "$pr" --arg now "$now" \
-    '.updatedAt = $now | .previews = [.previews[] | select(.pr != $pr)]' \
-    "$work/current.json" >"$work/next.json"
+  api -o /dev/null -X DELETE "$url/storage/v1/object/$BUCKET/$ENTRIES/pr-$pr.json" 2>/dev/null || true
   api -o /dev/null -X DELETE "$url/storage/v1/object/$BUCKET/qr/pr-$pr.png" 2>/dev/null || true
 fi
 
 repo="${GITHUB_REPOSITORY:-EthanL06/UT-Dining}"
 if [[ -n "${GH_TOKEN:-}" ]] &&
   gh api --paginate "repos/$repo/pulls?state=open&per_page=100" --jq '.[].number' >"$work/open.txt" 2>/dev/null; then
-  jq --slurpfile open <(jq -s . "$work/open.txt") --argjson pr "$pr" --arg mode "$mode" \
-    '.previews as $all
-     | .previews = [$all[] | select((.pr as $n | $open[0] | index($n)) or ($mode == "add" and .pr == $pr))]
-     | ([$all[].pr] - [.previews[].pr]) as $gone
-     | if ($gone | length) > 0 then .pruned = $gone else . end' \
-    "$work/next.json" >"$work/pruned.json"
-  for gone in $(jq -r '.pruned // [] | .[]' "$work/pruned.json"); do
-    [[ "$gone" == "$pr" ]] && continue
-    api -o /dev/null -X DELETE "$url/storage/v1/object/$BUCKET/qr/pr-$gone.png" 2>/dev/null || true
-    echo "preview-index: dropped closed PR #$gone" >&2
+  for name in $(list_entries); do
+    n="${name#pr-}"
+    n="${n%.json}"
+    [[ "$mode" == add && "$n" == "$pr" ]] && continue
+    grep -qx "$n" "$work/open.txt" && continue
+    api -o /dev/null -X DELETE "$url/storage/v1/object/$BUCKET/$ENTRIES/$name" 2>/dev/null || true
+    api -o /dev/null -X DELETE "$url/storage/v1/object/$BUCKET/qr/pr-$n.png" 2>/dev/null || true
+    echo "preview-index: dropped closed PR #$n" >&2
   done
-  jq 'del(.pruned)' "$work/pruned.json" >"$work/next.json"
 fi
 
-upload "$INDEX" application/json "$work/next.json"
-echo "preview-index: $mode PR #$pr ($(jq '.previews | length' "$work/next.json") previews listed)" >&2
+build_index() {
+  local out="$1" name
+  : >"$work/entries.ndjson"
+  for name in $(list_entries); do
+    if fetch "$ENTRIES/$name" "$work/one.json" && jq -e '.pr | type == "number"' "$work/one.json" >/dev/null 2>&1; then
+      jq -c . "$work/one.json" >>"$work/entries.ndjson"
+    fi
+  done
+  jq -s --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    '{updatedAt: $now, previews: (unique_by(.pr) | sort_by(.updatedAt) | reverse)}' \
+    "$work/entries.ndjson" >"$out"
+}
+
+same_prs() {
+  [[ "$(jq -c '[.previews[] | [.pr, .sha]] | sort' "$1")" == "$(jq -c '[.previews[] | [.pr, .sha]] | sort' "$2")" ]]
+}
+
+attempt=1
+while :; do
+  build_index "$work/next.json"
+  upload "$INDEX" application/json "$work/next.json"
+  sleep "$((SETTLE_SECONDS + RANDOM % 3))"
+  build_index "$work/expected.json"
+  read_index "$work/live.json"
+  if same_prs "$work/expected.json" "$work/live.json"; then
+    break
+  fi
+  if ((attempt >= MAX_ATTEMPTS)); then
+    die "previews.json still differs from the entry files after $attempt attempts"
+  fi
+  echo "preview-index: previews.json changed under us, rebuilding (attempt $((attempt + 1)))" >&2
+  attempt=$((attempt + 1))
+done
+
+echo "preview-index: $mode PR #$pr ($(jq '.previews | length' "$work/live.json") previews listed)" >&2
 
 if [[ -n "$qr_url" ]]; then
   printf '%s\n' "$qr_url"
