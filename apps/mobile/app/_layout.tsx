@@ -25,7 +25,6 @@ import type * as schema from '../services/database/schema';
 import '../global.css';
 import * as Device from 'expo-device';
 import * as Network from 'expo-network';
-import * as SystemUI from 'expo-system-ui';
 import { AppErrorScreen, MIGRATION_ERROR_COPY } from '~/components/AppErrorScreen';
 import { VersionCheckProvider } from '~/components/VersionCheckProvider';
 import { usePostHogScreens } from '~/hooks/usePostHogScreens';
@@ -86,9 +85,6 @@ const AppContent = () => {
 
   useEffect(() => {
     Appearance.setColorScheme(isDarkMode ? 'dark' : 'light');
-    SystemUI.setBackgroundColorAsync(getTheme(isDarkMode).background).catch((error: unknown) =>
-      log.warn('root background color failed', { error: String(error) }),
-    );
   }, [isDarkMode]);
 
   const isTablet = Device.deviceType === Device.DeviceType.TABLET;
@@ -114,7 +110,9 @@ const AppContent = () => {
           options={{ enableChangeListener: true }}
           useSuspense
         >
-          <GestureHandlerRootView>
+          <GestureHandlerRootView
+            style={{ flex: 1, backgroundColor: getTheme(isDarkMode).background }}
+          >
             <SheetProvider>
               <VersionCheckProvider>
                 <PushNotificationsInitializer />
