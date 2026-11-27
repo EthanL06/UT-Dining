@@ -5,7 +5,7 @@ usage() {
   cat <<'EOF'
 Usage: scripts/qa/mobile-e2e.sh [--sim <UDID>] [--release] [--port <metro port>]
                                 [--fixture-server [port]] [--shards <n>] [--retry-failed]
-                                [--status-bar] [--suite e2e|qa]
+                                [--status-bar] [--suite e2e|qa] [--affected[=<base>]]
                                 [maestro test args...]
 
 Runs the Maestro flows in apps/mobile/e2e on an iOS Simulator against local Supabase.
@@ -28,6 +28,9 @@ Runs the Maestro flows in apps/mobile/e2e on an iOS Simulator against local Supa
   --suite qa               Run the regression flows in apps/mobile/e2e/qa against the sample data
                            of scripts/dev/sample (make db-sample, or the fixture server's sample
                            set) instead of the e2e flows and their fixture menus.
+  --affected[=<base>]      With --suite qa, run only the flows that cover the files changed since
+                           <base> (default origin/staging), as scripts/qa/qa-affected.ts maps them.
+                           Exits 0 without a simulator when no flow covers the diff.
 
 Anything else goes to `maestro test`, for example a single flow file or `--include-tags smoke`.
 Output goes to .context/maestro/<timestamp>, or to $E2E_OUT when it is set.
@@ -44,6 +47,7 @@ METRO_PORT=8081
 SHARDS=1
 RETRIES=0
 SUITE=e2e
+AFFECTED_BASE=""
 STATUS_BAR=false
 EXTRA_SIMS=()
 MAESTRO_ARGS=()
@@ -56,6 +60,8 @@ while [[ $# -gt 0 ]]; do
     --shards) SHARDS="$2"; shift 2 ;;
     --retry-failed) RETRIES=1; shift ;;
     --suite) SUITE="$2"; shift 2 ;;
+    --affected) AFFECTED_BASE="origin/staging"; shift ;;
+    --affected=*) AFFECTED_BASE="${1#--affected=}"; shift ;;
     --status-bar) STATUS_BAR=true; shift ;;
     --fixture-server)
       if [[ "${2:-}" =~ ^[0-9]+$ ]]; then FIXTURE_PORT="$2"; shift 2; else FIXTURE_PORT=54331; shift; fi ;;
@@ -65,11 +71,22 @@ while [[ $# -gt 0 ]]; do
 done
 
 fail() { echo "mobile-e2e: $*" >&2; exit 1; }
+step() { echo "==> $*"; }
 [[ "$SUITE" == e2e || "$SUITE" == qa ]] || fail "--suite is e2e or qa."
 FLOW_DIR="$E2E_DIR"
 if [[ "$SUITE" == qa ]]; then FLOW_DIR="$E2E_DIR/qa"; fi
+if [[ ${#MAESTRO_ARGS[@]} -eq 0 && -n "$AFFECTED_BASE" ]]; then
+  [[ "$SUITE" == qa ]] || fail "--affected works with --suite qa only"
+  while IFS= read -r flow; do
+    [[ -n "$flow" ]] && MAESTRO_ARGS+=("$ROOT/$flow")
+  done < <(cd "$ROOT" && node scripts/qa/qa-affected.ts "$AFFECTED_BASE" apps/mobile/e2e/qa)
+  if [[ ${#MAESTRO_ARGS[@]} -eq 0 ]]; then
+    step "No QA flow covers the files changed since $AFFECTED_BASE"
+    exit 0
+  fi
+  step "Flows for this diff: ${MAESTRO_ARGS[*]##*/}"
+fi
 [[ "$SHARDS" =~ ^[1-9][0-9]*$ ]] || { echo "mobile-e2e: --shards needs a whole number." >&2; exit 1; }
-step() { echo "==> $*"; }
 
 [[ "$(uname)" == "Darwin" ]] || fail "needs macOS with Xcode and the iOS Simulator."
 command -v xcrun >/dev/null || fail "xcrun not found. Install Xcode."

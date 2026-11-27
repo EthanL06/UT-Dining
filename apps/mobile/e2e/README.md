@@ -65,9 +65,12 @@ Every flow except `onboarding.yaml` starts from a clean install on Home (`subflo
 make qa SIM=<UDID>
 make qa SIM=<UDID> ARGS=apps/mobile/e2e/qa/central-time.yaml
 make qa SIM=<UDID> ARGS=--fixture-server
+make qa SIM=<UDID> ARGS=--affected
 ```
 
 `make qa` is `scripts/qa/mobile-e2e.sh --suite qa`: it loads the sample data into local Supabase (`scripts/dev/sample/load.ts`), or, with `--fixture-server`, serves it from `scripts/qa/e2e-fixture-server.ts <port> sample` and starts its own Metro with `EXPO_PUBLIC_SUPABASE_URL` pointed there (pass a `--port` no other Metro uses). A development bundle reads `apps/mobile/.env*` files over the shell environment, so while that Metro runs the script writes the fixture values to `apps/mobile/.env.development.local` (the file that wins) and deletes it on exit. It refuses to start when that file already exists. A Metro on port 8081 in the same worktree also picks it up until the run ends.
+
+`--affected` (or `--affected=<base>`) runs only the flows that cover the files changed since `origin/staging`. `scripts/qa/qa-affected.ts` holds the map from paths to flows: a changed flow runs itself, `utils/date.ts` runs the Central time, hours and no-menu flows, `components/map/` the map flows, and so on. A file under `apps/mobile`, `packages/core`, `scripts/qa` or the sample data that no rule covers runs the whole suite; tests, docs and other apps run nothing, and the script exits before it touches a simulator. When you add a flow, add a rule for the files it covers.
 
 Dev client launches go through `subflows/dev-client.yaml`: the launch link turns off the Expo dev menu and its floating Tools button (`__expo_disable_auto_launch=1&__expo_disable_fab=1`), and the subflow taps Reload or opens the link again when a slow Mac drops the bundle load. That mode leaves the shared local Supabase untouched.
 
