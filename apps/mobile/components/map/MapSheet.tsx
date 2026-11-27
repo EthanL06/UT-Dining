@@ -9,6 +9,7 @@ import Reanimated, {
   withSpring,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { GlassSurface, useLiquidGlass } from '~/components/ui/Glass';
 import { Text, TextInput } from '~/components/ui/Text';
 import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
@@ -53,6 +54,7 @@ export const MapSheet = ({
   children: ReactNode;
 }) => {
   const theme = useTheme();
+  const hasGlass = useLiquidGlass();
   const { height: windowHeight } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const heights: Record<Detent, number> = {
@@ -145,15 +147,29 @@ export const MapSheet = ({
               borderTopLeftRadius: 34,
               borderTopRightRadius: 34,
               borderCurve: 'continuous',
-              backgroundColor: theme.background,
+              overflow: 'hidden',
+            },
+            !hasGlass && {
               shadowColor: '#000',
               shadowOpacity: 0.18,
               shadowRadius: 20,
               shadowOffset: { width: 0, height: -2 },
-              overflow: 'hidden',
             },
           ]}
         >
+          <GlassSurface
+            pointerEvents="none"
+            fallbackColor={theme.background}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              borderTopLeftRadius: 34,
+              borderTopRightRadius: 34,
+            }}
+          />
           <View className="pt-2 pb-3">
             <View
               className="mb-2.5 h-[5px] w-9 self-center rounded-full"
