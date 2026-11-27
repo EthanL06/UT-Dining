@@ -7,7 +7,7 @@ import { router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Heart } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -16,7 +16,15 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Reanimated, {
+  runOnJS,
+  useAnimatedReaction,
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { FilterType } from '~/components/FilterBar';
+import { RefreshDrop } from '~/components/home/RefreshDrop';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
 import OnboardingScreen from '~/components/onboarding/OnboardingScreen';
 import { ServiceStatusBanner } from '~/components/ServiceStatusBanner';
@@ -35,6 +43,7 @@ import { homeView, toSyncStatus } from '~/utils/homeView';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
 import { getLocationName } from '~/utils/locations';
 import { log } from '~/utils/log';
+import { PULL_TRIGGER, type RefreshResult, type RefreshStatus } from '~/utils/pullRefresh';
 import { readCachedMenuData } from '~/utils/queries';
 import { type Theme, useTheme } from '~/utils/theme';
 import { formatTimeSinceSync, getLocationStatusText, timeOfDay } from '~/utils/time';
@@ -198,7 +207,10 @@ const CenteredMessage = ({ children }: { children: React.ReactNode }) => {
 export default function Home() {
   const currentTime = useNow();
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
-  const [refreshing, setRefreshing] = useState(false);
+  const [refreshStatus, setRefreshStatus] = useState<RefreshStatus>({ kind: 'idle' });
+  const { top: safeTop } = useSafeAreaInsets();
+  const pull = useSharedValue(0);
+  const dragging = useSharedValue(false);
   const isOnboardingComplete = useOnboardingStore((state) => state.isOnboardingComplete);
   const theme = useTheme();
 
@@ -225,14 +237,13 @@ export default function Home() {
   });
   const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
+  const syncNow = async (): Promise<RefreshResult> => {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     try {
       const networkState = await Network.getNetworkStateAsync();
       if (!networkState.isConnected) {
         haptics.error();
-        return;
+        return 'offline';
       }
 
       const timeoutPromise = new Promise((_, reject) => {
@@ -240,14 +251,43 @@ export default function Home() {
       });
 
       await Promise.race([forceMenuSync(queryClient), timeoutPromise]);
+      return 'updated';
     } catch (error) {
       log.warn('Error refreshing data', { error });
       haptics.error();
+      return 'failed';
     } finally {
       clearTimeout(timeoutId);
-      setRefreshing(false);
     }
   };
+
+  const handleRefresh = async () => {
+    setRefreshStatus({ kind: 'refreshing' });
+    const result = await syncNow();
+    setRefreshStatus({ kind: 'settled', result, at: Date.now() });
+  };
+
+  const finishRefresh = useCallback(() => setRefreshStatus({ kind: 'idle' }), []);
+  const tapAtTrigger = useCallback(() => haptics.tap(), []);
+
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      pull.value = Math.max(0, -event.contentOffset.y - safeTop);
+    },
+    onBeginDrag: () => {
+      dragging.value = true;
+    },
+    onEndDrag: () => {
+      dragging.value = false;
+    },
+  });
+
+  useAnimatedReaction(
+    () => dragging.value && pull.value >= PULL_TRIGGER,
+    (armed, wasArmed) => {
+      if (armed && wasArmed === false) runOnJS(tapAtTrigger)();
+    },
+  );
 
   const cacheLoading = view.kind === 'loading';
   useEffect(() => {
@@ -271,7 +311,7 @@ export default function Home() {
           If you just updated the app, close and reopen the app.
         </Text>
         <TouchableOpacity
-          onPress={handleRefresh}
+          onPress={() => void syncNow()}
           className="rounded-full px-4 py-2"
           style={{ backgroundColor: theme.tint }}
         >
@@ -325,15 +365,18 @@ export default function Home() {
           </TouchableOpacity>
         </CenteredMessage>
       ) : (
-        <ScrollView
+        <Reanimated.ScrollView
+          testID="home-scroll"
           contentInsetAdjustmentBehavior="automatic"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
           refreshControl={
             <RefreshControl
-              refreshing={refreshing}
+              refreshing={refreshStatus.kind === 'refreshing'}
               onRefresh={handleRefresh}
-              tintColor={theme.secondaryLabel}
+              tintColor="transparent"
             />
           }
         >
@@ -399,7 +442,10 @@ export default function Home() {
               <LocationRows entries={closed} currentTime={currentTime} db={drizzleDb} />
             </GroupedSection>
           )}
-        </ScrollView>
+        </Reanimated.ScrollView>
+      )}
+      {view.kind === 'ready' && (
+        <RefreshDrop pull={pull} status={refreshStatus} onFinished={finishRefresh} />
       )}
     </View>
   );
