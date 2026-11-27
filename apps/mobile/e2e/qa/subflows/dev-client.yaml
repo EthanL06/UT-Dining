@@ -1,0 +1,23 @@
+appId: com.ethanl06.ut-dining.dev
+env:
+  METRO_URL: ${METRO_URL || 'http://localhost:8081'}
+---
+- openLink: exp+ut-dining://expo-development-client/?url=${encodeURIComponent(METRO_URL)}&disableOnboarding=1&__expo_disable_auto_launch=1&__expo_disable_fab=1
+- repeat:
+    times: 4
+    while:
+      notVisible: '(?s)Welcome to.*|Good (Morning|Afternoon|Evening).*|Enjoying.*'
+    commands:
+      - extendedWaitUntil:
+          visible: '(?s)Welcome to.*|Good (Morning|Afternoon|Evening).*|Enjoying.*|There was a problem loading the project.|DEVELOPMENT SERVERS'
+          timeout: 120000
+      - runFlow:
+          when:
+            visible: There was a problem loading the project.
+          commands:
+            - tapOn: Reload
+      - runFlow:
+          when:
+            visible: DEVELOPMENT SERVERS
+          commands:
+            - openLink: exp+ut-dining://expo-development-client/?url=${encodeURIComponent(METRO_URL)}&disableOnboarding=1&__expo_disable_auto_launch=1&__expo_disable_fab=1

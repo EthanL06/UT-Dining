@@ -11,7 +11,10 @@ tags:
     when:
       true: ${DEV_CLIENT == 'true'}
     commands:
-      - openLink: exp+ut-dining://expo-development-client/?url=${encodeURIComponent(METRO_URL)}&disableOnboarding=1
+      - runFlow:
+          file: subflows/dev-client.yaml
+          env:
+            METRO_URL: ${METRO_URL}
 - extendedWaitUntil:
     visible:
       id: onboarding-welcome-title
