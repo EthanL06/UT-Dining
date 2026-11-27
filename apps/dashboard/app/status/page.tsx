@@ -49,11 +49,16 @@ const dayTooltip = (day: DayHealth) => {
   return `${formatDay(day.date)}: ${day.loaded} of ${day.expected} menus posted`;
 };
 
+const dayColor = (day: DayHealth) => {
+  if (day.health === 'unknown') return 'var(--mantine-color-gray-3)';
+  if (day.complete) return 'var(--mantine-color-teal-5)';
+  if (day.loaded === 0) return 'var(--mantine-color-gray-4)';
+  return 'var(--mantine-color-teal-2)';
+};
+
 export default async function PublicStatusPage() {
   const { overall, components, menus } = await getPublicSummary();
-  const incidents = menus.history.filter(
-    (day) => day.health === 'outage' || day.health === 'degraded',
-  );
+  const notes = menus.history.filter((day) => day.health !== 'unknown' && !day.complete);
 
   return (
     <Box mih="100vh" bg="gray.0" py={48}>
@@ -94,6 +99,11 @@ export default async function PublicStatusPage() {
                   <Text fz="sm" c="dimmed">
                     {component.description}
                   </Text>
+                  {component.note && (
+                    <Text fz="xs" c="dimmed" data-testid={`note-${component.id}`}>
+                      {component.note}
+                    </Text>
+                  )}
                 </Stack>
                 <Group gap={8} wrap="nowrap">
                   <HealthDot health={component.health} />
@@ -111,8 +121,9 @@ export default async function PublicStatusPage() {
                 <Group justify="space-between">
                   <Text fw={600}>Menus, last 14 days</Text>
                   <Text fz="sm" c="dimmed">
-                    {menus.history.filter((day) => day.health === 'operational').length} of{' '}
-                    {menus.history.filter((day) => day.health !== 'unknown').length} days complete
+                    Every menu posted on{' '}
+                    {menus.history.filter((day) => day.health !== 'unknown' && day.complete).length}{' '}
+                    of {menus.history.filter((day) => day.health !== 'unknown').length} days
                   </Text>
                 </Group>
                 <Group gap={4} wrap="nowrap">
@@ -123,7 +134,7 @@ export default async function PublicStatusPage() {
                         style={{
                           flex: 1,
                           borderRadius: 4,
-                          backgroundColor: `var(--mantine-color-${HEALTH_COLOR[day.health]}-${day.health === 'unknown' ? 3 : 5})`,
+                          backgroundColor: dayColor(day),
                         }}
                       />
                     </Tooltip>
@@ -142,30 +153,35 @@ export default async function PublicStatusPage() {
           )}
 
           <Stack gap="sm">
-            <Text fw={600}>Recent problems</Text>
-            {incidents.length === 0 ? (
+            <Stack gap={2}>
+              <Text fw={600}>Days with closed dining halls</Text>
               <Text fz="sm" c="dimmed">
-                No problems in the last 14 days.
+                When UT doesn't post a menu, the dining hall is usually closed for a break or
+                holiday.
+              </Text>
+            </Stack>
+            {notes.length === 0 ? (
+              <Text fz="sm" c="dimmed">
+                Every dining hall had a menu in the last 14 days.
               </Text>
             ) : (
-              incidents
+              notes
                 .slice()
                 .reverse()
                 .map((day) => (
                   <Paper key={day.date} radius="md" withBorder p="md">
-                    <Group gap={8} mb={4}>
-                      <HealthDot health={day.health} />
+                    <Group gap={8} mb={4} align="baseline">
                       <Text fw={600} fz="sm">
-                        {day.loaded === 0 ? 'No menus posted' : 'Some menus missing'}
+                        {day.loaded === 0
+                          ? 'No menus'
+                          : `No menu for ${day.missing.length} of ${day.expected}`}
                       </Text>
                       <Text fz="sm" c="dimmed">
                         {formatDay(day.date)}
                       </Text>
                     </Group>
                     <Text fz="sm" c="dimmed">
-                      {day.missing.length === day.expected
-                        ? `No menus were posted for the ${day.expected} dining halls open that day.`
-                        : `No menu for ${day.missing.join(', ')}.`}
+                      {day.loaded === 0 ? 'No dining hall had a menu.' : day.missing.join(', ')}
                     </Text>
                   </Paper>
                 ))

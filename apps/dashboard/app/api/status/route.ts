@@ -20,6 +20,8 @@ export async function GET() {
         name: component.name,
         status: component.health,
         label: STATUS_LABEL[component.health],
+        description: component.description,
+        note: component.note ?? null,
       })),
     },
     {
