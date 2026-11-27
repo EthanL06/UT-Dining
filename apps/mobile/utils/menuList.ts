@@ -1,4 +1,4 @@
-export type MenuStatus = 'loading' | 'error' | 'ready';
+export type MenuStatus = 'loading' | 'error' | 'none' | 'ready';
 
 export type MenuEmptyState =
   | { kind: 'skeleton' }
@@ -23,6 +23,13 @@ export const menuEmptyState = ({
       kind: 'message',
       title: 'Error Loading Menu',
       subtitle: 'There was an error loading the menu. Please try again.',
+    };
+  }
+  if (menu === 'none') {
+    return {
+      kind: 'message',
+      title: 'No menu for this day',
+      subtitle: "UT hasn't posted a menu here for this day.",
     };
   }
   const subtitle = searching

@@ -123,10 +123,12 @@ export function useMenuData(location: string, date?: string) {
       ? 'loading'
       : menuNamesError || menuDataError
         ? 'error'
-        : 'ready';
+        : defaultMenu
+          ? 'ready'
+          : 'none';
 
   return {
-    menuData: menuData as Location | null,
+    menuData: defaultMenu ? (menuData as Location | null) : null,
     status,
     selectedMenu: defaultMenu,
     setSelectedMenu,
