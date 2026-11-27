@@ -4,7 +4,7 @@ import https from 'node:https';
 
 const UP = process.env.UP;
 const OUT = process.env.OUT;
-const state = { profile: 'pass', control: {}, scenario: 'init', run: 0 };
+const state = { profile: 'pass', control: {}, scenario: 'init', run: 0, ref: '' };
 let traffic = { req: 0, bytes: 0, first: 0, last: 0 };
 const profiles = { pass: { lat: 0, bps: 0 }, slow: { lat: 150, bps: 200000 } };
 let bucketFree = 0;
@@ -21,7 +21,13 @@ http
       req.on('end', () => {
         const o = JSON.parse(b);
         if (o.traffic)
-          log({ name: 'traffic', scenario: state.scenario, run: state.run, ...traffic });
+          log({
+            name: 'traffic',
+            ref: state.ref,
+            scenario: state.scenario,
+            run: state.run,
+            ...traffic,
+          });
         Object.assign(state, o);
         delete state.traffic;
         traffic = { req: 0, bytes: 0, first: 0, last: 0 };
@@ -40,12 +46,21 @@ http
       });
       req.on('end', () => {
         for (const m of JSON.parse(b))
-          log({ ...m, scenario: state.scenario, run: state.run, profile: state.profile });
+          log({
+            ...m,
+            ref: state.ref,
+            scenario: state.scenario,
+            run: state.run,
+            profile: state.profile,
+          });
         res.end('ok');
       });
       return;
     }
-    if (!u.pathname.startsWith('/sb/')) {
+    const target = u.pathname.startsWith('/img/')
+      ? decodeURIComponent(u.pathname.slice(5))
+      : UP + req.url.slice(3);
+    if (!u.pathname.startsWith('/sb/') && !u.pathname.startsWith('/img/')) {
       res.statusCode = 404;
       return res.end();
     }
@@ -66,37 +81,33 @@ http
         const h = { ...req.headers };
         delete h.host;
         delete h.connection;
-        const up = https.request(
-          UP + req.url.slice(3),
-          { method: req.method, headers: h, agent },
-          (r) => {
-            const rh = { ...r.headers };
-            delete rh.connection;
-            delete rh['transfer-encoding'];
-            res.writeHead(r.statusCode, rh);
-            r.on('data', (d) => {
-              traffic.bytes += d.length;
-              if (!bps) {
-                res.write(d);
-                return;
-              }
-              const now = Date.now();
-              bucketFree = Math.max(bucketFree, now) + (d.length / bps) * 1000;
-              r.pause();
-              setTimeout(() => {
-                res.write(d);
-                r.resume();
-              }, bucketFree - now);
-            });
-            r.on('end', () => {
-              const fin = () => {
-                res.end();
-                traffic.last = Date.now();
-              };
-              bps ? setTimeout(fin, Math.max(0, bucketFree - Date.now()) + lat / 2) : fin();
-            });
-          },
-        );
+        const up = https.request(target, { method: req.method, headers: h, agent }, (r) => {
+          const rh = { ...r.headers };
+          delete rh.connection;
+          delete rh['transfer-encoding'];
+          res.writeHead(r.statusCode, rh);
+          r.on('data', (d) => {
+            traffic.bytes += d.length;
+            if (!bps) {
+              res.write(d);
+              return;
+            }
+            const now = Date.now();
+            bucketFree = Math.max(bucketFree, now) + (d.length / bps) * 1000;
+            r.pause();
+            setTimeout(() => {
+              res.write(d);
+              r.resume();
+            }, bucketFree - now);
+          });
+          r.on('end', () => {
+            const fin = () => {
+              res.end();
+              traffic.last = Date.now();
+            };
+            bps ? setTimeout(fin, Math.max(0, bucketFree - Date.now()) + lat / 2) : fin();
+          });
+        });
         up.on('error', () => res.destroy());
         up.end(Buffer.concat(chunks));
       }, lat),

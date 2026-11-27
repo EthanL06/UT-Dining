@@ -77,7 +77,8 @@ help:
 	'  e2e-fixtures    Maestro flows against the fixture server, no Docker needed' \
 	'  screenshots     Every screen in apps/mobile/e2e/screenshots.txt, light and dark, into .context/screenshots' \
 	'  ios-app         Release simulator app into .context/app; reuses the native build unless native code changed' \
-	'  perf-build      Timing-harness test apps from a release .app. APP=<base .app> OUT=<dir> PERF_DEV_REF=<ref>' \
+	'  perf-build      Timing-harness apps per git ref from a release .app. APP=<base .app> OUT=<dir>' \
+	'                  PERF_DEV_REF=<ref> REFS="base=origin/staging head=HEAD"' \
 	'                  The rest of the timing run is in scripts/qa/perf/README.md' \
 	'  mobile-preview  Dev app build (only if native code changed) + EAS Update. ARGS="staging" or ARGS="pr <n>"' \
 	'' \
@@ -226,8 +227,8 @@ size-report:
 	@scripts/qa/size-report.sh local "$(if $(filter undefined,$(origin BASE)),origin/staging,$(BASE))"
 
 perf-build:
-	@test -n "$(APP)" -a -n "$(OUT)" || { echo 'usage: make perf-build APP=<base release .app> OUT=<dir> PERF_DEV_REF=<dev ref>' >&2; exit 2; }
-	@scripts/qa/perf/build.sh "$(APP)" "$(OUT)"
+	@test -n "$(APP)" -a -n "$(OUT)" || { echo 'usage: make perf-build APP=<base release .app> OUT=<dir> PERF_DEV_REF=<dev ref> REFS="base=origin/staging head=HEAD"' >&2; exit 2; }
+	@scripts/qa/perf/build.sh "$(APP)" "$(OUT)" $(or $(REFS),base=origin/staging head=HEAD)
 
 mobile-preview:
 	@scripts/ci/mobile-preview.sh $(ARGS)

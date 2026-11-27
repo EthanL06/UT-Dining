@@ -1,47 +1,122 @@
-import json,statistics as st,collections,sys
-M=[json.loads(l) for l in open(sys.argv[1])]
-runs=collections.defaultdict(list)
-for m in M: runs[(m.get('scenario'),m.get('run'))].append(m)
-def first(r,n):
-  for m in r:
-    if m['name']==n: return m
-rows=collections.defaultdict(list)
-for k,r in runs.items():
-  L=first(r,'launch')
-  if not L: continue
-  t0=L['t']; d={}
-  for n in ['js.start','splash.hide','sync.start','sync.fetched','sync.inserted','home.ready','cycle.done','counts']:
-    m=first(r,n)
-    if m: d[n]=m['t']-t0
-  s=[x['ms'] for x in r if x['name']=='stall']
-  d['maxstall']=max(s) if s else 0
-  c=first(r,'counts')
-  d['food']=c and c['food']; d['loc']=c and c['location']; d['lastSync']=c and (c['lastSync'] and c['lastSync']-t0)
-  d['fs']=c and c['accum'].get('filterAndSort')
-  d['fetched']=first(r,'sync.fetched') and first(r,'sync.fetched').get('ok')
-  t=first(r,'traffic'); d['req']=t and t['req']; d['MB']=t and round(t['bytes']/1e6,2)
-  d['nostall']=[x['ms'] for x in r if x['name']=='stall' and x['ms']>200]
-  print(k,{a:b for a,b in d.items() if b not in (None,[])})
-  rows[k[0]].append(d)
+import collections
+import json
+import statistics
+import sys
+
+marks = [json.loads(line) for line in open(sys.argv[1])]
+runs = collections.defaultdict(list)
+for m in marks:
+    runs[(m.get('ref'), m.get('scenario'), m.get('run'))].append(m)
+refs = list(dict.fromkeys(k[0] for k in runs if k[0]))
+
+
+def first(rows, name):
+    return next((m for m in rows if m['name'] == name), None)
+
+
+def dig(obj, path):
+    for part in path.split('.'):
+        if not isinstance(obj, dict):
+            return None
+        obj = obj.get(part)
+    return obj
+
+
+values = collections.defaultdict(list)
+notes = collections.defaultdict(list)
+for (ref, scenario, _run), rows in runs.items():
+    launch = first(rows, 'launch')
+    if not launch or not first(rows, 'cycle.done'):
+        notes[ref].append(f'{scenario} run without cycle.done')
+        continue
+    t0 = launch['t']
+    if scenario in ('warm', 'cold'):
+        if first(rows, 'sync.start'):
+            notes[ref].append(f'{scenario} run synced; dropped')
+            continue
+        values[(ref, f'a. {scenario} launch to Home painted (ms)')].append(first(rows, 'home.ready')['t'] - t0)
+        values[(ref, f'a. {scenario} launch to JS start (ms)')].append(first(rows, 'js.start')['t'] - t0)
+    if scenario == 'prime':
+        c = first(rows, 'counts')
+        notes[ref].append(f"data: {c['food']} food items, per day {[(d['d'], d['foods']) for d in c['perDay']]}, indexes {c['indexes']}, hermes profiler {c['hermesProfiler']}")
+    result = first(rows, 'result')
+    if not result:
+        continue
+    if scenario in ('foreground', 'full'):
+        label = 'b' if scenario == 'foreground' else 'c'
+        for key, path in [
+            ('sync duration (ms)', 'syncMs'),
+            ('onDatabaseChange events', 'events'),
+            ('Home renders', 'renders.home'),
+            ('Home commits', 'commits.home'),
+            ('query fetches', 'fetches'),
+            ('longest JS gap (ms)', 'maxGapMs'),
+            ('JS stall time over 50 ms gaps (ms)', 'stallMsOver50'),
+            ('sync start to last Home commit (ms)', 'lastCommitMs'),
+        ]:
+            v = dig(result, path)
+            values[(ref, f'{label}. {key}')].append(v if v is not None else 0)
+        writes = [m['ms'] for m in rows if m['name'] == 'sync.dayWrite']
+        shared = [m['ms'] for m in rows if m['name'] == 'sync.sharedWrite']
+        values[(ref, f'{label}. menu day writes')].append(len(writes))
+        values[(ref, f'{label}. shared tables written')].append(len(shared))
+        if writes:
+            values[(ref, f'{label}. total day write time (ms)')].append(sum(writes))
+    if scenario == 'location':
+        for key, path in [
+            ('open to list painted (ms)', 'openMs'),
+            ('getLocationMenuData (ms)', 'getLocationMenuData.median'),
+            ('getLocationMenuNames (ms)', 'getLocationMenuNames.median'),
+            ('getLocationIdsWithMenus (ms)', 'getLocationIdsWithMenus.median'),
+            ('search tab SQL searchToday (ms)', 'searchTodaySql.median'),
+            ('longest JS gap while opening (ms)', 'openMaxGapMs'),
+        ]:
+            v = dig(result, path)
+            if v is not None:
+                values[(ref, f'd. {key}')].append(v)
+        for a in result.get('actions') or []:
+            if a.get('ms') is not None:
+                values[(ref, f"e. {a['action']}: JS time to painted (ms)")].append(a['ms'])
+            values[(ref, f"e. {a['action']}: FoodItemRow renders")].append(a.get('foodRowRenders', 0))
+        notes[ref].append(f"location {result.get('loc')} ({result.get('foodsToday')} foods today), search '{result.get('word')}'")
+
+    if scenario.startswith('place') and result.get('metric') == 'place':
+        opens = [('first open', result['open'])] if scenario == 'place-first' else []
+        if scenario == 'place':
+            opens.append(('open after relaunch', result['open']))
+        if scenario == 'place-offline':
+            opens.append(('open after relaunch, network blocked', result['open']))
+        else:
+            opens.append(('reopen in the same launch', result['reopen']))
+        for label, o in opens:
+            if o['ms'] is not None:
+                values[(ref, f'f. place photo {label} (ms)')].append(o['ms'])
+            values[(ref, f'f. place photo {label}: shown')].append(1 if o['outcome'] == 'loaded' else 0)
+        notes[ref].append(f"place {result.get('place')}")
+    if scenario == 'home' and result.get('metric') == 'home':
+        for a in result['actions']:
+            if a['ms'] is not None:
+                values[(ref, f"g. {a['action']}: dispatch to painted (ms)")].append(a['ms'])
+            if a['renderMs'] is not None:
+                values[(ref, f"g. {a['action']}: render to commit (ms)")].append(a['renderMs'])
+
+metrics = list(dict.fromkeys(k[1] for k in values))
+metrics.sort(key=lambda m: m[:2])
+
+
+def fmt(v):
+    if not v:
+        return '-'
+    med = statistics.median(v)
+    r = f'{min(v):g}-{max(v):g}'
+    return f'{med:g} ({r}, n={len(v)})'
+
+
+print('| metric | ' + ' | '.join(refs) + ' |')
+print('|---|' + '---|' * len(refs))
+for metric in metrics:
+    print(f'| {metric} | ' + ' | '.join(fmt(values[(ref, metric)]) for ref in refs) + ' |')
 print()
-for sc,v in rows.items():
-  o={}
-  for n in ['js.start','sync.fetched','sync.inserted','home.ready','maxstall','req','MB']:
-    a=[x[n] for x in v if x.get(n) is not None]
-    if a: o[n]=(st.median(a),min(a),max(a))
-  print(sc,len(v),o)
-print()
-for m in M:
-  if m['name'] in('sql.bench','sql.plan','write.bench','db.size'): print({k:v for k,v in m.items() if k not in('t','scenario','run','profile')})
-nav=[m for m in M if m.get('scenario')=='nav']
-pairs=collections.defaultdict(list); st_={}
-for m in nav:
-  n=m['name']
-  if not n.startswith('nav.'): continue
-  p=n.split('.'); key=(p[1],m.get('label'),m.get('loc') or m.get('tab'))
-  if p[2]=='start': st_[key]=m['t']
-  elif key in st_: pairs[key+(p[2],)].append(m['t']-st_[key])
-for k,v in sorted(pairs.items(),key=str): print(k,'median',st.median(v),v)
-for m in nav:
-  if m['name']=='loc.ready' : pass
-print([ (m['ms']) for m in nav if m['name']=='stall'][:60])
+for ref in refs:
+    for note in sorted(set(notes[ref])):
+        print(f'{ref}: {note}')
