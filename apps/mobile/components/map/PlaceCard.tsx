@@ -2,7 +2,7 @@ import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import { CircleAlert, MapPin, Navigation, Utensils, X } from 'lucide-react-native';
 import { Platform, Pressable, View } from 'react-native';
-import { GlassSurface } from '~/components/ui/Glass';
+import { GlassButton } from '~/components/ui/Glass';
 import { StatusDot } from '~/components/ui/Grouped';
 import { Text } from '~/components/ui/Text';
 import { directionsUrl } from '~/utils/directions';
@@ -67,22 +67,16 @@ export const PlaceCard = ({
                 .join(' · ')}
             </Text>
           </View>
-          <GlassSurface
-            isInteractive
+          <GlassButton
+            testID="map-place-close"
+            accessibilityLabel="Close"
+            size={32}
+            hitSlop={8}
             fallbackColor={theme.fill}
-            style={{ width: 32, height: 32, borderRadius: 16 }}
+            onPress={onClose}
           >
-            <Pressable
-              testID="map-place-close"
-              accessibilityLabel="Close"
-              accessibilityRole="button"
-              hitSlop={8}
-              onPress={onClose}
-              className="size-8 items-center justify-center"
-            >
-              <X size={16} color={theme.secondaryLabel} />
-            </Pressable>
-          </GlassSurface>
+            <X size={16} color={theme.secondaryLabel} />
+          </GlassButton>
         </View>
       </View>
       <SheetScrollView

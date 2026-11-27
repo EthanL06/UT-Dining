@@ -3,7 +3,7 @@ import * as Location from 'expo-location';
 import { useFocusEffect } from 'expo-router';
 import { LocateFixed } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Keyboard, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Keyboard, StyleSheet, useWindowDimensions, View } from 'react-native';
 import type { Region } from 'react-native-maps';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,7 +13,7 @@ import { MapSheet, type MapSheetHandle, SHEET_HALF_FRACTION } from '~/components
 import { PlaceCard } from '~/components/map/PlaceCard';
 import type { MapFilterId } from '~/components/map/placeStyle';
 import { SearchPanel } from '~/components/map/SearchPanel';
-import { GlassSurface, useLiquidGlass } from '~/components/ui/Glass';
+import { GlassButton, useLiquidGlass } from '~/components/ui/Glass';
 import { MICROWAVE_LOCATIONS } from '~/data/MicrowaveLocations';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useMapSearch } from '~/hooks/useMapSearch';
@@ -338,18 +338,20 @@ const MapPage = () => {
       </MapView>
 
       {hasLocationPermission && userCoordinates && !isSheetAboveHalf && (
-        <GlassSurface
-          isInteractive
+        <GlassButton
+          testID="map-locate-button"
+          accessibilityLabel="Show my location"
+          size={44}
           fallbackColor={theme.card}
+          onPress={() => {
+            haptics.tap();
+            mapRef.current?.animateToRegion(
+              { ...userCoordinates, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+              450,
+            );
+          }}
           style={[
-            {
-              position: 'absolute',
-              right: 16,
-              bottom: bottomOffset + mapControlsHeight + 12,
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-            },
+            { position: 'absolute', right: 16, bottom: bottomOffset + mapControlsHeight + 12 },
             !hasGlass && {
               shadowColor: '#000',
               shadowOpacity: 0.18,
@@ -358,22 +360,8 @@ const MapPage = () => {
             },
           ]}
         >
-          <Pressable
-            testID="map-locate-button"
-            accessibilityLabel="Show my location"
-            accessibilityRole="button"
-            onPress={() => {
-              haptics.tap();
-              mapRef.current?.animateToRegion(
-                { ...userCoordinates, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-                450,
-              );
-            }}
-            className="size-11 items-center justify-center"
-          >
-            <LocateFixed size={20} color={theme.tint} />
-          </Pressable>
-        </GlassSurface>
+          <LocateFixed size={20} color={theme.tint} />
+        </GlassButton>
       )}
 
       <MapSheet

@@ -1,6 +1,17 @@
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
-import { useEffect, useState } from 'react';
-import { AccessibilityInfo, type ColorValue, Platform, View, type ViewProps } from 'react-native';
+import { type ReactNode, useEffect, useState } from 'react';
+import {
+  AccessibilityInfo,
+  type ColorValue,
+  type Insets,
+  Platform,
+  Pressable,
+  type StyleProp,
+  StyleSheet,
+  View,
+  type ViewProps,
+  type ViewStyle,
+} from 'react-native';
 import { useSettingsStore } from '~/store/useSettingsStore';
 
 const isGlassSupported = Platform.OS === 'ios' && isLiquidGlassAvailable();
@@ -70,3 +81,49 @@ export const GlassSurface = ({
     </GlassView>
   );
 };
+
+export const GlassButton = ({
+  size,
+  fallbackColor,
+  onPress,
+  testID,
+  accessibilityLabel,
+  hitSlop,
+  style,
+  children,
+}: {
+  size: number;
+  fallbackColor: ColorValue;
+  onPress: () => void;
+  testID: string;
+  accessibilityLabel: string;
+  hitSlop?: number | Insets;
+  style?: StyleProp<ViewStyle>;
+  children: ReactNode;
+}) => {
+  const radius = size / 2;
+
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="button"
+      hitSlop={hitSlop}
+      onPress={onPress}
+      style={[{ width: size, height: size, borderRadius: radius }, style]}
+    >
+      <GlassSurface
+        isInteractive
+        fallbackColor={fallbackColor}
+        style={[StyleSheet.absoluteFill, { borderRadius: radius }]}
+      />
+      <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.center]}>
+        {children}
+      </View>
+    </Pressable>
+  );
+};
+
+const styles = StyleSheet.create({
+  center: { alignItems: 'center', justifyContent: 'center' },
+});
