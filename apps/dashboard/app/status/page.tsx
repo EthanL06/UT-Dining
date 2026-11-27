@@ -5,12 +5,35 @@ import { HEALTH_COLOR, HealthDot } from '@/components/status/health';
 import { formatCentralDateTime, formatDay } from '@/lib/status/format';
 import type { DayHealth, Health } from '@/lib/status/menu-health';
 import { getPublicSummary, STATUS_LABEL } from '@/lib/status/public-summary';
+import { STATUS_SITE_URL } from '@/lib/status/site';
 
 export const revalidate = 120;
 
+const STATUS_DESCRIPTION =
+  'Live status of UT Dining: whether menus for UT Austin dining halls are posted and up to date, and whether the UT Dining app and website are working right now.';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(STATUS_SITE_URL),
   title: 'UT Dining Status',
-  description: 'Whether UT Dining menus, the app and the website are working right now.',
+  description: STATUS_DESCRIPTION,
+  applicationName: 'UT Dining',
+  keywords: ['UT Dining status', 'UT Austin dining', 'dining hall menus', 'UT Dining app'],
+  alternates: { canonical: '/' },
+  robots: { index: true, follow: true },
+  openGraph: {
+    type: 'website',
+    url: '/',
+    siteName: 'UT Dining',
+    title: 'UT Dining Status',
+    description: STATUS_DESCRIPTION,
+    images: [{ url: '/logo.png', width: 96, height: 96, alt: 'UT Dining' }],
+  },
+  twitter: {
+    card: 'summary',
+    title: 'UT Dining Status',
+    description: STATUS_DESCRIPTION,
+    images: ['/logo.png'],
+  },
 };
 
 const BANNER_TEXT: Record<Health, string> = {
