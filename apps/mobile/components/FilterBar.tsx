@@ -1,17 +1,16 @@
 import * as Haptics from 'expo-haptics';
-import { Filter } from 'lucide-react-native';
+import { SlidersHorizontal } from 'lucide-react-native';
 import { useEffect, useMemo } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SheetManager } from 'react-native-actions-sheet';
 
 export type FilterType = 'all' | string;
 
 import { useFiltersStore } from '~/store/useFiltersStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
-import { COLORS } from '~/utils/colors';
 import type { MealTimes } from '~/utils/locations';
+import { useTheme } from '~/utils/theme';
 import { timeOfDay } from '~/utils/time';
-import { cn } from '~/utils/utils';
 
 type FilterBarProps = {
   selectedItem: string;
@@ -38,6 +37,7 @@ const FilterBar = ({
   useTimeOfDayDefault = false,
 }: FilterBarProps) => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+  const theme = useTheme();
 
   // Sort items based on meal order
   const sortedItems = useMemo(() => {
@@ -81,85 +81,108 @@ const FilterBar = ({
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
+  const segmented = sortedItems.length > 1 && sortedItems.length <= 4;
+
   return (
-    <View className="flex-row items-center">
-      <View className="flex-1 flex-row items-center">
+    <View className="flex-row items-center gap-x-2">
+      {segmented ? (
+        <View
+          className="h-9 flex-1 flex-row rounded-full p-[3px]"
+          style={{ backgroundColor: theme.fill }}
+        >
+          {sortedItems.map((item) => {
+            const isSelected = selectedItem === item.id;
+            return (
+              <Pressable
+                key={item.id}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                onPress={() => onPressItem(item.id as FilterType)}
+                className="flex-1 items-center justify-center rounded-full"
+                style={
+                  isSelected
+                    ? {
+                        backgroundColor: isDarkMode ? '#636366' : '#FFFFFF',
+                        shadowColor: '#000',
+                        shadowOpacity: 0.12,
+                        shadowRadius: 4,
+                        shadowOffset: { width: 0, height: 1 },
+                      }
+                    : undefined
+                }
+              >
+                <Text
+                  numberOfLines={1}
+                  className={isSelected ? 'font-semibold text-[14px]' : 'font-medium text-[14px]'}
+                  style={{ color: theme.label }}
+                >
+                  {item.title}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      ) : (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          className="flex-1"
           contentContainerClassName="gap-x-2"
         >
-          {sortedItems.map((item) => (
-            <TouchableOpacity
-              activeOpacity={0.8}
-              key={item.id}
-              onPress={() => onPressItem(item.id as FilterType)}
-              className={cn(
-                'self-start rounded-full px-3 py-1',
-                selectedItem === item.id
-                  ? 'border-ut-burnt-orange bg-ut-burnt-orange text-white'
-                  : isDarkMode
-                    ? 'border-neutral-800 bg-neutral-800 text-gray-200'
-                    : 'border border-gray-200 bg-white text-ut-grey',
-              )}
-            >
-              <Text
-                className={cn(
-                  'text-xs',
-                  selectedItem === item.id
-                    ? 'font-bold text-white'
-                    : isDarkMode
-                      ? 'font-medium text-gray-200'
-                      : 'font-medium text-ut-grey/75',
-                )}
+          {sortedItems.map((item) => {
+            const isSelected = selectedItem === item.id;
+            return (
+              <Pressable
+                key={item.id}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                onPress={() => onPressItem(item.id as FilterType)}
+                className="h-9 justify-center rounded-full px-3.5"
+                style={{ backgroundColor: isSelected ? theme.tint : theme.fill }}
               >
-                {item.title}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  className={isSelected ? 'font-semibold text-[14px]' : 'font-medium text-[14px]'}
+                  style={{ color: isSelected ? '#FFFFFF' : theme.label }}
+                >
+                  {item.title}
+                </Text>
+              </Pressable>
+            );
+          })}
         </ScrollView>
+      )}
 
-        {showFilterButton && <FilterButton />}
-      </View>
+      {showFilterButton && <FilterButton />}
     </View>
   );
 };
 
 const FilterButton = () => {
   const filters = useFiltersStore((state) => state.filters);
-  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+  const theme = useTheme();
 
-  // If there are any filters, make this true
-  const hasFilters = () => {
-    const hasValues = <T extends Record<string, boolean>>(item: T): boolean =>
-      Array.isArray(item) ? item.length > 0 : Object.values(item).some(Boolean);
-
-    return (
-      filters.favorites ||
-      filters.mealPlan ||
-      hasValues(filters.dietary) ||
-      hasValues(filters.allergens)
-    );
-  };
+  const hasValues = <T extends Record<string, boolean>>(item: T): boolean =>
+    Array.isArray(item) ? item.length > 0 : Object.values(item).some(Boolean);
+  const hasFilters =
+    filters.favorites ||
+    filters.mealPlan ||
+    hasValues(filters.dietary) ||
+    hasValues(filters.allergens);
 
   return (
-    <TouchableOpacity
+    <Pressable
       testID="menu-filters-button"
-      accessibilityLabel="Filters"
+      accessibilityLabel={hasFilters ? 'Filters, on' : 'Filters'}
       accessibilityRole="button"
       onPress={() => {
         SheetManager.show('filters');
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }}
+      className="size-9 items-center justify-center rounded-full"
+      style={{ backgroundColor: hasFilters ? theme.tint : theme.fill }}
     >
-      <Filter size={18} color={isDarkMode ? COLORS['ut-grey-dark-mode'] : COLORS['ut-grey']} />
-
-      {hasFilters() && (
-        <View className="-mr-2 -mt-2 absolute top-0 right-0">
-          <View className="size-2 rounded-full bg-ut-burnt-orange" />
-        </View>
-      )}
-    </TouchableOpacity>
+      <SlidersHorizontal size={17} color={hasFilters ? '#FFFFFF' : theme.label} />
+    </Pressable>
   );
 };
 export default FilterBar;
