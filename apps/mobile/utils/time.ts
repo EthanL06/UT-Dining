@@ -18,20 +18,16 @@ import type { MealTimes } from '~/utils/locations';
 
 type WeekDay = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
 
-// Returns weekday name, e.g., 'Monday'
 const weekdayName = (date: Date): WeekDay => format(date, 'EEEE') as WeekDay;
 
-// Returns time of day: 'morning', 'afternoon', or 'evening'
 export const timeOfDay = (
   date: Date,
   mealTimes?: MealTimes,
 ): 'morning' | 'afternoon' | 'evening' => {
   const hour = date.getHours();
   const minutes = date.getMinutes();
-  // Convert to military time
   const currentTime = hour * 100 + minutes;
 
-  // If mealTimes is provided, use it to determine time of day
   if (mealTimes && (mealTimes.breakfast || mealTimes.lunch || mealTimes.dinner)) {
     const breakfastEnd = mealTimes.breakfast?.closeTime ?? 1100;
     const lunchEnd = mealTimes.lunch?.closeTime ?? 1700;
@@ -41,13 +37,11 @@ export const timeOfDay = (
     return 'evening';
   }
 
-  // Fall back to default logic if mealTimes not provided
   if (hour < 11) return 'morning';
   if (hour < 17) return 'afternoon';
   return 'evening';
 };
 
-// Database-based version of getTodaySchedule
 export function getTodaySchedule(locationData: schema.Location | null, date: Date = new Date()) {
   if (!locationData?.regular_service_hours) return null;
 
@@ -66,13 +60,11 @@ export function getTodaySchedule(locationData: schema.Location | null, date: Dat
   };
 }
 
-// Database-based version of isLocationOpen
 export function isLocationOpen(
   locationData: schema.Location | null,
   currentTime: Date = new Date(),
 ): boolean {
   if (locationData?.force_close) {
-    // If the location is forced closed, return false immediately
     return false;
   }
 
@@ -83,7 +75,6 @@ export function isLocationOpen(
   return isWithinRanges(ranges, toLocalTime(currentTime).time);
 }
 
-// Database-based version of getLocationTimeMessage
 export function getLocationTimeMessage(
   locationData: schema.Location | null,
   currentTime: Date = new Date(),
@@ -93,7 +84,6 @@ export function getLocationTimeMessage(
 
   const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
 
-  // Check if currently open and return closing time
   for (const { openTime, closeTime } of schedule.intervals) {
     const openM = toMinutes(openTime);
     const closeM = toMinutes(closeTime);
@@ -105,7 +95,6 @@ export function getLocationTimeMessage(
     }
   }
 
-  // Check for next opening time today
   const nextOpening = schedule.intervals
     .map(({ openTime }: { openTime: number }) => toMinutes(openTime))
     .filter((openM: number) => openM > currentMinutes)
@@ -118,14 +107,9 @@ export function getLocationTimeMessage(
       : `Opens in ${Math.ceil(diffMins / 60)} ${Math.ceil(diffMins / 60) > 1 ? 'hours' : 'hour'}`;
   }
 
-  // For database version, we need to check next days differently
-  // Since we don't have a simple way to get next day schedules from database in this context,
-  // we'll fall back to a simpler message
   return 'Closed';
 }
 
-// Helper: convert HHMM number to a formatted time string.
-// It uses the provided date as a reference.
 function formatTimeFromNumber(time: number, referenceDate: Date): string {
   const hour = Math.floor(time / 100);
   const minute = time % 100;
@@ -134,7 +118,6 @@ function formatTimeFromNumber(time: number, referenceDate: Date): string {
   return format(d, 'hh:mm a');
 }
 
-// Mapping of full weekday names to their abbreviated forms.
 const dayAbbreviations: Record<WeekDay, string> = {
   Monday: 'M',
   Tuesday: 'T',
@@ -145,9 +128,6 @@ const dayAbbreviations: Record<WeekDay, string> = {
   Sunday: 'Sun',
 };
 
-// Generates an array of strings representing the schedule for a given location.
-// Each string is in the format "DAY-DAY: HH:MM AM - HH:MM AM/PM".
-// If the days in a schedule are not contiguous, they are joined by commas.
 export function generateSchedule(
   locationData: schema.Location | null,
   _todayFirst: boolean = true,
@@ -166,7 +146,6 @@ export function generateSchedule(
     'Sunday',
   ];
 
-  // Helper to get intervals or closed status for a day
   const rangesFor = (weekDay: WeekDay) =>
     getOpenRanges(serviceHours, weekDay.toLowerCase() as Weekday);
 
@@ -175,7 +154,6 @@ export function generateSchedule(
     return ranges ? JSON.stringify(ranges) : 'CLOSED';
   };
 
-  // Helper to format intervals or closed
   const formatTime = (weekDay: WeekDay) => {
     const ranges = rangesFor(weekDay);
     if (ranges) {
@@ -184,7 +162,6 @@ export function generateSchedule(
         const closeStr = formatTimeFromNumber(interval.close, date);
         return `${openStr} - ${closeStr}`;
       });
-      // Group intervals in pairs, join with comma, then new line for next pair
       const lines: string[] = [];
       for (let i = 0; i < intervals.length; i += 2) {
         lines.push(intervals.slice(i, i + 2).join(', '));
@@ -195,16 +172,13 @@ export function generateSchedule(
     }
   };
 
-  // Group consecutive days with the same intervals/closed status
   const result: { dayRange: string; time: string }[] = [];
   let groupStart = 0;
   let prevKey = getDayKey(dayOrder[0]);
 
   for (let i = 1; i <= dayOrder.length; i++) {
-    // Use a sentinel string for the end of the loop
     const currentKey = i < dayOrder.length ? getDayKey(dayOrder[i]) : '__END__';
     if (currentKey !== prevKey) {
-      // Group from groupStart to i-1
       const daysInGroup = dayOrder.slice(groupStart, i);
       let dayRange = '';
       if (daysInGroup.length === 1) {

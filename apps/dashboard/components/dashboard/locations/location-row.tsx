@@ -54,14 +54,12 @@ export function LocationRow({
     onToggleForceClose?.(location.id, checked);
   };
 
-  // Sort payment methods according to the predefined order
   const sortedPaymentMethods = location.methods_of_payment.sort((a, b) => {
     const indexA = paymentMethodOptions.findIndex((option) => option.value === a);
     const indexB = paymentMethodOptions.findIndex((option) => option.value === b);
     return indexA - indexB;
   });
 
-  // Get dynamic status and meal time
   const currentStatus = getLocationStatus(
     location.regular_service_hours,
     location.force_close,
@@ -70,7 +68,6 @@ export function LocationRow({
   const currentMeal = getCurrentMealTime(location, hasMenus);
   const locationTypeName = getLocationTypeName(location.type_id, locationTypes);
 
-  // Get color for location type badge
   const getLocationTypeColor = (typeName: string): string => {
     switch (typeName.toLowerCase()) {
       case 'dining hall':
@@ -90,12 +87,10 @@ export function LocationRow({
 
   return (
     <Table.Tr key={location.name} {...rowProps}>
-      {/* Drag Handle */}
       <Table.Td style={{ width: 32, paddingRight: 0, paddingLeft: 0 }}>
         {dragHandle || null}
       </Table.Td>
 
-      {/* Name and Colloquial Name */}
       <Table.Td>
         <Group gap="sm">
           <Avatar size="sm" radius="xl" color="orange">
@@ -112,7 +107,6 @@ export function LocationRow({
             )}
           </div>
 
-          {/* Menu Availability Indicator */}
           {location.has_menus && (
             <Tooltip label={'Has menus'} position="top">
               <ActionIcon variant="subtle" color={'orange'}>
@@ -123,14 +117,12 @@ export function LocationRow({
         </Group>
       </Table.Td>
 
-      {/* Location Type */}
       <Table.Td style={{ maxWidth: 100 }}>
         <Badge color={getLocationTypeColor(locationTypeName)} variant="light">
           {locationTypeName}
         </Badge>
       </Table.Td>
 
-      {/* Status (Dynamic based on service hours) */}
       <Table.Td>
         <Group gap="xs">
           <Badge color={currentStatus === 'open' ? 'green' : 'red'} variant="dot">
@@ -142,7 +134,6 @@ export function LocationRow({
             </Tooltip>
           )}
 
-          {/* If location has menus online, but in the database doesn't have any scraped menus. */}
           {location.has_menus && !hasMenus && !location.force_close && (
             <Tooltip label="Closed - no menus available">
               <Text size="xs" c="orange" fw={500}>
@@ -153,7 +144,6 @@ export function LocationRow({
         </Group>
       </Table.Td>
 
-      {/* Current Meal Time */}
       <Table.Td>
         {currentMeal ? (
           <Badge color="blue" variant="light">
@@ -166,7 +156,6 @@ export function LocationRow({
         )}
       </Table.Td>
 
-      {/* Payment Methods */}
       <Table.Td>
         <Group gap="xs">
           {sortedPaymentMethods.slice(0, 4).map((method) => (
@@ -191,14 +180,12 @@ export function LocationRow({
         </Group>
       </Table.Td>
 
-      {/* Last Updated */}
       <Table.Td>
         <Text size="sm" c="dimmed">
           {location.updated_at ? new Date(location.updated_at).toLocaleString() : '-'}
         </Text>
       </Table.Td>
 
-      {/* Actions */}
       <Table.Td>
         <Group gap="xs">
           <Tooltip

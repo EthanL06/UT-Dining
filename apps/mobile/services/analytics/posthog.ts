@@ -10,22 +10,16 @@ export const POSTHOG_CONFIG = {
   options: {
     host: 'https://us.i.posthog.com',
     enableSessionReplay: true,
-    disabled: IS_DEV, // Set to false to enable analytics in development
+    disabled: IS_DEV,
   },
   autocapture: {
-    // Expo Router no longer uses React Navigation, so screens are tracked by usePostHogScreens.
     captureScreens: false,
     captureTouches: true,
     customLabelProp: 'ph-label',
   },
-  debug: false, // Set true if using PostHog in development
+  debug: false,
 } as const;
 
-/**
- * Type-safe wrapper for PostHog instance that handles undefined case
- * @param posthog PostHog instance from usePostHog hook
- * @returns Safe PostHog instance with all methods wrapped to handle undefined
- */
 export function getSafePostHog(posthog: PostHog | undefined) {
   return {
     screen: (name?: string, properties?: PostHogEventProperties) => {
@@ -46,7 +40,6 @@ export function getSafePostHog(posthog: PostHog | undefined) {
   };
 }
 
-// Log warning only once on app start
 if (!POSTHOG_API_KEY) {
   console.warn(
     '⚠️ PostHog analytics are disabled. To enable analytics, add EXPO_PUBLIC_POSTHOG_API_KEY to your environment variables. See README.md for more information.',

@@ -67,7 +67,6 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
   const sheetRef = useSheetRef();
   const theme = useTheme();
 
-  // Get filters from store
   const {
     filters,
     toggleFavoriteFilter,
@@ -77,7 +76,6 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
     resetFilters,
   } = useFiltersStore();
 
-  // Helper function to format allergen keys
   const formatKey = (key: string) => {
     return key
       .split('_')
@@ -85,10 +83,8 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
       .join(' ');
   };
 
-  // Get allergens excluding dietary preferences
   const allergens = Object.entries(ALLERGEN_ICONS).filter(([key]) => !ALLERGEN_EXCEPTIONS.has(key));
 
-  // Get dietary preferences
   const dietaryOptions = Object.entries(ALLERGEN_ICONS).filter(([key]) =>
     ALLERGEN_EXCEPTIONS.has(key),
   );

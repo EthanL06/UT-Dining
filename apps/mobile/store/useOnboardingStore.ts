@@ -4,19 +4,16 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { zustandStorage } from './rnmmkv-storage';
 
 interface OnboardingState {
-  // Completion tracking
   isOnboardingComplete: boolean;
   completedSteps: string[];
   currentStep: number;
 
-  // Actions
   completeOnboarding: () => void;
   resetOnboarding: () => void;
   completeStep: (stepId: string) => void;
   setCurrentStep: (step: number) => void;
   skipOnboarding: () => void;
 
-  // Helpers
   hasCompletedStep: (stepId: string) => boolean;
   shouldShowOnboarding: () => boolean;
 }

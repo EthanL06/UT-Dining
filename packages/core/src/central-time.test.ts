@@ -20,7 +20,6 @@ describe('toCentralTime', () => {
   });
 
   it('keeps the previous calendar day late in the evening', () => {
-    // 03:30 UTC on Saturday is 10:30 PM Friday in Austin.
     expect(toCentralTime(new Date('2026-10-31T03:30:00Z'))).toEqual({
       date: '2026-10-30',
       day: 'friday',

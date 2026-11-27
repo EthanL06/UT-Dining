@@ -32,9 +32,6 @@ import LocationHeader from './components/LocationHeader';
 import ScrollToTopButton from './components/ScrollToTopButton';
 import SkeletonItem from './components/SkeletonItem';
 
-/**
- * Filter items based on search query and user-selected filters
- */
 const useFilteredItems = (
   flattenedItems: ListItem[],
   debouncedSearchQuery: string,
@@ -46,7 +43,6 @@ const useFilteredItems = (
   return React.useMemo(() => {
     const mealPlanIds = new Set(mealPlanItems.map((planItem) => planItem.id));
 
-    // First, filter by search query
     let result = flattenedItems;
 
     if (debouncedSearchQuery.trim()) {
@@ -63,13 +59,11 @@ const useFilteredItems = (
 
           if (foodName.includes(query)) {
             if (currentCategory && !processedCategoryIds.has(currentCategory.id)) {
-              // Respect the actual expansion state of categories in search results
               result.push({
                 ...currentCategory,
               });
               processedCategoryIds.add(currentCategory.id);
             }
-            // Respect the category's expansion state for hiding items
             result.push({
               ...item,
               hidden: currentCategory ? !currentCategory.isExpanded : false,
@@ -79,7 +73,6 @@ const useFilteredItems = (
       }
     }
 
-    // Then, apply additional filters (favorites, allergens, dietary)
     if (
       Object.values(filters).some(
         (val) =>
@@ -93,13 +86,10 @@ const useFilteredItems = (
 
       for (const item of result) {
         if (item.type === 'category_header') {
-          // Don't add category headers yet, we'll add them if they have matching items
           currentCategory = item;
         } else if (item.type === 'food_item') {
-          // Apply additional filters to food items
           const foodItem = item.data;
 
-          // Use our utility function to check if this item passes all filters
           const categoryName = item.categoryId;
           const isInMealPlan = (food: typeof foodItem) =>
             mealPlanIds.has(
@@ -111,16 +101,13 @@ const useFilteredItems = (
               }),
             );
           if (filterFoodItems([foodItem], filters, favorites, isInMealPlan).length > 0) {
-            // Item passed all filters, so add its category header if not already added
             if (currentCategory && !filteredCategories.has(currentCategory.id)) {
               filteredResult.push(currentCategory);
               filteredCategories.add(currentCategory.id);
             }
-            // Then add the item itself
             filteredResult.push(item);
           }
         } else {
-          // Pass through any other item types
           filteredResult.push(item);
         }
       }
@@ -140,9 +127,6 @@ const useFilteredItems = (
   ]);
 };
 
-/**
- * Generate skeleton items for loading state
- */
 const SKELETON_SECTIONS = [4, 3];
 
 const useSkeletonItems = (): ListItem[] => {
@@ -178,7 +162,6 @@ const Location = () => {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const setLastOpenedLocation = useMealStripStore((state) => state.setLastOpenedLocation);
-  // Core state and data
   const { location } = useLocalSearchParams<{ location: string }>();
   const [selectedDate, setSelectedDate] = useState(getTodayInCentralTime());
   const {
@@ -225,14 +208,11 @@ const Location = () => {
     [location],
   );
 
-  // Get active filters from filters store
   const activeFilters = useFiltersStore((state) => state.filters);
 
-  // Search state
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  // Custom hooks for UI elements
   const filteredItems = useFilteredItems(
     flattenedItems,
     debouncedSearchQuery,
@@ -242,17 +222,14 @@ const Location = () => {
   );
   const skeletonItems = useSkeletonItems();
 
-  // Scroll to top functionality
   const listRef = useRef<FlashListRef<ListItem>>(null);
   const { showScrollToTop, scrollButtonAnimation, handleScroll, scrollToTop } =
     useScrollToTop(listRef);
 
-  // Date change handler
   const handleDateChange = (date: string) => {
     setSelectedDate(date);
   };
 
-  // Reset search and expanded categories when menu or date changes
   useEffect(() => {
     try {
       setSearchQuery('');
@@ -270,10 +247,9 @@ const Location = () => {
     }
   }, [location, posthog]);
 
-  // Memoize the displayed items to prevent unnecessary recalculations
   const displayedItems = useMemo(() => {
     if (loading) return skeletonItems;
-    if (error) return []; // Return empty array on error, EmptyState will handle the display
+    if (error) return [];
     return debouncedSearchQuery ||
       Object.values(activeFilters).some(
         (val) => val === true || (typeof val === 'object' && Object.values(val).some((v) => v)),
@@ -322,7 +298,6 @@ const Location = () => {
           );
 
         case 'food_item': {
-          // Don't render if marked as hidden
           if (item.hidden) {
             return null;
           }
@@ -369,7 +344,6 @@ const Location = () => {
     ],
   );
 
-  // Empty state component
   const EmptyState = useCallback(() => {
     if (loading) return null;
     if (isSyncing) {

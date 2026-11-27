@@ -26,7 +26,6 @@ export function formatDateForAPI(date: Date): string {
 }
 
 export function getCentralTimeDate(): Date {
-  // Get current time in Central Time Zone (automatically handles DST)
   const centralTimeZone = 'America/Chicago';
   return toZonedTime(new Date(), centralTimeZone);
 }
@@ -67,10 +66,7 @@ export function isDateToday(date: Date): boolean {
 }
 
 export function createDateFromString(dateString: string): Date {
-  // Parse the date string safely to avoid timezone issues
-  // dateString is expected to be in YYYY-MM-DD format
   const [year, month, day] = dateString.split('-').map(Number);
-  // Create date in local timezone (month is 0-indexed)
   const date = new Date(year, month - 1, day);
   return startOfDay(date);
 }

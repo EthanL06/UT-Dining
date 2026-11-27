@@ -33,10 +33,9 @@ import { useAppLaunchStore } from '~/store/useAppLaunchStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 export const DATABASE_NAME = 'database.db';
 
-// This is the default configuration
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
-  strict: false, // Reanimated runs in strict mode by default
+  strict: false,
 });
 
 const CONNECTION_PRAGMAS = 'PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 3000;';
@@ -88,10 +87,8 @@ const AppContent = () => {
     if (success) {
       console.log('✅ Database migrated successfully');
 
-      // Increment launch count on successful app initialization
       incrementLaunchCount();
 
-      // Check and show rating prompt if conditions are met
       ratingService.checkAndShowRatingPrompt();
     } else if (error) {
       console.error('❌ Error migrating database:', error);
@@ -175,12 +172,10 @@ const AppContent = () => {
 };
 
 export default function Layout() {
-  // If no PostHog API key is provided, render app without PostHog
   if (!POSTHOG_API_KEY) {
     return <AppContent />;
   }
 
-  // If PostHog API key is provided, wrap app with PostHog provider
   return (
     <PostHogProvider
       apiKey={POSTHOG_CONFIG.apiKey}

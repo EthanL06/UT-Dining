@@ -49,40 +49,34 @@ export function ScheduledNotificationsTable({
         <Table.Tbody>
           {notifications.map((notification) => (
             <Table.Tr key={notification.id}>
-              {/* Title */}
               <Table.Td>
                 <Text fw={500} size="sm">
                   {notification.title || 'No title'}
                 </Text>
               </Table.Td>
 
-              {/* Message */}
               <Table.Td style={{ maxWidth: 300 }}>
                 <Text size="sm" lineClamp={2}>
                   {notification.body || 'No message'}
                 </Text>
               </Table.Td>
 
-              {/* Notification Type */}
               <Table.Td>
                 <Badge color="blue" variant="light">
                   {notification.notification_types.name}
                 </Badge>
               </Table.Td>
 
-              {/* Scheduled Time */}
               <Table.Td>
                 <Text size="sm">{new Date(notification?.scheduled_at || '').toLocaleString()}</Text>
               </Table.Td>
 
-              {/* Status */}
               <Table.Td>
                 <Badge color={notification.sent ? 'green' : 'blue'} variant="light">
                   {notification.sent ? 'Sent' : 'Pending'}
                 </Badge>
               </Table.Td>
 
-              {/* Redirect URL */}
               <Table.Td>
                 {notification.redirect_url ? (
                   <Group gap="xs">
@@ -111,14 +105,12 @@ export function ScheduledNotificationsTable({
                 )}
               </Table.Td>
 
-              {/* Created */}
               <Table.Td>
                 <Text size="sm" c="dimmed">
                   {new Date(notification.created_at).toLocaleString()}
                 </Text>
               </Table.Td>
 
-              {/* Actions */}
               <Table.Td>
                 <Group gap="xs">
                   <Tooltip label="Delete notification">
