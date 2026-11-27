@@ -1,3 +1,5 @@
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import {
   ageDays,
@@ -10,16 +12,21 @@ import {
   type PullRequest,
   requiredChecks,
 } from './github.ts';
+import { collectLive, renderLive } from './live.ts';
 
-const USAGE = `Usage: make status [ARGS="--json"]
+const USAGE = `Usage: make status [ARGS="--json | --out <dir>"]
 
-One report from GitHub: every open PR with its CI and merge state, what is waiting on Ethan
-(green PRs to approve, review requests, issues assigned to him and their open boxes), what needs an
-agent (conflicts, red CI), and the latest run of each workflow on staging.`;
+One report from live GitHub and EAS data: every open PR with its CI and merge state, what is waiting
+on Ethan (green PRs to approve, review requests, issues assigned to him and their open boxes), what
+needs an agent (conflicts, red CI), the latest run of each workflow on staging, and per PR whether
+the OTA preview is live for the head commit and which dev build can run it, the newest EAS builds,
+the staging OTA and the PRs merged in the last 24 hours. Needs EXPO_TOKEN for the EAS part.
+--out <dir> also writes live.md and live.json there (the status-snapshot workflow publishes them).`;
 
 const { values } = parseArgs({
   options: {
     json: { type: 'boolean', default: false },
+    out: { type: 'string' },
     help: { type: 'boolean', short: 'h', default: false },
   },
 });
@@ -60,8 +67,7 @@ interface Run {
   created_at: string;
 }
 
-const prRow = async (listed: PullRequest): Promise<PrRow> => {
-  const pr = await getPrSettled(listed.number);
+const prRow = async (pr: PullRequest): Promise<PrRow> => {
   const required = requiredChecks(pr.base.ref);
   const checks = checksFor(pr.head.sha);
   const failing = checks
@@ -99,8 +105,11 @@ const openBoxes = (body: string | null) => (body?.match(/^\s*- \[ \]/gm) ?? []).
 
 const main = async () => {
   const listed = ghAll<PullRequest>('pulls?state=open');
+  const settled: PullRequest[] = [];
+  for (const pr of listed) settled.push(await getPrSettled(pr.number));
   const rows: PrRow[] = [];
-  for (const pr of listed) rows.push(await prRow(pr));
+  for (const pr of settled) rows.push(await prRow(pr));
+  const live = await collectLive(settled);
   const issues = ghAll<Issue>(`issues?state=open&assignee=${ETHAN}`).filter(
     (issue) => !issue.pull_request,
   );
@@ -115,14 +124,31 @@ const main = async () => {
     return { number: n, title: item.title, url: item.html_url, open: openBoxes(item.body) };
   });
 
-  if (values.json) {
-    console.log(JSON.stringify({ prs: rows, issues, staging: latestRuns, cutover }, null, 2));
+  const json = JSON.stringify(
+    { generatedAt: live.generatedAt, prs: rows, issues, staging: latestRuns, cutover, live },
+    null,
+    2,
+  );
+  if (values.json && !values.out) {
+    console.log(json);
     return;
   }
 
   const pr = (row: PrRow, extra = '') =>
     `- #${row.number} ${row.title}${extra ? ` (${extra})` : ''}`;
-  const out: string[] = ['# UT Dining status', ''];
+  const ci = new Map(
+    rows.map((row) => [
+      row.number,
+      row.state === 'red'
+        ? `red: ${row.failing.join(', ')}`
+        : row.state === 'conflict'
+          ? 'no CI (merge conflict)'
+          : row.pending.length > 0
+            ? `waiting: ${row.pending.join(', ')}`
+            : 'green',
+    ]),
+  );
+  const out: string[] = ['# UT Dining status', '', renderLive(live, ci), ''];
 
   out.push('## Waiting on Ethan', '');
   const ready = rows.filter((row) => row.state === 'ready' && row.base === 'staging');
@@ -175,7 +201,13 @@ const main = async () => {
     out.push('', '## Untouched for 3+ days', '');
     for (const row of stale) out.push(pr(row, `${row.ageDays} days`));
   }
-  console.log(out.join('\n'));
+  const text = out.join('\n');
+  if (values.out) {
+    mkdirSync(values.out, { recursive: true });
+    writeFileSync(join(values.out, 'live.md'), `${text}\n`);
+    writeFileSync(join(values.out, 'live.json'), `${json}\n`);
+  }
+  console.log(values.json ? json : text);
 };
 
 await main();

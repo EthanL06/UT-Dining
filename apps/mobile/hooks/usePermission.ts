@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { AppState } from 'react-native';
 import { log } from '~/utils/log';
 
-export type PermissionKind = 'location' | 'notifications';
+export type PermissionKind = 'location' | 'backgroundLocation' | 'notifications';
 
 export type PermissionState = 'checking' | 'undetermined' | 'granted' | 'denied';
 
@@ -18,6 +18,10 @@ const PERMISSIONS: Record<
   location: {
     check: Location.getForegroundPermissionsAsync,
     request: Location.requestForegroundPermissionsAsync,
+  },
+  backgroundLocation: {
+    check: Location.getBackgroundPermissionsAsync,
+    request: Location.requestBackgroundPermissionsAsync,
   },
   notifications: {
     check: Notifications.getPermissionsAsync,
@@ -64,5 +68,5 @@ export function usePermission(kind: PermissionKind) {
     }
   }, [kind]);
 
-  return { state, request };
+  return { state, request, refresh };
 }

@@ -32,14 +32,14 @@ name: Meal plan items can be added and removed
 - repeat:
     while:
       notVisible:
-        id: meal-plan-title
+        id: meal-plan-screen
     times: 3
     commands:
       - tapOn:
           id: location-meal-plan-button
       - waitForAnimationToEnd
 - assertVisible:
-    id: meal-plan-title
+    id: meal-plan-screen
 - extendedWaitUntil:
     visible: 'Maestro Grilled Chicken(,.*)?'
     timeout: 5000

@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { ChefHat, ChevronLeft, Heart, Info } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
@@ -152,22 +152,24 @@ const LocationHeader = React.memo(
               </View>
             )}
 
-            <View>
-              <Text variant="largeTitle">{displayName}</Text>
-              {status !== '' && (
-                <Text variant="subheadline" tone="secondary">
-                  <Text
-                    variant="subheadline"
-                    emphasized
-                    color={isOpen ? theme.tint : theme.secondaryLabel}
-                  >
-                    {isOpen ? 'Open' : status}
+            <Link.AppleZoomTarget>
+              <View>
+                <Text variant="largeTitle">{displayName}</Text>
+                {status !== '' && (
+                  <Text variant="subheadline" tone="secondary">
+                    <Text
+                      variant="subheadline"
+                      emphasized
+                      color={isOpen ? theme.tint : theme.secondaryLabel}
+                    >
+                      {isOpen ? 'Open' : status}
+                    </Text>
+                    {isOpen ? status.replace(/^Open/, '') : ''}
+                    {locationData?.type ? ` · ${locationData.type}` : ''}
                   </Text>
-                  {isOpen ? status.replace(/^Open/, '') : ''}
-                  {locationData?.type ? ` · ${locationData.type}` : ''}
-                </Text>
-              )}
-            </View>
+                )}
+              </View>
+            </Link.AppleZoomTarget>
 
             <WeekStrip selectedDate={selectedDate} onDateChange={onDateChange} />
           </>

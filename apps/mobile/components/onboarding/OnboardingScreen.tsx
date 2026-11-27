@@ -1,5 +1,4 @@
 import { ChevronLeft } from 'lucide-react-native';
-import { usePostHog } from 'posthog-react-native';
 import React, { useCallback } from 'react';
 import { Modal, Pressable, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import Animated, {
@@ -12,7 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Text } from '~/components/ui/Text';
-import { getSafePostHog } from '~/services/analytics/posthog';
+import { analytics } from '~/services/analytics/posthog';
 import { ONBOARDING_STEPS, useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { haptics } from '~/utils/haptics';
@@ -50,8 +49,6 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
   const { width } = useWindowDimensions();
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
   const theme = useTheme();
-  const posthog = usePostHog();
-  const analytics = getSafePostHog(posthog);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollX = useSharedValue(0);
   const { currentStep: savedStep, setCurrentStep, completeOnboarding } = useOnboardingStore();
@@ -75,7 +72,7 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
       });
       setHasTrackedStart(true);
     }
-  }, [isOnboardingComplete, hasTrackedStart, analytics]);
+  }, [isOnboardingComplete, hasTrackedStart]);
 
   const scrollHandler = useAnimatedScrollHandler({
     onBeginDrag: () => {
