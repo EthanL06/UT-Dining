@@ -2,6 +2,7 @@ import { Monitor, Moon, Sun } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { APP_STORE_URL, asset, GITHUB_URL, STATUS_URL } from '@/lib/site';
+import { getServiceHealth } from '@/lib/status';
 import { StatusPill } from './StatusPill';
 
 const linkClass = 'text-muted hover:text-ink';
@@ -12,7 +13,9 @@ const themeChoices = [
   { value: 'dark', label: 'Dark theme', Icon: Moon },
 ] as const;
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const health = await getServiceHealth();
+
   return (
     <footer className="mx-auto max-w-290 px-6 pt-10 pb-8 text-sm md:pt-16">
       <div className="bg-tile grid gap-7 rounded-[28px] px-6 py-7 md:gap-9 md:p-10">
@@ -31,7 +34,7 @@ export function SiteFooter() {
             <p className="text-muted max-w-[30ch]">
               Every dining hall, café and food truck at UT, in one app.
             </p>
-            <StatusPill />
+            <StatusPill initial={health} />
           </div>
           <nav aria-label="App" className="grid content-start gap-2.25">
             <h2 className="text-ink mb-1 text-[13px] font-semibold">App</h2>

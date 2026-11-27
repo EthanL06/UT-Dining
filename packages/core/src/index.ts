@@ -5,4 +5,5 @@ export * from './menu-sync.ts';
 export * from './notifications.ts';
 export * from './paging.ts';
 export * from './payment-methods.ts';
+export * from './service-status.ts';
 export * from './sync.ts';
