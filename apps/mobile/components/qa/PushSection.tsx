@@ -2,8 +2,9 @@ import * as Notifications from 'expo-notifications';
 import { Bell, Send } from 'lucide-react-native';
 
 import { GroupedSection } from '~/components/ui/Grouped';
+import { sendTestPush } from '~/services/qa/testPush';
 import { usePushNotificationsStore } from '~/store/usePushNotificationsStore';
-import { ActionRow, COLORS, EXPO_PUSH_URL, InfoRow, share, useActionStatus } from './shared';
+import { ActionRow, COLORS, InfoRow, share, useActionStatus } from './shared';
 
 export const PushSection = () => {
   const expoPushToken = usePushNotificationsStore((state) => state.expoPushToken);
@@ -24,30 +25,13 @@ export const PushSection = () => {
   const sendRemote = () =>
     run('remote', async () => {
       if (!expoPushToken) throw new Error('No push token yet. Allow notifications first.');
-      const response = await fetch(EXPO_PUSH_URL, {
-        method: 'POST',
-        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: expoPushToken,
-          title: 'QA test push',
-          body: `Sent through Expo at ${new Date().toLocaleTimeString()}`,
-          data: { type: 'system_announcement' },
-        }),
-      });
-      const result = (await response.json()) as {
-        data?: { status?: string; message?: string };
-        errors?: { message?: string }[];
-      };
-      const failure = result.errors?.[0]?.message ?? result.data?.message;
-      if (!response.ok || result.data?.status !== 'ok') {
-        throw new Error(failure ?? `Expo returned ${response.status}`);
-      }
+      await sendTestPush(expoPushToken);
     });
 
   return (
     <GroupedSection
       header="Push Notifications"
-      footer="Local fires in 3 seconds, so you can lock the phone. Remote goes through Expo and APNs to this phone only."
+      footer="Local fires in 3 seconds, so you can lock the phone. Remote goes through dev Supabase (qa-test-push), Expo and APNs to this phone only."
     >
       <ActionRow
         isFirst

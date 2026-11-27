@@ -97,7 +97,8 @@ qr_url=""
 if [[ "$mode" == pr && -n "${SUPABASE_DEV_URL:-}" && -n "${SUPABASE_DEV_SERVICE_KEY:-}" ]]; then
   qr_url="$(PREVIEW_TITLE="${PR_TITLE:-PR #$pr}" PREVIEW_SHA="$sha" PREVIEW_RUNTIME="$fingerprint" \
     PREVIEW_BUILD_URL="$build_url" PREVIEW_UPDATE_URL="$update_url" \
-    "$ROOT/scripts/ci/preview-index.sh" add "$pr" || true)"
+    "$ROOT/scripts/ci/preview-index.sh" add "$pr")" ||
+    echo "::warning::Could not update the QA menu's PR preview list. See scripts/ci/preview-index.sh output above."
 fi
 
 case "$build_state" in

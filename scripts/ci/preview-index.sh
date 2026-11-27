@@ -43,8 +43,13 @@ key="${SUPABASE_DEV_SERVICE_KEY:-}"
 [[ "$url" != *"$PROD_REF"* ]] || die "refusing to write to the production Supabase project"
 url="${url%/}"
 
+auth=(-H "apikey: $key")
+if [[ "$key" != sb_secret_* ]]; then
+  auth+=(-H "Authorization: Bearer $key")
+fi
+
 api() {
-  curl -sS --fail-with-body -H "apikey: $key" "$@"
+  curl -sS --fail-with-body "${auth[@]}" "$@"
 }
 
 if ! api -o /dev/null "$url/storage/v1/bucket/$BUCKET" 2>/dev/null; then
