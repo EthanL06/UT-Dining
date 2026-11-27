@@ -10,6 +10,9 @@ const LIGHT = {
   fill: 'rgba(120, 120, 128, 0.14)',
   tint: '#BF5700',
   tintSoft: 'rgba(191, 87, 0, 0.12)',
+  toast: '#2C2C2E',
+  toastLabel: '#FFFFFF',
+  toastBorder: 'transparent',
 };
 
 const DARK: typeof LIGHT = {
@@ -22,6 +25,9 @@ const DARK: typeof LIGHT = {
   fill: 'rgba(120, 120, 128, 0.26)',
   tint: '#E8782A',
   tintSoft: 'rgba(232, 120, 42, 0.18)',
+  toast: '#3A3A3C',
+  toastLabel: '#FFFFFF',
+  toastBorder: 'rgba(84, 84, 88, 0.6)',
 };
 
 export type Theme = typeof LIGHT;

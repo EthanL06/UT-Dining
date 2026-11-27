@@ -1,5 +1,5 @@
 appId: com.ethanl06.ut-dining.dev
-name: Favorites can be added from a food and removed with a swipe
+name: Favorites can be added from a food or a hold and removed with a hold
 ---
 - runFlow: ../subflows/start.yaml
 - runFlow: ../subflows/open-j2.yaml
@@ -23,9 +23,12 @@ name: Favorites can be added from a food and removed with a swipe
       - tapOn:
           id: back-button
       - waitForAnimationToEnd
-- swipe:
-    from: 'Maestro Grilled Chicken(,.*)?'
-    direction: LEFT
+- longPressOn: 'Maestro Grilled Chicken(,.*)?'
+- extendedWaitUntil:
+    visible: Add to Favorites
+    timeout: 5000
+- tapOn: Add to Favorites
+- waitForAnimationToEnd
 - repeat:
     while:
       notVisible:
@@ -40,15 +43,19 @@ name: Favorites can be added from a food and removed with a swipe
 - assertVisible: 'Maestro Veggie Burger(,.*)?'
 - assertVisible: 'Maestro Grilled Chicken(,.*)?'
 - takeScreenshot: favorites
-- swipe:
-    from: 'Maestro Veggie Burger(,.*)?'
-    direction: LEFT
+- longPressOn: 'Maestro Veggie Burger(,.*)?'
+- extendedWaitUntil:
+    visible: Remove from Favorites
+    timeout: 5000
+- tapOn: Remove from Favorites
 - extendedWaitUntil:
     notVisible: 'Maestro Veggie Burger(,.*)?'
     timeout: 5000
-- swipe:
-    from: 'Maestro Grilled Chicken(,.*)?'
-    direction: LEFT
+- longPressOn: 'Maestro Grilled Chicken(,.*)?'
+- extendedWaitUntil:
+    visible: Remove from Favorites
+    timeout: 5000
+- tapOn: Remove from Favorites
 - extendedWaitUntil:
     visible: No Favorites Yet!
     timeout: 5000
