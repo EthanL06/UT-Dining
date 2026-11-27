@@ -1,0 +1,74 @@
+name: Publish open data
+
+on:
+  workflow_run:
+    workflows: [Scrape menus]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      from:
+        description: First menu date to export as YYYY-MM-DD, or "all" for a full backfill (blank exports from two days ago)
+        required: false
+
+concurrency:
+  group: open-data
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    name: Export to ut-dining-data
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      HAS_DEPLOY_KEY: ${{ secrets.DATA_REPO_DEPLOY_KEY != '' }}
+      BACKFILL: ${{ github.event_name == 'workflow_dispatch' && inputs.from != '' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile --filter @ut-dining/scraper...
+
+      - name: Check deploy key
+        if: ${{ env.HAS_DEPLOY_KEY != 'true' }}
+        run: |
+          echo "::error::Add the DATA_REPO_DEPLOY_KEY secret (a write deploy key for EthanL06/ut-dining-data)."
+          exit 1
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: EthanL06/ut-dining-data
+          ssh-key: ${{ secrets.DATA_REPO_DEPLOY_KEY }}
+          path: open-data
+
+      - name: Export menus, dishes and locations
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ env.BACKFILL == 'true' && secrets.SUPABASE_SERVICE_KEY || secrets.SUPABASE_ANON_KEY }}
+          EXPORT_DIR: ${{ github.workspace }}/open-data
+          EXPORT_FROM: ${{ inputs.from }}
+          TZ: America/Chicago
+        run: |
+          pnpm --filter @ut-dining/scraper export
+          cp apps/scraper/open-data/README.md open-data/README.md
+
+      - name: Commit and push
+        working-directory: open-data
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to publish."
+            exit 0
+          fi
+          git commit -q -m "data: export $(TZ=America/Chicago date +%F) from ${GITHUB_REPOSITORY}@${GITHUB_SHA::7}"
+          git push
