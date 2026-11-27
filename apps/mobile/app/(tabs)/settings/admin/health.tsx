@@ -10,7 +10,7 @@ import { Text } from '~/components/ui/Text';
 import { useAdminHealth } from '~/hooks/useAdmin';
 import { openStatusPage, useServiceStatus } from '~/hooks/useServiceStatus';
 import type { AdminHealth } from '~/services/admin/tools';
-import { formatAgo, formatBytes, toQueryView } from '~/utils/adminView';
+import { describeDownloads, formatAgo, formatBytes, toQueryView } from '~/utils/adminView';
 import { SERVICE_STATUS_COLORS } from '~/utils/serviceStatus';
 
 const AppSection = () => {
@@ -69,6 +69,7 @@ const ServerSections = ({ data }: { data: AdminHealth }) => {
     .sort()
     .at(-1);
   const crashes = data.crashes;
+  const downloads = describeDownloads(data.downloads);
   return (
     <>
       <GroupedSection header="Menus">
@@ -115,24 +116,8 @@ const ServerSections = ({ data }: { data: AdminHealth }) => {
           value={crashes.status === 'ready' ? crashes.lastWeek.toString() : 'Not set up'}
         />
       </GroupedSection>
-      <GroupedSection
-        header="App Store"
-        footer={
-          data.downloads.status === 'ready'
-            ? `First-time downloads of all versions. Apple updates this once a day. Checked ${formatAgo(data.downloads.checkedAt).toLowerCase()}.`
-            : 'Add an App Store Connect key to the admin tools to see downloads.'
-        }
-      >
-        <InfoRow
-          isFirst
-          testID="admin-downloads"
-          label="Total Downloads"
-          value={
-            data.downloads.status === 'ready'
-              ? data.downloads.total.toLocaleString('en-US')
-              : 'Not set up'
-          }
-        />
+      <GroupedSection header="App Store" footer={downloads.footer}>
+        <InfoRow isFirst testID="admin-downloads" label="Total Downloads" value={downloads.value} />
       </GroupedSection>
       <GroupedSection header="Database">
         <InfoRow isFirst label="Size" value={formatBytes(data.database.sizeBytes)} />

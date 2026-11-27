@@ -55,3 +55,34 @@ export const formatBytes = (bytes: number | null): string => {
   if (bytes < 1e6) return `${Math.round(bytes / 1e3)} KB`;
   return `${(bytes / 1e6).toFixed(0)} MB`;
 };
+
+export type DownloadsState =
+  | { status: 'ready'; total: number; checkedAt: string }
+  | { status: 'not_configured'; missing: string[] }
+  | { status: 'failed'; detail: string }
+  | { status: 'unavailable' };
+
+export const describeDownloads = (
+  downloads: DownloadsState,
+  now = Date.now(),
+): { value: string; footer: string } => {
+  switch (downloads.status) {
+    case 'ready':
+      return {
+        value: downloads.total.toLocaleString('en-US'),
+        footer: `First-time downloads of all versions. Apple updates this once a day. Checked ${formatAgo(downloads.checkedAt, now).toLowerCase()}.`,
+      };
+    case 'not_configured':
+      return {
+        value: 'Not set up',
+        footer: `Still missing: ${downloads.missing.join(', ')}.`,
+      };
+    case 'failed':
+      return { value: "Couldn't load", footer: downloads.detail };
+    case 'unavailable':
+      return {
+        value: 'Not set up',
+        footer: 'Add an App Store Connect key to the admin tools to see downloads.',
+      };
+  }
+};
