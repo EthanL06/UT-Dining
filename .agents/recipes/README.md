@@ -4,5 +4,6 @@ Notes for future agents. Each recipe solves one problem that happened twice or c
 
 | Symptom | Recipe |
 |---|---|
+| Recurring flows: merging, builds, migrations, prod data, screenshots, cutover | [../runbook.md](../runbook.md) |
 | Setting up and running this repo | [dev-setup.md](dev-setup.md) |
 | Cloud session: GitHub writes, blocked calls, screenshots, which Supabase, type conflicts | [cloud-sessions.md](cloud-sessions.md) |

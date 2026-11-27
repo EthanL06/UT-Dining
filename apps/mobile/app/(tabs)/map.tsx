@@ -23,6 +23,7 @@ import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
 import { getLocationName } from '~/utils/locations';
+import { log } from '~/utils/log';
 import {
   type Coordinates,
   clusterPlaces,
@@ -110,7 +111,7 @@ const MapPage = () => {
         );
         if (cancelled) sub.remove();
         else subscription = sub;
-      })();
+      })().catch((error) => log.warn('Location watch failed', { error }));
       return () => {
         cancelled = true;
         subscription?.remove();

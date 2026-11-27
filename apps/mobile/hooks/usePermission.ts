@@ -42,13 +42,13 @@ export function usePermission(kind: PermissionKind) {
 
   useFocusEffect(
     useCallback(() => {
-      refresh();
+      void refresh();
     }, [refresh]),
   );
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (next) => {
-      if (next === 'active') refresh();
+      if (next === 'active') void refresh();
     });
     return () => subscription.remove();
   }, [refresh]);
