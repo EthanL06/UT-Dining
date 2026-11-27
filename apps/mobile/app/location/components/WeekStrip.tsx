@@ -31,7 +31,10 @@ interface WeekStripProps {
   onDateChange: (date: string) => void;
 }
 
-type Frames = { dayX: Record<number, number>; circle: { x: number; y: number } | null };
+type Frames = {
+  dayX: Record<number, number>;
+  circle: { x: number; y: number; size: number } | null;
+};
 
 const DayNumber = ({
   label,
@@ -134,9 +137,9 @@ const WeekStrip = ({ selectedDate, onDateChange }: WeekStripProps) => {
                 position: 'absolute',
                 top: frames.circle.y,
                 left: 0,
-                width: CIRCLE_SIZE,
-                height: CIRCLE_SIZE,
-                borderRadius: CIRCLE_SIZE / 2,
+                width: frames.circle.size,
+                height: frames.circle.size,
+                borderRadius: frames.circle.size / 2,
                 backgroundColor: theme.tint,
               },
               indicatorStyle,
@@ -177,11 +180,13 @@ const WeekStrip = ({ selectedDate, onDateChange }: WeekStripProps) => {
                   onLayout={
                     index === 0
                       ? (event) => {
-                          const { x, y } = event.nativeEvent.layout;
+                          const { x, y, width } = event.nativeEvent.layout;
                           setFrames((current) =>
-                            current.circle?.x === x && current.circle.y === y
+                            current.circle?.x === x &&
+                            current.circle.y === y &&
+                            current.circle.size === width
                               ? current
-                              : { ...current, circle: { x, y } },
+                              : { ...current, circle: { x, y, size: width } },
                           );
                         }
                       : undefined
