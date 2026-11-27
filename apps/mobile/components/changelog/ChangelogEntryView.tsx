@@ -81,81 +81,69 @@ export const ChangelogEntryCard = ({
 }) => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
   const chevronColor = isDarkMode ? '#9CA3AF' : '#8A8F98';
+  const Chevron = expanded ? ChevronUp : ChevronDown;
 
   const toggle = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     onToggle();
   };
 
-  if (!expanded) {
-    return (
-      <TouchableOpacity
-        testID={`changelog-entry-${entry.version}`}
-        accessibilityRole="button"
-        accessibilityState={{ expanded: false }}
-        activeOpacity={0.7}
-        onPress={toggle}
-        className={cn(
-          'min-h-14 flex-row items-center gap-x-2.5 rounded-[14px] px-4 py-3',
-          isDarkMode ? 'bg-[#1C1C1E]' : 'bg-white',
-        )}
-      >
-        <VersionBadge version={entry.version} isLatest={isLatest} />
-        <Text
-          variant="subheadline"
-          emphasized
-          numberOfLines={1}
-          color={isDarkMode ? '#FFFFFF' : '#111111'}
-          className="flex-1"
-        >
-          {entryTitle(entry)}
-        </Text>
-        {entry.date && (
-          <Text variant="footnote" color={isDarkMode ? '#9CA3AF' : '#6B7280'}>
-            {formatShortDate(entry.date)}
-          </Text>
-        )}
-        <ChevronDown size={16} color={chevronColor} strokeWidth={2.4} />
-      </TouchableOpacity>
-    );
-  }
-
   return (
-    <View
+    <TouchableOpacity
       testID={`changelog-entry-${entry.version}`}
-      className={cn('gap-y-3.5 rounded-[18px] p-[18px]', isDarkMode ? 'bg-[#1C1C1E]' : 'bg-white')}
+      accessibilityRole="button"
+      accessibilityState={{ expanded }}
+      activeOpacity={0.7}
+      onPress={toggle}
+      className={cn(
+        'px-4 pt-3',
+        expanded ? 'gap-y-3.5 rounded-[18px] pb-[18px]' : 'rounded-[14px] pb-3',
+        isDarkMode ? 'bg-[#1C1C1E]' : 'bg-white',
+      )}
       style={{
         shadowColor: '#000',
-        shadowOpacity: isDarkMode ? 0 : 0.05,
+        shadowOpacity: expanded && !isDarkMode ? 0.05 : 0,
         shadowRadius: 2,
         shadowOffset: { width: 0, height: 1 },
       }}
     >
-      <TouchableOpacity
-        accessibilityRole="button"
-        accessibilityState={{ expanded: true }}
-        activeOpacity={0.7}
-        onPress={toggle}
-        className="flex-row items-center gap-x-2"
-      >
+      <View className="min-h-8 flex-row items-center gap-x-2.5">
         <VersionBadge version={entry.version} isLatest={isLatest} />
-        {entry.date && (
-          <Text variant="eyebrow" color={isDarkMode ? '#9CA3AF' : '#5B6270'}>
-            {formatMonthYear(entry.date)}
-          </Text>
+        {expanded ? (
+          <View className="flex-1">
+            {entry.date && (
+              <Text variant="eyebrow" color={isDarkMode ? '#9CA3AF' : '#5B6270'}>
+                {formatMonthYear(entry.date)}
+              </Text>
+            )}
+          </View>
+        ) : (
+          <>
+            <Text
+              variant="subheadline"
+              emphasized
+              numberOfLines={1}
+              color={isDarkMode ? '#FFFFFF' : '#111111'}
+              className="flex-1"
+            >
+              {entryTitle(entry)}
+            </Text>
+            {entry.date && (
+              <Text variant="footnote" color={isDarkMode ? '#9CA3AF' : '#6B7280'}>
+                {formatShortDate(entry.date)}
+              </Text>
+            )}
+          </>
         )}
-        <View className="ml-auto">
-          <ChevronUp size={18} color={chevronColor} strokeWidth={2.4} />
-        </View>
-      </TouchableOpacity>
-      {entry.summary && (
+        <Chevron size={16} color={chevronColor} strokeWidth={2.4} />
+      </View>
+      {expanded && entry.summary && (
         <Text variant="title3" color={isDarkMode ? '#FFFFFF' : '#111111'}>
           {entry.summary}
         </Text>
       )}
-      {entry.changes.map((change) => (
-        <ChangelogChangeRow key={change.title} change={change} />
-      ))}
-    </View>
+      {expanded &&
+        entry.changes.map((change) => <ChangelogChangeRow key={change.title} change={change} />)}
+    </TouchableOpacity>
   );
 };
