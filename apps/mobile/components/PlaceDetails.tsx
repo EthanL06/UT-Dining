@@ -1,4 +1,3 @@
-import * as Haptics from 'expo-haptics';
 import { MapPin } from 'lucide-react-native';
 import { Image, Linking, Platform, Text, View } from 'react-native';
 
@@ -11,7 +10,6 @@ import { generateSchedule } from '~/utils/time';
 export type PlaceData = NonNullable<ReturnType<typeof useLocationDetails>['locationData']>;
 
 export const openPlaceDirections = (place: PlaceData) => {
-  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   Linking.openURL(Platform.OS === 'ios' ? place.apple_maps_link : place.google_maps_link);
 };
 

@@ -1,8 +1,8 @@
-import * as Haptics from 'expo-haptics';
 import { NativeTabs } from 'expo-router/native-tabs';
 
 import { MealStrip, useCurrentMealStrip } from '~/components/MealStrip';
 import { useUnreadNotifications } from '~/hooks/useUnreadNotifications';
+import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
 
 export default function Layout() {
@@ -10,17 +10,17 @@ export default function Layout() {
   const { unreadCount, hasUnread } = useUnreadNotifications();
   const mealStrip = useCurrentMealStrip();
 
-  const handleTabPress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  };
-
   return (
     <NativeTabs
       tintColor={theme.tint}
       iconColor={theme.secondaryLabel}
       badgeBackgroundColor={theme.tint}
       minimizeBehavior="onScrollDown"
-      screenListeners={{ tabPress: handleTabPress }}
+      screenListeners={({ navigation }) => ({
+        tabPress: () => {
+          if (!navigation.isFocused()) haptics.selection();
+        },
+      })}
     >
       {mealStrip && (
         <NativeTabs.BottomAccessory>
@@ -56,7 +56,6 @@ export default function Layout() {
         />
         <NativeTabs.Trigger.Label hidden>Settings</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
-      {/* biome-ignore lint/a11y/useSemanticElements: role sets the native iOS search tab, not an ARIA role */}
       <NativeTabs.Trigger
         name="search"
         role="search"

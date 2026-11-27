@@ -1,5 +1,4 @@
 import { format } from 'date-fns';
-import * as Haptics from 'expo-haptics';
 import { Pressable, Text, View } from 'react-native';
 
 import {
@@ -9,6 +8,7 @@ import {
   formatDateForDisplay,
   getTodayInCentralTime,
 } from '~/utils/date';
+import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
 
 const DAY_OFFSETS = [-2, -1, 0, 1, 2, 3];
@@ -47,7 +47,7 @@ const WeekStrip = ({ selectedDate, onDateChange }: WeekStripProps) => {
               accessibilityLabel={format(day, 'EEEE, MMMM d')}
               onPress={() => {
                 if (isSelected) return;
-                Haptics.selectionAsync();
+                haptics.selection();
                 onDateChange(value);
               }}
               className="items-center gap-y-1"

@@ -1,4 +1,3 @@
-import * as Haptics from 'expo-haptics';
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import {
@@ -36,6 +35,7 @@ import Reanimated, {
 
 import { StatusDot } from '~/components/ui/Grouped';
 import { useSettingsStore } from '~/store/useSettingsStore';
+import { haptics } from '~/utils/haptics';
 import type { Coordinates, Place } from '~/utils/mapPlaces';
 import { walkingMinutes } from '~/utils/mapPlaces';
 import { useTheme } from '~/utils/theme';
@@ -90,7 +90,6 @@ const PlaceIcon = ({ type, size = 36 }: { type: string; size?: number }) => {
 };
 
 const openDirections = (place: Place) => {
-  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   const address = encodeURIComponent(place.address.replace(/\s/g, '+'));
   Linking.openURL(
     Platform.OS === 'ios'
@@ -165,7 +164,6 @@ const PlaceCard = ({
             testID="map-view-place-button"
             accessibilityRole="button"
             onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               router.push(
                 place.hasMenu ? `/location/${place.name}` : `/location_generic/${place.name}`,
               );
@@ -334,7 +332,7 @@ export const MapSheet = ({
     const nearest = (Object.keys(heights) as Detent[]).reduce((best, detent) =>
       Math.abs(heights[detent] - current) < Math.abs(heights[best] - current) ? detent : best,
     );
-    Haptics.selectionAsync();
+    if (heights[nearest] !== dragStart.value) haptics.selection();
     snapTo(nearest);
   };
 
@@ -394,7 +392,7 @@ export const MapSheet = ({
                 accessibilityRole="button"
                 accessibilityState={{ selected: isOn }}
                 onPress={() => {
-                  Haptics.selectionAsync();
+                  haptics.selection();
                   onToggleFilter(filter.id);
                 }}
                 className="h-[34px] justify-center rounded-full px-3.5"

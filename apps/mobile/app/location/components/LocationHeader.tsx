@@ -1,4 +1,3 @@
-import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { ChefHat, ChevronLeft, Heart, Info } from 'lucide-react-native';
 import React, { useState } from 'react';
@@ -47,10 +46,7 @@ const CircleButton = ({
     accessibilityLabel={label}
     accessibilityRole="button"
     hitSlop={6}
-    onPress={() => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      onPress();
-    }}
+    onPress={onPress}
     className="size-11 items-center justify-center rounded-full"
     style={{ backgroundColor: theme.card }}
   >

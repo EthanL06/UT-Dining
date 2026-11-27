@@ -1,4 +1,3 @@
-import * as Haptics from 'expo-haptics';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Check, ChefHat, Flame, Heart, Info, X } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
@@ -19,6 +18,7 @@ import { getSafePostHog } from '~/services/analytics/posthog';
 import { isFavoriteItem } from '~/services/database/database';
 import { todayKey, useIsMealPlanItem } from '~/store/useMealPlanStore';
 import { toggleFavoriteForFood, toggleMealPlanForFood } from '~/utils/foodActions';
+import { haptics } from '~/utils/haptics';
 import { type Theme, useTheme } from '~/utils/theme';
 import { displayNutrient } from '~/utils/utils';
 
@@ -112,7 +112,6 @@ const FoodScreen = () => {
               accessibilityLabel="Close"
               accessibilityRole="button"
               onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.back();
               }}
               className="size-11 items-center justify-center rounded-full"
@@ -126,7 +125,6 @@ const FoodScreen = () => {
               accessibilityRole="button"
               onPress={() => {
                 SheetManager.show('food-info', { context: 'food' });
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               }}
               className="size-11 items-center justify-center rounded-full"
               style={{ backgroundColor: theme.card }}
@@ -271,7 +269,8 @@ const FoodScreen = () => {
               accessibilityLabel={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
               accessibilityRole="button"
               onPress={async () => {
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                if (isFavorite) haptics.remove();
+                else haptics.success();
                 setIsFavorite(await toggleFavoriteForFood(db, foodItem, context));
               }}
               className="h-12 flex-1 flex-row items-center justify-center gap-x-2 rounded-full"
@@ -291,7 +290,8 @@ const FoodScreen = () => {
               accessibilityLabel={isMealPlan ? 'Remove from meal plan' : 'Add to meal plan'}
               accessibilityRole="button"
               onPress={() => {
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                if (isMealPlan) haptics.remove();
+                else haptics.success();
                 toggleMealPlanForFood(foodItem, context);
               }}
               className="h-12 flex-[1.4] flex-row items-center justify-center gap-x-2 rounded-full"

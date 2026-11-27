@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
 import { LocateFixed } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -14,6 +13,7 @@ import { useDatabase } from '~/hooks/useDatabase';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
+import { haptics } from '~/utils/haptics';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
 import { getLocationName } from '~/utils/locations';
 import {
@@ -266,7 +266,7 @@ const MapPage = () => {
   );
 
   const focusPlace = useCallback((place: Place) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    haptics.tap();
     setSelectedPlace(place);
     mapRef.current?.animateToRegion(
       { ...place.coordinates, latitudeDelta: 0.003, longitudeDelta: 0.003 },
@@ -333,7 +333,7 @@ const MapPage = () => {
                   tracksViewChanges={false}
                   accessibilityLabel={`${cluster.places.length} places`}
                   onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    haptics.tap();
                     mapRef.current?.animateToRegion(regionAround(cluster.places), 450);
                   }}
                 >
@@ -350,7 +350,7 @@ const MapPage = () => {
           accessibilityLabel="Show my location"
           accessibilityRole="button"
           onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            haptics.tap();
             mapRef.current?.animateToRegion(
               { ...userCoordinates, latitudeDelta: 0.005, longitudeDelta: 0.005 },
               450,

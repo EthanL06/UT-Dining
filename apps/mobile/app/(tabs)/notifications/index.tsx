@@ -10,6 +10,7 @@ import { useDatabase } from '~/hooks/useDatabase';
 import * as schema from '~/services/database/schema';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useNotificationsStore } from '~/store/useNotificationsStore';
+import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
 
 export interface Notification {
@@ -195,7 +196,10 @@ const Notifications = () => {
             ? () => (
                 <Pressable
                   accessibilityRole="button"
-                  onPress={() => setLastVisited(Date.now())}
+                  onPress={() => {
+                    haptics.tap();
+                    setLastVisited(Date.now());
+                  }}
                   hitSlop={8}
                   className="px-1.5"
                 >
