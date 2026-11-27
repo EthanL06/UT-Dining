@@ -67,7 +67,7 @@ make qa SIM=<UDID> ARGS=apps/mobile/e2e/qa/central-time.yaml
 make qa SIM=<UDID> ARGS=--fixture-server
 ```
 
-`make qa` is `scripts/qa/mobile-e2e.sh --suite qa`: it loads the sample data into local Supabase (`scripts/dev/sample/load.ts`), or, with `--fixture-server`, serves it from `scripts/qa/e2e-fixture-server.ts <port> sample`.
+`make qa` is `scripts/qa/mobile-e2e.sh --suite qa`: it loads the sample data into local Supabase (`scripts/dev/sample/load.ts`), or, with `--fixture-server`, serves it from `scripts/qa/e2e-fixture-server.ts <port> sample` and starts its own Metro with `EXPO_PUBLIC_SUPABASE_URL` pointed there (pass a `--port` no other Metro uses). That mode leaves the shared local Supabase untouched.
 
 The clock: `subflows/start-at.yaml` opens `ut-dining://e2e-setup?clock=HH:MM`, which sets the dev app's clock to that Central time on today's Central date (`days=N` moves the date). It patches `Date` in the dev bundle only (`apps/mobile/utils/qaClock.ts`), keeps running from there, and survives a relaunch, so a flow can step through times with `subflows/set-clock.yaml`. Start flows with `PERMISSIONS: unset` to see the iOS permission prompts, and `RATING: 'on'` to keep the rating prompt armed.
 

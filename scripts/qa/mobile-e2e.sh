@@ -160,9 +160,20 @@ fi
 if [[ "$DEV_CLIENT" == true ]]; then
   if curl -sf "http://localhost:$METRO_PORT/status" | grep -q packager-status:running; then
     step "Using the Metro already on port $METRO_PORT. Restart it if .env.local changed."
+    if [[ -n "$FIXTURE_PORT" ]]; then
+      echo "  warn  that Metro keeps its own EXPO_PUBLIC_SUPABASE_URL; stop it or pass another --port so the app reads the fixture server"
+    fi
   else
     step "Starting Metro on port $METRO_PORT"
-    (cd "$ROOT" && pnpm --filter @ut-dining/mobile start --port "$METRO_PORT" > "$OUT/metro.log" 2>&1 &)
+    METRO_ENV=()
+    if [[ -n "$FIXTURE_PORT" ]]; then
+      METRO_ENV=(
+        "EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:$FIXTURE_PORT"
+        "EXPO_PUBLIC_STATUS_API_URL=http://127.0.0.1:$FIXTURE_PORT/api/status"
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY=fixture"
+      )
+    fi
+    (cd "$ROOT" && env ${METRO_ENV[@]+"${METRO_ENV[@]}"} pnpm --filter @ut-dining/mobile start --port "$METRO_PORT" --clear > "$OUT/metro.log" 2>&1 &)
     STARTED_METRO=true
     for _ in $(seq 1 60); do
       curl -sf "http://localhost:$METRO_PORT/status" | grep -q packager-status:running && break
