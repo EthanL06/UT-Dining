@@ -1,10 +1,15 @@
 import {
+  Accordion,
+  AccordionControl,
+  AccordionItem,
+  AccordionPanel,
   Anchor,
   Badge,
   Card,
+  Grid,
+  GridCol,
   Group,
-  List,
-  ListItem,
+  Pill,
   SimpleGrid,
   Stack,
   Table,
@@ -19,6 +24,7 @@ import {
 import { toCentralTime } from '@ut-dining/core';
 import type { ReactNode } from 'react';
 import { HealthBadge, HealthDot } from '@/components/status/health';
+import { StatusVerdict } from '@/components/status/verdict';
 import {
   formatBytes,
   formatCentralDateTime,
@@ -27,14 +33,18 @@ import {
   formatPercent,
   formatRelative,
 } from '@/lib/status/format';
+import { buildIssues, coverageHealth } from '@/lib/status/issues';
 import { type CheckedLocation, getHourProblems, isOpenNow } from '@/lib/status/location-checks';
 import type { Health } from '@/lib/status/menu-health';
 import { getMenuStatus } from '@/lib/status/menu-status';
-import { probeEdgeFunction, probeSupabase } from '@/lib/status/probes';
-import { getLatestWorkflowRun } from '@/lib/status/workflows';
+import { type Probe, probeEdgeFunction, probeSupabase, probeWebsite } from '@/lib/status/probes';
+import { getLatestWorkflowRun, type WorkflowRun } from '@/lib/status/workflows';
+import { getSupabaseEnv } from '@/lib/supabase/env';
 import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
+
+const WEBSITE_URL = process.env.STATUS_WEBSITE_URL ?? 'https://utdining.app';
 
 interface DashboardStatus {
   checked_at: string;
@@ -57,8 +67,8 @@ interface DashboardStatus {
 }
 
 const WORKFLOWS = [
-  { file: 'scraper.yml', label: 'Scraper (production, daily)' },
-  { file: 'scraper-dev.yml', label: 'Scraper (dev)' },
+  { file: 'scraper.yml', label: 'Scraper, production' },
+  { file: 'scraper-dev.yml', label: 'Scraper, dev' },
   { file: 'dev-supabase-keepalive.yml', label: 'Dev Supabase keepalive' },
   { file: 'ci.yml', label: 'CI' },
 ];
@@ -82,7 +92,7 @@ function StatCard({
         </Text>
         <HealthBadge health={health} />
       </Group>
-      <Text fz={24} fw={600} lh={1.2}>
+      <Text fz={26} fw={650} lh={1.2}>
         {value}
       </Text>
       {children && (
@@ -94,23 +104,94 @@ function StatCard({
   );
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({
+  title,
+  aside,
+  children,
+}: {
+  title: string;
+  aside?: ReactNode;
+  children: ReactNode;
+}) {
   return (
-    <Card withBorder radius="md" padding="md">
-      <Title order={3} fz="md" mb="sm">
-        {title}
-      </Title>
+    <Card withBorder radius="md" padding="lg">
+      <Group justify="space-between" mb="sm" gap="xs">
+        <Title order={3} fz="md">
+          {title}
+        </Title>
+        {aside}
+      </Group>
       {children}
     </Card>
   );
 }
 
-const coverageHealth = (missing: number, total: number): Health => {
-  if (total === 0) return 'unknown';
-  const share = missing / total;
-  if (share > 0.25) return 'outage';
-  if (share > 0.05) return 'degraded';
-  return 'operational';
+function Row({ label, children }: { label: ReactNode; children: ReactNode }) {
+  return (
+    <Group justify="space-between" align="flex-start" wrap="nowrap" gap="md" py={5}>
+      <Text fz="sm" c="dimmed">
+        {label}
+      </Text>
+      <Text fz="sm" fw={500} ta="right" component="div">
+        {children}
+      </Text>
+    </Group>
+  );
+}
+
+function CheckRow({
+  name,
+  health,
+  detail,
+  href,
+}: {
+  name: string;
+  health: Health;
+  detail: string;
+  href?: string | null;
+}) {
+  return (
+    <Group
+      gap="sm"
+      wrap="nowrap"
+      py={8}
+      style={{ borderBottom: '1px solid var(--mantine-color-gray-1)' }}
+    >
+      <HealthDot health={health} size={8} />
+      <Text fz="sm" style={{ flex: 1, minWidth: 0 }}>
+        {href ? (
+          <Anchor href={href} target="_blank" fz="sm" c="inherit">
+            {name}
+          </Anchor>
+        ) : (
+          name
+        )}
+      </Text>
+      <Text fz="xs" c="dimmed" ta="right">
+        {detail}
+      </Text>
+      <HealthBadge health={health} />
+    </Group>
+  );
+}
+
+const probeDetail = (probe: Probe) =>
+  [
+    probe.health === 'operational' ? null : probe.detail,
+    probe.latencyMs === null ? null : `${probe.latencyMs} ms`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
+const runDetail = (run: WorkflowRun) => {
+  if (run.startedAt) {
+    return [formatRelative(run.startedAt), formatDuration(run.durationSeconds)]
+      .filter((part) => part !== '—')
+      .join(' · ');
+  }
+  if (run.state === 'GitHub API 403') return 'GitHub rate limit';
+  if (run.state === 'Not on main') return 'Runs on Render until main';
+  return run.state;
 };
 
 export default async function StatusPage() {
@@ -126,6 +207,7 @@ export default async function StatusPage() {
     appInfoResult,
     backend,
     pushFunction,
+    website,
     workflows,
   ] = await Promise.all([
     getMenuStatus(supabase),
@@ -143,6 +225,7 @@ export default async function StatusPage() {
     supabase.from('app_information').select('app_version, updated_at').limit(1),
     probeSupabase(),
     probeEdgeFunction('manual-push-notification'),
+    probeWebsite(WEBSITE_URL),
     Promise.all(WORKFLOWS.map((workflow) => getLatestWorkflowRun(workflow.file, workflow.label))),
   ]);
 
@@ -183,17 +266,27 @@ export default async function StatusPage() {
       : null;
   const changelog = changelogResult.data?.[0] ?? null;
   const appInfo = appInfoResult.data?.[0] ?? null;
-  const coverage = status?.coverage;
+  const coverage = status?.coverage ?? null;
+
+  const issues = buildIssues({
+    supabaseUrl: getSupabaseEnv().url,
+    backend,
+    pushFunction,
+    workflows,
+    menus,
+    openWithoutMenu,
+    hourProblems,
+    coverage,
+  });
+
+  const rowCounts = status ? Object.entries(status.row_counts) : [];
 
   return (
     <Stack component="main" py="md" px="lg" gap="lg" maw={1280}>
       <Group justify="space-between" align="flex-end">
         <Stack gap={4}>
           <Title order={1}>Status</Title>
-          <Text c="dimmed">
-            Health of the scraper, menu data, locations and services. Checked{' '}
-            {formatCentralDateTime(new Date())} Central.
-          </Text>
+          <Text c="dimmed">Checked {formatCentralDateTime(new Date())} Central</Text>
         </Stack>
         <Anchor href="/status" target="_blank" fz="sm">
           Public status page
@@ -209,11 +302,13 @@ export default async function StatusPage() {
         </Card>
       )}
 
+      <StatusVerdict issues={issues} />
+
       <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }}>
         <StatCard
           title="Last scraper run"
           health={scraper.health}
-          value={scraper.startedAt ? formatRelative(scraper.startedAt) : scraper.state}
+          value={scraper.startedAt ? formatRelative(scraper.startedAt) : 'No data'}
         >
           {scraper.startedAt ? (
             <>
@@ -223,7 +318,7 @@ export default async function StatusPage() {
               </Anchor>
             </>
           ) : (
-            scraper.note
+            (scraper.note ?? scraper.state)
           )}
         </StatCard>
         <StatCard
@@ -233,7 +328,7 @@ export default async function StatusPage() {
         >
           {daysAhead === null
             ? 'Newest menu date in the database.'
-            : `Newest menu date, ${daysAhead} day${daysAhead === 1 ? '' : 's'} ahead. Last write ${formatRelative(status?.menu_dates.newest_updated_at ?? null)}.`}
+            : `${daysAhead} day${daysAhead === 1 ? '' : 's'} ahead. Last write ${formatRelative(status?.menu_dates.newest_updated_at ?? null)}.`}
         </StatCard>
         <StatCard
           title="Menus loaded today"
@@ -242,307 +337,237 @@ export default async function StatusPage() {
         >
           {today && today.missing.length > 0
             ? `Missing: ${today.missing.join(', ')}`
-            : 'Locations with menus that are open today.'}
+            : 'Open locations with menus today.'}
         </StatCard>
         <StatCard
           title="Open right now"
           health={openWithoutMenu.length > 0 ? 'degraded' : 'operational'}
           value={`${openNow.length} / ${locations.length}`}
         >
-          {openWithoutMenu.length > 0
-            ? `Open with no menu: ${openWithoutMenu.map((location) => location.name).join(', ')}`
-            : `${forceClosed.length} force-closed.`}
+          {`${forceClosed.length} force-closed.`}
         </StatCard>
       </SimpleGrid>
 
-      <SimpleGrid cols={{ base: 1, lg: 2 }}>
-        <Section title={`Menus by location, ${formatDay(menus.today)}`}>
-          <Table striped withRowBorders={false} verticalSpacing={6} fz="sm">
-            <TableThead>
-              <TableTr>
-                <TableTh>Location</TableTh>
-                <TableTh>Now</TableTh>
-                <TableTh>Menus today</TableTh>
-                <TableTh>Updated</TableTh>
-              </TableTr>
-            </TableThead>
-            <TableTbody>
-              {menuLocations.map((location) => {
-                const entry = menusByLocation.get(location.id);
-                const expected =
-                  today?.missing.includes(location.name ?? 'Unnamed location') ?? false;
-                const open = isOpenNow(location, now.day, now.time);
-                const health: Health = entry
-                  ? 'operational'
-                  : expected
-                    ? open
-                      ? 'outage'
-                      : 'degraded'
-                    : 'unknown';
-                return (
-                  <TableTr key={location.id}>
-                    <TableTd>
-                      <Group gap={8} wrap="nowrap">
-                        <HealthDot health={health} size={8} />
-                        {location.name}
-                      </Group>
-                    </TableTd>
-                    <TableTd>
-                      {location.force_close ? (
-                        <Badge color="red" variant="light" size="sm">
-                          Force-closed
-                        </Badge>
-                      ) : open ? (
-                        <Badge color="teal" variant="light" size="sm">
-                          Open
-                        </Badge>
-                      ) : (
-                        <Badge color="gray" variant="light" size="sm">
-                          Closed
-                        </Badge>
-                      )}
-                    </TableTd>
-                    <TableTd c={entry ? undefined : 'dimmed'}>
-                      {entry ? entry.names.join(', ') : expected ? 'Missing' : 'None expected'}
-                    </TableTd>
-                    <TableTd c="dimmed">{formatRelative(entry?.updatedAt ?? null)}</TableTd>
+      <Grid gutter="md">
+        <GridCol span={{ base: 12, lg: 7 }}>
+          <Card withBorder radius="md" padding="lg">
+            <Title order={3} fz="md" mb="sm">
+              Menus by location, {formatDay(menus.today)}
+            </Title>
+            <Table.ScrollContainer minWidth={480}>
+              <Table verticalSpacing={8} fz="sm">
+                <TableThead>
+                  <TableTr>
+                    <TableTh>Location</TableTh>
+                    <TableTh>Now</TableTh>
+                    <TableTh>Menus today</TableTh>
+                    <TableTh>Updated</TableTh>
                   </TableTr>
-                );
-              })}
-            </TableTbody>
-          </Table>
-        </Section>
+                </TableThead>
+                <TableTbody>
+                  {menuLocations.map((location) => {
+                    const entry = menusByLocation.get(location.id);
+                    const expected =
+                      today?.missing.includes(location.name ?? 'Unnamed location') ?? false;
+                    const open = isOpenNow(location, now.day, now.time);
+                    const health: Health = entry
+                      ? 'operational'
+                      : expected
+                        ? open
+                          ? 'outage'
+                          : 'degraded'
+                        : 'unknown';
+                    return (
+                      <TableTr key={location.id}>
+                        <TableTd>
+                          <Group gap={8} wrap="nowrap">
+                            <HealthDot health={health} size={8} />
+                            {location.name}
+                          </Group>
+                        </TableTd>
+                        <TableTd>
+                          {location.force_close ? (
+                            <Badge color="red" variant="light" radius="sm">
+                              Force-closed
+                            </Badge>
+                          ) : open ? (
+                            <Badge color="teal" variant="light" radius="sm">
+                              Open
+                            </Badge>
+                          ) : (
+                            <Badge color="gray" variant="light" radius="sm">
+                              Closed
+                            </Badge>
+                          )}
+                        </TableTd>
+                        <TableTd c={entry ? undefined : 'dimmed'}>
+                          {entry ? entry.names.join(', ') : expected ? 'Missing' : 'None expected'}
+                        </TableTd>
+                        <TableTd c="dimmed">{formatRelative(entry?.updatedAt ?? null)}</TableTd>
+                      </TableTr>
+                    );
+                  })}
+                </TableTbody>
+              </Table>
+            </Table.ScrollContainer>
 
-        <Stack gap="md">
-          <Section title="Scheduled jobs">
-            <Table withRowBorders={false} verticalSpacing={6} fz="sm">
-              <TableThead>
-                <TableTr>
-                  <TableTh>Job</TableTh>
-                  <TableTh>Last run</TableTh>
-                  <TableTh>Took</TableTh>
-                  <TableTh w={140}>Result</TableTh>
-                </TableTr>
-              </TableThead>
-              <TableTbody>
-                {workflows.map((run) => (
-                  <TableTr key={run.workflow}>
-                    <TableTd>
-                      <Anchor href={run.url ?? undefined} target="_blank" fz="sm">
-                        {run.label}
-                      </Anchor>
-                    </TableTd>
-                    <TableTd c="dimmed">
-                      {run.startedAt
-                        ? `${formatRelative(run.startedAt)}${run.branch ? ` on ${run.branch}` : ''}`
-                        : '—'}
-                    </TableTd>
-                    <TableTd c="dimmed">{formatDuration(run.durationSeconds)}</TableTd>
-                    <TableTd>
-                      <HealthBadge health={run.health} label={run.state} />
-                    </TableTd>
-                  </TableTr>
-                ))}
-              </TableTbody>
-            </Table>
-            <Text fz="xs" c="dimmed" mt="xs">
-              Until staging is promoted to main, the production scraper still runs on Render, and
-              its logs are in the Render dashboard.
-            </Text>
-          </Section>
-
-          <Section
-            title={`Nutrition and allergen coverage${coverage ? `, ${formatDay(coverage.date)}` : ''}`}
-          >
-            {coverage ? (
-              <Stack gap={6}>
-                {[
-                  { label: 'Missing nutrition facts', missing: coverage.missing_nutrition },
-                  { label: 'Missing ingredients', missing: coverage.missing_ingredients },
-                  { label: 'Missing allergens', missing: coverage.missing_allergens },
-                ].map((row) => (
-                  <Group key={row.label} justify="space-between" fz="sm">
-                    <Group gap={8}>
-                      <HealthDot health={coverageHealth(row.missing, coverage.items)} size={8} />
-                      <Text fz="sm">{row.label}</Text>
-                    </Group>
-                    <Text fz="sm" c="dimmed">
-                      {row.missing.toLocaleString()} of {coverage.items.toLocaleString()} items (
-                      {formatPercent(row.missing, coverage.items)})
-                    </Text>
-                  </Group>
-                ))}
-              </Stack>
-            ) : (
-              <Text fz="sm" c="dimmed">
-                Needs the dashboard_status database function.
-              </Text>
-            )}
-          </Section>
-
-          <Section title="Location hours">
-            {hourProblems.length === 0 && forceClosed.length === 0 ? (
-              <Text fz="sm" c="dimmed">
-                No force-closes and no hours that look wrong.
-              </Text>
-            ) : (
-              <List fz="sm" spacing={4}>
-                {forceClosed.length > 0 && (
-                  <ListItem>
-                    <Text span fw={500} fz="sm">
-                      Force-closed ({forceClosed.length}):
-                    </Text>{' '}
-                    {forceClosed.map((location) => location.name).join(', ')}
-                  </ListItem>
-                )}
-                {hourProblems.map(({ location, problems }) => (
-                  <ListItem key={`hours-${location.id}`}>
-                    <Text span fw={500} fz="sm">
+            <Stack
+              gap="xs"
+              mt="lg"
+              pt="md"
+              style={{ borderTop: '1px solid var(--mantine-color-gray-2)' }}
+            >
+              <Group justify="space-between">
+                <Text fz="sm" fw={600}>
+                  Force-closed locations{' '}
+                  <Text span c="dimmed" fw={500} fz="sm">
+                    {forceClosed.length}
+                  </Text>
+                </Text>
+                <Anchor href="/dashboard" fz="sm">
+                  Manage locations
+                </Anchor>
+              </Group>
+              {forceClosed.length === 0 ? (
+                <Text fz="sm" c="dimmed">
+                  None. Every location follows its regular hours.
+                </Text>
+              ) : (
+                <Group gap={6}>
+                  {forceClosed.map((location) => (
+                    <Pill key={location.id} size="md">
                       {location.name}
-                    </Text>
-                    : {problems.join('; ')}
-                  </ListItem>
-                ))}
-              </List>
-            )}
-          </Section>
-        </Stack>
-      </SimpleGrid>
+                    </Pill>
+                  ))}
+                </Group>
+              )}
+            </Stack>
+          </Card>
+        </GridCol>
+
+        <GridCol span={{ base: 12, lg: 5 }}>
+          <Stack gap="md">
+            <Section title="Services">
+              <CheckRow name="Supabase" health={backend.health} detail={probeDetail(backend)} />
+              <CheckRow
+                name="Push function"
+                health={pushFunction.health}
+                detail={probeDetail(pushFunction)}
+              />
+              <CheckRow
+                name="Website"
+                health={website.health}
+                detail={probeDetail(website)}
+                href={WEBSITE_URL}
+              />
+            </Section>
+            <Section title="Scheduled jobs">
+              {workflows.map((run) => (
+                <CheckRow
+                  key={run.workflow}
+                  name={run.label}
+                  health={run.health}
+                  detail={runDetail(run)}
+                  href={run.url}
+                />
+              ))}
+              <Text fz="xs" c="dimmed" mt="sm">
+                Until staging is promoted to main, the production scraper runs on Render, and its
+                logs are in the Render dashboard.
+              </Text>
+            </Section>
+          </Stack>
+        </GridCol>
+      </Grid>
 
       <SimpleGrid cols={{ base: 1, md: 3 }}>
         <Section title="App and users">
-          <Stack gap={6} fz="sm">
-            <Group justify="space-between">
-              <Text fz="sm">Registered devices</Text>
-              <Text fz="sm" fw={500}>
-                {status?.devices.total.toLocaleString() ?? '—'}
-              </Text>
-            </Group>
-            <Group justify="space-between">
-              <Text fz="sm">With a push token</Text>
-              <Text fz="sm" fw={500}>
-                {status?.devices.with_push_token.toLocaleString() ?? '—'}
-              </Text>
-            </Group>
-            <Group justify="space-between">
-              <Text fz="sm">Seen in the last 30 days</Text>
-              <Text fz="sm" fw={500}>
-                {status?.devices.active_30_days.toLocaleString() ?? '—'}
-              </Text>
-            </Group>
-            <Group justify="space-between">
-              <Text fz="sm">Minimum app version</Text>
-              <Text fz="sm" fw={500}>
-                {appInfo?.app_version ?? '—'}
-              </Text>
-            </Group>
-            <Group justify="space-between" align="flex-start" wrap="nowrap">
-              <Text fz="sm">Last push sent</Text>
-              <Text fz="sm" fw={500} ta="right">
-                {status?.notifications.last_sent
-                  ? `${status.notifications.last_sent.title ?? 'Untitled'}, ${formatRelative(status.notifications.last_sent.sent_at)}`
-                  : 'None'}
-              </Text>
-            </Group>
-            <Group justify="space-between">
-              <Text fz="sm">Scheduled, not sent</Text>
-              <Text fz="sm" fw={500}>
-                {status
-                  ? `${status.notifications.pending}${status.notifications.next_scheduled_at ? `, next ${formatCentralDateTime(status.notifications.next_scheduled_at)}` : ''}`
-                  : '—'}
-              </Text>
-            </Group>
-          </Stack>
+          <Row label="Registered devices">{status?.devices.total.toLocaleString() ?? '—'}</Row>
+          <Row label="With a push token">
+            {status?.devices.with_push_token.toLocaleString() ?? '—'}
+          </Row>
+          <Row label="Seen in the last 30 days">
+            {status?.devices.active_30_days.toLocaleString() ?? '—'}
+          </Row>
+          <Row label="Minimum app version">{appInfo?.app_version ?? '—'}</Row>
+          <Row label="Last push sent">
+            {status?.notifications.last_sent
+              ? `${status.notifications.last_sent.title ?? 'Untitled'}, ${formatRelative(status.notifications.last_sent.sent_at)}`
+              : 'None'}
+          </Row>
+          <Row label="Scheduled, not sent">
+            {status
+              ? `${status.notifications.pending}${status.notifications.next_scheduled_at ? `, next ${formatCentralDateTime(status.notifications.next_scheduled_at)}` : ''}`
+              : '—'}
+          </Row>
         </Section>
 
-        <Section title="Infrastructure">
-          <Stack gap={6}>
-            <Group justify="space-between">
-              <Text fz="sm">Supabase</Text>
-              <Group gap={8}>
-                <Text fz="sm" c="dimmed">
-                  {[
-                    backend.health === 'operational' ? null : backend.detail,
-                    backend.latencyMs !== null ? `${backend.latencyMs} ms` : null,
-                  ]
-                    .filter(Boolean)
-                    .join(', ')}
-                </Text>
-                <HealthBadge health={backend.health} />
-              </Group>
-            </Group>
-            <Group justify="space-between">
-              <Text fz="sm">Push function</Text>
-              <Group gap={8}>
-                <Text fz="sm" c="dimmed">
-                  {[
-                    pushFunction.health === 'operational' ? null : pushFunction.detail,
-                    pushFunction.latencyMs !== null ? `${pushFunction.latencyMs} ms` : null,
-                  ]
-                    .filter(Boolean)
-                    .join(', ')}
-                </Text>
-                <HealthBadge health={pushFunction.health} />
-              </Group>
-            </Group>
-            <Group justify="space-between">
-              <Text fz="sm">Database size</Text>
-              <Text fz="sm" fw={500}>
-                {status ? formatBytes(status.database_size_bytes) : '—'}
-              </Text>
-            </Group>
-            {status &&
-              Object.entries(status.row_counts).map(([table, count]) => (
-                <Group key={table} justify="space-between">
-                  <Text fz="sm" ff="monospace">
-                    {table}
-                  </Text>
-                  <Text fz="sm" c="dimmed">
-                    {count.toLocaleString()} rows
-                  </Text>
-                </Group>
-              ))}
-          </Stack>
+        <Section title="Data">
+          <Row label="Database size">{status ? formatBytes(status.database_size_bytes) : '—'}</Row>
+          <Row label="Menu dates stored">
+            {status?.menu_dates.oldest && status.menu_dates.newest
+              ? `${formatDay(status.menu_dates.oldest)} to ${formatDay(status.menu_dates.newest)}`
+              : '—'}
+          </Row>
+          {coverage &&
+            [
+              { label: 'Missing nutrition', missing: coverage.missing_nutrition },
+              { label: 'Missing ingredients', missing: coverage.missing_ingredients },
+              { label: 'Missing allergens', missing: coverage.missing_allergens },
+            ].map((row) => (
+              <Row
+                key={row.label}
+                label={
+                  <Group gap={8} wrap="nowrap" component="span">
+                    <HealthDot health={coverageHealth(row.missing, coverage.items)} size={8} />
+                    {row.label}
+                  </Group>
+                }
+              >
+                {coverage.items === 0
+                  ? 'No items today'
+                  : `${row.missing.toLocaleString()} of ${coverage.items.toLocaleString()} (${formatPercent(row.missing, coverage.items)})`}
+              </Row>
+            ))}
+          {rowCounts.length > 0 && (
+            <Accordion variant="unstyled" chevronPosition="left" mt={4}>
+              <AccordionItem value="rows">
+                <AccordionControl px={0} fz="sm" c="dimmed">
+                  Row counts for {rowCounts.length} tables
+                </AccordionControl>
+                <AccordionPanel>
+                  {rowCounts.map(([table, count]) => (
+                    <Row
+                      key={table}
+                      label={
+                        <Text span ff="monospace" fz="sm">
+                          {table}
+                        </Text>
+                      }
+                    >
+                      {count.toLocaleString()}
+                    </Row>
+                  ))}
+                </AccordionPanel>
+              </AccordionItem>
+            </Accordion>
+          )}
         </Section>
 
-        <Stack gap="md">
-          <Section title="Content">
-            <Stack gap={6}>
-              <Group justify="space-between">
-                <Text fz="sm">Latest changelog entry</Text>
-                <Text fz="sm" fw={500}>
-                  {changelog
-                    ? `${changelog.version}${changelog.is_published ? '' : ' (hidden)'}`
-                    : 'None'}
-                </Text>
-              </Group>
-              <Group justify="space-between">
-                <Text fz="sm">Last edited</Text>
-                <Text fz="sm" c="dimmed">
-                  {formatRelative(changelog?.updated_at ?? null)}
-                </Text>
-              </Group>
-              <Group justify="space-between">
-                <Text fz="sm">Menu dates stored</Text>
-                <Text fz="sm" c="dimmed">
-                  {status?.menu_dates.oldest && status.menu_dates.newest
-                    ? `${formatDay(status.menu_dates.oldest)} to ${formatDay(status.menu_dates.newest)}`
-                    : '—'}
-                </Text>
-              </Group>
-            </Stack>
-          </Section>
-
-          <Section title="Not tracked yet">
-            <List fz="sm" c="dimmed" spacing={4}>
-              <ListItem>Devices by app version: user_devices has no version column.</ListItem>
-              <ListItem>Push delivery counts: sends are not logged per device.</ListItem>
-              <ListItem>App errors: no Sentry or crash reporting is wired up.</ListItem>
-              <ListItem>Vercel deploys: needs a Vercel API token.</ListItem>
-            </List>
-          </Section>
-        </Stack>
+        <Section title="Content">
+          <Row label="Latest changelog entry">
+            {changelog
+              ? `${changelog.version}${changelog.is_published ? '' : ' (hidden)'}`
+              : 'None'}
+          </Row>
+          <Row label="Last edited">{formatRelative(changelog?.updated_at ?? null)}</Row>
+        </Section>
       </SimpleGrid>
+
+      <Text fz="xs" c="dimmed">
+        Not tracked yet: devices by app version, push delivery counts, app errors and Vercel
+        deploys.
+      </Text>
     </Stack>
   );
 }

@@ -15,9 +15,9 @@ export const HEALTH_LABEL: Record<Health, string> = {
   unknown: 'Unknown',
 };
 
-export function HealthBadge({ health, label }: { health: Health; label?: string }) {
+export function HealthBadge({ health, label, w }: { health: Health; label?: string; w?: number }) {
   return (
-    <Badge color={HEALTH_COLOR[health]} variant="light" radius="sm">
+    <Badge color={HEALTH_COLOR[health]} variant="light" radius="sm" w={w}>
       {label ?? HEALTH_LABEL[health]}
     </Badge>
   );
