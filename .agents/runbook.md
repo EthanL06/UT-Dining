@@ -49,7 +49,7 @@ Decide with one question: did the iOS fingerprint change? It changes with native
 ## Database size and menu retention
 
 - Free plan limit is 500 MB. Almost all of it is menu history (`nutrition`, `food_item`, `allergens`). Check the size in the Supabase SQL editor with `select pg_size_pretty(pg_database_size(current_database()))`.
-- The scraper deletes menus older than the `MENU_RETENTION_DAYS` repo variable (90, Ethan's choice on 2026-11-27) after each run; `DEV_MENU_RETENTION_DAYS` does the same for `scraper-dev.yml`. Unset means no pruning. Set the prod variable only once the open data export has the full history in the repo.
+- The scraper deletes menus older than the `MENU_RETENTION_DAYS` repo variable (90, Ethan's choice on 2026-11-27) after each run; `DEV_MENU_RETENTION_DAYS` does the same for `scraper-dev.yml`. Unset means no pruning. Set the prod variable only once the open data export has the full history in the repo. The export (EthanL06/ut-dining-data) is the archive: if it stops committing for more than about 80 days, unset `MENU_RETENTION_DAYS` until it catches up, so no unarchived day is pruned.
 - Deleted rows free space for reuse but do not shrink the reported size. After a large one-time prune, run `VACUUM FULL nutrition, food_item, allergens, menu_category, menu;` in the SQL editor (prod needs Ethan's OK). It locks those tables for a few seconds, so run it outside meal times.
 
 ## Production data changes
