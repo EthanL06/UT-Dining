@@ -74,7 +74,10 @@ export default {
       [
         'expo-location',
         {
-          locationAlwaysAndWhenInUsePermission: 'Allow $(PRODUCT_NAME) to use your location.',
+          locationWhenInUsePermission:
+            'UT Dining needs your location to show your location on the map.',
+          locationAlwaysAndWhenInUsePermission:
+            'UT Dining needs your location to show your location on the map.',
         },
       ],
       'expo-notifications',

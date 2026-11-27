@@ -27,7 +27,9 @@ import Reanimated, {
 import { StatusDot } from '~/components/ui/Grouped';
 import { Text, TextInput } from '~/components/ui/Text';
 import { useSettingsStore } from '~/store/useSettingsStore';
+import { directionsUrl } from '~/utils/directions';
 import { haptics } from '~/utils/haptics';
+import { log } from '~/utils/log';
 import type { Coordinates, Place } from '~/utils/mapPlaces';
 import { walkingMinutes } from '~/utils/mapPlaces';
 import { useTheme } from '~/utils/theme';
@@ -82,12 +84,11 @@ const PlaceIcon = ({ type, size = 36 }: { type: string; size?: number }) => {
 };
 
 const openDirections = (place: Place) => {
-  const address = encodeURIComponent(place.address.replace(/\s/g, '+'));
-  Linking.openURL(
-    Platform.OS === 'ios'
-      ? `maps://maps.apple.com/?daddr=${address}&dirflg=w`
-      : `https://www.google.com/maps/dir/?api=1&destination=${address}&travelmode=walking`,
+  const url = directionsUrl(
+    { ...place.coordinates, address: place.address },
+    Platform.OS === 'ios' ? 'ios' : 'android',
   );
+  if (url) Linking.openURL(url).catch((error) => log.warn('Could not open directions', { error }));
 };
 
 const PlaceCard = ({
@@ -154,7 +155,10 @@ const PlaceCard = ({
             accessibilityRole="button"
             onPress={() => {
               const name = place.locationName ?? place.name;
-              router.push(place.hasMenu ? `/location/${name}` : `/location_generic/${name}`);
+              router.push({
+                pathname: place.hasMenu ? '/location/[location]' : '/location_generic/[location]',
+                params: { location: name },
+              });
             }}
             className="h-12 flex-1 flex-row items-center justify-center gap-x-2 rounded-full"
             style={{ backgroundColor: theme.fill }}

@@ -53,7 +53,7 @@ const useToday = () => {
 
 const formatPlanDay = (date: string) => {
   const day = createDateFromString(date);
-  const label = formatDateForDisplay(day);
+  const label = formatDateForDisplay(date);
   if (['Today', 'Yesterday', 'Tomorrow'].includes(label)) return label;
   return day.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 };

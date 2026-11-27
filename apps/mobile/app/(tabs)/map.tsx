@@ -11,6 +11,7 @@ import { type MapFilterId, MapSheet, PLACE_ICONS, usePlaceColor } from '~/compon
 import { Text } from '~/components/ui/Text';
 import { MICROWAVE_LOCATIONS } from '~/data/MicrowaveLocations';
 import { useDatabase } from '~/hooks/useDatabase';
+import { useNow } from '~/hooks/useNow';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
@@ -167,11 +168,7 @@ const MapPage = () => {
   const bottomOffset = TAB_BAR_CLEARANCE + insets.bottom - 34;
 
   const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
-  const [minuteTick, setMinuteTick] = useState(0);
-  useEffect(() => {
-    const interval = setInterval(() => setMinuteTick((tick) => tick + 1), 60_000);
-    return () => clearInterval(interval);
-  }, []);
+  const now = useNow();
 
   const { data } = useQuery({
     queryKey: ['menuData'],
@@ -210,7 +207,6 @@ const MapPage = () => {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: recompute open status after each sync and every minute
   const places: Place[] = useMemo(() => {
-    const now = new Date();
     const withMenus = getLocationIdsWithMenus(db, getTodayInCentralTime());
     const dining = (data?.locations ?? [])
       .filter((location) => location.latitude !== null && location.longitude !== null)
@@ -242,7 +238,7 @@ const MapPage = () => {
       status: 'Microwave',
     }));
     return [...dining, ...microwaves];
-  }, [data, db, useColloquialNames, lastSyncedAt, minuteTick]);
+  }, [data, db, useColloquialNames, lastSyncedAt, now]);
 
   const selectedPlace = places.find((place) => place.name === selectedName) ?? null;
 

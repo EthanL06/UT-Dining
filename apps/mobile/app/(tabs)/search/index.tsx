@@ -124,9 +124,12 @@ export default function Search() {
                       subtitle={getLocationStatusText(place, isOpen, now)}
                       showChevron
                       onPress={() =>
-                        router.push(
-                          place.has_menus ? `/location/${name}` : `/location_generic/${name}`,
-                        )
+                        router.push({
+                          pathname: place.has_menus
+                            ? '/location/[location]'
+                            : '/location_generic/[location]',
+                          params: { location: name },
+                        })
                       }
                     />
                   );
