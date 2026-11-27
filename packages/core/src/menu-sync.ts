@@ -98,3 +98,28 @@ export const flattenMenuTree = <
     allergens: [...allergenRows.values()],
   };
 };
+
+const fnv1a = (text: string, seed: number) => {
+  let hash = seed;
+  for (let index = 0; index < text.length; index++) {
+    hash ^= text.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return (hash >>> 0).toString(36);
+};
+
+export interface RowWithId {
+  id: string | number;
+}
+
+export const getTablesVersion = (tables: Record<string, readonly RowWithId[]>): string => {
+  const text = JSON.stringify(
+    Object.keys(tables)
+      .sort()
+      .map((name) => [
+        name,
+        [...tables[name]].sort((a, b) => String(a.id).localeCompare(String(b.id))),
+      ]),
+  );
+  return `${text.length}-${fnv1a(text, 0x811c9dc5)}-${fnv1a(text, 0x050c5d1f)}`;
+};

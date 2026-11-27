@@ -74,7 +74,7 @@ const FoodComponent = ({
   const theme = useTheme();
   const context = { location, menu: selectedMenu, category: categoryName, date: planDate };
   const href = {
-    pathname: '/food/[food]' as const,
+    pathname: '/dish/[food]' as const,
     params: {
       food: food.name as string,
       menu: selectedMenu,
@@ -177,7 +177,7 @@ const FoodComponent = ({
     </Pressable>
   ) : (
     <Link href={href} asChild>
-      <Link.Trigger>
+      <Link.Trigger withAppleZoom>
         <Pressable>{({ pressed }) => row(pressed)}</Pressable>
       </Link.Trigger>
       <Link.Preview />
