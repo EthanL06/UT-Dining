@@ -3,6 +3,7 @@ import { ChevronRight } from 'lucide-react-native';
 import { Modal, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useChangelogPromptStore, useChangelogStore } from '~/store/useChangelogStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
+import { isDevVariant } from '~/utils/appVariant';
 import { COLORS } from '~/utils/colors';
 import { cn } from '~/utils/utils';
 import { ChangelogChangeRow, VersionBadge } from './ChangelogEntryView';
@@ -25,7 +26,8 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
   if (!prompt) return null;
 
   const isUpdate = prompt.kind === 'update';
-  const canDismiss = !(isUpdate && prompt.required);
+  const isRequired = isUpdate && prompt.required;
+  const canDismiss = !isRequired || isDevVariant;
   const changes = entry?.changes ?? [];
   const previewChanges = changes.slice(0, PREVIEW_COUNT);
   const hiddenCount = changes.length - previewChanges.length;
@@ -106,11 +108,19 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
                   <VersionBadge version={prompt.version} isLatest />
                 </View>
                 <Text className={cn('mt-2.5', titleClass)}>
-                  {canDismiss ? 'A new version is ready' : 'Update required'}
+                  {isRequired ? 'Update required' : 'A new version is ready'}
                 </Text>
-                {!canDismiss && (
+                {isRequired && (
                   <Text className={cn('mt-1.5', bodyClass)}>
                     This version of UT Dining is no longer supported. Update to keep using the app.
+                  </Text>
+                )}
+                {isRequired && isDevVariant && (
+                  <Text
+                    testID="changelog-dev-dismiss-note"
+                    className="text-ut-burnt-orange mt-1.5 text-[13px] font-semibold"
+                  >
+                    Dev build: you can dismiss this. The App Store build can't.
                   </Text>
                 )}
                 {updateBody()}

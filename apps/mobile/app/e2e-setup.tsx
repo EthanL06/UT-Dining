@@ -1,11 +1,9 @@
-import * as Application from 'expo-application';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect } from 'react';
 
 import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
-
-const isDevBuild = Application.applicationId === 'com.ethanl06.ut-dining.dev';
+import { isDevVariant } from '~/utils/appVariant';
 
 export default function E2ESetup() {
   const skipOnboarding = useOnboardingStore((state) => state.skipOnboarding);
@@ -13,7 +11,7 @@ export default function E2ESetup() {
   const { theme } = useLocalSearchParams<{ theme?: string }>();
 
   useEffect(() => {
-    if (isDevBuild) {
+    if (isDevVariant) {
       skipOnboarding();
       if (theme === 'dark' || theme === 'light') setDarkMode(theme === 'dark');
     }
