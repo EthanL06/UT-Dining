@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { flattenMenuTree, getMenuDayVersions, planMenuDays } from './menu-sync.ts';
+import {
+  flattenMenuTree,
+  getMenuDayVersions,
+  getTablesVersion,
+  planMenuDays,
+} from './menu-sync.ts';
 
 describe('getMenuDayVersions', () => {
   it('gives one version per day that does not depend on row order', () => {
@@ -112,5 +117,29 @@ describe('flattenMenuTree', () => {
 
   it('keeps one row for a nutrition record that two foods share', () => {
     expect(flattenMenuTree(tree).nutrition).toEqual([{ id: 7, calories: '5' }]);
+  });
+});
+
+describe('getTablesVersion', () => {
+  const location = [
+    { id: 'a', name: 'J2', force_close: false },
+    { id: 'b', name: 'Kins', force_close: false },
+  ];
+
+  it('does not depend on row or table order', () => {
+    expect(getTablesVersion({ location, location_type: [{ id: 't' }] })).toBe(
+      getTablesVersion({ location_type: [{ id: 't' }], location: [...location].reverse() }),
+    );
+  });
+
+  it('changes when any value changes', () => {
+    const closed = [location[0], { ...location[1], force_close: true }];
+    expect(getTablesVersion({ location })).not.toBe(getTablesVersion({ location: closed }));
+  });
+
+  it('changes when a row is added or removed', () => {
+    expect(getTablesVersion({ location })).not.toBe(
+      getTablesVersion({ location: location.slice(1) }),
+    );
   });
 });
