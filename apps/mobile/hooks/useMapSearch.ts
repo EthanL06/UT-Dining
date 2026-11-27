@@ -62,6 +62,7 @@ export const useMapSearch = (places: Place[]) => {
   return {
     search,
     query,
+    searchedQuery: debounced,
     results,
     buildings,
     menuMatches,

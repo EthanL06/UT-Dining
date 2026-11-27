@@ -151,6 +151,7 @@ const MapPage = () => {
     return [...dining, ...microwaves];
   }, [data, db, useColloquialNames, lastSyncedAt, now]);
 
+  const isLoaded = data !== undefined && (data.locations.length > 0 || lastSyncedAt !== null);
   const mapSearch = useMapSearch(places);
   const { search, selectedPlace } = mapSearch;
 
@@ -379,6 +380,8 @@ const MapPage = () => {
         ) : search.status === 'searching' ? (
           <SearchPanel
             query={mapSearch.query}
+            searchedQuery={mapSearch.searchedQuery}
+            isLoaded={isLoaded}
             results={mapSearch.results}
             buildings={mapSearch.buildings}
             menuMatches={mapSearch.menuMatches}
@@ -393,6 +396,7 @@ const MapPage = () => {
         ) : (
           <BrowseList
             places={filteredPlaces}
+            isLoaded={isLoaded}
             filters={filters}
             userCoordinates={userCoordinates}
             bottomOffset={bottomOffset}

@@ -2,14 +2,17 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { Text } from '~/components/ui/Text';
 import { haptics } from '~/utils/haptics';
 import { type Coordinates, type Place, walkFrom } from '~/utils/mapPlaces';
+import { browseView } from '~/utils/mapSheetView';
 import { useTheme } from '~/utils/theme';
 import { PlaceRow, RowGroup } from './PlaceRow';
 import { MAP_FILTERS, type MapFilterId } from './placeStyle';
+import { SkeletonRows } from './SkeletonRows';
 
 const rank = (place: Place) => (place.type === 'microwave' ? 2 : place.isOpen ? 0 : 1);
 
 export const BrowseList = ({
   places,
+  isLoaded,
   filters,
   userCoordinates,
   bottomOffset,
@@ -18,6 +21,7 @@ export const BrowseList = ({
   onSelectPlace,
 }: {
   places: Place[];
+  isLoaded: boolean;
   filters: Set<MapFilterId>;
   userCoordinates: Coordinates | null;
   bottomOffset: number;
@@ -34,6 +38,7 @@ export const BrowseList = ({
       if (a.walk !== b.walk) return a.walk === null ? 1 : -1;
       return 0;
     });
+  const view = browseView(isLoaded, visible.length);
 
   return (
     <ScrollView
@@ -68,7 +73,9 @@ export const BrowseList = ({
           );
         })}
       </ScrollView>
-      {visible.length === 0 ? (
+      {view.kind === 'loading' ? (
+        <SkeletonRows testID="map-browse-loading" />
+      ) : view.kind === 'empty' ? (
         <View testID="map-browse-empty" className="mx-8 mt-4 items-center gap-y-2">
           <Text variant="headline" className="text-center">
             {filters.has('open') ? 'Nothing open matches these filters' : 'No places match'}

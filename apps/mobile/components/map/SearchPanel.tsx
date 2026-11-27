@@ -3,9 +3,11 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { Text } from '~/components/ui/Text';
 import { type Coordinates, type Place, walkFrom } from '~/utils/mapPlaces';
 import type { BuildingMatch, SearchMatch } from '~/utils/mapSearch';
+import { searchView } from '~/utils/mapSheetView';
 import { useTheme } from '~/utils/theme';
 import { PlaceRow, placeDetail, RowGroup, SheetRow } from './PlaceRow';
 import { PLACE_ICONS, usePlaceColor } from './placeStyle';
+import { SkeletonRows } from './SkeletonRows';
 
 export type ResolvedRecent = { kind: 'place'; place: Place } | { kind: 'query'; query: string };
 
@@ -163,6 +165,8 @@ const matchDetail = (match: SearchMatch<Place>, walk: number | null) =>
 
 export const SearchPanel = ({
   query,
+  searchedQuery,
+  isLoaded,
   results,
   buildings,
   menuMatches,
@@ -175,6 +179,8 @@ export const SearchPanel = ({
   onClearRecents,
 }: {
   query: string;
+  searchedQuery: string;
+  isLoaded: boolean;
   results: SearchMatch<Place>[];
   buildings: BuildingMatch[];
   menuMatches: PlaceMenuMatch[];
@@ -187,8 +193,12 @@ export const SearchPanel = ({
   onClearRecents: () => void;
 }) => {
   const theme = useTheme();
-  const isEmpty = query.trim() === '';
-  const nothing = results.length === 0 && buildings.length === 0 && menuMatches.length === 0;
+  const view = searchView({
+    query,
+    searchedQuery,
+    isLoaded,
+    resultCount: results.length + buildings.length + menuMatches.length,
+  });
 
   return (
     <ScrollView
@@ -198,7 +208,7 @@ export const SearchPanel = ({
       contentContainerClassName="gap-y-5 pt-1"
       contentContainerStyle={{ paddingBottom: bottomOffset + 24 }}
     >
-      {isEmpty ? (
+      {view.kind === 'suggestions' ? (
         <Suggestions
           recents={recents}
           userCoordinates={userCoordinates}
@@ -206,8 +216,10 @@ export const SearchPanel = ({
           onRunQuery={onRunQuery}
           onClearRecents={onClearRecents}
         />
-      ) : nothing ? (
-        <NoResults query={query.trim()} onClear={onClearQuery} />
+      ) : view.kind === 'pending' ? (
+        <SkeletonRows count={3} testID="map-search-loading" />
+      ) : view.kind === 'empty' ? (
+        <NoResults query={view.query} onClear={onClearQuery} />
       ) : (
         <>
           {results.length > 0 && (
