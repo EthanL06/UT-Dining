@@ -7,8 +7,9 @@ Usage: scripts/qa/mobile-screenshots.sh [--out <dir>] [--list <file>] [--themes 
                                         [mobile-e2e.sh options: --sim, --release, --fixture-server]
 
 Screenshots every screen in apps/mobile/e2e/screenshots.txt, once per theme, on an iOS Simulator.
-Each line of the list is "<name> [deep link path]". The path is opened as ut-dining://<path>;
-no path means Home. Files are <out>/<name>-<theme>.png. Default out: .context/screenshots.
+Each line of the list is "<name> [deep link path] [text to wait for]". The path is opened as
+ut-dining://<path>; no path means Home. The text is a Maestro regex that only that screen shows; the
+screenshot waits for it, so a deep link that lands late never captures the previous screen. Files are <out>/<name>-<theme>.png. Default out: .context/screenshots.
 With --sim <UDID>,<UDID> each theme is its own flow, so the themes run on two simulators at once
 (worth it on a Mac with spare cores; a 3-core CI runner gets slower).
 System alerts are dismissed once per theme, after the first launch; permissions are granted at
@@ -69,7 +70,7 @@ YAML
 }
 
 theme_steps() {
-  local theme="$1" name path
+  local theme="$1" name path wait
   cat <<YAML
 - openLink: ut-dining://e2e-setup?theme=$theme
 - runFlow: $ALERTS
@@ -79,12 +80,19 @@ theme_steps() {
 - waitForAnimationToEnd:
     timeout: 10000
 YAML
-  while read -r name path; do
+  while read -r name path wait; do
     [[ -z "$name" || "$name" == \#* ]] && continue
     echo "- stopApp"
     open_app false
     if [[ -n "${path:-}" ]]; then
       echo "- openLink: ut-dining://$path"
+    fi
+    if [[ -n "${wait:-}" ]]; then
+      cat <<YAML
+- extendedWaitUntil:
+    visible: '$wait'
+    timeout: 20000
+YAML
     fi
     cat <<YAML
 - waitForAnimationToEnd:
