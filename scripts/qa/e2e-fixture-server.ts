@@ -107,6 +107,9 @@ const server = createServer((req, res) => {
   console.log(`${req.method} ${url.pathname}${url.search}`);
 
   if (url.pathname === '/health') return send(res, 200, { ok: true });
+  if (url.pathname === '/api/status') {
+    return send(res, 200, { status: 'operational', label: 'Operational', components: [] });
+  }
   if (!match) return send(res, 404, { message: `No route for ${url.pathname}` });
 
   const table = match[1];

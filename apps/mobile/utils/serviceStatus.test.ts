@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseServiceStatus } from './serviceStatus';
+import { getServiceStatusBanner, parseServiceStatus } from './serviceStatus';
 
 describe('parseServiceStatus', () => {
   it('reads a known status', () => {
@@ -15,5 +15,22 @@ describe('parseServiceStatus', () => {
     expect(parseServiceStatus({})).toBeNull();
     expect(parseServiceStatus(null)).toBeNull();
     expect(parseServiceStatus('operational')).toBeNull();
+  });
+});
+
+describe('getServiceStatusBanner', () => {
+  it('shows nothing when everything works or the status is unknown', () => {
+    expect(getServiceStatusBanner({ health: 'operational', label: 'Operational' })).toBeNull();
+    expect(getServiceStatusBanner(null)).toBeNull();
+    expect(getServiceStatusBanner(undefined)).toBeNull();
+  });
+
+  it('warns when something is degraded or down', () => {
+    expect(getServiceStatusBanner(parseServiceStatus({ status: 'degraded' }))?.title).toBe(
+      "Some things aren't working right",
+    );
+    expect(getServiceStatusBanner(parseServiceStatus({ status: 'outage' }))?.title).toBe(
+      'UT Dining is having problems',
+    );
   });
 });
