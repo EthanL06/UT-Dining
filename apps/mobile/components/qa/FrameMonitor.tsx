@@ -17,7 +17,10 @@ const append = (batch: FrameBatch) => {
     .catch((error: unknown) => log.warn('frame log write failed', { error: String(error) }));
 };
 
-const round = (value: number) => Math.round(value * 100) / 100;
+const round = (value: number) => {
+  'worklet';
+  return Math.round(value * 100) / 100;
+};
 
 const Recorder = () => {
   const uiFrames = useSharedValue<number[]>([]);
