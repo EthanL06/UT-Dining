@@ -138,17 +138,20 @@ const FoodComponent = ({
               {displayNutrient(food.nutrition?.total_carbohydrates)} carbs ·{' '}
               {displayNutrient(food.nutrition?.total_fat)} fat
             </Text>
-            {food.allergens &&
-              Object.entries(food.allergens).map(([key, value]) =>
-                value === true ? (
-                  <Image
-                    key={key}
-                    source={ALLERGEN_ICONS[key as keyof typeof ALLERGEN_ICONS]}
-                    className="size-[15px] rounded-full"
-                    contentFit="contain"
-                  />
-                ) : null,
-              )}
+            {food.allergens && Object.values(food.allergens).some((value) => value === true) && (
+              <View className="flex-row items-center gap-x-1.5">
+                {Object.entries(food.allergens).map(([key, value]) =>
+                  value === true ? (
+                    <Image
+                      key={key}
+                      source={ALLERGEN_ICONS[key as keyof typeof ALLERGEN_ICONS]}
+                      className="size-[15px] rounded-full"
+                      contentFit="contain"
+                    />
+                  ) : null,
+                )}
+              </View>
+            )}
           </View>
         )}
       </View>

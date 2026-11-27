@@ -1,26 +1,19 @@
 import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import { memo } from 'react';
 
-import FoodComponent, { type RowPosition } from '~/components/FoodComponent';
-import type { DrizzleDB, FoodItem } from '~/services/database/database';
+import FoodComponent from '~/components/FoodComponent';
+import type { DrizzleDB } from '~/services/database/database';
 import type * as schema from '~/services/database/schema';
 import { toggleFavoriteForFood } from '~/utils/foodActions';
-
-interface FoodItemProps {
-  data: FoodItem;
-  categoryId: string;
-  id: string;
-  hidden?: boolean;
-}
+import type { FoodRow } from '~/utils/menuRows';
 
 interface FoodItemRowProps {
-  item: FoodItemProps;
+  item: FoodRow;
   selectedMenu: string;
   location: string;
   date: string;
   db: ExpoSQLiteDatabase<typeof schema>;
-  favorites: schema.Favorite[];
-  position: RowPosition;
+  isFavorite: boolean;
   canMealPlan: boolean;
   selecting: boolean;
   selected: boolean;
@@ -34,16 +27,13 @@ const FoodItemRow = ({
   location,
   date,
   db,
-  favorites,
-  position,
+  isFavorite,
   canMealPlan,
   selecting,
   selected,
   onToggleSelect,
   onSelectMultiple,
 }: FoodItemRowProps) => {
-  const isFavorite = favorites.some((favorite) => favorite.name === item.data.name);
-
   return (
     <FoodComponent
       food={item.data}
@@ -51,7 +41,7 @@ const FoodItemRow = ({
       categoryName={item.categoryId}
       location={location}
       date={date}
-      position={position}
+      position={item.position}
       canMealPlan={canMealPlan}
       selection={{
         selecting,
