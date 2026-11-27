@@ -160,7 +160,7 @@ const SyncDataRow = () => {
     if (!db || isSyncing) return;
     setSyncStatus('syncing');
     try {
-      await forceMenuSync(db, queryClient);
+      await forceMenuSync(queryClient);
       setCurrentTime(Date.now());
       setSyncStatus('idle');
       haptics.success();

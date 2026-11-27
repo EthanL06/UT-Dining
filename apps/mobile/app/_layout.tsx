@@ -4,7 +4,6 @@ import {
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import {
   DarkTheme,
@@ -13,7 +12,7 @@ import {
   Stack,
   ThemeProvider,
 } from 'expo-router';
-import { openDatabaseSync, type SQLiteDatabase, SQLiteProvider } from 'expo-sqlite';
+import { SQLiteProvider } from 'expo-sqlite';
 import { PostHogProvider } from 'posthog-react-native';
 import { Suspense, useEffect } from 'react';
 import { ActivityIndicator, Appearance, AppState } from 'react-native';
@@ -26,7 +25,6 @@ import { log } from '~/utils/log';
 import '../components/sheets/Sheets';
 
 import migrations from '../drizzle/migrations';
-import type * as schema from '../services/database/schema';
 
 import '../global.css';
 import * as Device from 'expo-device';
@@ -36,11 +34,11 @@ import { NearbyAlertsInitializer } from '~/components/nearby/NearbyAlertsInitial
 import { VersionCheckProvider } from '~/components/VersionCheckProvider';
 import { usePostHogScreens } from '~/hooks/usePostHogScreens';
 import { POSTHOG_CONFIG, posthogClient } from '~/services/analytics/posthog';
+import { configureConnection, DATABASE_NAME, writerDb } from '~/services/database/connection';
 import { PushNotificationsInitializer } from '~/services/notifications/notifications';
 import { useAppLaunchStore } from '~/store/useAppLaunchStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTheme } from '~/utils/theme';
-export const DATABASE_NAME = 'database.db';
 
 Appearance.setColorScheme(useSettingsStore.getState().isDarkMode ? 'dark' : 'light');
 
@@ -49,13 +47,6 @@ configureReanimatedLogger({
   strict: false,
 });
 
-const CONNECTION_PRAGMAS = 'PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 3000;';
-
-const expoDb = openDatabaseSync(DATABASE_NAME);
-expoDb.execSync(CONNECTION_PRAGMAS);
-
-const configureConnection = (database: SQLiteDatabase) => database.execAsync(CONNECTION_PRAGMAS);
-const db = drizzle<typeof schema>(expoDb);
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -89,7 +80,7 @@ const navigationTheme = (isDarkMode: boolean) => {
 };
 
 const AppContent = () => {
-  const { success, error } = useMigrations(db, migrations);
+  const { success, error } = useMigrations(writerDb, migrations);
   const { incrementLaunchCount } = useAppLaunchStore();
   useSyncQueries({ queryClient });
   usePostHogScreens();
