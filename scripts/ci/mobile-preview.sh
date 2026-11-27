@@ -93,6 +93,13 @@ runtime="$(jq -r 'first.runtimeVersion' <<<"$updates")"
 [[ "$runtime" == "$fingerprint" ]] || die "update runtime $runtime does not match fingerprint $fingerprint"
 update_url="$ACCOUNT_URL/updates/$group"
 
+qr_url=""
+if [[ "$mode" == pr && -n "${SUPABASE_DEV_URL:-}" && -n "${SUPABASE_DEV_SERVICE_KEY:-}" ]]; then
+  qr_url="$(PREVIEW_TITLE="${PR_TITLE:-PR #$pr}" PREVIEW_SHA="$sha" PREVIEW_RUNTIME="$fingerprint" \
+    PREVIEW_BUILD_URL="$build_url" PREVIEW_UPDATE_URL="$update_url" \
+    "$ROOT/scripts/ci/preview-index.sh" add "$pr" || true)"
+fi
+
 case "$build_state" in
   existing)
     if [[ "$build_status" == FINISHED ]]; then
@@ -106,7 +113,12 @@ case "$build_state" in
 esac
 
 if [[ "$mode" == pr ]]; then
-  howto="In **UT Dining (Dev)**, open Settings > Developer > QA Menu > **Load PR Preview** and enter **$pr**. **Back to Staging** returns to the staging channel."
+  howto="In **UT Dining (Dev)**, open Settings > Developer > QA Menu and tap this PR under **PR Previews**, or scan the code below with the iPhone camera (it opens \`ut-dining-dev://preview/$pr\`). **Back to Staging** returns to the staging channel."
+  if [[ -n "$qr_url" ]]; then
+    howto="$howto
+
+<img src=\"$qr_url\" width=\"180\" alt=\"QR code that opens PR $pr in UT Dining (Dev)\">"
+  fi
 else
   howto="UT Dining (Dev) on the staging channel downloads it at the next launch and runs it on the launch after that, or right away from QA Menu > **Check for Update**."
 fi

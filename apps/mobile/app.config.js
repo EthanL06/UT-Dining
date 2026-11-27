@@ -35,7 +35,7 @@ export default {
     name: IS_DEV ? 'UT Dining (Dev)' : 'UT Dining',
     slug: 'ut-dining',
     version: '1.2.4',
-    scheme: 'ut-dining',
+    scheme: IS_DEV ? ['ut-dining', 'ut-dining-dev'] : 'ut-dining',
     web: {
       bundler: 'metro',
       output: 'static',
