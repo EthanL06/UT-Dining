@@ -8,6 +8,7 @@ import Reanimated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, TextInput } from '~/components/ui/Text';
 import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
@@ -21,6 +22,8 @@ export type MapSheetHandle = { snapTo: (detent: Detent) => void };
 export type SheetMode = 'browse' | 'search' | 'place';
 
 const SPRING = { damping: 22, stiffness: 220, mass: 0.6 };
+
+const FULL_TOP_GAP = 10;
 
 export const MapSheet = ({
   ref,
@@ -49,10 +52,14 @@ export const MapSheet = ({
 }) => {
   const theme = useTheme();
   const { height: windowHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const heights: Record<Detent, number> = {
     collapsed: 178,
     half: Math.round(windowHeight * 0.42),
-    full: Math.round(windowHeight * 0.78),
+    full: Math.min(
+      Math.round(windowHeight * 0.78),
+      windowHeight - insets.top - FULL_TOP_GAP - bottomOffset,
+    ),
   };
   const height = useSharedValue(heights.half);
   const dragStart = useSharedValue(0);
