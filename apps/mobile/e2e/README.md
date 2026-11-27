@@ -67,13 +67,15 @@ make qa SIM=<UDID> ARGS=apps/mobile/e2e/qa/central-time.yaml
 make qa SIM=<UDID> ARGS=--fixture-server
 ```
 
-`make qa` is `scripts/qa/mobile-e2e.sh --suite qa`: it loads the sample data into local Supabase (`scripts/dev/sample/load.ts`), or, with `--fixture-server`, serves it from `scripts/qa/e2e-fixture-server.ts <port> sample` and starts its own Metro with `EXPO_PUBLIC_SUPABASE_URL` pointed there (pass a `--port` no other Metro uses). That mode leaves the shared local Supabase untouched.
+`make qa` is `scripts/qa/mobile-e2e.sh --suite qa`: it loads the sample data into local Supabase (`scripts/dev/sample/load.ts`), or, with `--fixture-server`, serves it from `scripts/qa/e2e-fixture-server.ts <port> sample` and starts its own Metro with `EXPO_PUBLIC_SUPABASE_URL` pointed there (pass a `--port` no other Metro uses). A development bundle reads `apps/mobile/.env*` files over the shell environment, so while that Metro runs the script writes the fixture values to `apps/mobile/.env.development.local` (the file that wins) and deletes it on exit. It refuses to start when that file already exists. A Metro on port 8081 in the same worktree also picks it up until the run ends.
+
+Dev client launches go through `subflows/dev-client.yaml`: the launch link turns off the Expo dev menu and its floating Tools button (`__expo_disable_auto_launch=1&__expo_disable_fab=1`), and the subflow taps Reload or opens the link again when a slow Mac drops the bundle load. That mode leaves the shared local Supabase untouched.
 
 The clock: `subflows/start-at.yaml` opens `ut-dining://e2e-setup?clock=HH:MM`, which sets the dev app's clock to that Central time on today's Central date (`days=N` moves the date). It patches `Date` in the dev bundle only (`apps/mobile/utils/qaClock.ts`), keeps running from there, and survives a relaunch, so a flow can step through times with `subflows/set-clock.yaml`. Start flows with `PERMISSIONS: unset` to see the iOS permission prompts, and `RATING: 'on'` to keep the rating prompt armed.
 
 | Flow | Guards |
 | --- | --- |
-| `central-time.yaml` | At 8:30 PM Central (already the next day in UTC): Good Evening, J2 and JCL open until 9:00 and 8:00 PM, Kins temporarily closed, Today and Tomorrow show their own Chef's Table dish, Yesterday label (PRs 98, 104) |
+| `central-time.yaml` | At 8:30 PM Central (already the next day in UTC): Good Evening, J2 open until 9:00 PM, JCL opens tomorrow at 11:00 AM, Kins temporarily closed, Today and Tomorrow show their own Chef's Table dish, Yesterday label (PRs 98, 104) |
 | `hours-and-greeting.yaml` | Wendy's 00:00 to 04:00 range at 2 AM, Gabriel's open until 11:59 PM, Good Morning until noon (PRs 98, 118) |
 | `permissions-onboarding.yaml` | Onboarding asks for location and notifications only on its Permissions page (PR 98) |
 | `permissions-map.yaml` | Home asks for nothing; the Map tab asks for location when opened (PR 98) |

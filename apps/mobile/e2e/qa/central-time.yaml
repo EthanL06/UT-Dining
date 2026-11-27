@@ -10,11 +10,11 @@ tags:
 - assertVisible: Good Evening.*
 - tapOn: 'Dining Hall(,.*)?'
 - scrollUntilVisible:
-    element: '.*Temporarily closed.*'
+    element: 'Kins Dining, Temporarily closed'
     direction: DOWN
     timeout: 30000
-- assertVisible: '.*Open until 9:00 PM.*'
-- assertVisible: '.*Open until 8:00 PM.*'
+- assertVisible: 'J2 Dining, Open until 9:00 PM'
+- assertVisible: 'JCL Dining, Opens tomorrow at 11:00 AM'
 - takeScreenshot: central-evening-home
 - runFlow:
     file: subflows/open-place.yaml
