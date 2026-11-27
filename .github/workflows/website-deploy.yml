@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - apps/website/**
+      - packages/core/**
       - pnpm-lock.yaml
       - .github/workflows/website-deploy.yml
   schedule:

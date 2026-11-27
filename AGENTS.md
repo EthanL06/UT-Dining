@@ -17,7 +17,7 @@ This file is the agent guide for every tool (`CLAUDE.md` imports it). Each app w
 - `apps/website`: public site, changelog and privacy policy (Next.js 16 on Vercel, server-rendered with ISR, Tailwind 4). `WEBSITE_STATIC_EXPORT=1` builds the static copy GitHub Pages serves under `/ut-dining-website`, which the App Store privacy link still points at; keep `/privacy-policy/` unchanged.
 - `apps/cli` (`@ut-dining/cli`): command line version of the dashboard for agents. See "Dashboard data" below.
 - `apps/scraper`: daily menu scraper. Plain ESM TypeScript run directly by Node (no build). Runs daily from `.github/workflows/scraper.yml` (GitHub Actions).
-- `packages/core` (`@ut-dining/core`): pure domain logic shared by the app and the dashboard (service hours, open/closed status, Central-time dates, payment methods, sync planning). No React, React Native or database code here; Vitest tests live next to the source. Run with `pnpm --filter @ut-dining/core test`. New pure logic goes here when both apps can use it.
+- `packages/core` (`@ut-dining/core`): pure domain logic shared by the app, the dashboard and the website (service hours, open/closed status, Central-time dates, payment methods, sync planning). No React, React Native or database code here; Vitest tests live next to the source. Run with `pnpm --filter @ut-dining/core test`. New pure logic goes here when both apps can use it.
 - `packages/supabase` (`@ut-dining/supabase`): generated Supabase types. Regenerate with `make db-types`; never hand-edit.
 - `packages/tsconfig` (`@ut-dining/tsconfig`): shared TypeScript presets.
 - `supabase/`: the single Supabase project (migrations, seed, Deno edge functions).
