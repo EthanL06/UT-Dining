@@ -22,17 +22,18 @@ import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
+import { displayLocationName } from '~/utils/locationName';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
-import { getLocationName } from '~/utils/locations';
 import { log } from '~/utils/log';
 import {
+  CLUSTER_ZOOM_DELTA,
   type Coordinates,
-  clusterPlaces,
   isPinned,
+  mapMarkers,
   type PinnedPlace,
   type Place,
   regionAround,
-  stackOverlappingPins,
+  showsLabel,
   zoomLevelFor,
 } from '~/utils/mapPlaces';
 import { searchPlaces } from '~/utils/mapSearch';
@@ -128,7 +129,7 @@ const MapPage = () => {
     const dining = (data?.locations ?? []).map((location): Place => {
       const isOpen = isLocationOpenNow(location, withMenus, now);
       return {
-        name: getLocationName(db, location.name ?? '', useColloquialNames),
+        name: displayLocationName(location, useColloquialNames),
         locationName: location.name ?? '',
         address: location.address,
         description: location.description,
@@ -213,9 +214,9 @@ const MapPage = () => {
   const halfSheetHeight = Math.round(screen.height * SHEET_HALF_FRACTION);
   const mapControlsHeight = Math.min(sheetHeight, halfSheetHeight);
   const isSheetAboveHalf = sheetHeight > halfSheetHeight;
-  const clusters = useMemo(
-    () => (zoom === 'labels' ? [] : clusterPlaces(pinnedPlaces, region, screen.width)),
-    [zoom, pinnedPlaces, region, screen.width],
+  const markers = useMemo(
+    () => mapMarkers(pinnedPlaces, region, screen.width),
+    [pinnedPlaces, region, screen.width],
   );
 
   const sheetRef = useRef<MapSheetHandle>(null);
@@ -266,14 +267,9 @@ const MapPage = () => {
     });
   }, []);
 
-  const stackedPins = useMemo(
-    () => (zoom === 'labels' ? stackOverlappingPins(pinnedPlaces, region, screen.width) : []),
-    [zoom, pinnedPlaces, region, screen.width],
-  );
-
   const renderPlace = (place: PinnedPlace, coordinate: Coordinates = place.coordinates) => {
     const selected = selectedPlace?.name === place.name;
-    const showLabel = zoom === 'labels' && place.isOpen && place.type !== 'microwave';
+    const showLabel = zoom === 'labels' && showsLabel(place);
     const showDot = !place.isOpen && !selected;
     return (
       <Marker
@@ -321,26 +317,30 @@ const MapPage = () => {
         loadingEnabled
         loadingBackgroundColor={theme.background}
       >
-        {zoom === 'pins'
-          ? clusters.map((cluster) =>
-              cluster.places.length === 1 ? (
-                renderPlace(cluster.places[0])
-              ) : (
-                <Marker
-                  key={`cluster-${cluster.id}-${cluster.places.length}`}
-                  coordinate={cluster.coordinates}
-                  tracksViewChanges={false}
-                  accessibilityLabel={`${cluster.places.length} places`}
-                  onPress={() => {
-                    haptics.tap();
-                    mapRef.current?.animateToRegion(regionAround(cluster.places), 450);
-                  }}
-                >
-                  <ClusterPin cluster={cluster} />
-                </Marker>
-              ),
-            )
-          : stackedPins.map((pin) => renderPlace(pin.place, pin.coordinates))}
+        {markers.map((marker) =>
+          marker.kind === 'place' ? (
+            renderPlace(marker.place, marker.coordinates)
+          ) : (
+            <Marker
+              key={`cluster-${marker.cluster.id}-${marker.cluster.places.length}`}
+              coordinate={marker.cluster.coordinates}
+              tracksViewChanges={false}
+              accessibilityLabel={`${marker.cluster.places.length} places`}
+              onPress={() => {
+                haptics.tap();
+                mapRef.current?.animateToRegion(
+                  regionAround(
+                    marker.cluster.places,
+                    zoom === 'labels' ? CLUSTER_ZOOM_DELTA : undefined,
+                  ),
+                  450,
+                );
+              }}
+            >
+              <ClusterPin cluster={marker.cluster} />
+            </Marker>
+          ),
+        )}
       </MapView>
 
       {hasLocationPermission && userCoordinates && !isSheetAboveHalf && (

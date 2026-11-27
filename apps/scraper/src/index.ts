@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { config, dateRange, LOCATIONS } from './config.ts';
+import { config, dateRange } from './config.ts';
 import { buildReport, formatReport } from './health.ts';
 import { createClient } from './http.ts';
 import { log } from './log.ts';
@@ -17,11 +17,11 @@ const main = async () => {
   const started = performance.now();
   const dates = dateRange(config.days, config.startDate);
   log.info(
-    `Scraping ${dates[0]}${dates.length > 1 ? ` to ${dates.at(-1)}` : ''} with ${config.concurrency} connections`,
+    `Scraping ${config.locations.length === 1 ? `${config.locations[0].name} ` : ''}${dates[0]}${dates.length > 1 ? ` to ${dates.at(-1)}` : ''} with ${config.concurrency} connections`,
   );
 
   const http = createClient({ concurrency: config.concurrency });
-  const result = await scrape(http, dates);
+  const result = await scrape(http, dates, config.locations);
 
   const menus = result.days.flatMap((day) => day.menus);
   const items = menus.reduce(
@@ -50,7 +50,7 @@ const main = async () => {
 
   const report = buildReport({
     dates,
-    locationDays: dates.length * LOCATIONS.length,
+    locationDays: dates.length * config.locations.length,
     served: result.days.filter((day) => day.menus.length > 0).length,
     notPosted: result.notPosted,
     labels: result.labels,

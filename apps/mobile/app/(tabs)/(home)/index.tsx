@@ -7,7 +7,7 @@ import { Link, router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useSQLiteContext } from 'expo-sqlite';
 import { Heart } from 'lucide-react-native';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -41,8 +41,8 @@ import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
 import { homeView, toSyncStatus } from '~/utils/homeView';
+import { displayLocationName } from '~/utils/locationName';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
-import { getLocationName } from '~/utils/locations';
 import { log } from '~/utils/log';
 import { PULL_TRIGGER, type RefreshResult, type RefreshStatus } from '~/utils/pullRefresh';
 import { readCachedMenuData } from '~/utils/queries';
@@ -51,6 +51,7 @@ import {
   formatTimeSinceSync,
   getLocationStatusText,
   getMinutesUntilClose,
+  statusDotTone,
   timeOfDay,
 } from '~/utils/time';
 import * as schema from '../../../services/database/schema';
@@ -63,7 +64,17 @@ SplashScreen.setOptions({
   fade: true,
 });
 
-type LocationEntry = { location: schema.LocationWithType; isOpen: boolean };
+type LocationEntry = {
+  location: schema.LocationWithType;
+  isOpen: boolean;
+  subtitle: string;
+  closingInMinutes: number | null;
+};
+
+const closingSoonMinutes = (location: schema.LocationWithType, isOpen: boolean, now: Date) => {
+  const minutes = getMinutesUntilClose(location, now);
+  return statusDotTone(isOpen, minutes) === 'closingSoon' ? minutes : null;
+};
 
 const sortLocationsByStatus = (
   locations: schema.LocationWithType[],
@@ -79,10 +90,15 @@ const sortLocationsByStatus = (
     : locations;
 
   const locationIdsWithMenus = getLocationIdsWithMenus(db, getTodayInCentralTime());
-  const items: LocationEntry[] = filteredLocations.map((location) => ({
-    location,
-    isOpen: isLocationOpenNow(location, locationIdsWithMenus, currentTime),
-  }));
+  const items: LocationEntry[] = filteredLocations.map((location) => {
+    const isOpen = isLocationOpenNow(location, locationIdsWithMenus, currentTime);
+    return {
+      location,
+      isOpen,
+      subtitle: getLocationStatusText(location, isOpen, currentTime),
+      closingInMinutes: closingSoonMinutes(location, isOpen, currentTime),
+    };
+  });
 
   return {
     open: items.filter((item) => item.isOpen),
@@ -163,23 +179,19 @@ const TypeChip = ({
   </PressableScale>
 );
 
-const LocationRows = ({
-  entries,
-  currentTime,
-  db,
-}: {
-  entries: LocationEntry[];
-  currentTime: Date;
-  db: DrizzleDB;
-}) => {
-  const theme = useTheme();
-  const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
-
-  return entries.map(({ location, isOpen }, index) => {
+const LocationRow = memo(
+  ({
+    location,
+    isOpen,
+    subtitle,
+    closingInMinutes,
+    isFirst,
+  }: LocationEntry & { isFirst: boolean }) => {
+    const theme = useTheme();
+    const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
     const name = location.name ?? '';
     return (
       <Link
-        key={location.id}
         href={{
           pathname: location.has_menus ? '/location/[location]' : '/location_generic/[location]',
           params: { location: name },
@@ -189,24 +201,24 @@ const LocationRows = ({
         <Link.Trigger withAppleZoom>
           <GroupedRow
             accessibilityRole="button"
-            isFirst={index === 0}
+            isFirst={isFirst}
             separatorInset={37}
-            leading={
-              <StatusDot
-                open={isOpen}
-                closesInMinutes={getMinutesUntilClose(location, currentTime)}
-              />
-            }
-            title={getLocationName(db, name, useColloquialNames)}
+            leading={<StatusDot open={isOpen} closesInMinutes={closingInMinutes} />}
+            title={displayLocationName(location, useColloquialNames)}
             titleColor={isOpen ? theme.label : theme.secondaryLabel}
-            subtitle={getLocationStatusText(location, isOpen, currentTime)}
+            subtitle={subtitle}
             showChevron
           />
         </Link.Trigger>
       </Link>
     );
-  });
-};
+  },
+);
+
+const LocationRows = ({ entries }: { entries: LocationEntry[] }) =>
+  entries.map((entry, index) => (
+    <LocationRow key={entry.location.id} {...entry} isFirst={index === 0} />
+  ));
 
 const CenteredMessage = ({ children }: { children: React.ReactNode }) => {
   const theme = useTheme();
@@ -456,12 +468,12 @@ export default function Home() {
 
           {open.length > 0 && (
             <GroupedSection header="Open now">
-              <LocationRows entries={open} currentTime={currentTime} db={drizzleDb} />
+              <LocationRows entries={open} />
             </GroupedSection>
           )}
           {closed.length > 0 && (
             <GroupedSection header="Closed">
-              <LocationRows entries={closed} currentTime={currentTime} db={drizzleDb} />
+              <LocationRows entries={closed} />
             </GroupedSection>
           )}
         </Reanimated.ScrollView>
