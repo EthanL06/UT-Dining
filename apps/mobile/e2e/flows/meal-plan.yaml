@@ -7,9 +7,12 @@ name: Meal plan items can be added and removed
     element: 'Maestro Veggie Burger(,.*)?'
     direction: DOWN
     visibilityPercentage: 100
-- swipe:
-    from: 'Maestro Grilled Chicken(,.*)?'
-    direction: RIGHT
+- longPressOn: 'Maestro Grilled Chicken(,.*)?'
+- extendedWaitUntil:
+    visible: Add to Meal Plan
+    timeout: 5000
+- tapOn: Add to Meal Plan
+- waitForAnimationToEnd
 - tapOn: 'Maestro Veggie Burger(,.*)?'
 - extendedWaitUntil:
     visible:
@@ -42,15 +45,29 @@ name: Meal plan items can be added and removed
     timeout: 5000
 - assertVisible: 'Maestro Veggie Burger(,.*)?'
 - takeScreenshot: meal-plan
-- swipe:
-    from: 'Maestro Grilled Chicken(,.*)?'
-    direction: RIGHT
+- longPressOn: 'Maestro Veggie Burger(,.*)?'
 - extendedWaitUntil:
-    notVisible: 'Maestro Grilled Chicken(,.*)?'
+    visible: Remove from Meal Plan
     timeout: 5000
-- swipe:
-    from: 'Maestro Veggie Burger(,.*)?'
-    direction: RIGHT
+- tapOn: Remove from Meal Plan
+- extendedWaitUntil:
+    notVisible: 'Maestro Veggie Burger(,.*)?'
+    timeout: 5000
+- tapOn:
+    id: meal-plan-undo-button
+- extendedWaitUntil:
+    visible: 'Maestro Veggie Burger(,.*)?'
+    timeout: 5000
+- longPressOn: 'Maestro Veggie Burger(,.*)?'
+- extendedWaitUntil:
+    visible: Remove from Meal Plan
+    timeout: 5000
+- tapOn: Remove from Meal Plan
+- extendedWaitUntil:
+    notVisible: 'Maestro Veggie Burger(,.*)?'
+    timeout: 5000
+- tapOn:
+    id: meal-plan-decrement
 - extendedWaitUntil:
     visible: Empty Meal Plan!
     timeout: 5000

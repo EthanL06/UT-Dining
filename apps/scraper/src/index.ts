@@ -4,7 +4,9 @@ import { config, dateRange, LOCATIONS } from './config.ts';
 import { buildReport, formatReport } from './health.ts';
 import { createClient } from './http.ts';
 import { log } from './log.ts';
+import { pruneOldMenus } from './retention.ts';
 import { scrape } from './scrape.ts';
+import { createSupabase } from './supabase.ts';
 import { upload } from './upload.ts';
 
 const DATA_DIR = join(import.meta.dirname, '..', 'data');
@@ -75,6 +77,24 @@ const main = async () => {
   log.info(`Saved ${file}`);
 
   if (report.problems.some((problem) => problem.kind === 'layout')) process.exitCode = 1;
+
+  if (config.upload && config.retentionDays) {
+    const supabase = createSupabase();
+    const keepDays = config.retentionDays;
+    const retention = await pruneOldMenus(
+      (days, limit) => supabase.rpc('prune_old_menus', { arg_keep_days: days, arg_limit: limit }),
+      keepDays,
+    );
+    switch (retention.status) {
+      case 'done':
+        log.info(`Retention: removed ${retention.removed} menus older than ${keepDays} days`);
+        break;
+      case 'failed':
+        log.error(`Retention failed after removing ${retention.removed} menus: ${retention.error}`);
+        process.exitCode = 1;
+        break;
+    }
+  }
 
   if (items === 0) {
     if (report.healthy && report.notPosted === report.locationDays) {
