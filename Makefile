@@ -11,7 +11,7 @@ DAYS ?= 3
 export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 
 .PHONY: help setup install doctor \
-	dev mobile ios android dashboard website scrape admin mobile-preview \
+	dev mobile ios android dashboard website scrape places admin mobile-preview \
 	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-psql db-studio \
 	env-local env-dev \
 	check verify check-comments check-size check-state functions fix lint typecheck test build \
@@ -37,6 +37,7 @@ help:
 	'  dashboard       Dashboard on http://localhost:3000' \
 	'  website         Website on http://localhost:3001' \
 	'  scrape          Run the scraper once with apps/scraper/.env.local' \
+	'  places          Sync UT-run restaurant, cafe and food truck hours (dry run unless ENABLE_SUPABASE=true)' \
 	'  admin           Dashboard data CLI (dev by default). ARGS="locations list --local". See apps/cli/README.md' \
 	'' \
 	'Database (local Supabase in Docker)' \
@@ -121,6 +122,9 @@ website:
 
 scrape:
 	@pnpm --filter @ut-dining/scraper start $(ARGS)
+
+places:
+	@pnpm --filter @ut-dining/scraper places $(ARGS)
 
 admin:
 	@node apps/cli/src/index.ts $(ARGS)
