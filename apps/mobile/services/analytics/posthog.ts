@@ -9,7 +9,7 @@ export const POSTHOG_CONFIG = {
   apiKey: POSTHOG_API_KEY,
   options: {
     host: 'https://us.i.posthog.com',
-    enableSessionReplay: true,
+    enableSessionReplay: false,
     disabled: IS_DEV,
     errorTracking: {
       autocapture: {
