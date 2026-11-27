@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 
@@ -13,13 +13,23 @@ export function mergePermissions(current: Settings, rules: Permissions): Setting
   return { ...current, permissions };
 }
 
+function readIfPresent(path: string): string | undefined {
+  try {
+    return readFileSync(path, 'utf8');
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
+    throw error;
+  }
+}
+
 function main() {
   const root = join(dirname(new URL(import.meta.url).pathname), '..', '..');
   const rules = JSON.parse(readFileSync(join(root, '.agents/agent-permissions.json'), 'utf8'))
     .permissions as Permissions;
   const target = process.argv[2] ?? join(homedir(), '.claude', 'settings.json');
   const check = process.argv.includes('--check');
-  const current: Settings = existsSync(target) ? JSON.parse(readFileSync(target, 'utf8')) : {};
+  const raw = readIfPresent(target);
+  const current: Settings = raw === undefined ? {} : JSON.parse(raw);
   const merged = mergePermissions(current, rules);
   const added = (key: 'allow' | 'deny') =>
     (merged.permissions?.[key]?.length ?? 0) - (current.permissions?.[key]?.length ?? 0);
@@ -30,7 +40,7 @@ function main() {
     process.exit(added('allow') + added('deny') > 0 ? 1 : 0);
   }
   mkdirSync(dirname(target), { recursive: true });
-  if (existsSync(target)) copyFileSync(target, `${target}.bak`);
+  if (raw !== undefined) writeFileSync(`${target}.bak`, raw);
   writeFileSync(target, `${JSON.stringify(merged, null, 2)}\n`);
   process.stdout.write(
     `Added ${added('allow')} allow and ${added('deny')} deny rule(s) to ${target} (backup: ${target}.bak)\n`,
