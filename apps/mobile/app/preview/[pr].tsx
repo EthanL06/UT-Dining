@@ -21,11 +21,12 @@ const loadPreview = async (pr: number): Promise<string> => {
     : `Loading PR #${pr}…`;
 };
 
+type PreviewState = { status: 'loading' } | { status: 'done'; message: string };
+
 export default function OpenPrPreview() {
   const theme = useTheme();
   const { pr } = useLocalSearchParams<{ pr: string }>();
-  const [message, setMessage] = useState('Loading the PR preview…');
-  const [done, setDone] = useState(false);
+  const [preview, setPreview] = useState<PreviewState>({ status: 'loading' });
 
   useEffect(() => {
     const number = parsePrNumber(pr);
@@ -34,11 +35,13 @@ export default function OpenPrPreview() {
       return;
     }
     loadPreview(number)
-      .then(setMessage)
+      .then((message) => setPreview({ status: 'done', message }))
       .catch((error: unknown) =>
-        setMessage(error instanceof Error ? error.message : 'Could not load the preview.'),
-      )
-      .finally(() => setDone(true));
+        setPreview({
+          status: 'done',
+          message: error instanceof Error ? error.message : 'Could not load the preview.',
+        }),
+      );
   }, [pr]);
 
   return (
@@ -49,11 +52,11 @@ export default function OpenPrPreview() {
         className="flex-1 items-center justify-center gap-y-4 px-8"
         style={{ backgroundColor: theme.background }}
       >
-        {!done && <ActivityIndicator color={theme.tint} />}
+        {preview.status === 'loading' && <ActivityIndicator color={theme.tint} />}
         <Text variant="body" className="text-center">
-          {message}
+          {preview.status === 'loading' ? 'Loading the PR preview…' : preview.message}
         </Text>
-        {done && (
+        {preview.status === 'done' && (
           <Text
             variant="body"
             color={theme.tint}

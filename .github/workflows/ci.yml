@@ -41,6 +41,9 @@ jobs:
       - name: No source file over 500 lines
         run: scripts/dev/check-file-size.sh
 
+      - name: No implicit state machines
+        run: scripts/dev/check-state-machines.sh
+
       - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
         with:
           deno-version: v2.x

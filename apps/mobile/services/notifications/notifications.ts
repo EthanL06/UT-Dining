@@ -2,14 +2,15 @@ import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { type Href, router } from 'expo-router';
-import { useEffect } from 'react';
-import { Platform } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { AppState, Platform } from 'react-native';
 import { useDatabase } from '~/hooks/useDatabase';
 import { getOrCreateDeviceId } from '~/services/device/deviceId';
+import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { usePushNotificationsStore } from '~/store/usePushNotificationsStore';
 import { log } from '~/utils/log';
 import { supabase } from '~/utils/supabase';
-import { insertNotification } from '../database/database';
+import { type DrizzleDB, insertNotification } from '../database/database';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -21,156 +22,136 @@ Notifications.setNotificationHandler({
   }),
 });
 
+const saveNotification = async (db: DrizzleDB, notification: Notifications.Notification) => {
+  const { content, identifier } = notification.request;
+  try {
+    await insertNotification(db, {
+      id: identifier,
+      title: content.title ?? 'Notification',
+      body: content.body ?? '',
+      sent_at: new Date().toISOString(),
+      redirect_url: content.data?.redirect_url as string | undefined,
+      type: content.data?.type as string | undefined,
+    });
+  } catch (error) {
+    log.error('Error saving notification to database', error);
+  }
+};
+
+const syncPushToken = async (deviceId: string, token: string) => {
+  const { data } = await supabase
+    .from('user_devices')
+    .select('push_token')
+    .eq('device_id', deviceId)
+    .single();
+
+  if (data?.push_token === token) {
+    log.debug('Push token already synced.');
+    return;
+  }
+
+  const row = { device_id: deviceId, push_token: token, updated_at: new Date().toISOString() };
+  const { error } = data
+    ? await supabase.from('user_devices').upsert(row)
+    : await supabase.from('user_devices').insert(row);
+  if (error) log.error('Error saving push token', error);
+  else log.debug('Push token saved', { token });
+};
+
 export function PushNotificationsInitializer() {
   const setDeviceId = usePushNotificationsStore((s) => s.setDeviceId);
   const setExpoPushToken = usePushNotificationsStore((s) => s.setExpoPushToken);
   const setNotification = usePushNotificationsStore((s) => s.setNotification);
+  const isOnboardingComplete = useOnboardingStore((s) => s.isOnboardingComplete);
   const db = useDatabase();
+  const registration = useRef<'idle' | 'registering' | 'registered'>('idle');
+  const handledResponses = useRef(new Set<string>());
 
   useEffect(() => {
     const deviceId = getOrCreateDeviceId();
     setDeviceId(deviceId);
 
-    async function registerAndSync() {
-      if (Platform.OS === 'android') {
-        await Notifications.setNotificationChannelAsync('default', {
-          name: 'default',
-          importance: Notifications.AndroidImportance.MAX,
-          vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#FF231F7C',
-        });
+    const register = async () => {
+      if (registration.current !== 'idle') return;
+      registration.current = 'registering';
+      try {
+        if (Platform.OS === 'android') {
+          await Notifications.setNotificationChannelAsync('default', {
+            name: 'default',
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: '#FF231F7C',
+          });
+        }
+
+        if (!Device.isDevice) {
+          log.debug('Must use physical device for push notifications.');
+          registration.current = 'registered';
+          return;
+        }
+
+        let { status } = await Notifications.getPermissionsAsync();
+        if (status === 'undetermined' && isOnboardingComplete) {
+          status = (await Notifications.requestPermissionsAsync()).status;
+        }
+        if (status !== 'granted') {
+          registration.current = 'idle';
+          return;
+        }
+
+        const projectId =
+          Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+        if (!projectId) {
+          log.warn('Push notifications need an EAS project ID.');
+          registration.current = 'registered';
+          return;
+        }
+
+        const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+        setExpoPushToken(token);
+        await syncPushToken(deviceId, token);
+        registration.current = 'registered';
+      } catch (error) {
+        log.warn('Push notification registration failed', { error });
+        registration.current = 'idle';
       }
+    };
 
-      if (!Device.isDevice) {
-        log.debug('Must use physical device for push notifications.');
-        return;
-      }
+    register();
+    const appState = AppState.addEventListener('change', (state) => {
+      if (state === 'active') register();
+    });
+    return () => appState.remove();
+  }, [isOnboardingComplete, setDeviceId, setExpoPushToken]);
 
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
+  useEffect(() => {
+    const openResponse = async (response: Notifications.NotificationResponse) => {
+      const { notification } = response;
+      const id = notification.request.identifier;
+      if (handledResponses.current.has(id)) return;
+      handledResponses.current.add(id);
+      Notifications.clearLastNotificationResponse();
+      setNotification(notification);
+      if (db) await saveNotification(db, notification);
+      const redirectUrl = notification.request.content.data?.redirect_url as Href | undefined;
+      router.push(redirectUrl ?? '/notifications');
+    };
 
-      if (existingStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
+    const launchResponse = Notifications.getLastNotificationResponse();
+    if (launchResponse) openResponse(launchResponse);
 
-      if (finalStatus !== 'granted') {
-        if (__DEV__) {
-          alert('Permission not granted for push notifications! (DEV)');
-        }
-        return;
-      }
-
-      const projectId =
-        Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
-
-      if (!projectId) {
-        if (__DEV__) {
-          alert('Project ID not found. (DEV)');
-        }
-        return;
-      }
-
-      const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-      setExpoPushToken(token);
-
-      const { data } = await supabase
-        .from('user_devices')
-        .select('push_token')
-        .eq('device_id', deviceId)
-        .single();
-
-      if (!data) {
-        const { error } = await supabase.from('user_devices').insert({
-          device_id: deviceId,
-          push_token: token,
-          updated_at: new Date().toISOString(),
-        });
-
-        if (error) {
-          log.error('Error inserting push token', error);
-        } else {
-          log.debug('Push token registered', { token });
-        }
-      } else if (data.push_token !== token) {
-        const { error } = await supabase.from('user_devices').upsert({
-          device_id: deviceId,
-          push_token: token,
-          updated_at: new Date().toISOString(),
-        });
-
-        if (error) {
-          log.error('Error updating push token', error);
-        } else {
-          log.debug('Push token updated', { token });
-        }
-      } else {
-        log.debug('Push token already synced.');
-      }
-    }
-
-    registerAndSync();
-
-    const notificationListener = Notifications.addNotificationReceivedListener(
-      async (notification) => {
-        log.debug('Notification foreground received', { notification });
-        setNotification(notification);
-
-        if (db) {
-          try {
-            await insertNotification(db, {
-              id: notification.request.identifier,
-              title: notification.request.content.title ?? 'Notification',
-              body: notification.request.content.body ?? '',
-              sent_at: new Date().toISOString(),
-              redirect_url: notification.request.content.data?.redirect_url as string | undefined,
-              type: notification.request.content.data?.type as string | undefined,
-            });
-          } catch (error) {
-            log.error('Error saving notification to database', error);
-          }
-        }
-      },
-    );
-
-    const responseListener = Notifications.addNotificationResponseReceivedListener(
-      async (response) => {
-        log.debug('Notification background response', { response });
-        const notification = response.notification;
-        setNotification(notification);
-
-        if (db) {
-          try {
-            await insertNotification(db, {
-              id: notification.request.identifier,
-              title: notification.request.content.title ?? 'Notification',
-              body: notification.request.content.body ?? '',
-              sent_at: new Date().toISOString(),
-              redirect_url: response.notification.request.content.data?.redirect_url as
-                | string
-                | undefined,
-              type: response.notification.request.content.data?.type as string | undefined,
-            });
-          } catch (error) {
-            log.error('Error saving notification response to database', error);
-          }
-        }
-
-        const redirectUrl = notification.request.content.data?.redirect_url as Href | undefined;
-        if (redirectUrl) {
-          router.push(redirectUrl);
-        } else {
-          router.push('/notifications');
-        }
-      },
-    );
+    const received = Notifications.addNotificationReceivedListener((notification) => {
+      log.debug('Notification foreground received', { notification });
+      setNotification(notification);
+      if (db) saveNotification(db, notification);
+    });
+    const responses = Notifications.addNotificationResponseReceivedListener(openResponse);
 
     return () => {
-      notificationListener.remove();
-      responseListener.remove();
-      log.debug('Push notification listeners cleaned up.');
+      received.remove();
+      responses.remove();
     };
-  }, [setDeviceId, setExpoPushToken, setNotification, db]);
+  }, [setNotification, db]);
 
   return null;
 }

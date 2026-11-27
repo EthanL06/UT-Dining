@@ -2,32 +2,23 @@ import type { FlashListRef } from '@shopify/flash-list';
 import { useCallback, useRef, useState } from 'react';
 import { Animated, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 
+const SHOW_AFTER_OFFSET = 500;
+
 export const useScrollToTop = <T,>(listRef: React.RefObject<FlashListRef<T> | null>) => {
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const scrollButtonAnimation = useRef(new Animated.Value(0)).current;
 
   const handleScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const scrollPosition = event.nativeEvent.contentOffset.y;
-      const threshold = 500;
-
-      if (scrollPosition > threshold && !showScrollToTop) {
-        setShowScrollToTop(true);
-        Animated.spring(scrollButtonAnimation, {
-          toValue: 1,
-          useNativeDriver: true,
-          friction: 7,
-          tension: 40,
-        }).start();
-      } else if (scrollPosition <= threshold && showScrollToTop) {
-        Animated.spring(scrollButtonAnimation, {
-          toValue: 0,
-          useNativeDriver: true,
-          friction: 7,
-        }).start(() => {
-          setShowScrollToTop(false);
-        });
-      }
+      const shouldShow = event.nativeEvent.contentOffset.y > SHOW_AFTER_OFFSET;
+      if (shouldShow === showScrollToTop) return;
+      setShowScrollToTop(shouldShow);
+      Animated.spring(scrollButtonAnimation, {
+        toValue: shouldShow ? 1 : 0,
+        useNativeDriver: true,
+        friction: 7,
+        tension: 40,
+      }).start();
     },
     [showScrollToTop, scrollButtonAnimation],
   );

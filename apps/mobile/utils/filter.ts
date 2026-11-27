@@ -46,3 +46,9 @@ export const filterFoodItems = (
     return true;
   });
 };
+
+export const hasActiveFilters = (filters: FiltersState['filters']) =>
+  filters.favorites ||
+  filters.mealPlan ||
+  Object.values(filters.allergens).some(Boolean) ||
+  Object.values(filters.dietary).some(Boolean);

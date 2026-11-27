@@ -264,16 +264,14 @@ const PlanRow = ({
   );
 };
 
+type ViewedDay = { kind: 'today' } | { kind: 'date'; date: string };
+
 const MealPlan = () => {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const today = useToday();
-  const [selectedDate, setSelectedDate] = useState(today);
-  const [lastToday, setLastToday] = useState(today);
-  if (lastToday !== today) {
-    setLastToday(today);
-    if (selectedDate === lastToday) setSelectedDate(today);
-  }
+  const [viewing, setViewing] = useState<ViewedDay>({ kind: 'today' });
+  const selectedDate = viewing.kind === 'today' ? today : viewing.date;
 
   const items = useMealPlanItems(selectedDate);
   const planDates = useMealPlanDates();
@@ -296,7 +294,7 @@ const MealPlan = () => {
   const goTo = (date: string) => {
     if (date === selectedDate) return;
     haptics.selection();
-    setSelectedDate(date);
+    setViewing(date === today ? { kind: 'today' } : { kind: 'date', date });
   };
 
   const confirmReset = () => {

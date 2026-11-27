@@ -153,9 +153,8 @@ const PlaceCard = ({
             testID="map-view-place-button"
             accessibilityRole="button"
             onPress={() => {
-              router.push(
-                place.hasMenu ? `/location/${place.name}` : `/location_generic/${place.name}`,
-              );
+              const name = place.locationName ?? place.name;
+              router.push(place.hasMenu ? `/location/${name}` : `/location_generic/${name}`);
             }}
             className="h-12 flex-1 flex-row items-center justify-center gap-x-2 rounded-full"
             style={{ backgroundColor: theme.fill }}
@@ -305,12 +304,13 @@ export const MapSheet = ({
     onHeightChange(heights.half);
   }, []);
 
+  const selectedName = selectedPlace?.name;
   useEffect(() => {
-    if (selectedPlace) {
+    if (selectedName) {
       height.value = withSpring(heights.half, SPRING);
       onHeightChange(heights.half);
     }
-  }, [selectedPlace, height, heights.half, onHeightChange]);
+  }, [selectedName, height, heights.half, onHeightChange]);
 
   const settle = (velocity: number) => {
     const current = height.value - velocity * 0.12;
@@ -452,6 +452,8 @@ export const MapSheet = ({
                 variant="callout"
                 className="flex-1"
                 placeholder="Search campus dining"
+                autoCorrect={false}
+                autoCapitalize="none"
                 value={query}
                 onChangeText={onQueryChange}
                 onFocus={() => snapTo('full')}

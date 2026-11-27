@@ -37,6 +37,7 @@ const SearchBar = ({ query, setQuery, onFocus, onBlur, isSearchFocused }: Props)
           variant="callout"
           className="flex-1"
           placeholder="Search this menu"
+          autoCorrect={false}
           value={query}
           onChangeText={setQuery}
           onFocus={onFocus}

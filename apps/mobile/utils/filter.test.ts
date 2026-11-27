@@ -4,7 +4,7 @@ import type { FoodItem } from '~/services/database/database';
 import type * as schema from '~/services/database/schema';
 import type { FiltersState } from '~/store/useFiltersStore';
 
-import { filterFoodItems } from './filter';
+import { filterFoodItems, hasActiveFilters } from './filter';
 
 const item = (name: string, allergens: Record<string, boolean> = {}): FoodItem =>
   ({ name, link: '', allergens }) as unknown as FoodItem;
@@ -66,5 +66,19 @@ describe('filterFoodItems', () => {
   it('drops items with no allergen data when a diet is selected', () => {
     const bare = { name: 'Mystery', link: '' } as unknown as FoodItem;
     expect(filterFoodItems([bare], { ...noFilters, dietary: { vegan: true } }, [])).toEqual([]);
+  });
+});
+
+describe('hasActiveFilters', () => {
+  it('is off with nothing chosen or only cleared choices', () => {
+    expect(hasActiveFilters(noFilters)).toBe(false);
+    expect(hasActiveFilters({ ...noFilters, allergens: { egg: false } })).toBe(false);
+  });
+
+  it('is on when any filter is chosen', () => {
+    expect(hasActiveFilters({ ...noFilters, favorites: true })).toBe(true);
+    expect(hasActiveFilters({ ...noFilters, mealPlan: true })).toBe(true);
+    expect(hasActiveFilters({ ...noFilters, allergens: { egg: true } })).toBe(true);
+    expect(hasActiveFilters({ ...noFilters, dietary: { vegan: true } })).toBe(true);
   });
 });

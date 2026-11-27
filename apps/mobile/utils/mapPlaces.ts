@@ -4,6 +4,7 @@ export type Coordinates = { latitude: number; longitude: number };
 
 export type Place = {
   name: string;
+  locationName?: string;
   address: string;
   description: string;
   coordinates: Coordinates;
