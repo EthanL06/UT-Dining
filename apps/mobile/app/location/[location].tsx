@@ -96,7 +96,11 @@ const Location = () => {
     [location],
   );
 
-  useRatingPromptOnMenuView(menuStatus === 'ready', flattenedItems, favorites);
+  const foodNames = useMemo(
+    () => source.flatMap((category) => category.foods.map((food) => food.data.name ?? null)),
+    [source],
+  );
+  useRatingPromptOnMenuView(menuStatus === 'ready', foodNames, favorites);
 
   const activeFilters = useFiltersStore((state) => state.filters);
 
