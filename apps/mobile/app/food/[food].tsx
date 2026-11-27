@@ -1,10 +1,11 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { ChefHat, Flame, Heart, Info, X } from 'lucide-react-native';
+import { Flame, Heart, Info, X } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MealPlanIcon } from '~/components/MealPlanIcon';
 import { GroupedRow, GroupedSection } from '~/components/ui/Grouped';
 import {
   ALLERGEN_ICONS,
@@ -297,10 +298,10 @@ const FoodScreen = () => {
               className="h-12 flex-[1.4] flex-row items-center justify-center gap-x-2 rounded-full"
               style={{ backgroundColor: isMealPlan ? theme.tintSoft : theme.tint }}
             >
-              <ChefHat
+              <MealPlanIcon
                 size={18}
                 color={isMealPlan ? theme.tint : '#FFFFFF'}
-                fill={isMealPlan ? theme.tint : 'transparent'}
+                filled={isMealPlan}
               />
               <Text
                 className="text-[15px] font-semibold"

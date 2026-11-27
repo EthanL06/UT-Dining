@@ -1,11 +1,12 @@
 import { Link, router } from 'expo-router';
-import { Check, ChefHat, ChevronRight, Heart } from 'lucide-react-native';
+import { Check, ChevronRight, Heart } from 'lucide-react-native';
 import { useRef } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import ReanimatedSwipeable, {
   type SwipeableMethods,
   SwipeDirection,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
+import { MealPlanIcon } from '~/components/MealPlanIcon';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import type { FoodItem } from '~/services/database/database';
 import { todayKey, useIsMealPlanItem } from '~/store/useMealPlanStore';
@@ -156,7 +157,7 @@ const FoodComponent = ({
         )}
       </View>
       {showExtraInfo && isFavorite && <Heart size={15} color={theme.tint} fill={theme.tint} />}
-      {showExtraInfo && isMealPlan && <ChefHat size={15} color={theme.tint} fill={theme.tint} />}
+      {showExtraInfo && isMealPlan && <MealPlanIcon size={15} color={theme.tint} filled />}
       {!selection?.selecting && <ChevronRight size={17} color={theme.tertiaryLabel} />}
     </View>
   );

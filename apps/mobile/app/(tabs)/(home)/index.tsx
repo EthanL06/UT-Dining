@@ -5,7 +5,7 @@ import * as Network from 'expo-network';
 import { router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useSQLiteContext } from 'expo-sqlite';
-import { ChefHat, Heart } from 'lucide-react-native';
+import { Heart } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -18,6 +18,7 @@ import {
   View,
 } from 'react-native';
 import type { FilterType } from '~/components/FilterBar';
+import { MealPlanIcon } from '~/components/MealPlanIcon';
 import OnboardingScreen from '~/components/onboarding/OnboardingScreen';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
 import { forceMenuSync, useMenuSync } from '~/hooks/useMenuSync';
@@ -364,7 +365,7 @@ export default function Home() {
               title="Meal Plan"
               href="/meal-plan"
               theme={theme}
-              icon={<ChefHat size={20} color={theme.tint} fill={theme.tint} />}
+              icon={<MealPlanIcon size={20} color={theme.tint} filled />}
             />
           </View>
 

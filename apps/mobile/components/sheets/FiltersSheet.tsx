@@ -1,8 +1,9 @@
-import { ChefHat, Heart } from 'lucide-react-native';
+import { Heart } from 'lucide-react-native';
 import type React from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import ActionSheet, { ScrollView, type SheetProps, useSheetRef } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MealPlanIcon } from '~/components/MealPlanIcon';
 
 import { ALLERGEN_EXCEPTIONS, ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import { useFiltersStore } from '~/store/useFiltersStore';
@@ -164,10 +165,10 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
               onPress={toggleMealPlanFilter}
               icon={
                 <View className="size-7 items-center justify-center">
-                  <ChefHat
+                  <MealPlanIcon
                     size={16}
                     color={filters.mealPlan ? '#FFFFFF' : theme.tint}
-                    fill={filters.mealPlan ? '#FFFFFF' : 'transparent'}
+                    filled={filters.mealPlan}
                   />
                 </View>
               }
