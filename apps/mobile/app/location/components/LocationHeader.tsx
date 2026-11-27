@@ -1,4 +1,3 @@
-import { Link } from 'expo-router';
 import { Info } from 'lucide-react-native';
 import React from 'react';
 import { Pressable, View } from 'react-native';
@@ -97,36 +96,34 @@ const LocationHeader = React.memo(
 
     return (
       <View className="mx-4 mb-3 gap-y-4">
-        <Link.AppleZoomTarget>
-          <View className="gap-y-4">
-            {(status !== '' || locationData?.force_close) && (
-              <View className="mx-1 gap-y-3">
-                {status !== '' && (
-                  <Text variant="subheadline" tone="secondary">
-                    <Text
-                      variant="subheadline"
-                      emphasized
-                      color={isOpen ? theme.tint : theme.secondaryLabel}
-                    >
-                      {isOpen ? 'Open' : status}
-                    </Text>
-                    {isOpen ? status.replace(/^Open/, '') : ''}
-                    {locationData?.type ? ` · ${locationData.type}` : ''}
+        <View className="gap-y-4">
+          {(status !== '' || locationData?.force_close) && (
+            <View className="mx-1 gap-y-3">
+              {status !== '' && (
+                <Text variant="subheadline" tone="secondary">
+                  <Text
+                    variant="subheadline"
+                    emphasized
+                    color={isOpen ? theme.tint : theme.secondaryLabel}
+                  >
+                    {isOpen ? 'Open' : status}
                   </Text>
-                )}
-                {locationData?.force_close && (
-                  <View className="rounded-2xl bg-red-600 px-4 py-2.5">
-                    <Text variant="subheadline" emphasized tone="onTint" className="text-center">
-                      Temporarily closed
-                    </Text>
-                  </View>
-                )}
-              </View>
-            )}
+                  {isOpen ? status.replace(/^Open/, '') : ''}
+                  {locationData?.type ? ` · ${locationData.type}` : ''}
+                </Text>
+              )}
+              {locationData?.force_close && (
+                <View className="rounded-2xl bg-red-600 px-4 py-2.5">
+                  <Text variant="subheadline" emphasized tone="onTint" className="text-center">
+                    Temporarily closed
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
 
-            <WeekStrip selectedDate={selectedDate} onDateChange={onDateChange} />
-          </View>
-        </Link.AppleZoomTarget>
+          <WeekStrip selectedDate={selectedDate} onDateChange={onDateChange} />
+        </View>
 
         {filters && filters.length >= 1 && (
           <FilterBar
