@@ -9,7 +9,8 @@ Usage: scripts/qa/mobile-screenshots.sh [--out <dir>] [--list <file>] [--themes 
 Screenshots every screen in apps/mobile/e2e/screenshots.txt, once per theme, on an iOS Simulator.
 Each line of the list is "<name> [deep link path]". The path is opened as ut-dining://<path>;
 no path means Home. Files are <out>/<name>-<theme>.png. Default out: .context/screenshots.
-Each theme is its own flow, so --sim <UDID>,<UDID> takes the themes on two simulators at once.
+With --sim <UDID>,<UDID> each theme is its own flow, so the themes run on two simulators at once
+(worth it on a Mac with spare cores; a 3-core CI runner gets slower).
 System alerts are dismissed once per theme, after the first launch; permissions are granted at
 launch and e2e-setup marks the rating prompt as shown, so later launches have none.
 USAGE
@@ -54,19 +55,22 @@ open_app() {
 YAML
 }
 
-for theme in $THEMES; do
-  {
-    cat <<YAML
+header() {
+  cat <<YAML
 appId: com.ethanl06.ut-dining.dev
-name: Screenshots $theme
+name: Screenshots $1
 env:
   DEV_CLIENT: \${DEV_CLIENT || 'true'}
   METRO_URL: \${METRO_URL || 'http://localhost:8081'}
 ---
 YAML
-    open_app true
-    cat <<YAML
-- runFlow: $ALERTS
+  open_app true
+  echo "- runFlow: $ALERTS"
+}
+
+theme_steps() {
+  local theme="$1" name path
+  cat <<YAML
 - openLink: ut-dining://e2e-setup?theme=$theme
 - runFlow: $ALERTS
 - extendedWaitUntil:
@@ -75,21 +79,36 @@ YAML
 - waitForAnimationToEnd:
     timeout: 10000
 YAML
-    while read -r name path; do
-      [[ -z "$name" || "$name" == \#* ]] && continue
-      echo "- stopApp"
-      open_app false
-      if [[ -n "${path:-}" ]]; then
-        echo "- openLink: ut-dining://$path"
-      fi
-      cat <<YAML
+  while read -r name path; do
+    [[ -z "$name" || "$name" == \#* ]] && continue
+    echo "- stopApp"
+    open_app false
+    if [[ -n "${path:-}" ]]; then
+      echo "- openLink: ut-dining://$path"
+    fi
+    cat <<YAML
 - waitForAnimationToEnd:
     timeout: 8000
 - takeScreenshot: $name-$theme
 YAML
-    done < "$LIST"
-  } > "$FLOWS/screenshots-$theme.yaml"
+  done < "$LIST"
+}
+
+SPLIT=false
+for i in "${!PASS[@]}"; do
+  if [[ "${PASS[$i]}" == --sim && "${PASS[$((i + 1))]:-}" == *,* ]]; then SPLIT=true; fi
 done
+
+if [[ "$SPLIT" == true ]]; then
+  for theme in $THEMES; do
+    { header "$theme"; theme_steps "$theme"; } > "$FLOWS/screenshots-$theme.yaml"
+  done
+else
+  {
+    header "$THEMES"
+    for theme in $THEMES; do theme_steps "$theme"; done
+  } > "$FLOWS/screenshots.yaml"
+fi
 
 RUN_DIR="$ROOT/.context/maestro/screenshots-$(date +%Y%m%d-%H%M%S)"
 E2E_OUT="$RUN_DIR" "$ROOT/scripts/qa/mobile-e2e.sh" --status-bar ${PASS[@]+"${PASS[@]}"} "$FLOWS"

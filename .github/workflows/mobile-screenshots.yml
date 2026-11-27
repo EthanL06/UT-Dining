@@ -44,17 +44,15 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - name: Create and boot two simulators
+      - name: Create and boot a simulator
         run: |
           RUNTIME_JSON="$(xcrun simctl list runtimes -j | jq '[.runtimes[] | select(.platform == "iOS" and .isAvailable)] | last')"
           RUNTIME="$(jq -r '.identifier' <<<"$RUNTIME_JSON")"
           DEVICE_TYPE="$(jq -r '[.supportedDeviceTypes[] | select(.name | test("^iPhone [0-9]+$"))] | sort_by(.name | ltrimstr("iPhone ") | tonumber) | last | .identifier' <<<"$RUNTIME_JSON")"
           echo "Runtime $RUNTIME, device type $DEVICE_TYPE"
-          SIM="$(xcrun simctl create screenshots-light "$DEVICE_TYPE" "$RUNTIME")"
-          SIM2="$(xcrun simctl create screenshots-dark "$DEVICE_TYPE" "$RUNTIME")"
+          SIM="$(xcrun simctl create screenshots "$DEVICE_TYPE" "$RUNTIME")"
           xcrun simctl boot "$SIM"
-          xcrun simctl boot "$SIM2"
-          echo "SIMS=$SIM,$SIM2" >> "$GITHUB_ENV"
+          echo "SIM=$SIM" >> "$GITHUB_ENV"
 
       - id: app
         uses: ./.github/actions/ios-sim-app
@@ -84,18 +82,13 @@ jobs:
           key: ${{ steps.app.outputs.key }}
           fail-on-cache-miss: true
 
-      - name: Install the app once the simulators have booted
+      - name: Install the app once the simulator has booted
         run: |
-          PIDS=()
-          for sim in ${SIMS//,/ }; do
-            xcrun simctl bootstatus "$sim" -b >/dev/null
-            xcrun simctl install "$sim" .context/app/*.app &
-            PIDS+=("$!")
-          done
-          for pid in "${PIDS[@]}"; do wait "$pid"; done
+          xcrun simctl bootstatus "$SIM" -b >/dev/null
+          xcrun simctl install "$SIM" .context/app/*.app
 
       - name: Take screenshots
-        run: ./scripts/qa/mobile-screenshots.sh --sim "$SIMS" --release --fixture-server --out "$RUNNER_TEMP/screenshots"
+        run: ./scripts/qa/mobile-screenshots.sh --sim "$SIM" --release --fixture-server --out "$RUNNER_TEMP/screenshots"
 
       - name: Upload Maestro output
         if: always()
