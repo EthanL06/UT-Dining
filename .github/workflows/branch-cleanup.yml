@@ -1,0 +1,98 @@
+name: Branch cleanup
+
+on:
+  pull_request:
+    types: [closed]
+  schedule:
+    - cron: '41 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: List the branches without deleting them
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  merged-pr:
+    name: Delete the merged PR branch
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.merged &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BRANCH: ${{ github.event.pull_request.head.ref }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Delete the branch
+        run: |
+          case "$BRANCH" in
+            main|staging|gh-pages|assets/*)
+              echo "Keeping $BRANCH"
+              exit 0
+              ;;
+          esac
+          sha=$(gh api "repos/$GITHUB_REPOSITORY/branches/$BRANCH" --jq .commit.sha 2>/dev/null || true)
+          if [ -z "$sha" ]; then
+            echo "$BRANCH is already gone"
+            exit 0
+          fi
+          if [ "$sha" != "$HEAD_SHA" ]; then
+            echo "Keeping $BRANCH: it has commits that were not in the PR"
+            exit 0
+          fi
+          stacked=$(gh api "repos/$GITHUB_REPOSITORY/pulls?state=open&base=$BRANCH" --jq length)
+          if [ "$stacked" != "0" ]; then
+            echo "Keeping $BRANCH: open PRs are based on it"
+            exit 0
+          fi
+          gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$BRANCH"
+          echo "Deleted $BRANCH" >> "$GITHUB_STEP_SUMMARY"
+
+  sweep:
+    name: Delete branches of merged PRs
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+    steps:
+      - name: Find and delete merged branches
+        run: |
+          owner=${GITHUB_REPOSITORY%%/*}
+          {
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "## Branches that would be deleted (dry run)"
+            else
+              echo "## Deleted branches"
+            fi
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+          gh api "repos/$GITHUB_REPOSITORY/branches?per_page=100" --paginate \
+            --jq '.[] | "\(.name) \(.commit.sha)"' |
+          while read -r branch sha; do
+            case "$branch" in
+              main|staging|gh-pages|assets/*|renovate/*) continue ;;
+            esac
+            prs=$(gh api -X GET "repos/$GITHUB_REPOSITORY/pulls" \
+              -f state=all -f head="$owner:$branch" -f per_page=100 \
+              --jq '[.[] | {state, merged: (.merged_at != null), sha: .head.sha}]')
+            open=$(jq '[.[] | select(.state == "open")] | length' <<< "$prs")
+            merged_at_head=$(jq --arg sha "$sha" '[.[] | select(.merged and .sha == $sha)] | length' <<< "$prs")
+            if [ "$open" != "0" ] || [ "$merged_at_head" = "0" ]; then
+              continue
+            fi
+            stacked=$(gh api "repos/$GITHUB_REPOSITORY/pulls?state=open&base=$branch" --jq length)
+            if [ "$stacked" != "0" ]; then
+              continue
+            fi
+            if [ "$DRY_RUN" != "true" ]; then
+              gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$branch"
+            fi
+            echo "- \`$branch\`" >> "$GITHUB_STEP_SUMMARY"
+          done

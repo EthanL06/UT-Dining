@@ -5,8 +5,6 @@
 UT Dining is your companion app for exploring dining options at the University of Texas at Austin.
 Browse menus, check dining hours, and find the perfect meal on campus.
 
-> This project has been adopted by [Longhorn Developers](https://github.com/Longhorn-Developers). Originally created by [Ethan Lanting](https://github.com/EthanL06).
-
 <a href="https://apps.apple.com/us/app/ut-dining/id6743042002">
    <img alt="Download on the app store" src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" height="48">
 </a>
@@ -219,7 +217,7 @@ There are three Supabase databases. Nothing in development ever points at produc
 | Website (GitHub Pages copy) | [longhorn-developers.github.io/ut-dining-website](https://longhorn-developers.github.io/ut-dining-website/) | `website-deploy.yml` builds a static export on pushes to `main` and daily at 12:30 UTC. It exists because the App Store privacy-policy link points there. |
 | Dashboard | [dashboard.utdining.app](https://dashboard.utdining.app) on Vercel | Production builds from `main`, previews for `staging` and branches with an open PR |
 | Public status page | [status.utdining.app](https://status.utdining.app) | Served by the dashboard app, so it ships with the dashboard |
-| Scraper (production) | GitHub Actions | `scraper.yml`, daily at 07:00 UTC and on demand |
+| Scraper (production) | GitHub Actions | `scraper.yml`, daily at 07:00 and 15:17 UTC (1 AM and 9 AM Central), with one retry 10 minutes after a failure, and on demand |
 | Scraper (dev) | GitHub Actions | `scraper-dev.yml`, daily at 07:30 UTC, on pushes to `staging` and on demand |
 | Database migrations and edge functions | Supabase | Applied by hand. No workflow deploys them. Migrations must stay backwards compatible with the app versions already installed. |
 

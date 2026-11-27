@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { broadcast, createDeviceStore, json, type PushReport } from '../_shared/push.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -8,183 +9,66 @@ if (!supabaseUrl || !serviceRoleKey) {
 }
 
 const supabase = createClient(supabaseUrl, serviceRoleKey);
-const BATCH_SIZE = 100;
-console.log('🔍 Starting scheduled push notification function...');
+const devices = createDeviceStore(supabase);
+
 Deno.serve(async (_req) => {
   try {
-    const now = new Date();
-    const centralTime = new Date(
-      now.toLocaleString('en-US', {
-        timeZone: 'America/Chicago',
-      }),
-    );
-    console.log('🕐 Current Central Time:', centralTime.toISOString());
-    const { data: scheduledNotifications, error: queryError } = await supabase
+    const now = new Date().toISOString();
+    const { data: due, error: queryError } = await supabase
       .from('notifications')
-      .select('*')
+      .select('id, title, body, redirect_url, type, scheduled_at')
       .not('scheduled_at', 'is', null)
       .eq('sent', false)
-      .gte('scheduled_at', centralTime.toISOString());
+      .lte('scheduled_at', now)
+      .order('scheduled_at');
 
     if (queryError) {
-      console.error('❌ Error querying scheduled notifications:', queryError);
-      return new Response(
-        JSON.stringify({
-          error: 'Failed to query scheduled notifications',
-        }),
-        {
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      );
+      console.error('Failed to query scheduled notifications:', queryError);
+      return json({ error: 'Failed to query scheduled notifications' }, 500);
     }
-    console.log('📋 Found scheduled notifications:', scheduledNotifications?.length || 0);
-    if (!scheduledNotifications || scheduledNotifications.length === 0) {
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: 'No scheduled notifications to send',
-          processed: 0,
-        }),
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      );
+    if (!due || due.length === 0) {
+      return json({ success: true, message: 'No scheduled notifications are due', processed: 0 });
     }
-    const { data: userDevices, error: devicesError } = await supabase
-      .from('user_devices')
-      .select('push_token');
-    if (devicesError) {
-      console.error('❌ Error fetching user devices:', devicesError);
-      return new Response(
-        JSON.stringify({
-          error: 'Failed to fetch user devices',
-        }),
-        {
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-    }
-    console.log('📱 Total user devices:', userDevices?.length || 0);
-    const pushTokens = [
-      ...new Set(userDevices?.map((device) => device.push_token).filter(Boolean) || []),
-    ];
-    console.log('📨 Unique push tokens:', pushTokens.length);
-    if (pushTokens.length === 0) {
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: 'No push tokens available',
-          processed: 0,
-        }),
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-    }
-    const processedNotifications = [];
-    for (const notification of scheduledNotifications) {
-      console.log(`📤 Processing notification: ${notification.id}`);
-      try {
-        const tokenBatches = [];
-        for (let i = 0; i < pushTokens.length; i += BATCH_SIZE) {
-          tokenBatches.push(pushTokens.slice(i, i + BATCH_SIZE));
-        }
-        const sendPromises = tokenBatches.map(async (tokenBatch) => {
-          const notificationMessage = {
-            to: tokenBatch,
-            sound: 'default',
-            title: notification.title,
-            body: notification.body,
-            data: {
-              redirect_url: notification.redirect_url,
-              type: notification.type,
-              sent_at: new Date().toISOString(),
-            },
-          };
-          return fetch('https://exp.host/--/api/v2/push/send', {
-            method: 'POST',
-            headers: {
-              Accept: 'application/json',
-              'Accept-encoding': 'gzip, deflate',
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${Deno.env.get('EXPO_ACCESS_TOKEN')}`,
-            },
-            body: JSON.stringify(notificationMessage),
-          });
-        });
-        await Promise.all(sendPromises);
-        const { error: updateError } = await supabase
-          .from('notifications')
-          .update({
-            sent: true,
-          })
-          .eq('id', notification.id);
-        if (updateError) {
-          console.error(`❌ Error marking notification ${notification.id} as sent:`, updateError);
-        } else {
-          console.log(`✅ Notification ${notification.id} sent successfully`);
-          processedNotifications.push({
-            id: notification.id,
-            title: notification.title,
-            sent_to: pushTokens.length,
-            scheduled_at: notification.scheduled_at,
-          });
-        }
-      } catch (error) {
-        console.error(`❌ Error processing notification ${notification.id}:`, error);
+
+    const processed: (PushReport & { id: string; scheduled_at: string | null })[] = [];
+    for (const notification of due) {
+      const { data: claimed, error: claimError } = await supabase
+        .from('notifications')
+        .update({ sent: true })
+        .eq('id', notification.id)
+        .eq('sent', false)
+        .select('id');
+      if (claimError) {
+        console.error(`Failed to claim notification ${notification.id}:`, claimError);
+        continue;
       }
-    }
-    console.log(
-      '📤 Returning response: ',
-      JSON.stringify(
+      if (!claimed || claimed.length === 0) continue;
+
+      const report = await broadcast(
+        devices,
         {
-          success: true,
-          processed: processedNotifications.length,
-          total_recipients: pushTokens.length,
-          notifications: processedNotifications,
+          title: notification.title,
+          body: notification.body,
+          data: {
+            redirect_url: notification.redirect_url,
+            type: notification.type,
+            sent_at: new Date().toISOString(),
+          },
         },
-        null,
-        2,
-      ),
-    );
-    return new Response(
-      JSON.stringify({
-        success: true,
-        processed: processedNotifications.length,
-        total_recipients: pushTokens.length,
-        notifications: processedNotifications,
-      }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      },
-    );
+        { accessToken: Deno.env.get('EXPO_ACCESS_TOKEN') },
+      );
+
+      if (report.recipients > 0 && report.accepted === 0) {
+        console.error(`Expo accepted none of notification ${notification.id}:`, report.errors);
+        await supabase.from('notifications').update({ sent: false }).eq('id', notification.id);
+      }
+      processed.push({ id: notification.id, scheduled_at: notification.scheduled_at, ...report });
+    }
+
+    console.log('Scheduled push run:', JSON.stringify(processed));
+    return json({ success: true, processed: processed.length, notifications: processed });
   } catch (error) {
-    console.error('❌ Unexpected error:', error);
-    return new Response(
-      JSON.stringify({
-        error: 'Internal server error',
-      }),
-      {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      },
-    );
+    console.error('Unexpected error:', error);
+    return json({ error: 'Internal server error' }, 500);
   }
 });

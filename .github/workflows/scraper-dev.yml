@@ -27,15 +27,18 @@ jobs:
   scrape:
     name: Scrape and upload to dev
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.event_name == 'schedule' && 'staging' || github.ref }}
 
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: .node-version
           cache: pnpm
@@ -58,7 +61,9 @@ jobs:
           fi
 
       - name: Scrape
+        id: scrape
         env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           SUPABASE_URL: ${{ secrets.SUPABASE_DEV_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_DEV_SERVICE_KEY }}
           ENABLE_SUPABASE: 'true'
@@ -66,12 +71,53 @@ jobs:
           TZ: America/Chicago
         run: pnpm --filter @ut-dining/scraper start
 
+      - name: Report FoodPro health
+        if: always() && steps.scrape.outcome != 'skipped' && (github.event_name == 'schedule' || github.ref == 'refs/heads/staging')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ASSIGNEE: ${{ github.repository_owner }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          LABEL: scraper-health
+          REPORT: apps/scraper/data/health.json
+          BODY: apps/scraper/data/health.md
+        run: |
+          if [ -f "$REPORT" ]; then
+            healthy=$(jq -r .healthy "$REPORT")
+          else
+            healthy=false
+            mkdir -p "$(dirname "$BODY")"
+            printf 'The scraper stopped before it could check FoodPro.\n\n- Run: %s\n' "$RUN_URL" > "$BODY"
+          fi
+          open=$(gh api "repos/$REPO/issues?labels=$LABEL&state=open&per_page=1" --jq '.[0].number // empty')
+          if [ "$healthy" = "true" ]; then
+            echo "FoodPro parsed cleanly"
+            if [ -n "$open" ]; then
+              gh api -X POST "repos/$REPO/issues/$open/comments" -f body="The scraper read FoodPro cleanly again in $RUN_URL, so this is closed." > /dev/null
+              gh api -X PATCH "repos/$REPO/issues/$open" -f state=closed -f state_reason=completed > /dev/null
+              echo "Closed #$open"
+            fi
+            exit 0
+          fi
+          cat "$BODY"
+          if [ -n "$open" ]; then
+            gh api -X POST "repos/$REPO/issues/$open/comments" -F body=@"$BODY" > /dev/null
+            echo "::error::FoodPro health check failed, updated #$open"
+          else
+            gh api -X POST "repos/$REPO/labels" -f name="$LABEL" -f color=d93f0b -f description="The nightly scraper could not read UT's menu site" > /dev/null 2>&1 || true
+            number=$(gh api -X POST "repos/$REPO/issues" -f title="Scraper can't read UT's menu site" -F body=@"$BODY" -f "labels[]=$LABEL" -f "assignees[]=$ASSIGNEE" --jq .number)
+            echo "::error::FoodPro health check failed, opened #$number"
+          fi
+          exit 1
+
       - name: Upload scraped JSON
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: menus-dev-${{ github.run_id }}
-          path: apps/scraper/data/*.json
+          path: |
+            apps/scraper/data/*.json
+            apps/scraper/data/health.md
           retention-days: 7
           if-no-files-found: ignore
 

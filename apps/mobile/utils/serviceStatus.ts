@@ -27,3 +27,24 @@ export const parseServiceStatus = (body: unknown): ServiceStatus | null => {
   if (status !== 'operational' && status !== 'degraded' && status !== 'outage') return null;
   return { health: status, label: LABELS[status] };
 };
+
+export interface ServiceStatusBanner {
+  title: string;
+  detail: string;
+}
+
+const BANNERS: Record<Exclude<ServiceHealth, 'operational'>, ServiceStatusBanner> = {
+  degraded: {
+    title: "Some things aren't working right",
+    detail: 'Menus or hours may be out of date.',
+  },
+  outage: {
+    title: 'UT Dining is having problems',
+    detail: "Menus and hours may not load until it's fixed.",
+  },
+};
+
+export const getServiceStatusBanner = (
+  status: ServiceStatus | null | undefined,
+): ServiceStatusBanner | null =>
+  !status || status.health === 'operational' ? null : BANNERS[status.health];
