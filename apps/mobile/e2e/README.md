@@ -52,6 +52,7 @@ It refuses to run unless `supabase status` reports a `http://127.0.0.1:` API URL
 | `no-menu-location.yaml` | Search opens a place without a menu, which shows Directions and Hours |
 | `map.yaml` | The map sheet filters to dining halls, opens J2's place card and its menu, and closes the card |
 | `tabs.yaml` | Every tab by its `testID` (`home-tab`, `map-tab`, `notifications-tab`, `settings-tab`, `search-tab`), with the search tab last because opening it collapses the other tabs |
+| `tab-swipe.yaml` | Swiping left and right moves between Home, Map, Notifications and Settings in tab bar order, stops at Settings, a drag on the map itself only pans it while its screen edges switch tabs, and the edge swipe back from a menu still returns Home |
 | `search.yaml` | The search tab finds a food on today's menus and opens it, and a miss shows the empty state |
 | `meal-strip.yaml` | When a dining hall is serving a meal, the strip opens its menu, and its x hides it after a relaunch. Skipped when no meal is being served at run time |
 
