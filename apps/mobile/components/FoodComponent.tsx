@@ -1,11 +1,6 @@
 import { Link, router } from 'expo-router';
 import { Check, ChevronRight, Heart } from 'lucide-react-native';
-import { useRef } from 'react';
 import { Pressable, View } from 'react-native';
-import ReanimatedSwipeable, {
-  type SwipeableMethods,
-  SwipeDirection,
-} from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
 import { Image } from '~/components/ui/Image';
 import { Text } from '~/components/ui/Text';
@@ -16,7 +11,6 @@ import { toggleMealPlanForFood } from '~/utils/foodActions';
 import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
 import { displayNutrient } from '~/utils/utils';
-import { AddMealPlanAction, FavoriteAction, RemoveAction } from './AnimatedActions';
 
 export type RowPosition = 'single' | 'first' | 'middle' | 'last';
 
@@ -76,7 +70,6 @@ const FoodComponent = ({
     planDate,
   );
   const theme = useTheme();
-  const swipeableRef = useRef<SwipeableMethods>(null);
   const context = { location, menu: selectedMenu, category: categoryName, date: planDate };
   const href = {
     pathname: '/food/[food]' as const,
@@ -210,83 +203,37 @@ const FoodComponent = ({
 
   return (
     <View className="mx-4 overflow-hidden" style={cornerStyle(position)}>
-      <ReanimatedSwipeable
-        ref={swipeableRef}
-        enabled={!selection?.selecting}
-        containerStyle={{ backgroundColor: theme.card }}
-        enableTrackpadTwoFingerGesture
-        friction={1.5}
-        overshootFriction={200}
-        animationOptions={{
-          damping: 1,
-          stiffness: 11,
-          mass: 0.1,
-          restDisplacementThreshold: 0.005,
-          restSpeedThreshold: 0.005,
-        }}
-        onSwipeableWillOpen={(direction) => {
-          const removing = direction === SwipeDirection.RIGHT ? isMealPlan : isFavorite;
-          if (removing) haptics.remove();
-          else haptics.success();
-        }}
-        onSwipeableOpen={async (direction) => {
-          swipeableRef.current?.close();
-
-          if (direction === SwipeDirection.RIGHT && canMealPlan) {
-            toggleMealPlanForFood(food, context);
-          } else if (direction === SwipeDirection.LEFT) {
-            await onFavorite(food);
-          }
-        }}
-        overshootLeft={!canMealPlan}
-        leftThreshold={canMealPlan ? 50 : Number.MAX_VALUE}
-        rightThreshold={100}
-        dragOffsetFromLeft={canMealPlan ? 50 : Number.MAX_VALUE}
-        renderRightActions={(progress) =>
-          isFavorite ? <RemoveAction progress={progress} /> : <FavoriteAction progress={progress} />
-        }
-        renderLeftActions={(progress) =>
-          canMealPlan ? (
-            isMealPlan ? (
-              <RemoveAction progress={progress} />
-            ) : (
-              <AddMealPlanAction progress={progress} />
-            )
-          ) : null
-        }
-      >
-        {selection?.selecting ? (
-          content
-        ) : (
-          <View
-            accessible
-            accessibilityRole="button"
-            accessibilityLabel={accessibilityLabel}
-            accessibilityActions={[
-              { name: 'activate' },
-              ...(canMealPlan
-                ? [
-                    {
-                      name: 'mealPlan',
-                      label: isMealPlan ? 'Remove from Meal Plan' : 'Add to Meal Plan',
-                    },
-                  ]
-                : []),
-              {
-                name: 'favorite',
-                label: isFavorite ? 'Remove from Favorites' : 'Add to Favorites',
-              },
-            ]}
-            onAccessibilityAction={({ nativeEvent }) => {
-              if (nativeEvent.actionName === 'activate') router.push(href);
-              if (nativeEvent.actionName === 'mealPlan') toggleMealPlanForFood(food, context);
-              if (nativeEvent.actionName === 'favorite') void onFavorite(food);
-            }}
-          >
-            {content}
-          </View>
-        )}
-      </ReanimatedSwipeable>
+      {selection?.selecting ? (
+        content
+      ) : (
+        <View
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel}
+          accessibilityActions={[
+            { name: 'activate' },
+            ...(canMealPlan
+              ? [
+                  {
+                    name: 'mealPlan',
+                    label: isMealPlan ? 'Remove from Meal Plan' : 'Add to Meal Plan',
+                  },
+                ]
+              : []),
+            {
+              name: 'favorite',
+              label: isFavorite ? 'Remove from Favorites' : 'Add to Favorites',
+            },
+          ]}
+          onAccessibilityAction={({ nativeEvent }) => {
+            if (nativeEvent.actionName === 'activate') router.push(href);
+            if (nativeEvent.actionName === 'mealPlan') toggleMealPlanForFood(food, context);
+            if (nativeEvent.actionName === 'favorite') void onFavorite(food);
+          }}
+        >
+          {content}
+        </View>
+      )}
     </View>
   );
 };

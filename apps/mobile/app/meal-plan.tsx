@@ -389,7 +389,7 @@ const MealPlan = () => {
             <Text variant="headline">{editable ? 'Empty Meal Plan!' : 'Nothing logged'}</Text>
             <Text variant="subheadline" paragraph tone="secondary" className="text-center">
               {editable
-                ? 'Press and hold a food on any menu, or swipe right on it, to add it here.'
+                ? 'Press and hold a food on any menu to add it here.'
                 : 'You had nothing in your meal plan this day.'}
             </Text>
           </View>

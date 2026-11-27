@@ -7,9 +7,12 @@ name: Meal plan items can be added and removed
     element: 'Maestro Veggie Burger(,.*)?'
     direction: DOWN
     visibilityPercentage: 100
-- swipe:
-    from: 'Maestro Grilled Chicken(,.*)?'
-    direction: RIGHT
+- longPressOn: 'Maestro Grilled Chicken(,.*)?'
+- extendedWaitUntil:
+    visible: Add to Meal Plan
+    timeout: 5000
+- tapOn: Add to Meal Plan
+- waitForAnimationToEnd
 - tapOn: 'Maestro Veggie Burger(,.*)?'
 - extendedWaitUntil:
     visible:
