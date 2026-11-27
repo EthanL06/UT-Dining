@@ -113,7 +113,7 @@ export const MealStrip = ({
       <StatusDot open />
       <Text
         numberOfLines={1}
-        className="flex-1 font-semibold text-[15px]"
+        className="flex-1 text-[15px] font-semibold"
         style={{ color: theme.label }}
       >
         {strip.meal.name} at {displayName}

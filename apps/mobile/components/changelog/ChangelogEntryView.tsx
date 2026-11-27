@@ -28,7 +28,7 @@ export const VersionBadge = ({ version, isLatest }: { version: string; isLatest:
     >
       <Text
         className={cn(
-          'font-bold text-xs',
+          'text-xs font-bold',
           isLatest ? 'text-white' : isDarkMode ? 'text-gray-200' : 'text-[#3A3F48]',
         )}
       >
@@ -53,7 +53,7 @@ export const ChangelogChangeRow = ({
       <View className="flex-1 gap-y-px">
         <Text
           className={cn(
-            compact ? 'font-medium text-[15px]' : 'font-semibold text-base',
+            compact ? 'text-[15px] font-medium' : 'text-base font-semibold',
             isDarkMode ? 'text-white' : 'text-[#111111]',
           )}
         >
@@ -110,7 +110,7 @@ export const ChangelogEntryCard = ({
         <Text
           numberOfLines={1}
           className={cn(
-            'flex-1 font-semibold text-[15px]',
+            'flex-1 text-[15px] font-semibold',
             isDarkMode ? 'text-white' : 'text-[#111111]',
           )}
         >
@@ -148,7 +148,7 @@ export const ChangelogEntryCard = ({
         {entry.date && (
           <Text
             className={cn(
-              'font-bold text-xs tracking-[0.6px]',
+              'text-xs font-bold tracking-[0.6px]',
               isDarkMode ? 'text-gray-400' : 'text-[#5B6270]',
             )}
           >
@@ -160,7 +160,7 @@ export const ChangelogEntryCard = ({
         </View>
       </TouchableOpacity>
       {entry.summary && (
-        <Text className={cn('font-bold text-xl', isDarkMode ? 'text-white' : 'text-[#111111]')}>
+        <Text className={cn('text-xl font-bold', isDarkMode ? 'text-white' : 'text-[#111111]')}>
           {entry.summary}
         </Text>
       )}

@@ -42,7 +42,7 @@ const Changelog = () => {
         <Text
           testID="changelog-title"
           className={cn(
-            'px-5 pt-3 pb-1 font-bold text-[34px]',
+            'px-5 pt-3 pb-1 text-[34px] font-bold',
             isDarkMode ? 'text-white' : 'text-black',
           )}
         >

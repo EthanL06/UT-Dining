@@ -28,7 +28,7 @@ WEBSITE_STATIC_EXPORT=1 pnpm --filter @ut-dining/website build   # GitHub Pages 
 
 ## Deployment
 
-The Vercel project `ut-dining-website` builds `apps/website` and serves it from `/`. Production builds from `main`, and other branches get previews that read dev Supabase. `vercel.json` skips builds when nothing the website depends on changed (`turbo-ignore`), and it never builds `assets/*` branches.
+The Vercel project `ut-dining-website` builds `apps/website` and serves it from `/`. Production builds from `main`, and other branches get previews that read dev Supabase. `vercel.json` runs `scripts/vercel-ignore.mjs` before each build (see the root `AGENTS.md`), and it never builds `assets/*` branches.
 
 Until the App Store links move to Vercel, `.github/workflows/website-deploy.yml` builds a static copy with `WEBSITE_STATIC_EXPORT=1` (base path `/ut-dining-website`) on pushes to `main` and publishes it to the `gh-pages` branch of [Longhorn-Developers/ut-dining-website](https://github.com/Longhorn-Developers/ut-dining-website), so https://longhorn-developers.github.io/ut-dining-website/privacy-policy/ keeps working.
 

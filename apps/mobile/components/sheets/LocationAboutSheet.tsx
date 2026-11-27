@@ -34,7 +34,7 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
       <View className="flex-row items-center justify-between gap-x-3 px-4 pt-1 pb-3">
         <Text
           numberOfLines={1}
-          className="flex-1 pl-1 font-bold text-[22px]"
+          className="flex-1 pl-1 text-[22px] font-bold"
           style={{ color: theme.label }}
         >
           {displayName}
@@ -46,7 +46,7 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
           className="h-9 justify-center rounded-full px-3.5"
           style={{ backgroundColor: theme.card }}
         >
-          <Text className="font-semibold text-[15px]" style={{ color: theme.tint }}>
+          <Text className="text-[15px] font-semibold" style={{ color: theme.tint }}>
             Done
           </Text>
         </Pressable>

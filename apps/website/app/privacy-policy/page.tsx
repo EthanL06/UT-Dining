@@ -27,24 +27,24 @@ export default async function PrivacyPolicy() {
 
       <main>
         <section className="mx-auto max-w-290 px-6 pt-16 pb-10">
-          <h1 className="font-bold text-[clamp(40px,6vw,64px)] leading-none tracking-[-0.04em]">
+          <h1 className="text-[clamp(40px,6vw,64px)] leading-none font-bold tracking-[-0.04em]">
             Privacy Policy
           </h1>
-          <p className="mt-4 text-[19px] text-muted">The short version, then the full policy.</p>
+          <p className="text-muted mt-4 text-[19px]">The short version, then the full policy.</p>
         </section>
 
         <section className="mx-auto grid max-w-290 grid-cols-1 gap-4 px-6 md:grid-cols-3">
           {summary.map((item) => (
-            <div key={item.title} className="rounded-[28px] bg-tile p-7">
-              <h2 className="font-bold text-[22px] tracking-tight">{item.title}</h2>
-              <p className="mt-1.5 text-muted leading-normal">{item.body}</p>
+            <div key={item.title} className="bg-tile rounded-[28px] p-7">
+              <h2 className="text-[22px] font-bold tracking-tight">{item.title}</h2>
+              <p className="text-muted mt-1.5 leading-normal">{item.body}</p>
             </div>
           ))}
         </section>
 
         <section className="mx-auto mt-4 max-w-290 px-6">
-          <div className="rounded-[28px] bg-tile px-7 py-10 md:px-16 md:py-14">
-            <article className="prose prose-neutral dark:prose-invert mx-auto max-w-170 prose-hr:border-line prose-a:text-accent-text prose-h1:text-4xl prose-h2:text-xl prose-h1:tracking-tight">
+          <div className="bg-tile rounded-[28px] px-7 py-10 md:px-16 md:py-14">
+            <article className="prose prose-neutral dark:prose-invert prose-hr:border-line prose-a:text-accent-text prose-h1:text-4xl prose-h2:text-xl prose-h1:tracking-tight mx-auto max-w-170">
               <ReactMarkdown>{content}</ReactMarkdown>
             </article>
           </div>

@@ -217,7 +217,11 @@ const writeBench = async (db: any, schema: any) => {
     nutrition: schema.nutrition,
     allergens: schema.allergens,
   };
-  const del = () => tables.forEach((t) => raw.runSync(`delete from ${t}`));
+  const del = () => {
+    for (const t of tables) {
+      raw.runSync(`delete from ${t}`);
+    }
+  };
   await measure('current: drizzle, no transaction', async () => {
     await Promise.all(tables.map((t) => db.delete(dtables[t]).execute()));
     await Promise.all(

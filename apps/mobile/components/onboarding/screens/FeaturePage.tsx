@@ -29,7 +29,7 @@ const FeaturePage = ({ width, title, subtitle, images }: Props) => {
       </View>
       <View className="mt-6">
         <Text
-          className="text-center font-bold text-[28px] leading-[33px]"
+          className="text-center text-[28px] leading-[33px] font-bold"
           style={{ color: theme.label }}
         >
           {title}

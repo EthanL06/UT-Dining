@@ -23,10 +23,10 @@ export default async function ChangelogPage() {
 
       <main>
         <section className="mx-auto max-w-290 px-6 pt-16 pb-10">
-          <h1 className="font-bold text-[clamp(40px,6vw,64px)] leading-none tracking-[-0.04em]">
+          <h1 className="text-[clamp(40px,6vw,64px)] leading-none font-bold tracking-[-0.04em]">
             Changelog
           </h1>
-          <p className="mt-4 text-[19px] text-muted">Every update to UT Dining, newest first.</p>
+          <p className="text-muted mt-4 text-[19px]">Every update to UT Dining, newest first.</p>
         </section>
 
         <ChangelogList entries={entries} />

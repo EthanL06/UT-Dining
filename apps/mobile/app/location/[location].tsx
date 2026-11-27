@@ -374,7 +374,7 @@ const Location = () => {
 
     return (
       <View className="mt-12 flex-1 items-center justify-center">
-        <Text className="font-semibold text-[17px]" style={{ color: theme.label }}>
+        <Text className="text-[17px] font-semibold" style={{ color: theme.label }}>
           {title}
         </Text>
         <Text className="mt-1 text-[15px]" style={{ color: theme.secondaryLabel }}>
@@ -471,7 +471,7 @@ const Location = () => {
             }}
           >
             <ChefHat size={18} color="#FFFFFF" />
-            <Text className="font-semibold text-[15px] text-white">
+            <Text className="text-[15px] font-semibold text-white">
               {selectedEntries.length === 0
                 ? 'Select items'
                 : `Add ${selectedEntries.length} to Meal Plan · ${displayNutrient(String(Math.round(selectedCalories)))} kcal`}

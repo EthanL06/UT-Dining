@@ -117,7 +117,7 @@ const PlaceCard = ({
       <View className="flex-row items-start gap-x-3">
         <PlaceIcon type={place.type} size={44} />
         <View className="flex-1">
-          <Text className="font-bold text-[22px] leading-[27px]" style={{ color: theme.label }}>
+          <Text className="text-[22px] leading-[27px] font-bold" style={{ color: theme.label }}>
             {place.name}
           </Text>
           <Text className="text-[14px]" style={{ color: theme.secondaryLabel }}>
@@ -141,7 +141,7 @@ const PlaceCard = ({
         <View className="mt-3 flex-row items-center gap-x-2">
           <StatusDot open={place.isOpen} />
           <Text
-            className="font-medium text-[15px]"
+            className="text-[15px] font-medium"
             style={{ color: place.isOpen ? theme.label : theme.secondaryLabel }}
           >
             {place.status}
@@ -158,7 +158,7 @@ const PlaceCard = ({
           style={{ backgroundColor: theme.tint }}
         >
           <Navigation size={17} color="#FFFFFF" />
-          <Text className="font-semibold text-[16px] text-white">Directions</Text>
+          <Text className="text-[16px] font-semibold text-white">Directions</Text>
         </Pressable>
         {place.type !== 'microwave' && (
           <Pressable
@@ -178,7 +178,7 @@ const PlaceCard = ({
             ) : (
               <MapPin size={17} color={theme.label} />
             )}
-            <Text className="font-semibold text-[16px]" style={{ color: theme.label }}>
+            <Text className="text-[16px] font-semibold" style={{ color: theme.label }}>
               {place.hasMenu ? 'View Menu' : 'Details'}
             </Text>
           </Pressable>
@@ -191,7 +191,7 @@ const PlaceCard = ({
           style={{ backgroundColor: theme.tintSoft }}
         >
           <CircleAlert size={16} color={theme.tint} />
-          <Text className="font-medium text-[14px]" style={{ color: theme.tint }}>
+          <Text className="text-[14px] font-medium" style={{ color: theme.tint }}>
             {place.note}
           </Text>
         </View>
@@ -401,7 +401,7 @@ export const MapSheet = ({
                 style={{ backgroundColor: isOn ? theme.tint : theme.fill }}
               >
                 <Text
-                  className={isOn ? 'font-semibold text-[14px]' : 'font-medium text-[14px]'}
+                  className={isOn ? 'text-[14px] font-semibold' : 'text-[14px] font-medium'}
                   style={{ color: isOn ? '#FFFFFF' : theme.label }}
                 >
                   {filter.label}

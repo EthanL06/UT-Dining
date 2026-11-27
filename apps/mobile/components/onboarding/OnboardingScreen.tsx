@@ -258,7 +258,7 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
               className="w-full rounded-full p-3"
               style={[{ backgroundColor: theme.tint }, animatedStyle]}
             >
-              <Text className="py-1.5 text-center font-semibold text-[17px] text-white">
+              <Text className="py-1.5 text-center text-[17px] font-semibold text-white">
                 {currentStep === ONBOARDING_SCREENS.length - 1
                   ? 'Finish'
                   : (currentStep === 1 && !hasDataSelection) ||

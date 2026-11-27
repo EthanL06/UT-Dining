@@ -107,7 +107,7 @@ const FilterBar = ({
               >
                 <Text
                   numberOfLines={1}
-                  className={isSelected ? 'font-semibold text-[14px]' : 'font-medium text-[14px]'}
+                  className={isSelected ? 'text-[14px] font-semibold' : 'text-[14px] font-medium'}
                   style={{ color: theme.label }}
                 >
                   {item.title}
@@ -135,7 +135,7 @@ const FilterBar = ({
                 style={{ backgroundColor: isSelected ? theme.tint : theme.fill }}
               >
                 <Text
-                  className={isSelected ? 'font-semibold text-[14px]' : 'font-medium text-[14px]'}
+                  className={isSelected ? 'text-[14px] font-semibold' : 'text-[14px] font-medium'}
                   style={{ color: isSelected ? '#FFFFFF' : theme.label }}
                 >
                   {item.title}
