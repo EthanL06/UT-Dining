@@ -208,6 +208,13 @@ check "idle lease with only Metro released" "! leased '$H'"
 check "its Metro stopped" "! alive '$METRO_H'"
 check "lease with Maestro running kept" "leased '$I'"
 check "Ethan's own simulator with Metro kept booted" "grep -q '$OWN|iPhone 17 Pro|Booted' '$T/devices'"
+"$LEASE" release "$I" 2>/dev/null
+P="$(lease "$WT_H" perf-bench)"
+spawn "python3 scripts/qa/perf/drive.py .context/perf3 $P" >/dev/null
+backdate "$T/leases/$P" 30
+sweep
+check "lease driven by a Python script kept" "leased '$P'"
+"$LEASE" release "$P" 2>/dev/null
 J="$(lease "$WT_H" fresh-thread)"
 backdate "$T/leases/$J" 5
 sweep
@@ -224,7 +231,6 @@ check "Maestro naming a deleted simulator stopped" "! alive '$ORPHAN'"
 check "Metro on an unleased slot port stopped" "! alive '$PORT_ORPHAN'"
 
 step "merge-pr releases the leases of the PR it merged"
-"$LEASE" release "$I" 2>/dev/null
 "$LEASE" release "$J" 2>/dev/null
 WT_K="$(repo k fix-merged-here)"
 K="$(lease "$WT_K" merge-thread)"
