@@ -215,7 +215,7 @@ export default function Home() {
     retry: false,
   });
   const { data } = menuData;
-  const menuSync = useMenuSync(drizzleDb);
+  const menuSync = useMenuSync();
   const locations = data?.locations || [];
   const locationTypes = data?.locationTypes || [];
   const view = homeView({
@@ -239,7 +239,7 @@ export default function Home() {
         timeoutId = setTimeout(() => reject(new Error('Request timeout')), 30000);
       });
 
-      await Promise.race([forceMenuSync(drizzleDb, queryClient), timeoutPromise]);
+      await Promise.race([forceMenuSync(queryClient), timeoutPromise]);
     } catch (error) {
       log.warn('Error refreshing data', { error });
       haptics.error();
