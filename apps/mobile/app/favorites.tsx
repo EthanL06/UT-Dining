@@ -5,7 +5,7 @@ import { Heart } from 'lucide-react-native';
 import { useMemo } from 'react';
 import { Pressable, View } from 'react-native';
 import FoodComponent, { type RowPosition } from '~/components/FoodComponent';
-import { largeTitleHeaderOptions } from '~/components/TabStack';
+import { pushedScreenHeaderOptions } from '~/components/TabStack';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
@@ -143,9 +143,10 @@ const Favorites = () => {
   const notToday = sorted.filter((item) => !matches.has(matchKey(item.name, item.location_name)));
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background }}>
-      <Stack.Screen options={{ title: 'Favorites', ...largeTitleHeaderOptions(theme) }} />
+    <>
+      <Stack.Screen options={{ title: 'Favorites', ...pushedScreenHeaderOptions(theme) }} />
       <OverflowScrollView
+        style={{ flex: 1, backgroundColor: theme.background }}
         testID="favorites-screen"
         divider={false}
         contentInsetAdjustmentBehavior="automatic"
@@ -182,7 +183,7 @@ const Favorites = () => {
           </>
         )}
       </OverflowScrollView>
-    </View>
+    </>
   );
 };
 

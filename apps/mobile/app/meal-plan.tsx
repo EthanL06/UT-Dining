@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { formatGrams, formatNumber } from '~/components/mealPlan/format';
 import { PlanRow } from '~/components/mealPlan/PlanRow';
 import { UndoToast } from '~/components/mealPlan/UndoToast';
-import { largeTitleHeaderOptions } from '~/components/TabStack';
+import { pushedScreenHeaderOptions } from '~/components/TabStack';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import {
@@ -169,11 +169,11 @@ const MealPlan = () => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background }}>
+    <>
       <Stack.Screen
         options={{
           title: 'Meal Plan',
-          ...largeTitleHeaderOptions(theme),
+          ...pushedScreenHeaderOptions(theme),
           headerRight:
             editable && items.length > 0
               ? () => (
@@ -193,6 +193,7 @@ const MealPlan = () => {
         }}
       />
       <OverflowScrollView
+        style={{ flex: 1, backgroundColor: theme.background }}
         testID="meal-plan-screen"
         divider={false}
         contentInsetAdjustmentBehavior="automatic"
@@ -322,7 +323,7 @@ const MealPlan = () => {
           onUndo={undoRemove}
         />
       )}
-    </View>
+    </>
   );
 };
 

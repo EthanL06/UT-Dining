@@ -16,6 +16,12 @@ export const largeTitleHeaderOptions = (theme: Theme) => ({
   headerLargeTitleStyle: { color: theme.label },
 });
 
+export const pushedScreenHeaderOptions = (theme: Theme) => ({
+  ...largeTitleHeaderOptions(theme),
+  headerBackTitle: 'Back',
+  headerBackButtonDisplayMode: 'minimal' as const,
+});
+
 export const TabStack = ({ title, headerShown = true }: TabStackProps) => {
   const theme = useTheme();
 

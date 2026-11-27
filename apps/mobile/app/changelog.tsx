@@ -1,8 +1,8 @@
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 import { ChangelogEntryCard } from '~/components/changelog/ChangelogEntryView';
-import { largeTitleHeaderOptions } from '~/components/TabStack';
+import { pushedScreenHeaderOptions } from '~/components/TabStack';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { refreshChangelog, useChangelogStore } from '~/store/useChangelogStore';
@@ -23,9 +23,10 @@ const Changelog = () => {
   const isExpanded = (version: string) => expanded[version] ?? version === latestVersion;
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background }}>
-      <Stack.Screen options={{ title: 'Changelog', ...largeTitleHeaderOptions(theme) }} />
+    <>
+      <Stack.Screen options={{ title: 'Changelog', ...pushedScreenHeaderOptions(theme) }} />
       <OverflowScrollView
+        style={{ flex: 1, backgroundColor: theme.background }}
         divider={false}
         testID="changelog-list"
         showsVerticalScrollIndicator={false}
@@ -61,7 +62,7 @@ const Changelog = () => {
             </Text>
           ))}
       </OverflowScrollView>
-    </View>
+    </>
   );
 };
 
