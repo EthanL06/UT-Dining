@@ -43,6 +43,7 @@ Decide with one question: did the iOS fingerprint change? It changes with native
 ## Database migrations
 
 - Write: `make db-new NAME=<name>`, keep it backwards compatible, `make db-reset`, `make db-types`, `make db-check`. Never edit a migration that is already on `staging`.
+- A PR that changes `supabase/migrations/` gets the `migration` label: the "Label PR" workflow adds it on every push, and `make pr-setup` adds it too. Filter on it to see which PRs need a dev or prod apply.
 - Dev (hosted `ut-dining-dev`, ref `bdnlfwyfgvaployvrivk`): Ethan has given standing permission to apply migrations here without asking. `supabase link --project-ref bdnlfwyfgvaployvrivk`, then `supabase db push --dry-run`, read the list, then `supabase db push`. It needs `SUPABASE_ACCESS_TOKEN` or the database password; if the cloud environment has neither, run it through a Remote Control session on Ethan's Mac.
 - Production (ref `yrmylgizphirqqkzgbth`): needs Ethan's OK for each change. Show him `supabase db push --dry-run` against the prod link (the exact list of migrations), wait for his yes, apply in timestamp order, then check the app and dashboard still load. Prod migrations go in before the code that needs them reaches `main`; pending ones are listed in PR #25.
 
