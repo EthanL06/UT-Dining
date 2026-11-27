@@ -1,4 +1,3 @@
-import * as Haptics from 'expo-haptics';
 import { SlidersHorizontal } from 'lucide-react-native';
 import { useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
@@ -8,6 +7,7 @@ export type FilterType = 'all' | string;
 
 import { useFiltersStore } from '~/store/useFiltersStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
+import { haptics } from '~/utils/haptics';
 import type { MealTimes } from '~/utils/locations';
 import { useTheme } from '~/utils/theme';
 import { timeOfDay } from '~/utils/time';
@@ -70,9 +70,10 @@ const FilterBar = ({
     }
   }, [filterItems, selectedItem, useTimeOfDayDefault, setSelectedItem, mealTimes]);
 
-  const onPressItem = async (id: FilterType) => {
+  const onPressItem = (id: FilterType) => {
+    if (id === selectedItem) return;
     setSelectedItem(id as FilterType);
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    haptics.selection();
   };
 
   const segmented = sortedItems.length > 1 && sortedItems.length <= 4;
@@ -168,10 +169,7 @@ const FilterButton = () => {
       testID="menu-filters-button"
       accessibilityLabel={hasFilters ? 'Filters, on' : 'Filters'}
       accessibilityRole="button"
-      onPress={() => {
-        SheetManager.show('filters');
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }}
+      onPress={() => SheetManager.show('filters')}
       className="size-9 items-center justify-center rounded-full"
       style={{ backgroundColor: hasFilters ? theme.tint : theme.fill }}
     >

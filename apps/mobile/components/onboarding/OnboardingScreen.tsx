@@ -1,4 +1,3 @@
-import * as Haptics from 'expo-haptics';
 import { ChevronLeft } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import React, { useCallback } from 'react';
@@ -15,6 +14,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { getSafePostHog } from '~/services/analytics/posthog';
 import { ONBOARDING_STEPS, useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
+import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
 import { cn } from '~/utils/utils';
 import { Container } from '../Container';
@@ -106,7 +106,7 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
     const prevStep = Math.max(currentStep - 1, 0);
     if (prevStep === currentStep) return;
 
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    haptics.tap();
 
     currentStepShared.value = prevStep;
     setCurrentStep(prevStep);
@@ -179,7 +179,7 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
   const handlePressIn = () => {
     scale.value = withSpring(0.95, { damping: 50, stiffness: 400 });
     opacity.value = withSpring(0.8, { damping: 50, stiffness: 400 });
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    haptics.tap();
   };
 
   const handlePressOut = () => {

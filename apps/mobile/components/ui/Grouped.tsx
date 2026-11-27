@@ -1,4 +1,3 @@
-import * as Haptics from 'expo-haptics';
 import { ChevronRight, type LucideIcon } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { Pressable, Text, View } from 'react-native';
@@ -87,14 +86,7 @@ export const GroupedRow = ({
       accessible={!!onPress}
       accessibilityRole={onPress ? 'button' : undefined}
       accessibilityState={selected === undefined ? undefined : { selected }}
-      onPress={
-        onPress
-          ? () => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              onPress();
-            }
-          : undefined
-      }
+      onPress={onPress}
       disabled={disabled || !onPress}
     >
       {({ pressed }) => (

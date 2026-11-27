@@ -1,4 +1,3 @@
-import * as Haptics from 'expo-haptics';
 import { ChefHat, Heart } from 'lucide-react-native';
 import type React from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
@@ -7,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ALLERGEN_EXCEPTIONS, ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import { useFiltersStore } from '~/store/useFiltersStore';
+import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
 
 const Chip = ({
@@ -29,7 +29,7 @@ const Chip = ({
       accessibilityRole="button"
       accessibilityState={{ selected: isOn }}
       onPress={() => {
-        Haptics.selectionAsync();
+        haptics.selection();
         onPress();
       }}
       className="h-10 flex-row items-center gap-x-1.5 rounded-full pr-3.5 pl-1.5"
@@ -116,7 +116,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
           disabled={activeCount === 0}
           onPress={() => {
             resetFilters();
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            haptics.tap();
           }}
           className="h-9 justify-center rounded-full px-3.5"
           style={{ backgroundColor: theme.card, opacity: activeCount === 0 ? 0.5 : 1 }}

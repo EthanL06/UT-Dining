@@ -2,6 +2,7 @@ import { Check, type LucideIcon } from 'lucide-react-native';
 import { ScrollView } from 'react-native';
 
 import { GroupedRow, GroupedSection } from '~/components/ui/Grouped';
+import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
 
 export type Choice = { id: string; label: string; icon: LucideIcon };
@@ -37,7 +38,10 @@ const ChoiceList = ({
                 selected ? <Check size={20} color={theme.tint} strokeWidth={2.5} /> : undefined
               }
               selected={selected}
-              onPress={() => onToggle(id)}
+              onPress={() => {
+                haptics.selection();
+                onToggle(id);
+              }}
             />
           );
         })}

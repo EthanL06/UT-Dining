@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { formatHhmm } from '@ut-dining/core';
-import * as Haptics from 'expo-haptics';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import { X } from 'lucide-react-native';
@@ -13,6 +12,7 @@ import type { Location as LocationRow } from '~/services/database/schema';
 import { useMealStripStore } from '~/store/useMealStripStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
+import { haptics } from '~/utils/haptics';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
 import { getLocationName } from '~/utils/locations';
 import { readCachedMenuData } from '~/utils/queries';
@@ -105,7 +105,6 @@ export const MealStrip = ({
       accessibilityRole="button"
       accessibilityLabel={`${strip.meal.name} at ${displayName}, until ${formatHhmm(strip.meal.end_time)}. Open menu.`}
       onPress={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         router.push(`/location/${locationName}`);
       }}
       className="h-full flex-row items-center gap-x-2.5 pr-2 pl-4"
@@ -127,7 +126,7 @@ export const MealStrip = ({
         accessibilityLabel="Hide until the next meal"
         hitSlop={8}
         onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          haptics.tap();
           dismissMeal(strip.mealKey);
         }}
       >

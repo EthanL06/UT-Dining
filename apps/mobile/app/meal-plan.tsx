@@ -1,4 +1,3 @@
-import * as Haptics from 'expo-haptics';
 import { router, Stack } from 'expo-router';
 import { ChefHat, ChevronLeft, ChevronRight, Flame, Minus, Plus } from 'lucide-react-native';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -27,6 +26,7 @@ import {
   useMealPlanStore,
 } from '~/store/useMealPlanStore';
 import { createDateFromString, formatDateForDisplay } from '~/utils/date';
+import { haptics } from '~/utils/haptics';
 import { type Theme, useTheme } from '~/utils/theme';
 
 const MEAL_ORDER = ['Breakfast', 'Lunch', 'Dinner'];
@@ -130,14 +130,13 @@ const PlanRow = ({
   const allergens = Object.entries(item.allergens || {}).filter(([, value]) => value);
 
   const step = (delta: number) => {
-    Haptics.selectionAsync();
+    haptics.selection();
     const next = Math.round((quantity + delta) * 100) / 100;
     if (next <= 0) removeItem(item.id, date);
     else updateQuantity(item.id, Math.min(next, 99), date);
   };
 
   const openFood = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push({
       pathname: '/food/[food]',
       params: {
@@ -162,8 +161,8 @@ const PlanRow = ({
       rightThreshold={0}
       renderRightActions={() => null}
       renderLeftActions={(progress) => <RemoveAction progress={progress} />}
-      onSwipeableWillClose={() => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      onSwipeableWillOpen={() => {
+        haptics.remove();
       }}
       onSwipeableOpen={() => {
         swipeableRef.current?.close();
@@ -308,12 +307,12 @@ const MealPlan = () => {
   );
 
   const goTo = (date: string) => {
-    Haptics.selectionAsync();
+    if (date === selectedDate) return;
+    haptics.selection();
     setSelectedDate(date);
   };
 
   const confirmReset = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const day = selectedDate === today ? "today's" : `${dayLabel}'s`;
     NativeAlert.alert(`Reset ${day} meal plan?`, 'This removes every item from this day.', [
       { text: 'Cancel', style: 'cancel' },
@@ -322,7 +321,7 @@ const MealPlan = () => {
         style: 'destructive',
         onPress: () => {
           clearMealPlan(selectedDate);
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          haptics.success();
         },
       },
     ]);

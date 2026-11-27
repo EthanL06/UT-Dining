@@ -2,7 +2,6 @@ import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { useIsFetching } from '@tanstack/react-query';
 import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
-import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { ChefHat, Heart } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
@@ -24,6 +23,7 @@ import { useMealStripStore } from '~/store/useMealStripStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { filterFoodItems } from '~/utils/filter';
 import { addFoodsToMealPlan, favoriteFoods } from '~/utils/foodActions';
+import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
 import { displayNutrient } from '~/utils/utils';
 import CategoryHeader from './components/CategoryHeader';
@@ -290,9 +290,9 @@ const Location = () => {
             <CategoryHeader
               title={item.title}
               isExpanded={item.isExpanded}
-              onToggle={async () => {
+              onToggle={() => {
                 toggleCategory(item.id);
-                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                haptics.tap();
               }}
             />
           );
@@ -435,7 +435,7 @@ const Location = () => {
             accessibilityRole="button"
             disabled={selectedEntries.length === 0}
             onPress={async () => {
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              haptics.success();
               await favoriteFoods(
                 db,
                 selectedEntries.map((entry) => ({
@@ -456,7 +456,7 @@ const Location = () => {
             accessibilityRole="button"
             disabled={selectedEntries.length === 0}
             onPress={() => {
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              haptics.success();
               addFoodsToMealPlan(selectedEntries, {
                 location,
                 menu: selectedMenu ?? '',
@@ -484,7 +484,7 @@ const Location = () => {
           animationValue={scrollButtonAnimation}
           onPress={() => {
             scrollToTop();
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            haptics.tap();
           }}
         />
       )}

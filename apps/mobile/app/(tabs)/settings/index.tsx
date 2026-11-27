@@ -43,6 +43,7 @@ import { useChangelogPromptStore, useChangelogStore } from '~/store/useChangelog
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
+import { haptics } from '~/utils/haptics';
 import { SERVICE_STATUS_COLORS, STATUS_PAGE_URL } from '~/utils/serviceStatus';
 import { useTheme } from '~/utils/theme';
 import { formatTimeSinceSync } from '~/utils/time';
@@ -164,8 +165,10 @@ const SyncDataRow = () => {
       await forceMenuSync(db, queryClient);
       setCurrentTime(Date.now());
       setSyncStatus('idle');
+      haptics.success();
     } catch (error) {
       setSyncStatus('failed');
+      haptics.error();
       console.warn('Sync failed:', error);
     }
   };

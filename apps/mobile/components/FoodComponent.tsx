@@ -1,4 +1,3 @@
-import * as Haptics from 'expo-haptics';
 import { Link, router } from 'expo-router';
 import { Check, ChefHat, ChevronRight, Heart } from 'lucide-react-native';
 import { useRef } from 'react';
@@ -11,6 +10,7 @@ import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import type { FoodItem } from '~/services/database/database';
 import { todayKey, useIsMealPlanItem } from '~/store/useMealPlanStore';
 import { toggleMealPlanForFood } from '~/utils/foodActions';
+import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
 import { displayNutrient } from '~/utils/utils';
 import { AddMealPlanAction, FavoriteAction, RemoveAction } from './AnimatedActions';
@@ -167,7 +167,7 @@ const FoodComponent = ({
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ checked: selection.selected }}
       onPress={() => {
-        Haptics.selectionAsync();
+        haptics.selection();
         selection.onToggleSelect();
       }}
     >
@@ -176,9 +176,7 @@ const FoodComponent = ({
   ) : (
     <Link href={href} asChild>
       <Link.Trigger>
-        <Pressable onPressIn={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}>
-          {({ pressed }) => row(pressed)}
-        </Pressable>
+        <Pressable>{({ pressed }) => row(pressed)}</Pressable>
       </Link.Trigger>
       <Link.Preview />
       <Link.Menu>
@@ -223,8 +221,10 @@ const FoodComponent = ({
           restDisplacementThreshold: 0.005,
           restSpeedThreshold: 0.005,
         }}
-        onSwipeableWillClose={() => {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        onSwipeableWillOpen={(direction) => {
+          const removing = direction === SwipeDirection.RIGHT ? isMealPlan : isFavorite;
+          if (removing) haptics.remove();
+          else haptics.success();
         }}
         onSwipeableOpen={async (direction) => {
           swipeableRef.current?.close();

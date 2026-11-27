@@ -1,7 +1,6 @@
 import { onlineManager, useQuery, useQueryClient } from '@tanstack/react-query';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
-import * as Haptics from 'expo-haptics';
 import * as Network from 'expo-network';
 import { router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -27,6 +26,7 @@ import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
+import { haptics } from '~/utils/haptics';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
 import { getLocationName } from '~/utils/locations';
 import { readCachedMenuData } from '~/utils/queries';
@@ -99,13 +99,7 @@ const QuickLink = ({
     className="flex-1 overflow-hidden"
     style={{ backgroundColor: theme.card, borderRadius: 22, borderCurve: 'continuous' }}
   >
-    <Pressable
-      accessibilityRole="button"
-      onPress={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        router.push(href);
-      }}
-    >
+    <Pressable accessibilityRole="button" onPress={() => router.push(href)}>
       {({ pressed }) => (
         <View
           className="flex-row items-center gap-x-2.5 px-4 py-3.5"
@@ -136,7 +130,7 @@ const TypeChip = ({
     accessibilityRole="button"
     accessibilityState={{ selected }}
     onPress={() => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      if (!selected) haptics.selection();
       onPress();
     }}
     className="h-[34px] justify-center rounded-full px-3.5"
@@ -230,7 +224,7 @@ export default function Home() {
     try {
       const networkState = await Network.getNetworkStateAsync();
       if (!networkState.isConnected) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        haptics.error();
         return;
       }
 
@@ -241,7 +235,7 @@ export default function Home() {
       await Promise.race([forceMenuSync(drizzleDb, queryClient), timeoutPromise]);
     } catch (error) {
       console.error('Error refreshing data:', error);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      haptics.error();
     } finally {
       clearTimeout(timeoutId);
       setRefreshing(false);
