@@ -3,7 +3,9 @@
   "ignoreCommand": "node ../../scripts/vercel-ignore.mjs",
   "git": {
     "deploymentEnabled": {
-      "assets/**": false
+      "**": false,
+      "main": true,
+      "staging": true
     }
   }
 }

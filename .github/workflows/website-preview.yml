@@ -1,0 +1,155 @@
+name: Website preview
+
+on:
+  pull_request:
+    paths:
+      - apps/website/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - .github/workflows/website-preview.yml
+  push:
+    branches: [staging]
+    paths:
+      - apps/website/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - .github/workflows/website-preview.yml
+  workflow_dispatch:
+
+concurrency:
+  group: website-preview-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  WORKER_NAME: ut-dining-website-preview
+  WRANGLER_VERSION: 4.168.0
+
+jobs:
+  preview:
+    name: Cloudflare preview
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Check Cloudflare secrets
+        id: secrets
+        run: |
+          if [ -n "$CLOUDFLARE_API_TOKEN" ] && [ -n "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID is not set, so no preview was deployed."
+          fi
+
+      - uses: actions/checkout@v7
+        if: steps.secrets.outputs.ready == 'true'
+
+      - uses: pnpm/action-setup@v6
+        if: steps.secrets.outputs.ready == 'true'
+
+      - uses: actions/setup-node@v7
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Work out the preview URL
+        if: steps.secrets.outputs.ready == 'true'
+        id: target
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          subdomain=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" \
+            | jq -r '.result.subdomain // empty')
+          if [ -z "$subdomain" ]; then
+            echo "::error::This Cloudflare account has no workers.dev subdomain yet. Open Workers & Pages in the Cloudflare dashboard once to pick one."
+            exit 1
+          fi
+          if [ -n "$PR_NUMBER" ]; then
+            alias="pr-$PR_NUMBER"
+            echo "alias=$alias" >> "$GITHUB_OUTPUT"
+            echo "url=https://$alias-$WORKER_NAME.$subdomain.workers.dev" >> "$GITHUB_OUTPUT"
+          else
+            echo "url=https://$WORKER_NAME.$subdomain.workers.dev" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.secrets.outputs.ready == 'true'
+        run: pnpm install --frozen-lockfile --filter @ut-dining/website...
+
+      - name: Build static site
+        if: steps.secrets.outputs.ready == 'true'
+        run: pnpm turbo run build --filter=@ut-dining/website
+        env:
+          WEBSITE_STATIC_EXPORT: '1'
+          WEBSITE_BASE_PATH: ''
+          WEBSITE_SITE_URL: ${{ steps.target.outputs.url }}
+          WEBSITE_SUPABASE_URL: ${{ secrets.SUPABASE_DEV_URL }}
+          WEBSITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_DEV_ANON_KEY }}
+
+      - name: Keep previews out of search engines
+        if: steps.secrets.outputs.ready == 'true'
+        working-directory: apps/website/out
+        run: |
+          printf 'User-agent: *\nDisallow: /\n' > robots.txt
+          printf '/*\n  X-Robots-Tag: noindex\n' > _headers
+
+      - name: Create the preview Worker if it does not exist yet
+        if: steps.secrets.outputs.ready == 'true' && steps.target.outputs.alias != ''
+        working-directory: apps/website
+        run: |
+          status=$(curl -sS -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/$WORKER_NAME/settings")
+          if [ "$status" = "404" ]; then
+            npx --yes "wrangler@$WRANGLER_VERSION" deploy
+          fi
+
+      - name: Upload PR preview
+        if: steps.secrets.outputs.ready == 'true' && steps.target.outputs.alias != ''
+        working-directory: apps/website
+        env:
+          ALIAS: ${{ steps.target.outputs.alias }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          npx --yes "wrangler@$WRANGLER_VERSION" versions upload \
+            --preview-alias "$ALIAS" \
+            --tag "${HEAD_SHA:0:7}" \
+            --message "PR #${ALIAS#pr-} at ${HEAD_SHA:0:7}"
+
+      - name: Deploy staging preview
+        if: steps.secrets.outputs.ready == 'true' && steps.target.outputs.alias == ''
+        working-directory: apps/website
+        run: npx --yes "wrangler@$WRANGLER_VERSION" deploy --message "${GITHUB_REF_NAME} at ${GITHUB_SHA:0:7}"
+
+      - name: Comment the preview URL
+        if: steps.secrets.outputs.ready == 'true' && steps.target.outputs.alias != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          URL: ${{ steps.target.outputs.url }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          marker='<!-- website-cloudflare-preview -->'
+          body=$(printf '%s\n**Website preview:** %s\n\nBuilt from %s with the dev Supabase project. Updates on every push to this PR.' \
+            "$marker" "$URL/" "${HEAD_SHA:0:7}")
+          existing=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
+            --jq "[.[] | select(.body | startswith(\"$marker\")) | .id] | first // empty")
+          if [ -n "$existing" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$existing" -f body="$body" > /dev/null
+          else
+            gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" -f body="$body" > /dev/null
+          fi
+
+      - name: Summary
+        if: steps.secrets.outputs.ready == 'true'
+        env:
+          URL: ${{ steps.target.outputs.url }}
+        run: |
+          echo "Website preview: $URL/" >> "$GITHUB_STEP_SUMMARY"
