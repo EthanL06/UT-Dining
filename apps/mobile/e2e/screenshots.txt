@@ -6,3 +6,5 @@ favorites favorites
 meal-plan meal-plan
 changelog changelog
 j2-dining location/J2%20Dining
+error-screen qa-error?kind=crash
+migration-error qa-error?kind=migration

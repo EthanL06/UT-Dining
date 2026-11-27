@@ -24,7 +24,7 @@ import type * as schema from '../services/database/schema';
 import '../global.css';
 import * as Device from 'expo-device';
 import * as Network from 'expo-network';
-import { AppErrorScreen } from '~/components/AppErrorScreen';
+import { AppErrorScreen, MIGRATION_ERROR_COPY } from '~/components/AppErrorScreen';
 import { VersionCheckProvider } from '~/components/VersionCheckProvider';
 import { usePostHogScreens } from '~/hooks/usePostHogScreens';
 import { POSTHOG_CONFIG, posthogClient } from '~/services/analytics/posthog';
@@ -95,14 +95,7 @@ const AppContent = () => {
   }, [success, incrementLaunchCount]);
 
   if (error) {
-    return (
-      <AppErrorScreen
-        title="Couldn't open the menu cache"
-        message="UT Dining couldn't update the data saved on this phone. Restart the app to try again."
-        error={error}
-        source="sqlite-migration"
-      />
-    );
+    return <AppErrorScreen {...MIGRATION_ERROR_COPY} error={error} source="sqlite-migration" />;
   }
 
   if (!success) return null;

@@ -13,6 +13,11 @@ interface AppErrorScreenProps {
   onRetry?: () => void;
 }
 
+export const MIGRATION_ERROR_COPY = {
+  title: "Couldn't open the menu cache",
+  message: "UT Dining couldn't update the data saved on this phone. Restart the app to try again.",
+};
+
 const restart = () => {
   Updates.reloadAsync().catch((error) => log.error('Failed to restart the app', error));
 };
