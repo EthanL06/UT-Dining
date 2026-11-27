@@ -1,12 +1,13 @@
 import { router, Stack } from 'expo-router';
 import { ChefHat, ChevronLeft, ChevronRight, Flame, Minus, Plus } from 'lucide-react-native';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AppState, Image, Alert as NativeAlert, Pressable, ScrollView, View } from 'react-native';
+import { AppState, Image, Alert as NativeAlert, Pressable, View } from 'react-native';
 import ReanimatedSwipeable, {
   type SwipeableMethods,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RemoveAction } from '~/components/AnimatedActions';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import {
@@ -315,7 +316,10 @@ const MealPlan = () => {
   return (
     <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: insets.top }}>
       <Stack.Screen options={{ title: 'Meal Plan', headerShown: false }} />
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
+      <OverflowScrollView
+        divider={false}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
+      >
         <View className="flex-row items-center justify-between px-4 pt-2">
           <Pressable
             testID="back-button"
@@ -459,7 +463,7 @@ const MealPlan = () => {
             })}
           </>
         )}
-      </ScrollView>
+      </OverflowScrollView>
     </View>
   );
 };

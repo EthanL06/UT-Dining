@@ -1,4 +1,5 @@
 import { Pressable, ScrollView, View } from 'react-native';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { haptics } from '~/utils/haptics';
 import { type Coordinates, type Place, walkFrom } from '~/utils/mapPlaces';
@@ -41,8 +42,8 @@ export const BrowseList = ({
   const view = browseView(isLoaded, visible.length);
 
   return (
-    <ScrollView
-      alwaysBounceVertical={false}
+    <OverflowScrollView
+      containerStyle={{ flex: 1 }}
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ paddingBottom: bottomOffset + 24 }}
     >
@@ -106,6 +107,6 @@ export const BrowseList = ({
           ))}
         </RowGroup>
       )}
-    </ScrollView>
+    </OverflowScrollView>
   );
 };

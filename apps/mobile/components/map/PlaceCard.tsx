@@ -1,9 +1,9 @@
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import { ChevronLeft, CircleAlert, MapPin, Navigation, Utensils, X } from 'lucide-react-native';
-import { useState } from 'react';
-import { Platform, Pressable, ScrollView, View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
 import { StatusDot } from '~/components/ui/Grouped';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { directionsUrl } from '~/utils/directions';
 import { log } from '~/utils/log';
@@ -56,20 +56,10 @@ export const PlaceCard = ({
   const walk = walkFrom(userCoordinates, place);
   const typeLabel = place.type === 'microwave' ? 'Microwave' : place.type;
   const pinned = place.coordinates !== null;
-  const [viewportHeight, setViewportHeight] = useState(0);
-  const [contentHeight, setContentHeight] = useState(0);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const canScroll = contentHeight > viewportHeight + 1;
 
   return (
     <View className="flex-1">
-      <View
-        className="px-4 pb-3"
-        style={{
-          borderBottomWidth: canScroll && isScrolled ? 0.5 : 0,
-          borderBottomColor: theme.separator,
-        }}
-      >
+      <View className="px-4 pb-3">
         {backQuery !== null && (
           <Pressable
             testID="map-place-back"
@@ -108,15 +98,9 @@ export const PlaceCard = ({
           </Pressable>
         </View>
       </View>
-      <ScrollView
+      <OverflowScrollView
         testID="map-place-scroll"
-        scrollEnabled={canScroll}
-        alwaysBounceVertical={false}
-        showsVerticalScrollIndicator={canScroll}
-        scrollEventThrottle={32}
-        onScroll={(event) => setIsScrolled(event.nativeEvent.contentOffset.y > 0)}
-        onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)}
-        onContentSizeChange={(_width, height) => setContentHeight(height)}
+        containerStyle={{ flex: 1 }}
         contentContainerClassName="px-4 pt-1"
         contentContainerStyle={{ paddingBottom: bottomInset + 24 }}
       >
@@ -192,7 +176,7 @@ export const PlaceCard = ({
             </Text>
           </Pressable>
         )}
-      </ScrollView>
+      </OverflowScrollView>
     </View>
   );
 };

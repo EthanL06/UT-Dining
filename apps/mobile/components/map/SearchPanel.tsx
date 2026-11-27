@@ -1,5 +1,6 @@
 import { Building2, Clock, Search, UtensilsCrossed } from 'lucide-react-native';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { type Coordinates, type Place, walkFrom } from '~/utils/mapPlaces';
 import type { BuildingMatch, SearchMatch } from '~/utils/mapSearch';
@@ -201,9 +202,9 @@ export const SearchPanel = ({
   });
 
   return (
-    <ScrollView
+    <OverflowScrollView
       testID="map-search-results"
-      alwaysBounceVertical={false}
+      containerStyle={{ flex: 1 }}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       contentContainerClassName="gap-y-5 pt-1"
@@ -272,6 +273,6 @@ export const SearchPanel = ({
           )}
         </>
       )}
-    </ScrollView>
+    </OverflowScrollView>
   );
 };

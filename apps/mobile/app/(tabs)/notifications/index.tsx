@@ -3,8 +3,9 @@ import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { type Href, router, Stack, useFocusEffect } from 'expo-router';
 import { Bell, ChefHat, type LucideIcon, MapPin, Megaphone, Star } from 'lucide-react-native';
 import { useCallback, useMemo } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { GroupedSection } from '~/components/ui/Grouped';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import * as schema from '~/services/database/schema';
@@ -206,7 +207,8 @@ const Notifications = () => {
             : undefined,
         }}
       />
-      <ScrollView
+      <OverflowScrollView
+        divider={false}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
       >
@@ -232,7 +234,7 @@ const Notifications = () => {
             </GroupedSection>
           ))
         )}
-      </ScrollView>
+      </OverflowScrollView>
     </View>
   );
 };
