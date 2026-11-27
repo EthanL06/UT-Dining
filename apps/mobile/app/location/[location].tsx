@@ -65,9 +65,15 @@ const useSkeletonItems = (): ListItem[] => {
 
 const EDGE_SWIPE_DISMISSAL = { unstable_dismissalBoundsRect: { maxX: 24 } };
 
-const EdgeSwipeDismissal = () => {
+const EdgeSwipeDismissalBounds = () => {
   usePreventZoomTransitionDismissal(EDGE_SWIPE_DISMISSAL);
   return null;
+};
+
+const EdgeSwipeDismissal = () => {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted ? <EdgeSwipeDismissalBounds /> : null;
 };
 
 const Location = () => {
