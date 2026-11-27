@@ -150,6 +150,14 @@ const AppContent = () => {
                     />
 
                     <Stack.Screen
+                      name="dish/[food]"
+                      options={{
+                        headerShown: false,
+                        fullScreenGestureEnabled: false,
+                      }}
+                    />
+
+                    <Stack.Screen
                       name="favorites"
                       options={{
                         headerShown: false,
