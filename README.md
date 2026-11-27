@@ -174,7 +174,7 @@ Run `make` (or `make help`) for the full list. Variables go after the target, fo
 | `make scrape` | Run the scraper once with `apps/scraper/.env.local` |
 | `make admin ARGS="locations list"` | Run the admin CLI (same as `pnpm -s admin ...`, see [apps/cli](apps/cli/README.md)) |
 | `make verify` | Fast check of only what your diff touches: Biome, the comment check, typecheck and tests of the affected packages |
-| `make check` | Lint, format check, comment check, typecheck and tests for everything, the same as CI. Run it before you push. |
+| `make check` | Lint, format check, comment check, typecheck and tests for everything, the same as CI. The pre-push hook runs the same checks for what changed. |
 | `make fix` | Apply Biome's safe lint and format fixes |
 | `make typecheck` / `make test` / `make build` | One step of the checks |
 | `make db-up` / `make db-down` | Start or stop local Supabase (data is kept), and point the apps at it |
@@ -194,7 +194,7 @@ Run `make` (or `make help`) for the full list. Variables go after the target, fo
 
 The `pnpm` scripts in `package.json` (`pnpm check`, `pnpm db:reset` and so on) still work; the Makefile is a front door over them.
 
-Commits are checked by commitlint and staged files are formatted by Biome through [Lefthook](https://lefthook.dev) hooks, installed automatically by `pnpm install`. The repo has no code comments, and the pre-commit hook and CI fail on new ones; put context in a README, an `AGENTS.md` or the PR description instead.
+Commits are checked by commitlint, staged files are formatted and linted by Biome, and `git push` runs the CI checks for what changed, through [Lefthook](https://lefthook.dev) hooks installed automatically by `pnpm install` (see "Git hooks" in `AGENTS.md`). The repo has no code comments, and the pre-commit hook and CI fail on new ones; put context in a README, an `AGENTS.md` or the PR description instead.
 
 ### Editor
 
