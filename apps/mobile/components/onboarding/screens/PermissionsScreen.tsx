@@ -2,9 +2,9 @@ import * as Location from 'expo-location';
 import * as Notifications from 'expo-notifications';
 import { Bell, Check, MapPin } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { Alert, AppState, Linking, Text, View } from 'react-native';
-
+import { Alert, AppState, Linking, View } from 'react-native';
 import { GroupedRow, GroupedSection, IconSquare } from '~/components/ui/Grouped';
+import { Text } from '~/components/ui/Text';
 import { log } from '~/utils/log';
 import { useTheme } from '~/utils/theme';
 import OnboardingHeader from './OnboardingHeader';
@@ -30,7 +30,7 @@ const PermissionStatusLabel = ({ status }: { status: PermissionStatus }) => {
   const theme = useTheme();
   if (status === 'granted') return <Check size={20} color={theme.tint} strokeWidth={2.5} />;
   return (
-    <Text className="text-[15px]" style={{ color: theme.secondaryLabel }}>
+    <Text variant="subheadline" tone="secondary">
       {status === 'denied' ? 'Off' : ''}
     </Text>
   );

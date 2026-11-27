@@ -6,9 +6,10 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { ChefHat, Heart } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RowPosition } from '~/components/FoodComponent';
+import { Text } from '~/components/ui/Text';
 import type { ListItem } from '~/hooks/useCategoryExpansion';
 import { useCategoryExpansion } from '~/hooks/useCategoryExpansion';
 import { useDatabase } from '~/hooks/useDatabase';
@@ -377,15 +378,13 @@ const Location = () => {
 
     return (
       <View className="mt-12 flex-1 items-center justify-center">
-        <Text className="text-[17px] font-semibold" style={{ color: theme.label }}>
-          {title}
-        </Text>
-        <Text className="mt-1 text-[15px]" style={{ color: theme.secondaryLabel }}>
+        <Text variant="headline">{title}</Text>
+        <Text variant="subheadline" tone="secondary" className="mt-1">
           {subtitle()}
         </Text>
       </View>
     );
-  }, [loading, isSyncing, error, debouncedSearchQuery, activeFilters, theme]);
+  }, [loading, isSyncing, error, debouncedSearchQuery, activeFilters]);
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: insets.top }}>
@@ -474,7 +473,7 @@ const Location = () => {
             }}
           >
             <ChefHat size={18} color="#FFFFFF" />
-            <Text className="text-[15px] font-semibold text-white">
+            <Text variant="subheadline" emphasized tone="onTint">
               {selectedEntries.length === 0
                 ? 'Select items'
                 : `Add ${selectedEntries.length} to Meal Plan · ${displayNutrient(String(Math.round(selectedCalories)))} kcal`}

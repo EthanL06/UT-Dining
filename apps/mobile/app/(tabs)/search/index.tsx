@@ -1,9 +1,9 @@
 import { and, asc, eq, like } from 'drizzle-orm';
 import { router, Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
-
+import { ScrollView, View } from 'react-native';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
+import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useDebounce } from '~/hooks/useDebounce';
 import type { DrizzleDB } from '~/services/database/database';
@@ -87,11 +87,11 @@ export default function Search() {
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
       >
         {!results ? (
-          <Text className="mx-9 mt-2 text-[15px]" style={{ color: theme.secondaryLabel }}>
+          <Text variant="subheadline" tone="secondary" className="mx-9 mt-2">
             Find any food on today's menus, or any place on campus.
           </Text>
         ) : results.foods.length === 0 && results.places.length === 0 ? (
-          <Text className="mx-9 mt-2 text-[15px]" style={{ color: theme.secondaryLabel }}>
+          <Text variant="subheadline" tone="secondary" className="mx-9 mt-2">
             Nothing on today's menus matches "{debouncedQuery}".
           </Text>
         ) : (

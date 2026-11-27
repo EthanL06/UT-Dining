@@ -1,11 +1,10 @@
 import type { LucideIcon } from 'lucide-react-native';
 import React from 'react';
-import { Alert, Share, Text } from 'react-native';
-
+import { Alert, Share } from 'react-native';
 import { GroupedRow, IconSquare } from '~/components/ui/Grouped';
+import { Text } from '~/components/ui/Text';
 import { useChangelogStore } from '~/store/useChangelogStore';
 import { haptics } from '~/utils/haptics';
-import { useTheme } from '~/utils/theme';
 
 export const ROW_INSET = 58;
 export const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
@@ -109,7 +108,6 @@ export const InfoRow = ({
   onPress?: () => void;
   testID?: string;
 }) => {
-  const theme = useTheme();
   return (
     <GroupedRow
       testID={testID}
@@ -118,9 +116,11 @@ export const InfoRow = ({
       onPress={onPress}
       trailing={
         <Text
+          variant="subheadline"
           numberOfLines={1}
-          className="max-w-[60%] text-right text-[15px]"
-          style={{ color: valueColor ?? theme.secondaryLabel }}
+          className="max-w-[60%] text-right"
+          tone="secondary"
+          color={valueColor}
         >
           {value}
         </Text>

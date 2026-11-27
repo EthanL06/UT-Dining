@@ -2,12 +2,12 @@ import { useQuery } from '@tanstack/react-query';
 import * as Location from 'expo-location';
 import { LocateFixed } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, useWindowDimensions, View } from 'react-native';
 import type { Region } from 'react-native-maps';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 import { type MapFilterId, MapSheet, PLACE_ICONS, usePlaceColor } from '~/components/map/MapSheet';
+import { Text } from '~/components/ui/Text';
 import { MICROWAVE_LOCATIONS } from '~/data/MicrowaveLocations';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
@@ -98,15 +98,11 @@ const LabelPin = ({ place }: { place: Place }) => {
       >
         {Icon && <Icon size={15} color="#FFFFFF" />}
       </View>
-      <Text
-        numberOfLines={1}
-        className="max-w-40 text-[13px] font-semibold"
-        style={{ color: theme.label }}
-      >
+      <Text variant="footnote" emphasized numberOfLines={1} className="max-w-40">
         {place.name}
       </Text>
       {closes !== '' && (
-        <Text className="text-[13px]" style={{ color: theme.secondaryLabel }}>
+        <Text variant="footnote" tone="secondary">
           {closes}
         </Text>
       )}
@@ -131,7 +127,9 @@ const ClusterPin = ({ cluster }: { cluster: Cluster }) => {
         shadowOffset: { width: 0, height: 2 },
       }}
     >
-      <Text className="text-[15px] font-bold text-white">{cluster.places.length}</Text>
+      <Text variant="subheadline" emphasized tone="onTint">
+        {cluster.places.length}
+      </Text>
     </View>
   );
 };

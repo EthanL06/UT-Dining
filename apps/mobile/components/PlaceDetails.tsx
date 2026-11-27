@@ -1,7 +1,7 @@
 import { MapPin } from 'lucide-react-native';
-import { Image, Linking, Platform, Text, View } from 'react-native';
-
+import { Image, Linking, Platform, View } from 'react-native';
 import { GroupedRow, GroupedSection } from '~/components/ui/Grouped';
+import { Text } from '~/components/ui/Text';
 import { PAYMENT_INFO_ICONS } from '~/data/PaymentInfo';
 import type { useLocationDetails } from '~/hooks/useLocationDetails';
 import { useTheme } from '~/utils/theme';
@@ -25,7 +25,7 @@ const PlaceDetails = ({ place }: { place: PlaceData }) => {
       {place.description !== '' && (
         <GroupedSection header="About">
           <View className="px-4 py-3">
-            <Text className="text-[15px] leading-[22px]" style={{ color: theme.label }}>
+            <Text variant="subheadline" paragraph>
               {place.description}
             </Text>
           </View>
@@ -40,7 +40,7 @@ const PlaceDetails = ({ place }: { place: PlaceData }) => {
               isFirst={index === 0}
               title={entry.dayRange}
               trailing={
-                <Text className="text-right text-[15px]" style={{ color: theme.secondaryLabel }}>
+                <Text variant="subheadline" tone="secondary" className="text-right">
                   {entry.time.replace(/, /g, '\n')}
                 </Text>
               }

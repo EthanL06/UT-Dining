@@ -164,7 +164,11 @@
               "options": {
                 "paths": {
                   "expo-haptics": "Use the helpers in ~/utils/haptics so every interaction gets the same feedback.",
-                  "@supabase/supabase-js": "Screens read the SQLite cache through hooks. Only services/ talks to Supabase; add the table to the sync instead."
+                  "@supabase/supabase-js": "Screens read the SQLite cache through hooks. Only services/ talks to Supabase; add the table to the sync instead.",
+                  "react-native": {
+                    "importNames": ["Text", "TextInput"],
+                    "message": "Use Text or TextInput from ~/components/ui/Text so every label uses the shared type scale."
+                  }
                 },
                 "patterns": [
                   {
@@ -195,7 +199,11 @@
               "level": "error",
               "options": {
                 "paths": {
-                  "expo-haptics": "Use the helpers in ~/utils/haptics so every interaction gets the same feedback."
+                  "expo-haptics": "Use the helpers in ~/utils/haptics so every interaction gets the same feedback.",
+                  "react-native": {
+                    "importNames": ["Text", "TextInput"],
+                    "message": "Use Text or TextInput from ~/components/ui/Text so every label uses the shared type scale."
+                  }
                 }
               }
             }
@@ -219,6 +227,30 @@
         "rules": {
           "suspicious": {
             "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/mobile/components/ui/Text.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "expo-haptics": "Use the helpers in ~/utils/haptics so every interaction gets the same feedback.",
+                  "@supabase/supabase-js": "Screens read the SQLite cache through hooks. Only services/ talks to Supabase; add the table to the sync instead."
+                },
+                "patterns": [
+                  {
+                    "group": ["**/utils/supabase"],
+                    "message": "Screens read the SQLite cache through hooks. Only services/ talks to Supabase; add the table to the sync instead."
+                  }
+                ]
+              }
+            }
           }
         }
       }

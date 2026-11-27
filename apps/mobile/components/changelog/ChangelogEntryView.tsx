@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp } from 'lucide-react-native';
-import { LayoutAnimation, Text, TouchableOpacity, View } from 'react-native';
+import { LayoutAnimation, TouchableOpacity, View } from 'react-native';
+import { Text } from '~/components/ui/Text';
 import type { ChangelogChange, ChangelogEntry } from '~/services/changelog/types';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { cn } from '~/utils/utils';
@@ -27,10 +28,9 @@ export const VersionBadge = ({ version, isLatest }: { version: string; isLatest:
       )}
     >
       <Text
-        className={cn(
-          'text-xs font-bold',
-          isLatest ? 'text-white' : isDarkMode ? 'text-gray-200' : 'text-[#3A3F48]',
-        )}
+        variant="caption"
+        emphasized
+        color={isLatest ? '#FFFFFF' : isDarkMode ? '#E5E7EB' : '#3A3F48'}
       >
         {version}
       </Text>
@@ -52,20 +52,14 @@ export const ChangelogChangeRow = ({
       <ChangelogIconTile icon={change.icon} size={compact ? 'sm' : 'md'} />
       <View className="flex-1 gap-y-px">
         <Text
-          className={cn(
-            compact ? 'text-[15px] font-medium' : 'text-base font-semibold',
-            isDarkMode ? 'text-white' : 'text-[#111111]',
-          )}
+          variant={compact ? 'subheadline' : 'callout'}
+          emphasized
+          color={isDarkMode ? '#FFFFFF' : '#111111'}
         >
           {change.title}
         </Text>
         {!compact && change.description && (
-          <Text
-            className={cn(
-              'text-sm leading-[19px]',
-              isDarkMode ? 'text-gray-400' : 'text-[#5B6270]',
-            )}
-          >
+          <Text variant="subheadline" paragraph color={isDarkMode ? '#9CA3AF' : '#5B6270'}>
             {change.description}
           </Text>
         )}
@@ -108,16 +102,16 @@ export const ChangelogEntryCard = ({
       >
         <VersionBadge version={entry.version} isLatest={isLatest} />
         <Text
+          variant="subheadline"
+          emphasized
           numberOfLines={1}
-          className={cn(
-            'flex-1 text-[15px] font-semibold',
-            isDarkMode ? 'text-white' : 'text-[#111111]',
-          )}
+          color={isDarkMode ? '#FFFFFF' : '#111111'}
+          className="flex-1"
         >
           {entryTitle(entry)}
         </Text>
         {entry.date && (
-          <Text className={cn('text-[13px]', isDarkMode ? 'text-gray-400' : 'text-[#6B7280]')}>
+          <Text variant="footnote" color={isDarkMode ? '#9CA3AF' : '#6B7280'}>
             {formatShortDate(entry.date)}
           </Text>
         )}
@@ -146,12 +140,7 @@ export const ChangelogEntryCard = ({
       >
         <VersionBadge version={entry.version} isLatest={isLatest} />
         {entry.date && (
-          <Text
-            className={cn(
-              'text-xs font-bold tracking-[0.6px]',
-              isDarkMode ? 'text-gray-400' : 'text-[#5B6270]',
-            )}
-          >
+          <Text variant="eyebrow" color={isDarkMode ? '#9CA3AF' : '#5B6270'}>
             {formatMonthYear(entry.date)}
           </Text>
         )}
@@ -160,7 +149,7 @@ export const ChangelogEntryCard = ({
         </View>
       </TouchableOpacity>
       {entry.summary && (
-        <Text className={cn('text-xl font-bold', isDarkMode ? 'text-white' : 'text-[#111111]')}>
+        <Text variant="title3" color={isDarkMode ? '#FFFFFF' : '#111111'}>
           {entry.summary}
         </Text>
       )}

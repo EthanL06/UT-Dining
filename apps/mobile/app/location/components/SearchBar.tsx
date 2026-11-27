@@ -1,7 +1,7 @@
 import { Search, X } from 'lucide-react-native';
-import type React from 'react';
 import { useRef } from 'react';
-import { Keyboard, Pressable, Text, TextInput, View } from 'react-native';
+import { Keyboard, Pressable, View } from 'react-native';
+import { Text, TextInput, type TextInputHandle } from '~/components/ui/Text';
 
 import { useTheme } from '~/utils/theme';
 
@@ -15,7 +15,7 @@ type Props = {
 
 const SearchBar = ({ query, setQuery, onFocus, onBlur, isSearchFocused }: Props) => {
   const theme = useTheme();
-  const inputRef = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const inputRef = useRef<TextInputHandle>(null);
 
   const handleCancel = () => {
     Keyboard.dismiss();
@@ -34,10 +34,9 @@ const SearchBar = ({ query, setQuery, onFocus, onBlur, isSearchFocused }: Props)
         <TextInput
           testID="menu-search-input"
           ref={inputRef}
-          className="flex-1 text-[16px]"
-          style={{ color: theme.label }}
+          variant="callout"
+          className="flex-1"
           placeholder="Search this menu"
-          placeholderTextColor={theme.secondaryLabel}
           value={query}
           onChangeText={setQuery}
           onFocus={onFocus}
@@ -52,7 +51,7 @@ const SearchBar = ({ query, setQuery, onFocus, onBlur, isSearchFocused }: Props)
       </View>
       {isSearchFocused && (
         <Pressable accessibilityRole="button" onPress={handleCancel}>
-          <Text className="text-[16px]" style={{ color: theme.tint }}>
+          <Text variant="callout" tone="tint">
             Cancel
           </Text>
         </Pressable>

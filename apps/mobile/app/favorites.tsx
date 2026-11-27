@@ -3,10 +3,10 @@ import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, Stack } from 'expo-router';
 import { ChevronLeft, Heart } from 'lucide-react-native';
 import { useMemo } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 import FoodComponent, { type RowPosition } from '~/components/FoodComponent';
+import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import type { DrizzleDB } from '~/services/database/database';
 import * as schema from '~/services/database/schema';
@@ -72,12 +72,11 @@ const FavoriteSection = ({
   matches: Map<string, TodayMatch>;
   db: DrizzleDB;
 }) => {
-  const theme = useTheme();
   if (items.length === 0) return null;
 
   return (
     <View className="mb-5">
-      <Text className="mx-9 mb-1.5 text-[13px]" style={{ color: theme.secondaryLabel }}>
+      <Text variant="footnote" tone="secondary" className="mx-9 mb-1.5">
         {title}
       </Text>
       {items.map((item, index) => {
@@ -159,15 +158,11 @@ const Favorites = () => {
             <ChevronLeft size={22} color={theme.label} />
           </Pressable>
         </View>
-        <Text
-          testID="favorites-title"
-          className="px-5 pt-3 pb-1 text-[34px] font-bold"
-          style={{ color: theme.label }}
-        >
+        <Text variant="largeTitle" testID="favorites-title" className="px-5 pt-3 pb-1">
           Favorites
         </Text>
         {sorted.length > 0 && (
-          <Text className="px-5 pb-4 text-[15px]" style={{ color: theme.secondaryLabel }}>
+          <Text variant="subheadline" tone="secondary" className="px-5 pb-4">
             Swipe left on a favorite to remove it.
           </Text>
         )}
@@ -175,10 +170,8 @@ const Favorites = () => {
         {sorted.length === 0 ? (
           <View className="mx-8 mt-12 items-center gap-y-2">
             <Heart size={36} color={theme.tertiaryLabel} />
-            <Text className="text-[17px] font-semibold" style={{ color: theme.label }}>
-              No Favorites Yet!
-            </Text>
-            <Text className="text-center text-[15px]" style={{ color: theme.secondaryLabel }}>
+            <Text variant="headline">No Favorites Yet!</Text>
+            <Text variant="subheadline" tone="secondary" className="text-center">
               Press and hold a food on any menu, or swipe left on it, to save it here.
             </Text>
             <Pressable
@@ -187,7 +180,9 @@ const Favorites = () => {
               className="mt-3 h-11 justify-center rounded-full px-5"
               style={{ backgroundColor: theme.tint }}
             >
-              <Text className="text-[15px] font-semibold text-white">Browse Dining Locations</Text>
+              <Text variant="subheadline" emphasized tone="onTint">
+                Browse Dining Locations
+              </Text>
             </Pressable>
           </View>
         ) : (
