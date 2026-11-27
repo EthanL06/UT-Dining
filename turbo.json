@@ -15,7 +15,17 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**", "out/**"],
-      "env": ["NEXT_PUBLIC_*", "WEBSITE_BASE_PATH"]
+      "env": [
+        "NEXT_PUBLIC_*",
+        "WEBSITE_BASE_PATH",
+        "WEBSITE_SITE_URL",
+        "WEBSITE_STATIC_EXPORT",
+        "WEBSITE_SUPABASE_URL",
+        "WEBSITE_SUPABASE_ANON_KEY",
+        "VERCEL_ENV",
+        "VERCEL_PROJECT_PRODUCTION_URL",
+        "VERCEL_BRANCH_URL"
+      ]
     },
     "dev": {
       "cache": false,

@@ -1,8 +1,8 @@
 # apps/website
 
-Public site and privacy policy, a static Next.js 16 export. Read the root `AGENTS.md` first and `README.md` here.
+Public site, changelog and privacy policy. Next.js 16 on Vercel, server-rendered with ISR. Read the root `AGENTS.md` first and `README.md` here.
 
-- Every link and asset must keep the base path from `WEBSITE_BASE_PATH` (default `/ut-dining-website`), because the App Store privacy link points at it. `make website` serves it at http://localhost:3001/ut-dining-website/.
+- Vercel serves the site from `/`. `WEBSITE_STATIC_EXPORT=1` builds the static GitHub Pages copy under `/ut-dining-website` (override with `WEBSITE_BASE_PATH`), which the App Store privacy link still points at, so every link and asset must go through the base path and `/privacy-policy/` must not move. `make website` serves it at http://localhost:3001/.
 - `next dev` keeps the block below up to date. Commit it when it changes.
 
 <!-- BEGIN:nextjs-agent-rules -->
