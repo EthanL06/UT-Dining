@@ -1,7 +1,6 @@
 import * as Device from 'expo-device';
 import { router, useLocalSearchParams } from 'expo-router';
 import { MapPin, Navigation, X } from 'lucide-react-native';
-import { usePostHog } from 'posthog-react-native';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { ActivityIndicator, Pressable, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,7 +11,7 @@ import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
-import { getSafePostHog } from '~/services/analytics/posthog';
+import { analytics } from '~/services/analytics/posthog';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getLocationName } from '~/utils/locations';
 import { useTheme } from '~/utils/theme';
@@ -28,7 +27,6 @@ export default function LocationGenericScreen() {
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
   const db = useDatabase();
   const [imageFailed, setImageFailed] = useState(false);
-  const analytics = getSafePostHog(usePostHog());
 
   const { status: lookup, locationData } = useLocationDetails(location || '');
   const typeColor = usePlaceColor(locationData?.type ?? '');

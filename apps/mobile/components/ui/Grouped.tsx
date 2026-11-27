@@ -58,6 +58,7 @@ export const GroupedRow = ({
   titleColor,
   multilineSubtitle = false,
   onPress,
+  onLongPress,
   disabled,
   testID,
   detailTestID,
@@ -75,6 +76,7 @@ export const GroupedRow = ({
   titleColor?: string;
   multilineSubtitle?: boolean;
   onPress?: () => void;
+  onLongPress?: () => void;
   disabled?: boolean;
   testID?: string;
   detailTestID?: string;
@@ -90,6 +92,7 @@ export const GroupedRow = ({
       accessibilityRole={accessibilityRole ?? (onPress ? 'button' : undefined)}
       accessibilityState={selected === undefined ? undefined : { selected }}
       onPress={onPress}
+      onLongPress={onLongPress}
       disabled={disabled || (!onPress && !accessibilityRole)}
     >
       {({ pressed }) => (

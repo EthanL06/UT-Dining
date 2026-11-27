@@ -3,14 +3,14 @@ import * as Updates from 'expo-updates';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, View } from 'react-native';
 import { Text } from '~/components/ui/Text';
-import { fetchPrPreviews } from '~/services/qa/previews';
+import { fetchPreviewIndexEntry } from '~/services/qa/previews';
 import { consumeReloadReplay, switchUpdateChannel } from '~/services/qa/updates';
 import { isDevVariant } from '~/utils/appVariant';
 import { isCompatiblePreview, parsePrNumber } from '~/utils/previews';
 import { useTheme } from '~/utils/theme';
 
 const loadPreview = async (pr: number): Promise<string> => {
-  const preview = (await fetchPrPreviews().catch(() => [])).find((item) => item.pr === pr);
+  const preview = await fetchPreviewIndexEntry(pr);
   if (preview && !isCompatiblePreview(preview, Updates.runtimeVersion)) {
     if (preview.buildUrl) await Linking.openURL(preview.buildUrl);
     return `PR #${pr} changed native code. Install its build, then open the link again.`;
