@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import Reanimated, {
   Easing,
   FadeInDown,
@@ -8,6 +8,7 @@ import Reanimated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import { useTheme } from '~/utils/theme';
 
@@ -74,7 +75,7 @@ export const UndoToast = ({
         <Text variant="subheadline" numberOfLines={1} className="flex-1" color={theme.toastLabel}>
           {message}
         </Text>
-        <Pressable
+        <PressableScale
           testID="meal-plan-undo-button"
           accessibilityRole="button"
           accessibilityLabel="Undo"
@@ -85,7 +86,7 @@ export const UndoToast = ({
           <Text variant="subheadline" emphasized tone="onTint">
             Undo
           </Text>
-        </Pressable>
+        </PressableScale>
       </View>
     </Reanimated.View>
   );

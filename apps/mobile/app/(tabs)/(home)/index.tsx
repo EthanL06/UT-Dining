@@ -30,6 +30,7 @@ import OnboardingScreen from '~/components/onboarding/OnboardingScreen';
 import { ServiceStatusBanner } from '~/components/ServiceStatusBanner';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
 import { Image } from '~/components/ui/Image';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import { forceMenuSync, useMenuSync } from '~/hooks/useMenuSync';
 import { useNow } from '~/hooks/useNow';
@@ -146,7 +147,7 @@ const TypeChip = ({
   onPress: () => void;
   theme: Theme;
 }) => (
-  <Pressable
+  <PressableScale
     accessibilityRole="button"
     accessibilityState={{ selected }}
     onPress={() => {
@@ -159,7 +160,7 @@ const TypeChip = ({
     <Text variant="subheadline" emphasized tone={selected ? 'onTint' : 'primary'}>
       {title}
     </Text>
-  </Pressable>
+  </PressableScale>
 );
 
 const LocationRows = ({

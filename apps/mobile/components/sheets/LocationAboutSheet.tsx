@@ -1,8 +1,9 @@
-import { ActivityIndicator, Pressable, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import ActionSheet, { ScrollView, type SheetProps, useSheetRef } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import PlaceDetails from '~/components/PlaceDetails';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -36,7 +37,7 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
         <Text variant="title2" numberOfLines={1} className="flex-1 pl-1">
           {displayName}
         </Text>
-        <Pressable
+        <PressableScale
           testID="location-about-done-button"
           accessibilityRole="button"
           onPress={() => sheetRef.current?.hide()}
@@ -46,7 +47,7 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
           <Text variant="subheadline" emphasized tone="tint">
             Done
           </Text>
-        </Pressable>
+        </PressableScale>
       </View>
       <OverflowScrollView
         as={ScrollView}

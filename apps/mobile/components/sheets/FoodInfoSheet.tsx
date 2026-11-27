@@ -1,8 +1,9 @@
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import ActionSheet, { ScrollView, type SheetProps, useSheetRef } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from '~/components/ui/Image';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import { ALLERGEN_EXCEPTIONS, ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import { useTheme } from '~/utils/theme';
@@ -71,7 +72,7 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
       <View className="flex-row items-center justify-between px-4 pt-1 pb-2">
         <View className="w-[68px]" />
         <Text variant="headline">Food Legend</Text>
-        <Pressable
+        <PressableScale
           testID="food-info-done-button"
           accessibilityRole="button"
           onPress={() => sheetRef.current?.hide()}
@@ -81,7 +82,7 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
           <Text variant="subheadline" emphasized tone="tint">
             Done
           </Text>
-        </Pressable>
+        </PressableScale>
       </View>
       <OverflowScrollView
         as={ScrollView}

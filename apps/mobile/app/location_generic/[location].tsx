@@ -2,7 +2,7 @@ import * as Device from 'expo-device';
 import { Link, router, useLocalSearchParams } from 'expo-router';
 import { MapPin, Navigation, X } from 'lucide-react-native';
 import { useEffect, useEffectEvent, useState } from 'react';
-import { ActivityIndicator, Pressable, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, useWindowDimensions, View } from 'react-native';
 import Animated, {
   useAnimatedScrollHandler,
   useAnimatedStyle,
@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PLACE_ICONS, usePlaceColor } from '~/components/map/MapSheet';
 import PlaceDetails, { openPlaceDirections } from '~/components/PlaceDetails';
 import { Image } from '~/components/ui/Image';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
@@ -70,7 +71,7 @@ export default function LocationGenericScreen() {
             <Text variant="headline" className="text-center" testID="place-unavailable">
               {lookup === 'error' ? "Couldn't load this place" : "This place isn't listed anymore"}
             </Text>
-            <Pressable
+            <PressableScale
               testID="back-button"
               accessibilityRole="button"
               onPress={() => router.back()}
@@ -80,7 +81,7 @@ export default function LocationGenericScreen() {
               <Text variant="callout" emphasized>
                 Close
               </Text>
-            </Pressable>
+            </PressableScale>
           </>
         )}
       </View>
@@ -122,7 +123,7 @@ export default function LocationGenericScreen() {
             )}
           </Animated.View>
           <Animated.View className="absolute top-4 left-4" style={closeStyle}>
-            <Pressable
+            <PressableScale
               testID="back-button"
               accessibilityLabel="Close"
               accessibilityRole="button"
@@ -131,7 +132,7 @@ export default function LocationGenericScreen() {
               style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
             >
               <X size={20} color="#FFFFFF" />
-            </Pressable>
+            </PressableScale>
           </Animated.View>
         </View>
 
@@ -162,7 +163,7 @@ export default function LocationGenericScreen() {
         </View>
 
         <View className="mx-4 mb-5">
-          <Pressable
+          <PressableScale
             testID="generic-directions-button"
             accessibilityRole="button"
             onPress={openDirections}
@@ -173,13 +174,13 @@ export default function LocationGenericScreen() {
             <Text variant="callout" emphasized tone="onTint">
               Directions
             </Text>
-          </Pressable>
+          </PressableScale>
         </View>
 
         <PlaceDetails place={locationData} />
 
         {isTablet && (
-          <Pressable
+          <PressableScale
             accessibilityRole="button"
             onPress={() => router.dismissTo('/')}
             className="mx-4 mt-2 h-12 items-center justify-center rounded-full"
@@ -188,7 +189,7 @@ export default function LocationGenericScreen() {
             <Text variant="callout" emphasized>
               Back to Home
             </Text>
-          </Pressable>
+          </PressableScale>
         )}
       </Animated.ScrollView>
     </View>
