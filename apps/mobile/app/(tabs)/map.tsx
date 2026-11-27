@@ -363,7 +363,6 @@ const MapPage = () => {
 
       <MapSheet
         ref={sheetRef}
-        onDismiss={mapSearch.close}
         mode={selectedPlace ? 'place' : search.status === 'searching' ? 'search' : 'browse'}
         placeKey={selectedPlace?.name ?? null}
         query={mapSearch.query}
