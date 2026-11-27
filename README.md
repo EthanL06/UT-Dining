@@ -33,9 +33,10 @@ Website: [utdining.app](https://utdining.app) · Status: [status.utdining.app](h
 7. [Deployments](#deployments)
    - [Branches and releases](#branches-and-releases)
 8. [Status and Monitoring](#status-and-monitoring)
-9. [Frequently Asked Questions](#frequently-asked-questions)
-10. [Contributing](#contributing)
-11. [License](#license)
+9. [Open Data](#open-data)
+10. [Frequently Asked Questions](#frequently-asked-questions)
+11. [Contributing](#contributing)
+12. [License](#license)
 
 ## Features
 
@@ -264,6 +265,10 @@ Vercel only builds an app when its files, a workspace package it uses or a root 
 - **Admin status**: `/dashboard/status` in the dashboard has the detailed view, including recent GitHub Actions runs.
 - **Uptime monitoring**: [EthanL06/ut-dining-uptime](https://github.com/EthanL06/ut-dining-uptime) runs [Upptime](https://upptime.js.org) on GitHub Actions. Every 5 minutes it checks the website, the dashboard, the status page, the status API and the production Supabase gateway from outside our own hosting. When a check fails it opens an issue in that repo, and it closes the issue on recovery. History and response times are at [ethanl06.github.io/ut-dining-uptime](https://ethanl06.github.io/ut-dining-uptime/).
 - **Dev database**: `dev-supabase-keepalive.yml` pings the dev Supabase project three times a week so the free plan doesn't pause it.
+
+## Open Data
+
+Every menu, dish, nutrition label, allergen flag and set of opening hours in the app is published as free JSON and CSV files in **[EthanL06/ut-dining-data](https://github.com/EthanL06/ut-dining-data)**, with every menu since July 2025. It updates after each scrape, twice a day, and its README documents the schema. The export lives in `apps/scraper/src/export.ts` and runs from `.github/workflows/open-data.yml`.
 
 ## Frequently Asked Questions
 

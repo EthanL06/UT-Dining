@@ -2,9 +2,14 @@ import { describe, expect, it } from 'vitest';
 import {
   formatPreviewAge,
   isCompatiblePreview,
+  isReplayedLaunchLink,
+  keepOpenPreviews,
+  openPullRequestsUrl,
+  parseOpenPrNumbers,
   parsePreviews,
   parsePrNumber,
   previewsUrl,
+  pullRequestUrl,
 } from './previews';
 
 describe('previewsUrl', () => {
@@ -71,5 +76,53 @@ describe('formatPreviewAge', () => {
     expect(formatPreviewAge('2026-11-27T07:00:00Z', now)).toBe('3 h ago');
     expect(formatPreviewAge('2026-11-25T10:00:00Z', now)).toBe('2 d ago');
     expect(formatPreviewAge('bad', now)).toBe('unknown');
+  });
+});
+
+describe('isReplayedLaunchLink', () => {
+  it('treats a launch link right after an in-app reload as a replay', () => {
+    expect(isReplayedLaunchLink(1_000, 6_000)).toBe(true);
+  });
+
+  it('handles the link when no reload happened or the reload is old', () => {
+    expect(isReplayedLaunchLink(undefined, 6_000)).toBe(false);
+    expect(isReplayedLaunchLink(1_000, 120_000)).toBe(false);
+    expect(isReplayedLaunchLink(9_000, 6_000)).toBe(false);
+  });
+});
+
+describe('open PR filtering', () => {
+  const preview = (pr: number) => ({
+    pr,
+    title: `PR #${pr}`,
+    channel: `pr-${pr}`,
+    sha: '',
+    runtime: '',
+    buildUrl: '',
+    updatedAt: '',
+  });
+
+  it('reads PR numbers from the GitHub pulls response', () => {
+    expect(parseOpenPrNumbers([{ number: 161 }, { number: 'x' }, null, { number: 134 }])).toEqual([
+      161, 134,
+    ]);
+    expect(parseOpenPrNumbers({ message: 'API rate limit exceeded' })).toBeNull();
+  });
+
+  it('drops previews whose PR is merged or closed', () => {
+    const list = [preview(161), preview(106), preview(134)];
+    expect(keepOpenPreviews(list, new Set([161, 134])).map((item) => item.pr)).toEqual([161, 134]);
+  });
+
+  it('keeps every preview when PR state is unknown', () => {
+    const list = [preview(161), preview(106)];
+    expect(keepOpenPreviews(list, null)).toBe(list);
+  });
+
+  it('builds GitHub URLs', () => {
+    expect(pullRequestUrl(161)).toBe('https://github.com/EthanL06/UT-Dining/pull/161');
+    expect(openPullRequestsUrl(2)).toBe(
+      'https://api.github.com/repos/EthanL06/UT-Dining/pulls?state=open&per_page=100&page=2',
+    );
   });
 });

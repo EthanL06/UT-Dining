@@ -33,6 +33,7 @@ jobs:
     timeout-minutes: 120
     permissions:
       contents: write
+      pull-requests: write
     env:
       APP_VARIANT: development
       EXPO_PUBLIC_SUPABASE_URL: http://127.0.0.1:54331
@@ -137,8 +138,20 @@ jobs:
           git add index.md
           git commit -q -m "chore: index of the screenshots"
           git push -q --force "https://x-access-token:$TOKEN@github.com/$REPO.git" "HEAD:refs/heads/assets/$TOPIC"
+          echo "ASSETS_SHA=$SHA" >> "$GITHUB_ENV"
           {
             echo "Branch: \`assets/$TOPIC\`. Paste this table into the PR, or read it at https://raw.githubusercontent.com/$REPO/assets/$TOPIC/index.md"
             echo
             cat /tmp/index.md
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Embed the screenshots in the PR body
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: >-
+          node scripts/qa/pr-screenshots-body.ts --repo "$GITHUB_REPOSITORY"
+          --pr "${{ github.event.pull_request.number }}" --sha "$ASSETS_SHA"
+          --dir "$RUNNER_TEMP/screenshots"
+          --caption "iOS screenshots of ${HEAD_SHA:0:7} from CI (fixture data), light and dark."

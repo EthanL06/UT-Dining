@@ -5,7 +5,13 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
-import { type ErrorBoundaryProps, Stack } from 'expo-router';
+import {
+  DarkTheme,
+  DefaultTheme,
+  type ErrorBoundaryProps,
+  Stack,
+  ThemeProvider,
+} from 'expo-router';
 import { SQLiteProvider } from 'expo-sqlite';
 import { PostHogProvider } from 'posthog-react-native';
 import { Suspense, useEffect } from 'react';
@@ -67,6 +73,11 @@ onlineManager.setEventListener((setOnline) => {
   return () => subscription.remove();
 });
 
+const navigationTheme = (isDarkMode: boolean) => {
+  const base = isDarkMode ? DarkTheme : DefaultTheme;
+  return { ...base, colors: { ...base.colors, background: getTheme(isDarkMode).background } };
+};
+
 const AppContent = () => {
   const { success, error } = useMigrations(writerDb, migrations);
   const { incrementLaunchCount } = useAppLaunchStore();
@@ -101,64 +112,68 @@ const AppContent = () => {
           options={{ enableChangeListener: true }}
           useSuspense
         >
-          <GestureHandlerRootView>
-            <SheetProvider>
-              <VersionCheckProvider>
-                <PushNotificationsInitializer />
-                <Stack
-                  screenOptions={{
-                    headerShown: false,
-                    contentStyle: {
-                      backgroundColor: getTheme(isDarkMode).background,
-                    },
-                    gestureEnabled: true,
-                  }}
-                >
-                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <GestureHandlerRootView
+            style={{ flex: 1, backgroundColor: getTheme(isDarkMode).background }}
+          >
+            <ThemeProvider value={navigationTheme(isDarkMode)}>
+              <SheetProvider>
+                <VersionCheckProvider>
+                  <PushNotificationsInitializer />
+                  <Stack
+                    screenOptions={{
+                      headerShown: false,
+                      contentStyle: {
+                        backgroundColor: getTheme(isDarkMode).background,
+                      },
+                      gestureEnabled: true,
+                    }}
+                  >
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-                  <Stack.Screen
-                    name="location_generic/[location]"
-                    options={{
-                      presentation: isTablet ? 'card' : 'modal',
-                      sheetGrabberVisible: true,
-                      headerShown: false,
-                      animation: 'slide_from_bottom',
-                    }}
-                  />
-                  <Stack.Screen
-                    name="food/[food]"
-                    options={{
-                      presentation: isTablet ? 'card' : 'modal',
-                      sheetGrabberVisible: true,
-                      headerShown: false,
-                    }}
-                  />
+                    <Stack.Screen
+                      name="location_generic/[location]"
+                      options={{
+                        presentation: isTablet ? 'card' : 'modal',
+                        sheetGrabberVisible: true,
+                        headerShown: false,
+                        animation: 'slide_from_bottom',
+                      }}
+                    />
+                    <Stack.Screen
+                      name="food/[food]"
+                      options={{
+                        presentation: isTablet ? 'card' : 'modal',
+                        sheetGrabberVisible: true,
+                        headerShown: false,
+                      }}
+                    />
 
-                  <Stack.Screen
-                    name="favorites"
-                    options={{
-                      headerShown: false,
-                      fullScreenGestureEnabled: false,
-                    }}
-                  />
+                    <Stack.Screen
+                      name="favorites"
+                      options={{
+                        headerShown: false,
+                        fullScreenGestureEnabled: false,
+                      }}
+                    />
 
-                  <Stack.Screen
-                    name="meal-plan"
-                    options={{
-                      headerShown: false,
-                      fullScreenGestureEnabled: false,
-                    }}
-                  />
-                  <Stack.Screen
-                    name="location/[location]"
-                    options={{
-                      headerShown: false,
-                      fullScreenGestureEnabled: false,
-                    }}
-                  />
-                </Stack>
-              </VersionCheckProvider>
-            </SheetProvider>
+                    <Stack.Screen
+                      name="meal-plan"
+                      options={{
+                        headerShown: false,
+                        fullScreenGestureEnabled: false,
+                      }}
+                    />
+                    <Stack.Screen
+                      name="location/[location]"
+                      options={{
+                        headerShown: false,
+                        fullScreenGestureEnabled: false,
+                      }}
+                    />
+                  </Stack>
+                </VersionCheckProvider>
+              </SheetProvider>
+            </ThemeProvider>
           </GestureHandlerRootView>
         </SQLiteProvider>
       </Suspense>

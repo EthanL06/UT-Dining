@@ -1,77 +1,39 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import type { FoodItem, Location } from '~/services/database/database';
-import { log } from '~/utils/log';
+import type { Location } from '~/services/database/database';
+import { type MenuRow, type MenuSource, type RowCache, toMenuSource } from '~/utils/menuRows';
 
 export type ListItem =
-  | { type: 'category_header'; id: string; title: string; isExpanded: boolean }
-  | { type: 'food_item'; id: string; categoryId: string; data: FoodItem; hidden?: boolean }
+  | MenuRow
   | { type: 'skeleton_header'; id: string }
   | { type: 'skeleton_item'; id: string };
 
+const EMPTY_SOURCE: MenuSource = [];
+
 export function useCategoryExpansion(data: Location | null) {
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set());
 
-  const toggleCategory = useCallback(
-    (categoryId: string) => {
-      try {
-        if (expandedCategories[categoryId] === undefined) {
-          setExpandedCategories((prev) => ({ ...prev, [categoryId]: false }));
-          return;
-        }
-
-        setExpandedCategories((prev) => ({
-          ...prev,
-          [categoryId]: !prev[categoryId],
-        }));
-      } catch (error) {
-        log.error('Error toggling category', error);
-      }
-    },
-    [expandedCategories],
-  );
-
-  const flattenedItems = useMemo(() => {
-    if (!data?.menus?.length) return [];
-
-    const items: ListItem[] = [];
-    const menu = data.menus[0];
-
-    const categories = menu.menu_categories;
-
-    categories.forEach((category) => {
-      const categoryId = `${category.category_title}`;
-
-      const isExpanded = expandedCategories[categoryId] !== false;
-
-      items.push({
-        type: 'category_header',
-        id: categoryId,
-        title: category.category_title as string,
-        isExpanded,
-      });
-
-      category.food_items.forEach((food, index) => {
-        items.push({
-          type: 'food_item',
-          id: `${categoryId}-${food.name}-${index}`,
-          categoryId,
-          data: food,
-          hidden: !isExpanded,
-        });
-      });
+  const toggleCategory = useCallback((categoryId: string) => {
+    setCollapsed((previous) => {
+      const next = new Set(previous);
+      if (next.has(categoryId)) next.delete(categoryId);
+      else next.add(categoryId);
+      return next;
     });
-
-    return items;
-  }, [data?.menus, expandedCategories]);
-
-  const resetExpandedCategories = useCallback(() => {
-    try {
-      setExpandedCategories({});
-    } catch (error) {
-      log.error('Error resetting expanded categories', error);
-    }
   }, []);
 
-  return { expandedCategories, toggleCategory, flattenedItems, resetExpandedCategories };
+  const resetExpandedCategories = useCallback(() => {
+    setCollapsed((previous) => (previous.size === 0 ? previous : new Set()));
+  }, []);
+
+  const categories = data?.menus?.[0]?.menu_categories;
+  const { source, cache } = useMemo(
+    () => ({
+      source: categories ? toMenuSource(categories) : EMPTY_SOURCE,
+      cache: new Map() as RowCache,
+    }),
+    [categories],
+  );
+
+  return { collapsed, toggleCategory, resetExpandedCategories, source, cache };
 }

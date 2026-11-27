@@ -7,11 +7,13 @@ import { Alert, Linking } from 'react-native';
 import { GroupedSection } from '~/components/ui/Grouped';
 import { fetchPrPreviews, PR_PREVIEWS_QUERY_KEY } from '~/services/qa/previews';
 import { type LoadResult, loadLatestUpdate, switchUpdateChannel } from '~/services/qa/updates';
+import { haptics } from '~/utils/haptics';
 import {
   formatPreviewAge,
   isCompatiblePreview,
   type PrPreview,
   parsePrNumber,
+  pullRequestUrl,
 } from '~/utils/previews';
 import { ActionRow, COLORS, InfoRow, share, useActionStatus } from './shared';
 
@@ -70,6 +72,11 @@ export const UpdatesSection = () => {
     }
   };
 
+  const openOnGitHub = (preview: PrPreview) => {
+    haptics.selection();
+    Linking.openURL(pullRequestUrl(preview.pr)).catch(() => {});
+  };
+
   const enterPrNumber = () =>
     Alert.prompt(
       'Load PR Preview',
@@ -89,7 +96,7 @@ export const UpdatesSection = () => {
 
   const listFooter = error
     ? `Could not load the preview list: ${error instanceof Error ? error.message : String(error)}`
-    : 'Every open PR that changes the app publishes a preview here. Tap one to run its JS on this phone; Back to Staging returns.';
+    : 'Every open PR that changes the app publishes a preview here. Tap one to run its JS on this phone, or hold it to open the PR on GitHub. Back to Staging returns.';
 
   return (
     <>
@@ -156,6 +163,7 @@ export const UpdatesSection = () => {
               color={compatible ? COLORS.purple : COLORS.gray}
               detail={detail(key) ?? (channel === preview.channel ? 'Running' : undefined)}
               onPress={() => openPreview(preview)}
+              onLongPress={() => openOnGitHub(preview)}
             />
           );
         })}
