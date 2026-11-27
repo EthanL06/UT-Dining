@@ -164,7 +164,11 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
               onPress={toggleMealPlanFilter}
               icon={
                 <View className="size-7 items-center justify-center">
-                  <ChefHat size={16} color={filters.mealPlan ? '#FFFFFF' : theme.tint} />
+                  <ChefHat
+                    size={16}
+                    color={filters.mealPlan ? '#FFFFFF' : theme.tint}
+                    fill={filters.mealPlan ? '#FFFFFF' : 'transparent'}
+                  />
                 </View>
               }
             />

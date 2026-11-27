@@ -364,7 +364,7 @@ export default function Home() {
               title="Meal Plan"
               href="/meal-plan"
               theme={theme}
-              icon={<ChefHat size={20} color={theme.tint} />}
+              icon={<ChefHat size={20} color={theme.tint} fill={theme.tint} />}
             />
           </View>
 

@@ -1,5 +1,5 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Check, ChefHat, Flame, Heart, Info, X } from 'lucide-react-native';
+import { ChefHat, Flame, Heart, Info, X } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
@@ -297,11 +297,11 @@ const FoodScreen = () => {
               className="h-12 flex-[1.4] flex-row items-center justify-center gap-x-2 rounded-full"
               style={{ backgroundColor: isMealPlan ? theme.tintSoft : theme.tint }}
             >
-              {isMealPlan ? (
-                <Check size={18} color={theme.tint} strokeWidth={3} />
-              ) : (
-                <ChefHat size={18} color="#FFFFFF" />
-              )}
+              <ChefHat
+                size={18}
+                color={isMealPlan ? theme.tint : '#FFFFFF'}
+                fill={isMealPlan ? theme.tint : 'transparent'}
+              />
               <Text
                 className="text-[15px] font-semibold"
                 style={{ color: isMealPlan ? theme.tint : '#FFFFFF' }}

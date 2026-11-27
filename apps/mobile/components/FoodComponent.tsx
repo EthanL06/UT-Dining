@@ -156,7 +156,7 @@ const FoodComponent = ({
         )}
       </View>
       {showExtraInfo && isFavorite && <Heart size={15} color={theme.tint} fill={theme.tint} />}
-      {showExtraInfo && isMealPlan && <ChefHat size={15} color={theme.tint} />}
+      {showExtraInfo && isMealPlan && <ChefHat size={15} color={theme.tint} fill={theme.tint} />}
       {!selection?.selecting && <ChevronRight size={17} color={theme.tertiaryLabel} />}
     </View>
   );
