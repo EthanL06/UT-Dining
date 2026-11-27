@@ -1,0 +1,75 @@
+name: Status snapshot
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+concurrency:
+  group: status-snapshot
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: read
+  issues: read
+  actions: read
+  checks: read
+  statuses: read
+
+jobs:
+  snapshot:
+    name: Publish live status
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          sparse-checkout: |
+            scripts/dev/ops
+            .node-version
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .node-version
+
+      - name: Publish while builds or previews are moving
+        run: |
+          publish() {
+            out="$RUNNER_TEMP/status"
+            rm -rf "$out"
+            node scripts/dev/ops/status.ts --out "$out" >/dev/null
+            mkdir -p "$out/apps/dashboard" "$out/apps/website"
+            echo '{ "git": { "deploymentEnabled": false } }' > "$out/apps/dashboard/vercel.json"
+            echo '{ "git": { "deploymentEnabled": false } }' > "$out/apps/website/vercel.json"
+            git -C "$out" init -q -b assets/status
+            git -C "$out" add -A
+            git -C "$out" -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              commit -qm "chore: status snapshot $(date -u +%FT%TZ)"
+            git -C "$out" push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:assets/status
+            echo "published $(jq -r .generatedAt "$out/live.json")"
+          }
+          moving() {
+            jq -e '
+              ([.live.builds[] | select(.status | IN("NEW", "IN_QUEUE", "IN_PROGRESS", "PENDING_CANCEL"))] | length > 0)
+              or ([.live.prs[] | select(.ota.kind == "publishing")] | length > 0)
+              or ((.live.staging.run // {status: "completed"}).status != "completed")
+            ' "$RUNNER_TEMP/status/live.json" >/dev/null
+          }
+          publish
+          end=$((SECONDS + 50 * 60))
+          while moving && [ "$SECONDS" -lt "$end" ]; do
+            sleep 120
+            publish
+          done
+
+      - name: Summary
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/status/live.md" ]; then cat "$RUNNER_TEMP/status/live.md" >> "$GITHUB_STEP_SUMMARY"; fi

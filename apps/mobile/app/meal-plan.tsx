@@ -1,5 +1,5 @@
 import { formatCentralDateKey } from '@ut-dining/core';
-import { router, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 import { ChefHat, ChevronLeft, ChevronRight, Flame } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { AppState, Alert as NativeAlert, Pressable, View } from 'react-native';
@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { formatGrams, formatNumber } from '~/components/mealPlan/format';
 import { PlanRow } from '~/components/mealPlan/PlanRow';
 import { UndoToast } from '~/components/mealPlan/UndoToast';
+import { pushedScreenHeaderOptions } from '~/components/TabStack';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import {
@@ -168,42 +169,37 @@ const MealPlan = () => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: insets.top }}>
-      <Stack.Screen options={{ title: 'Meal Plan', headerShown: false }} />
+    <>
+      <Stack.Screen
+        options={{
+          title: 'Meal Plan',
+          ...pushedScreenHeaderOptions(theme),
+          headerRight:
+            editable && items.length > 0
+              ? () => (
+                  <Pressable
+                    testID="meal-plan-reset-button"
+                    accessibilityRole="button"
+                    onPress={confirmReset}
+                    hitSlop={8}
+                    className="px-1.5"
+                  >
+                    <Text variant="callout" emphasized tone="tint">
+                      Reset
+                    </Text>
+                  </Pressable>
+                )
+              : undefined,
+        }}
+      />
       <OverflowScrollView
+        style={{ flex: 1, backgroundColor: theme.background }}
+        testID="meal-plan-screen"
         divider={false}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingBottom: 32 }}
       >
-        <View className="flex-row items-center justify-between px-4 pt-2">
-          <Pressable
-            testID="back-button"
-            accessibilityLabel="Back"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            className="size-11 items-center justify-center rounded-full"
-            style={{ backgroundColor: theme.card }}
-          >
-            <ChevronLeft size={22} color={theme.label} />
-          </Pressable>
-          {editable && items.length > 0 && (
-            <Pressable
-              testID="meal-plan-reset-button"
-              accessibilityRole="button"
-              onPress={confirmReset}
-              className="h-11 justify-center rounded-full px-4"
-              style={{ backgroundColor: theme.card }}
-            >
-              <Text variant="callout" emphasized tone="tint">
-                Reset
-              </Text>
-            </Pressable>
-          )}
-        </View>
-
-        <Text variant="largeTitle" testID="meal-plan-title" className="px-5 pt-3 pb-1">
-          Meal Plan
-        </Text>
-        <Text variant="subheadline" paragraph tone="secondary" className="px-5 pb-4">
+        <Text variant="subheadline" paragraph tone="secondary" className="px-5 pt-1 pb-4">
           Each day keeps its own plan, so you can look back on what you ate.
         </Text>
 
@@ -327,7 +323,7 @@ const MealPlan = () => {
           onUndo={undoRemove}
         />
       )}
-    </View>
+    </>
   );
 };
 
