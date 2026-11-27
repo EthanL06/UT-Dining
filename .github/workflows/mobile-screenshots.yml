@@ -3,6 +3,19 @@ name: Mobile screenshots
 on:
   pull_request:
     types: [labeled, synchronize, reopened]
+    paths:
+      - apps/mobile/**
+      - packages/core/**
+      - pnpm-lock.yaml
+      - scripts/qa/**
+      - .github/actions/ios-sim-app/**
+      - .github/workflows/mobile-screenshots.yml
+  push:
+    branches: [staging]
+    paths:
+      - apps/mobile/**
+      - packages/core/**
+      - pnpm-lock.yaml
   workflow_dispatch:
 
 concurrency:
@@ -10,38 +23,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build the iOS app
+  screenshots:
+    name: Take screenshots
     if: >-
-      github.event_name == 'workflow_dispatch' ||
+      github.event_name != 'pull_request' ||
       (contains(github.event.pull_request.labels.*.name, 'screenshots') &&
       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: macos-26
-    timeout-minutes: 90
-    outputs:
-      key: ${{ steps.app.outputs.key }}
-    env:
-      APP_VARIANT: development
-      EXPO_PUBLIC_SUPABASE_URL: http://127.0.0.1:54331
-      EXPO_PUBLIC_STATUS_API_URL: http://127.0.0.1:54331/api/status
-      EXPO_PUBLIC_SUPABASE_ANON_KEY: fixture
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-      - id: app
-        uses: ./.github/actions/ios-sim-app
-
-  screenshots:
-    name: Take screenshots
-    needs: build
-    runs-on: macos-26
-    timeout-minutes: 45
+    timeout-minutes: 120
     permissions:
       contents: write
     env:
+      APP_VARIANT: development
+      EXPO_PUBLIC_SUPABASE_URL: http://127.0.0.1:54331
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: fixture
+      EXPO_PUBLIC_STATUS_API_URL: http://127.0.0.1:54331/api/status
       MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000
       MAESTRO_VERSION: 2.12.1
-      TOPIC: ${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+      TOPIC: ${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || (github.event_name == 'push' && 'staging') || format('run-{0}', github.run_id) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -54,6 +53,9 @@ jobs:
           SIM="$(xcrun simctl create screenshots "$DEVICE_TYPE" "$RUNTIME")"
           xcrun simctl boot "$SIM"
           echo "SIM=$SIM" >> "$GITHUB_ENV"
+
+      - id: app
+        uses: ./.github/actions/ios-sim-app
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
@@ -73,10 +75,11 @@ jobs:
       - run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
 
       - name: Restore the built app
+        if: steps.app.outputs.cached == 'true'
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: .context/app
-          key: ${{ needs.build.outputs.key }}
+          key: ${{ steps.app.outputs.key }}
           fail-on-cache-miss: true
 
       - name: Install the app once the simulator has booted

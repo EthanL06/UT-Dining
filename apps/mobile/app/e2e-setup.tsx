@@ -3,6 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect } from 'react';
 import { SERVICE_STATUS_QUERY_KEY } from '~/hooks/useServiceStatus';
 
+import { useAppLaunchStore } from '~/store/useAppLaunchStore';
 import { useNotificationsStore } from '~/store/useNotificationsStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -12,6 +13,7 @@ import { parseServiceStatus } from '~/utils/serviceStatus';
 export default function E2ESetup() {
   const skipOnboarding = useOnboardingStore((state) => state.skipOnboarding);
   const setDarkMode = useSettingsStore((state) => state.setDarkMode);
+  const markRatingPromptShown = useAppLaunchStore((state) => state.markRatingPromptShown);
   const setVisibleSince = useNotificationsStore((state) => state.setVisibleSince);
   const queryClient = useQueryClient();
   const { theme, serviceStatus } = useLocalSearchParams<{
@@ -22,13 +24,22 @@ export default function E2ESetup() {
   useEffect(() => {
     if (isDevVariant) {
       skipOnboarding();
+      markRatingPromptShown();
       setVisibleSince(0);
       if (theme === 'dark' || theme === 'light') setDarkMode(theme === 'dark');
       const status = parseServiceStatus({ status: serviceStatus });
       if (status) queryClient.setQueryData(SERVICE_STATUS_QUERY_KEY, status);
     }
     router.replace('/');
-  }, [skipOnboarding, setVisibleSince, setDarkMode, theme, serviceStatus, queryClient]);
+  }, [
+    skipOnboarding,
+    setVisibleSince,
+    setDarkMode,
+    markRatingPromptShown,
+    theme,
+    serviceStatus,
+    queryClient,
+  ]);
 
   return null;
 }

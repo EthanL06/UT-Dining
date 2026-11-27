@@ -73,10 +73,12 @@ YAML
     while read -r name path; do
       [[ -z "$name" || "$name" == \#* ]] && continue
       echo "- stopApp"
-      open_app false
       if [[ -n "${path:-}" ]]; then
+        open_app false | sed '$d'
         echo "- openLink: ut-dining://$path"
         echo "- runFlow: $ALERTS"
+      else
+        open_app false
       fi
       cat <<YAML
 - waitForAnimationToEnd:

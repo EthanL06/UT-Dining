@@ -1,10 +1,13 @@
 name: iOS simulator app
-description: Builds the release simulator app of the development bundle id into .context/app, cached by the app's sources, with ccache and CocoaPods caches for rebuilds.
+description: Builds the release simulator app of the development bundle id into .context/app. A cache hit on the app sources skips everything; otherwise the native build is reused by its Expo fingerprint and only the JavaScript is rebuilt, and a full Xcode build runs only when native code changed.
 
 outputs:
   key:
     description: Cache key of the built app in .context/app
     value: ${{ steps.app-cache.outputs.cache-primary-key }}
+  cached:
+    description: true when the app was found in the cache, so .context/app is still empty and has to be restored
+    value: ${{ steps.app-cache.outputs.cache-hit }}
 
 runs:
   using: composite
@@ -14,7 +17,7 @@ runs:
       uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
       with:
         path: .context/app
-        key: ios-release-app-${{ hashFiles('apps/mobile/**', '!apps/mobile/e2e/**', 'packages/core/**', 'pnpm-lock.yaml') }}
+        key: ios-release-app-${{ hashFiles('apps/mobile/**', '!apps/mobile/e2e/**', 'packages/core/**', 'pnpm-lock.yaml', 'scripts/qa/ios-sim-app.sh') }}
         lookup-only: true
 
     - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
@@ -30,17 +33,32 @@ runs:
       shell: bash
       run: pnpm install --frozen-lockfile
 
-    - name: Install ccache
+    - name: Compute the native key
+      id: native
       if: steps.app-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: echo "key=ios-sim-shell-$(scripts/qa/ios-sim-app.sh --key)" >> "$GITHUB_OUTPUT"
+
+    - name: Restore the native build
+      id: shell
+      if: steps.app-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+      with:
+        path: .context/ios-shell
+        key: ${{ steps.native.outputs.key }}
+
+    - name: Install ccache
+      if: steps.app-cache.outputs.cache-hit != 'true' && steps.shell.outputs.cache-hit != 'true'
       shell: bash
       run: |
         command -v ccache >/dev/null || brew install ccache
         echo "CCACHE_DIR=$HOME/.ccache" >> "$GITHUB_ENV"
         echo "CCACHE_MAXSIZE=3G" >> "$GITHUB_ENV"
+        echo "USE_CCACHE=1" >> "$GITHUB_ENV"
 
     - name: Restore ccache
       id: ccache
-      if: steps.app-cache.outputs.cache-hit != 'true'
+      if: steps.app-cache.outputs.cache-hit != 'true' && steps.shell.outputs.cache-hit != 'true'
       uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
       with:
         path: ~/.ccache
@@ -50,45 +68,24 @@ runs:
           ios-ccache-
 
     - name: Restore CocoaPods
-      if: steps.app-cache.outputs.cache-hit != 'true'
+      if: steps.app-cache.outputs.cache-hit != 'true' && steps.shell.outputs.cache-hit != 'true'
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
       with:
         path: ~/Library/Caches/CocoaPods
         key: ios-pods-${{ hashFiles('pnpm-lock.yaml') }}
         restore-keys: ios-pods-
 
-    - name: Generate the iOS project
+    - name: Build the app
       if: steps.app-cache.outputs.cache-hit != 'true'
       shell: bash
-      working-directory: apps/mobile
-      env:
-        USE_CCACHE: '1'
-      run: npx expo prebuild --platform ios
+      run: scripts/qa/ios-sim-app.sh --out .context/app
 
-    - name: Build a release simulator app
-      if: steps.app-cache.outputs.cache-hit != 'true'
-      shell: bash
-      working-directory: apps/mobile/ios
-      run: |
-        ccache --zero-stats >/dev/null
-        WORKSPACE="$(ls -d *.xcworkspace | head -1)"
-        xcodebuild \
-          -workspace "$WORKSPACE" \
-          -scheme "${WORKSPACE%.xcworkspace}" \
-          -configuration Release \
-          -sdk iphonesimulator \
-          -destination 'generic/platform=iOS Simulator' \
-          -derivedDataPath build \
-          CODE_SIGNING_ALLOWED=NO \
-          CLANG_ENABLE_EXPLICIT_MODULES=NO \
-          > build.log 2>&1 || {
-            grep -nE "error:|Error:|@build-script-error|BUILD FAILED" -A8 build.log | head -150
-            exit 1
-          }
-        tail -5 build.log
-        ccache --show-stats
-        mkdir -p ../../../.context/app
-        cp -R build/Build/Products/Release-iphonesimulator/*.app ../../../.context/app/
+    - name: Save the native build
+      if: steps.app-cache.outputs.cache-hit != 'true' && steps.shell.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+      with:
+        path: .context/ios-shell
+        key: ${{ steps.native.outputs.key }}
 
     - name: Save the built app
       if: steps.app-cache.outputs.cache-hit != 'true'
@@ -98,7 +95,7 @@ runs:
         key: ${{ steps.app-cache.outputs.cache-primary-key }}
 
     - name: Save ccache
-      if: always() && steps.app-cache.outputs.cache-hit != 'true' && steps.ccache.outcome == 'success'
+      if: always() && steps.ccache.outcome == 'success'
       uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
       with:
         path: ~/.ccache

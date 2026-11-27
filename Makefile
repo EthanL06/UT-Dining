@@ -15,7 +15,7 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-psql db-studio \
 	env-local env-dev \
 	check verify check-comments check-size functions fix lint typecheck test build \
-	sim sims e2e e2e-fixtures screenshots perf-build size-report \
+	sim sims e2e e2e-fixtures screenshots ios-app perf-build size-report \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
 
@@ -74,6 +74,7 @@ help:
 	'  e2e             Maestro flows against local Supabase. ARGS="--shards 3 --retry-failed"' \
 	'  e2e-fixtures    Maestro flows against the fixture server, no Docker needed' \
 	'  screenshots     Every screen in apps/mobile/e2e/screenshots.txt, light and dark, into .context/screenshots' \
+	'  ios-app         Release simulator app into .context/app; reuses the native build unless native code changed' \
 	'  perf-build      Timing-harness test apps from a release .app. APP=<base .app> OUT=<dir> PERF_DEV_REF=<ref>' \
 	'                  The rest of the timing run is in scripts/qa/perf/README.md' \
 	'  mobile-preview  Dev app build (only if native code changed) + EAS Update. ARGS="staging" or ARGS="pr <n>"' \
@@ -209,6 +210,9 @@ e2e-fixtures:
 
 screenshots:
 	@scripts/qa/mobile-screenshots.sh $(if $(SIM),--sim "$$($(DEV)/sim.sh pick)") $(ARGS)
+
+ios-app:
+	@scripts/qa/ios-sim-app.sh $(ARGS)
 
 size-report:
 	@scripts/qa/size-report.sh local "$(if $(filter undefined,$(origin BASE)),origin/staging,$(BASE))"
