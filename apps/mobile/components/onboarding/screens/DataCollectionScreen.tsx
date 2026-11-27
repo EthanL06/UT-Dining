@@ -1,11 +1,10 @@
-import * as Haptics from 'expo-haptics';
 import { Book, Calendar, Clock, Heart, Leaf, MapPin, Timer, Utensils } from 'lucide-react-native';
 import { useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { View } from 'react-native';
 
-import { useSettingsStore } from '~/store/useSettingsStore';
-import { COLORS } from '~/utils/colors';
-import { cn } from '~/utils/utils';
+import { useTheme } from '~/utils/theme';
+import ChoiceList, { type Choice } from './ChoiceList';
+import OnboardingHeader from './OnboardingHeader';
 
 type Props = {
   width: number;
@@ -13,7 +12,7 @@ type Props = {
   onSelectionUpdate: (selectedTags: string[]) => void;
 };
 
-const MOTIVATION_TAGS = [
+const MOTIVATION_TAGS: Choice[] = [
   { id: 'view-menus', label: 'View Menus', icon: Book },
   { id: 'see-nearby', label: "See What's Near Me", icon: MapPin },
   { id: 'check-hours', label: 'Check Hours & Status', icon: Clock },
@@ -25,84 +24,29 @@ const MOTIVATION_TAGS = [
 ];
 
 const DataCollectionScreen = ({ width, onSelectionChange, onSelectionUpdate }: Props) => {
+  const theme = useTheme();
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const isDark = useSettingsStore((state) => state.isDarkMode);
 
   const toggleTag = (tagId: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
     const newSelection = selectedTags.includes(tagId)
       ? selectedTags.filter((id) => id !== tagId)
       : [...selectedTags, tagId];
-
     setSelectedTags(newSelection);
     onSelectionChange(newSelection.length > 0);
     onSelectionUpdate(newSelection);
   };
 
   return (
-    <View
-      style={{ width }}
-      className={cn('flex-1 px-6 py-8', isDark ? 'bg-neutral-900' : 'bg-white')}
-    >
-      <View className="mb-8">
-        <Text
-          className={cn(
-            'mb-1 text-center font-bold text-3xl',
-            isDark ? 'text-white' : 'text-gray-900',
-          )}
-        >
-          Before we get started...
-        </Text>
-        <Text className={cn('text-center text-lg', isDark ? 'text-gray-300' : 'text-gray-600')}>
-          What are you hoping to get out of UT Dining?
-        </Text>
-      </View>
-
-      <View className="flex-1">
-        <View className="flex-row flex-wrap justify-between">
-          {MOTIVATION_TAGS.map((tag) => (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              key={tag.id}
-              onPress={() => toggleTag(tag.id)}
-              className={cn(
-                'mb-4 w-[48%] rounded-xl p-4',
-                selectedTags.includes(tag.id)
-                  ? 'border-ut-burnt-orange bg-ut-burnt-orange/10'
-                  : isDark
-                    ? ' bg-neutral-800'
-                    : 'border border-gray-200 bg-white',
-              )}
-            >
-              <View className="items-center">
-                <tag.icon
-                  size={32}
-                  color={
-                    selectedTags.includes(tag.id)
-                      ? COLORS['ut-burnt-orange']
-                      : isDark
-                        ? COLORS['ut-grey-dark-mode']
-                        : COLORS['ut-grey']
-                  }
-                />
-                <Text
-                  className={cn(
-                    'mt-2 text-center font-medium text-sm',
-                    selectedTags.includes(tag.id)
-                      ? 'text-ut-burnt-orange'
-                      : isDark
-                        ? 'text-gray-300'
-                        : 'text-gray-700',
-                  )}
-                >
-                  {tag.label}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+    <View style={{ width, backgroundColor: theme.background }} className="flex-1 pt-6">
+      <OnboardingHeader
+        title="Before we get started"
+        subtitle="What do you want from UT Dining? Pick all that apply."
+      />
+      <ChoiceList
+        choices={MOTIVATION_TAGS}
+        isSelected={(id) => selectedTags.includes(id)}
+        onToggle={toggleTag}
+      />
     </View>
   );
 };

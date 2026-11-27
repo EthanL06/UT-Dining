@@ -1,27 +1,37 @@
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
-import {
-  BicepsFlexed,
-  ChefHatIcon,
-  ChevronRight,
-  Flame,
-  HeartIcon,
-  Wheat,
-} from 'lucide-react-native';
+import { Link, router } from 'expo-router';
+import { Check, ChefHat, ChevronRight, Heart } from 'lucide-react-native';
 import { useRef } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import ReanimatedSwipeable, {
   type SwipeableMethods,
   SwipeDirection,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
-import Reanimated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import type { FoodItem } from '~/services/database/database';
-import { todayKey, useIsMealPlanItem, useMealPlanStore } from '~/store/useMealPlanStore';
-import { useSettingsStore } from '~/store/useSettingsStore';
-import { COLORS } from '~/utils/colors';
-import { cn, displayNutrient } from '~/utils/utils';
+import { todayKey, useIsMealPlanItem } from '~/store/useMealPlanStore';
+import { toggleMealPlanForFood } from '~/utils/foodActions';
+import { useTheme } from '~/utils/theme';
+import { displayNutrient } from '~/utils/utils';
 import { AddMealPlanAction, FavoriteAction, RemoveAction } from './AnimatedActions';
+
+export type RowPosition = 'single' | 'first' | 'middle' | 'last';
+
+const RADIUS = 26;
+
+const cornerStyle = (position: RowPosition) => ({
+  borderTopLeftRadius: position === 'single' || position === 'first' ? RADIUS : 0,
+  borderTopRightRadius: position === 'single' || position === 'first' ? RADIUS : 0,
+  borderBottomLeftRadius: position === 'single' || position === 'last' ? RADIUS : 0,
+  borderBottomRightRadius: position === 'single' || position === 'last' ? RADIUS : 0,
+});
+
+type SelectionProps = {
+  selecting: boolean;
+  selected: boolean;
+  onToggleSelect: () => void;
+  onSelectMultiple: () => void;
+};
 
 const FoodComponent = ({
   food,
@@ -34,6 +44,9 @@ const FoodComponent = ({
   isFavoriteScreen = false,
   showExtraInfo = true,
   canMealPlan = true,
+  position = 'single',
+  selection,
+  subtitle,
 }: {
   food: FoodItem;
   selectedMenu: string;
@@ -45,6 +58,9 @@ const FoodComponent = ({
   isFavoriteScreen?: boolean;
   showExtraInfo?: boolean;
   canMealPlan?: boolean;
+  position?: RowPosition;
+  selection?: SelectionProps;
+  subtitle?: string;
 }) => {
   const planDate = date || todayKey();
   const isMealPlan = useIsMealPlanItem(
@@ -56,55 +72,147 @@ const FoodComponent = ({
     },
     planDate,
   );
-  const toggleMealPlanItem = useMealPlanStore((state) => state.toggleMealPlanItem);
-  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-      opacity: opacity.value,
-    };
-  });
-
-  const handlePressIn = () => {
-    scale.value = withSpring(0.95, { damping: 15, stiffness: 400 });
-    opacity.value = withSpring(0.8, { damping: 15, stiffness: 400 });
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  };
-
+  const theme = useTheme();
   const swipeableRef = useRef<SwipeableMethods>(null);
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1, { damping: 15, stiffness: 400 });
-    opacity.value = withSpring(1, { damping: 15, stiffness: 400 });
+  const context = { location, menu: selectedMenu, category: categoryName, date: planDate };
+  const href = {
+    pathname: '/food/[food]' as const,
+    params: {
+      food: food.name as string,
+      menu: selectedMenu,
+      category: categoryName,
+      location,
+      favorite: isFavoriteScreen ? 'true' : 'false',
+      ...(date ? { date } : {}),
+    },
   };
+  const isFirstRow = position === 'single' || position === 'first';
+  const accessibilityLabel = [
+    food.name,
+    showExtraInfo ? `${displayNutrient(food.nutrition?.calories)} kcal` : null,
+    isFavorite ? 'favorite' : null,
+    isMealPlan ? 'in meal plan' : null,
+  ]
+    .filter(Boolean)
+    .join(', ');
 
-  const handlePress = async () => {
-    router.push({
-      pathname: `/food/[food]`,
-      params: {
-        food: food.name as string,
-        menu: selectedMenu,
-        category: categoryName,
-        location,
-        favorite: isFavoriteScreen ? 'true' : 'false',
-        ...(date ? { date } : {}),
-      },
-    });
-  };
+  const row = (pressed: boolean) => (
+    <View
+      className="min-h-[60px] flex-row items-center gap-x-3 px-4 py-2.5"
+      style={{ backgroundColor: pressed ? theme.fill : theme.card }}
+    >
+      {!isFirstRow && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            left: selection?.selecting ? 52 : 16,
+            height: 0.5,
+            backgroundColor: theme.separator,
+          }}
+        />
+      )}
+      {selection?.selecting && (
+        <View
+          className="size-6 items-center justify-center rounded-full"
+          style={
+            selection.selected
+              ? { backgroundColor: theme.tint }
+              : { borderWidth: 1.5, borderColor: theme.tertiaryLabel }
+          }
+        >
+          {selection.selected && <Check size={15} color="#FFFFFF" strokeWidth={3} />}
+        </View>
+      )}
+      <View className="flex-1 gap-y-0.5">
+        <Text numberOfLines={2} className="text-[16px]" style={{ color: theme.label }}>
+          {food.name}
+        </Text>
+        {subtitle !== undefined && (
+          <Text className="text-[13.5px]" style={{ color: theme.secondaryLabel }}>
+            {subtitle}
+          </Text>
+        )}
+        {showExtraInfo && subtitle === undefined && (
+          <View className="flex-row flex-wrap items-center gap-x-1.5">
+            <Text className="text-[13.5px]" style={{ color: theme.secondaryLabel }}>
+              {displayNutrient(food.nutrition?.calories)} kcal ·{' '}
+              {displayNutrient(food.nutrition?.protein)} protein ·{' '}
+              {displayNutrient(food.nutrition?.total_carbohydrates)} carbs
+            </Text>
+            {food.allergens &&
+              Object.entries(food.allergens).map(([key, value]) =>
+                value === true ? (
+                  <Image
+                    key={key}
+                    source={ALLERGEN_ICONS[key as keyof typeof ALLERGEN_ICONS]}
+                    className="size-[15px] rounded-full"
+                    resizeMode="contain"
+                  />
+                ) : null,
+              )}
+          </View>
+        )}
+      </View>
+      {showExtraInfo && isFavorite && <Heart size={15} color={theme.tint} fill={theme.tint} />}
+      {showExtraInfo && isMealPlan && <ChefHat size={15} color={theme.tint} />}
+      {!selection?.selecting && <ChevronRight size={17} color={theme.tertiaryLabel} />}
+    </View>
+  );
+
+  const content = selection?.selecting ? (
+    <Pressable
+      accessibilityRole="checkbox"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ checked: selection.selected }}
+      onPress={() => {
+        Haptics.selectionAsync();
+        selection.onToggleSelect();
+      }}
+    >
+      {({ pressed }) => row(pressed)}
+    </Pressable>
+  ) : (
+    <Link href={href} asChild>
+      <Link.Trigger>
+        <Pressable onPressIn={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}>
+          {({ pressed }) => row(pressed)}
+        </Pressable>
+      </Link.Trigger>
+      <Link.Preview />
+      <Link.Menu>
+        {canMealPlan && (
+          <Link.MenuAction
+            icon={isMealPlan ? 'minus.circle' : 'fork.knife'}
+            onPress={() => toggleMealPlanForFood(food, context)}
+          >
+            {isMealPlan ? 'Remove from Meal Plan' : 'Add to Meal Plan'}
+          </Link.MenuAction>
+        )}
+        <Link.MenuAction
+          icon={isFavorite ? 'heart.slash' : 'heart'}
+          onPress={() => onFavorite(food)}
+        >
+          {isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
+        </Link.MenuAction>
+        {selection && (
+          <Link.Menu inline>
+            <Link.MenuAction icon="checkmark.circle" onPress={selection.onSelectMultiple}>
+              Select Multiple
+            </Link.MenuAction>
+          </Link.Menu>
+        )}
+      </Link.Menu>
+    </Link>
+  );
 
   return (
-    <Reanimated.View style={animatedStyle}>
+    <View className="mx-4 overflow-hidden" style={cornerStyle(position)}>
       <ReanimatedSwipeable
         ref={swipeableRef}
-        containerStyle={{
-          borderRadius: 4,
-          overflow: 'hidden',
-          marginBottom: 8,
-          backgroundColor: COLORS['ut-burnt-orange'],
-        }}
+        enabled={!selection?.selecting}
+        containerStyle={{ backgroundColor: theme.card }}
         enableTrackpadTwoFingerGesture
         friction={1.5}
         overshootFriction={200}
@@ -122,24 +230,7 @@ const FoodComponent = ({
           swipeableRef.current?.close();
 
           if (direction === SwipeDirection.RIGHT && canMealPlan) {
-            toggleMealPlanItem(
-              {
-                name: food.name as string,
-                locationName: location,
-                categoryName,
-                menuName: selectedMenu,
-                allergens: Object.fromEntries(
-                  Object.entries(food.allergens || {}).filter(([key]) => key !== 'id'),
-                ) as Record<string, boolean>,
-                nutrition: {
-                  calories: food.nutrition?.calories || '',
-                  protein: food.nutrition?.protein || '',
-                  total_carbohydrates: food.nutrition?.total_carbohydrates || '',
-                  total_fat: food.nutrition?.total_fat || '',
-                },
-              },
-              planDate,
-            );
+            toggleMealPlanForFood(food, context);
           } else if (direction === SwipeDirection.LEFT) {
             await onFavorite(food);
           }
@@ -161,131 +252,40 @@ const FoodComponent = ({
           ) : null
         }
       >
-        <Pressable
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          onPress={handlePress}
-          className={cn(
-            'flex-row items-center justify-between rounded border px-3 py-2',
-            isDarkMode ? 'border-neutral-800 bg-neutral-800' : 'bg-white',
-            isFavorite || isMealPlan ? 'border-ut-burnt-orange' : 'border-ut-grey/15',
-          )}
-        >
-          <FoodContent
-            food={food}
-            isFavorite={isFavorite}
-            isMealPlan={isMealPlan}
-            showExtraInfo={showExtraInfo}
-            isDarkMode={isDarkMode}
-            subtitle={isFavoriteScreen ? [location, selectedMenu].filter(Boolean).join(' · ') : ''}
-          />
-        </Pressable>
+        {selection?.selecting ? (
+          content
+        ) : (
+          <View
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel={accessibilityLabel}
+            accessibilityActions={[
+              { name: 'activate' },
+              ...(canMealPlan
+                ? [
+                    {
+                      name: 'mealPlan',
+                      label: isMealPlan ? 'Remove from Meal Plan' : 'Add to Meal Plan',
+                    },
+                  ]
+                : []),
+              {
+                name: 'favorite',
+                label: isFavorite ? 'Remove from Favorites' : 'Add to Favorites',
+              },
+            ]}
+            onAccessibilityAction={({ nativeEvent }) => {
+              if (nativeEvent.actionName === 'activate') router.push(href);
+              if (nativeEvent.actionName === 'mealPlan') toggleMealPlanForFood(food, context);
+              if (nativeEvent.actionName === 'favorite') onFavorite(food);
+            }}
+          >
+            {content}
+          </View>
+        )}
       </ReanimatedSwipeable>
-    </Reanimated.View>
+    </View>
   );
 };
-
-const FoodContent = ({
-  food,
-  isFavorite,
-  isMealPlan,
-  showExtraInfo,
-  isDarkMode,
-  subtitle,
-}: {
-  food: FoodItem;
-  isFavorite: boolean;
-  isMealPlan: boolean;
-  showExtraInfo: boolean;
-  isDarkMode: boolean;
-  subtitle: string;
-}) => (
-  <>
-    <View className="gap-1">
-      <View className="flex-row items-center gap-2">
-        <Text
-          className={cn(
-            'line-clamp-2 max-w-[16rem] font-medium text-lg leading-6',
-            isDarkMode ? 'text-white' : 'text-black',
-          )}
-        >
-          {food.name}
-        </Text>
-        {isFavorite && showExtraInfo && (
-          <HeartIcon fill={COLORS['ut-burnt-orange']} size={12} color={COLORS['ut-burnt-orange']} />
-        )}
-        {isMealPlan && showExtraInfo && <ChefHatIcon size={12} color={COLORS['ut-burnt-orange']} />}
-      </View>
-
-      {subtitle ? (
-        <Text className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-gray-700')}>
-          {subtitle}
-        </Text>
-      ) : null}
-
-      {showExtraInfo && (
-        <>
-          <View className="flex flex-row gap-2">
-            <View className="flex-row items-center gap-x-0.5">
-              <Flame fill={COLORS['ut-burnt-orange']} size={10} color={COLORS['ut-burnt-orange']} />
-              <Text
-                className={cn(
-                  'font-medium text-xs',
-                  isDarkMode ? 'text-gray-300' : 'text-gray-700',
-                )}
-              >
-                {displayNutrient(food.nutrition?.calories)} kcal
-              </Text>
-            </View>
-            <View className="flex-row items-center gap-x-0.5">
-              <BicepsFlexed
-                fill={COLORS['ut-burnt-orange']}
-                size={10}
-                color={COLORS['ut-burnt-orange']}
-              />
-              <Text
-                className={cn(
-                  'font-medium text-xs',
-                  isDarkMode ? 'text-gray-300' : 'text-gray-700',
-                )}
-              >
-                {displayNutrient(food.nutrition?.protein)} Protein
-              </Text>
-            </View>
-            <View className="flex-row items-center gap-x-0.5">
-              <Wheat fill={COLORS['ut-burnt-orange']} size={10} color={COLORS['ut-burnt-orange']} />
-              <Text
-                className={cn(
-                  'font-medium text-xs',
-                  isDarkMode ? 'text-gray-300' : 'text-gray-700',
-                )}
-              >
-                {displayNutrient(food.nutrition?.total_carbohydrates)} Carbs
-              </Text>
-            </View>
-          </View>
-
-          <View className="flex-row flex-wrap gap-1">
-            {food.allergens &&
-              Object.entries(food.allergens).map(
-                ([key, value]: [string, number | boolean | null]) =>
-                  value === true ? (
-                    <Image
-                      key={key}
-                      source={ALLERGEN_ICONS[key as keyof typeof ALLERGEN_ICONS]}
-                      className="size-3 rounded-full"
-                      resizeMode="contain"
-                    />
-                  ) : null,
-              )}
-          </View>
-        </>
-      )}
-    </View>
-    <View className="flex-row items-center gap-x-1">
-      <ChevronRight size={20} color={isDarkMode ? '#fff' : COLORS['ut-burnt-orange']} />
-    </View>
-  </>
-);
 
 export default FoodComponent;

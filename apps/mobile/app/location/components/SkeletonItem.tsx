@@ -1,59 +1,74 @@
-import { ChevronDown } from 'lucide-react-native';
 import React, { useEffect } from 'react';
 import { Animated, View } from 'react-native';
 
-import { useSettingsStore } from '~/store/useSettingsStore';
-import { COLORS } from '~/utils/colors';
+import type { RowPosition } from '~/components/FoodComponent';
+import { useTheme } from '~/utils/theme';
 
-interface SkeletonItemProps {
-  isHeader?: boolean;
-}
+const RADIUS = 26;
 
-const SkeletonItem = React.memo(({ isHeader = false }: SkeletonItemProps) => {
-  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+const SkeletonItem = React.memo(
+  ({ isHeader = false, position = 'middle' }: { isHeader?: boolean; position?: RowPosition }) => {
+    const theme = useTheme();
+    const pulse = React.useRef(new Animated.Value(0.5)).current;
 
-  const shimmerAnimation = React.useRef(new Animated.Value(0)).current;
+    useEffect(() => {
+      const loop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulse, { toValue: 1, duration: 750, useNativeDriver: true }),
+          Animated.timing(pulse, { toValue: 0.5, duration: 750, useNativeDriver: true }),
+        ]),
+      );
+      loop.start();
+      return () => loop.stop();
+    }, [pulse]);
 
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmerAnimation, {
-          toValue: 1,
-          duration: 750,
-          useNativeDriver: false,
-        }),
-        Animated.timing(shimmerAnimation, {
-          toValue: 0,
-          duration: 750,
-          useNativeDriver: false,
-        }),
-      ]),
-    ).start();
+    const bar = (width: number | `${number}%`, height: number) => (
+      <Animated.View
+        style={{
+          width,
+          height,
+          borderRadius: height / 2,
+          backgroundColor: theme.fill,
+          opacity: pulse,
+        }}
+      />
+    );
 
-    return () => shimmerAnimation.stopAnimation();
-  }, [shimmerAnimation]);
+    if (isHeader) {
+      return <View className="mx-5 mt-6 mb-3">{bar(160, 20)}</View>;
+    }
 
-  const backgroundColor = shimmerAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: isDarkMode ? ['#262626', '#404040'] : ['#d1d5db', '#f3f4f6'],
-  });
+    const top = position === 'first' || position === 'single';
+    const bottom = position === 'last' || position === 'single';
 
-  const HeaderSkeleton = () => (
-    <View className="my-2 flex-row items-center justify-between">
-      <Animated.View style={{ backgroundColor }} className="h-10 w-72 rounded-md" />
-      <View className="rotate-180">
-        <ChevronDown size={20} color={isDarkMode ? '#fff' : COLORS['ut-grey']} />
+    return (
+      <View
+        className="mx-4 min-h-[60px] justify-center gap-y-2 px-4 py-3"
+        style={{
+          backgroundColor: theme.card,
+          borderTopLeftRadius: top ? RADIUS : 0,
+          borderTopRightRadius: top ? RADIUS : 0,
+          borderBottomLeftRadius: bottom ? RADIUS : 0,
+          borderBottomRightRadius: bottom ? RADIUS : 0,
+        }}
+      >
+        {!top && (
+          <View
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              left: 16,
+              height: 0.5,
+              backgroundColor: theme.separator,
+            }}
+          />
+        )}
+        {bar('62%', 14)}
+        {bar('40%', 11)}
       </View>
-    </View>
-  );
-
-  const FoodItemSkeleton = () => (
-    <View className="mb-2">
-      <Animated.View style={{ backgroundColor }} className="h-[4.25rem] w-full rounded-md" />
-    </View>
-  );
-
-  return <View className="px-6">{isHeader ? <HeaderSkeleton /> : <FoodItemSkeleton />}</View>;
-});
+    );
+  },
+);
 
 export default SkeletonItem;

@@ -3,13 +3,11 @@ import type { Location } from '~/services/database/schema';
 import FiltersSheet from './FiltersSheet';
 import FoodInfoSheet from './FoodInfoSheet';
 import LocationAboutSheet from './LocationAboutSheet';
-import MapLocationSheet from './MapLocationSheet';
 
 registerSheet('location-about', LocationAboutSheet);
 registerSheet('food-info', FoodInfoSheet, 'food');
 registerSheet('filters', FiltersSheet);
 registerSheet('filters', FiltersSheet, 'settings');
-registerSheet('map-location', MapLocationSheet);
 
 declare module 'react-native-actions-sheet' {
   interface Sheets {
@@ -21,15 +19,5 @@ declare module 'react-native-actions-sheet' {
     'food-info': SheetDefinition;
     filters: SheetDefinition;
     settings: SheetDefinition;
-    'map-location': SheetDefinition<{
-      payload: {
-        name: string;
-        address: string;
-        description: string;
-        type: string;
-        hasMenu: boolean;
-        note?: string;
-      };
-    }>;
   }
 }

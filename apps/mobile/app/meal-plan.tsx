@@ -1,24 +1,22 @@
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
-import { BicepsFlexed, ChevronLeft, ChevronRight, Flame, Wheat } from 'lucide-react-native';
+import { router, Stack } from 'expo-router';
+import { ChefHat, ChevronLeft, ChevronRight, Flame, Minus, Plus } from 'lucide-react-native';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AppState,
-  FlatList,
   Image,
+  Alert as NativeAlert,
   Pressable,
+  ScrollView,
   Text,
-  TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import ReanimatedSwipeable, {
   type SwipeableMethods,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { RemoveAction } from '~/components/AnimatedActions';
-import { Container } from '~/components/Container';
-import TopBar from '~/components/TopBar';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import {
   type MealPlanItem,
@@ -28,10 +26,20 @@ import {
   useMealPlanItems,
   useMealPlanStore,
 } from '~/store/useMealPlanStore';
-import { useSettingsStore } from '~/store/useSettingsStore';
-import { COLORS } from '~/utils/colors';
 import { createDateFromString, formatDateForDisplay } from '~/utils/date';
-import { cn, displayNutrient } from '~/utils/utils';
+import { type Theme, useTheme } from '~/utils/theme';
+
+const MEAL_ORDER = ['Breakfast', 'Lunch', 'Dinner'];
+
+type NutrientKey = 'calories' | 'protein' | 'total_carbohydrates' | 'total_fat';
+
+const amount = (item: MealPlanItem, key: NutrientKey) =>
+  (Number.parseFloat(String(item.nutrition?.[key] ?? 0)) || 0) * (item.quantity || 1);
+
+const formatNumber = (value: number, digits = 0) =>
+  value.toLocaleString('en-US', { maximumFractionDigits: digits });
+
+const formatGrams = (value: number) => `${formatNumber(value, 1)}g`;
 
 const useToday = () => {
   const [today, setToday] = useState(todayKey());
@@ -55,46 +63,99 @@ const formatPlanDay = (date: string) => {
   const day = createDateFromString(date);
   const label = formatDateForDisplay(day);
   if (['Today', 'Yesterday', 'Tomorrow'].includes(label)) return label;
-  return day.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+  return day.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 };
 
-const MealPlanComponent = ({
-  food,
-  selectedMenu,
-  categoryName,
-  location,
-  quantity,
+const Tile = ({ label, value, theme }: { label: string; value: string; theme: Theme }) => (
+  <View
+    className="flex-1 px-3.5 py-3"
+    style={{ backgroundColor: theme.card, borderRadius: 22, borderCurve: 'continuous' }}
+  >
+    <Text className="text-[12.5px]" style={{ color: theme.secondaryLabel }}>
+      {label}
+    </Text>
+    <Text className="font-bold text-[21px]" style={{ color: theme.label }}>
+      {value}
+    </Text>
+  </View>
+);
+
+const DayArrow = ({
+  testID,
+  label,
+  target,
+  onPress,
+  children,
+}: {
+  testID: string;
+  label: string;
+  target: string | null;
+  onPress: (date: string) => void;
+  children: React.ReactNode;
+}) => {
+  const theme = useTheme();
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !target }}
+      disabled={!target}
+      hitSlop={8}
+      onPress={() => target && onPress(target)}
+      className="size-9 items-center justify-center rounded-full"
+      style={{ backgroundColor: theme.card, opacity: target ? 1 : 0.4 }}
+    >
+      {children}
+    </Pressable>
+  );
+};
+
+const PlanRow = ({
+  item,
   date,
   editable,
+  isFirst,
 }: {
-  food: MealPlanItem;
-  selectedMenu: string;
-  categoryName: string;
-  location: string;
-  quantity: number;
+  item: MealPlanItem;
   date: string;
   editable: boolean;
+  isFirst: boolean;
 }) => {
-  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
-  const updateMealPlanItemQuantity = useMealPlanStore((state) => state.updateMealPlanItemQuantity);
-  const removeMealPlanItem = useMealPlanStore((state) => state.removeMealPlanItem);
-
-  const [quantityInput, setQuantityInput] = useState(`${quantity}` || '1');
-
-  const description = `${categoryName} - ${location} (${selectedMenu})`;
-  const allergenData = Object.entries(food.allergens || {});
+  const theme = useTheme();
   const swipeableRef = useRef<SwipeableMethods>(null);
+  const updateQuantity = useMealPlanStore((state) => state.updateMealPlanItemQuantity);
+  const removeItem = useMealPlanStore((state) => state.removeMealPlanItem);
+  const quantity = item.quantity || 1;
+  const allergens = Object.entries(item.allergens || {}).filter(([, value]) => value);
+
+  const step = (delta: number) => {
+    Haptics.selectionAsync();
+    const next = Math.round((quantity + delta) * 100) / 100;
+    if (next <= 0) removeItem(item.id, date);
+    else updateQuantity(item.id, Math.min(next, 99), date);
+  };
+
+  const openFood = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push({
+      pathname: '/food/[food]',
+      params: {
+        food: item.name,
+        menu: item.menuName,
+        category: item.categoryName,
+        location: item.locationName,
+        favorite: 'false',
+        date,
+      },
+    });
+  };
 
   return (
     <ReanimatedSwipeable
       ref={swipeableRef}
-      containerStyle={{
-        borderRadius: 4,
-        overflow: 'hidden',
-        marginBottom: 8,
-        backgroundColor: COLORS['ut-burnt-orange'],
-      }}
       enabled={editable}
+      containerStyle={{ backgroundColor: theme.card }}
       overshootLeft={false}
       overshootRight={false}
       leftThreshold={50}
@@ -106,132 +167,120 @@ const MealPlanComponent = ({
       }}
       onSwipeableOpen={() => {
         swipeableRef.current?.close();
-
-        removeMealPlanItem(food.id, date);
+        removeItem(item.id, date);
       }}
     >
       <Pressable
         testID="meal-plan-item"
-        disabled={!editable}
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          router.push({
-            pathname: '/food/[food]',
-            params: {
-              food: food.name,
-              menu: selectedMenu,
-              category: categoryName,
-              location,
-              favorite: 'false',
-              date,
-            },
-          });
+        accessibilityRole="button"
+        accessibilityLabel={`${item.name}, ${formatNumber(amount(item, 'calories'))} kcal${
+          quantity !== 1 ? `, ${quantity} servings` : ''
+        }`}
+        accessibilityActions={[
+          { name: 'activate' },
+          ...(editable
+            ? [
+                { name: 'increment', label: 'Add one serving' },
+                { name: 'decrement', label: 'Remove one serving' },
+              ]
+            : []),
+        ]}
+        onAccessibilityAction={({ nativeEvent }) => {
+          if (nativeEvent.actionName === 'activate') openFood();
+          if (nativeEvent.actionName === 'increment') step(1);
+          if (nativeEvent.actionName === 'decrement') step(-1);
         }}
-        className={cn(
-          'flex-row items-center justify-between rounded border px-3 py-2 pb-2',
-          isDarkMode ? 'border-neutral-800 bg-neutral-800' : 'border-ut-grey/15 bg-white',
-        )}
+        onPress={openFood}
       >
-        <View className="max-w-[16rem] gap-1">
-          <Text
-            className={cn(
-              'line-clamp-2 font-medium text-lg leading-6',
-              isDarkMode ? 'text-white' : 'text-black',
-            )}
+        {({ pressed }) => (
+          <View
+            className="min-h-[64px] flex-row items-center gap-x-3 px-4 py-2.5"
+            style={{ backgroundColor: pressed ? theme.fill : theme.card }}
           >
-            {food.name}
-          </Text>
-          <Text
-            className={cn('font-medium text-sm', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}
-          >
-            {description}
-          </Text>
-          <View className="flex flex-row gap-2">
-            <View className="flex-row items-center gap-x-0.5">
-              <Flame fill={COLORS['ut-burnt-orange']} size={10} color={COLORS['ut-burnt-orange']} />
-              <Text
-                className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-black')}
-              >
-                {displayNutrient(food.nutrition?.calories)} kcal
-              </Text>
-            </View>
-            <View className="flex-row items-center gap-x-0.5">
-              <BicepsFlexed
-                fill={COLORS['ut-burnt-orange']}
-                size={10}
-                color={COLORS['ut-burnt-orange']}
+            {!isFirst && (
+              <View
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  left: 16,
+                  height: 0.5,
+                  backgroundColor: theme.separator,
+                }}
               />
-              <Text
-                className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-black')}
-              >
-                {displayNutrient(food.nutrition?.protein)} Protein
+            )}
+            <View className="flex-1 gap-y-0.5">
+              <Text numberOfLines={2} className="text-[16px]" style={{ color: theme.label }}>
+                {item.name}
               </Text>
-            </View>
-            <View className="flex-row items-center gap-x-0.5">
-              <Wheat fill={COLORS['ut-burnt-orange']} size={10} color={COLORS['ut-burnt-orange']} />
-              <Text
-                className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-black')}
-              >
-                {displayNutrient(food.nutrition?.total_carbohydrates)} Carbs
-              </Text>
-            </View>
-          </View>
-          <View className="flex-row flex-wrap gap-1">
-            {allergenData.map(
-              ([key, value]) =>
-                value && (
+              <View className="flex-row flex-wrap items-center gap-x-1.5">
+                <Text className="text-[13.5px]" style={{ color: theme.secondaryLabel }}>
+                  {item.locationName} · {formatGrams(amount(item, 'protein'))} protein ·{' '}
+                  {formatGrams(amount(item, 'total_carbohydrates'))} carbs
+                </Text>
+                {allergens.map(([key]) => (
                   <Image
                     key={key}
                     source={ALLERGEN_ICONS[key as keyof typeof ALLERGEN_ICONS]}
-                    className="size-3 rounded-full"
+                    className="size-[15px] rounded-full"
                     resizeMode="contain"
                   />
-                ),
-            )}
+                ))}
+              </View>
+            </View>
+            <View className="items-end gap-y-1">
+              <Text className="font-semibold text-[15px]" style={{ color: theme.label }}>
+                {formatNumber(amount(item, 'calories'))}
+              </Text>
+              {editable ? (
+                <View
+                  className="h-8 flex-row items-center rounded-full"
+                  style={{ backgroundColor: theme.fill }}
+                >
+                  <Pressable
+                    accessibilityLabel="Remove one serving"
+                    hitSlop={6}
+                    onPress={() => step(-1)}
+                    className="h-8 w-8 items-center justify-center"
+                  >
+                    <Minus size={14} color={theme.label} />
+                  </Pressable>
+                  <Text
+                    testID="meal-plan-quantity"
+                    className="min-w-5 text-center font-semibold text-[14px]"
+                    style={{ color: theme.label }}
+                  >
+                    {quantity}
+                  </Text>
+                  <Pressable
+                    accessibilityLabel="Add one serving"
+                    hitSlop={6}
+                    onPress={() => step(1)}
+                    className="h-8 w-8 items-center justify-center"
+                  >
+                    <Plus size={14} color={theme.label} />
+                  </Pressable>
+                </View>
+              ) : (
+                <Text
+                  testID="meal-plan-quantity"
+                  className="text-[13.5px]"
+                  style={{ color: theme.secondaryLabel }}
+                >
+                  {quantity === 1 ? '1 serving' : `${quantity} servings`}
+                </Text>
+              )}
+            </View>
           </View>
-        </View>
-
-        <View className="relative items-center gap-1">
-          {editable ? (
-            <TextInput
-              className="h-8 w-12 rounded-lg border border-ut-burnt-orange text-center font-bold text-ut-burnt-orange"
-              keyboardType="decimal-pad"
-              value={quantityInput}
-              onChangeText={setQuantityInput}
-              onEndEditing={() => {
-                let quantity = parseFloat(quantityInput);
-                if (Number.isNaN(quantity)) {
-                  quantity = 1;
-                }
-                if (quantity <= 0) {
-                  removeMealPlanItem(food.id, date);
-                } else if (quantity > 99) {
-                  quantity = 99;
-                }
-
-                quantity = Math.round(quantity * 100) / 100;
-                setQuantityInput(quantity.toString());
-                updateMealPlanItemQuantity(food.id, quantity, date);
-              }}
-            />
-          ) : (
-            <Text className="h-8 w-12 text-center font-bold text-ut-burnt-orange leading-8">
-              {quantity}
-            </Text>
-          )}
-          <Text
-            className={cn('font-medium text-xs', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}
-          >
-            Quantity
-          </Text>
-        </View>
+        )}
       </Pressable>
     </ReanimatedSwipeable>
   );
 };
 
 const MealPlan = () => {
-  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+  const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const today = useToday();
   const [selectedDate, setSelectedDate] = useState(today);
   const [lastToday, setLastToday] = useState(today);
@@ -240,8 +289,9 @@ const MealPlan = () => {
     if (selectedDate === lastToday) setSelectedDate(today);
   }
 
-  const mealPlanItems = useMealPlanItems(selectedDate);
+  const items = useMealPlanItems(selectedDate);
   const planDates = useMealPlanDates();
+  const clearMealPlan = useMealPlanStore((state) => state.clearMealPlan);
   const days = useMemo(
     () => Array.from(new Set([...planDates, today, selectedDate])).sort(),
     [planDates, today, selectedDate],
@@ -250,170 +300,200 @@ const MealPlan = () => {
   const previousDay = dayIndex > 0 ? days[dayIndex - 1] : null;
   const nextDay = dayIndex < days.length - 1 ? days[dayIndex + 1] : null;
   const editable = selectedDate >= today;
+  const dayLabel = formatPlanDay(selectedDate);
 
-  const totalCalories = sumNutrient(mealPlanItems, 'calories');
-  const totalProtein = sumNutrient(mealPlanItems, 'protein');
-  const totalCarbs = sumNutrient(mealPlanItems, 'total_carbohydrates');
+  const meals = [...new Set(items.map((item) => item.menuName || 'Other'))].sort(
+    (a, b) =>
+      (MEAL_ORDER.indexOf(a) + 1 || 99) - (MEAL_ORDER.indexOf(b) + 1 || 99) || a.localeCompare(b),
+  );
 
-  const goTo = (date: string | null) => {
-    if (!date) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  const goTo = (date: string) => {
+    Haptics.selectionAsync();
     setSelectedDate(date);
   };
 
-  const arrowColor = (enabled: boolean) => {
-    if (enabled) return COLORS['ut-burnt-orange'];
-    return isDarkMode ? COLORS['ut-grey-dark-mode'] : COLORS['ut-grey'];
+  const confirmReset = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const day = selectedDate === today ? "today's" : `${dayLabel}'s`;
+    NativeAlert.alert(`Reset ${day} meal plan?`, 'This removes every item from this day.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Reset',
+        style: 'destructive',
+        onPress: () => {
+          clearMealPlan(selectedDate);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        },
+      },
+    ]);
   };
 
   return (
-    <Container className="m-0">
-      <FlatList
-        keyExtractor={(item) => `${selectedDate}-${item.id}`}
-        ListHeaderComponent={
-          <View className={cn('flex gap-y-5 py-6', isDarkMode ? 'bg-neutral-900' : 'bg-white')}>
-            <TopBar variant="back" />
-            <View>
-              <View className="flex-row items-center gap-x-2">
-                <Text
-                  className={cn(
-                    'font-extrabold text-3xl',
-                    isDarkMode ? 'text-white' : 'text-black',
-                  )}
-                >
-                  Your Meal Plan
-                </Text>
-              </View>
-              <Text className={cn('font-medium', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}>
-                Swipe right on a food item to add it to that day's meal plan. Each day gets its own
-                plan, and past days stay here so you can look back on what you ate.
+    <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: insets.top }}>
+      <Stack.Screen options={{ title: 'Meal Plan', headerShown: false }} />
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
+        <View className="flex-row items-center justify-between px-4 pt-2">
+          <Pressable
+            testID="back-button"
+            accessibilityLabel="Back"
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            className="size-11 items-center justify-center rounded-full"
+            style={{ backgroundColor: theme.card }}
+          >
+            <ChevronLeft size={22} color={theme.label} />
+          </Pressable>
+          {editable && items.length > 0 && (
+            <Pressable
+              testID="meal-plan-reset-button"
+              accessibilityRole="button"
+              onPress={confirmReset}
+              className="h-11 justify-center rounded-full px-4"
+              style={{ backgroundColor: theme.card }}
+            >
+              <Text className="font-semibold text-[16px]" style={{ color: theme.tint }}>
+                Reset
               </Text>
-            </View>
+            </Pressable>
+          )}
+        </View>
 
-            <View className="flex-row items-center justify-between">
-              <TouchableOpacity
-                testID="meal-plan-previous-day"
-                accessibilityLabel="Previous day"
-                disabled={!previousDay}
-                onPress={() => goTo(previousDay)}
-                hitSlop={12}
-              >
-                <ChevronLeft size={24} color={arrowColor(!!previousDay)} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                testID="meal-plan-day"
-                disabled={selectedDate === today}
-                onPress={() => goTo(today)}
-                className="items-center"
-              >
-                <Text className={cn('font-bold text-lg', isDarkMode ? 'text-white' : 'text-black')}>
-                  {formatPlanDay(selectedDate)}
-                </Text>
-                {selectedDate !== today && (
-                  <Text className="font-medium text-ut-burnt-orange text-xs">Back to today</Text>
-                )}
-              </TouchableOpacity>
-              <TouchableOpacity
-                testID="meal-plan-next-day"
-                accessibilityLabel="Next day"
-                disabled={!nextDay}
-                onPress={() => goTo(nextDay)}
-                hitSlop={12}
-              >
-                <ChevronRight size={24} color={arrowColor(!!nextDay)} />
-              </TouchableOpacity>
-            </View>
+        <Text
+          testID="meal-plan-title"
+          className="px-5 pt-3 pb-1 font-bold text-[34px]"
+          style={{ color: theme.label }}
+        >
+          Meal Plan
+        </Text>
+        <Text
+          className="px-5 pb-4 text-[15px] leading-[22px]"
+          style={{ color: theme.secondaryLabel }}
+        >
+          Each day keeps its own plan, so you can look back on what you ate.
+        </Text>
 
-            <View
-              className={cn(
-                'flex-row justify-around rounded-lg border p-4',
-                isDarkMode ? 'border-neutral-800 bg-neutral-800' : 'border-ut-grey/15 bg-white',
-              )}
-            >
-              <View className="flex-1 items-center">
-                <Text className="text-center font-bold text-lg text-ut-burnt-orange">
-                  {totalCalories.toFixed(1)} kcal
-                </Text>
-                <Text
-                  className={cn(
-                    'font-medium text-xs',
-                    isDarkMode ? 'text-gray-300' : 'text-ut-grey',
-                  )}
-                >
-                  Calories
-                </Text>
-              </View>
-              <View className="flex-1 items-center">
-                <Text className="text-center font-bold text-lg text-ut-burnt-orange">
-                  {totalProtein.toFixed(1)}g
-                </Text>
-                <Text
-                  className={cn(
-                    'font-medium text-xs',
-                    isDarkMode ? 'text-gray-300' : 'text-ut-grey',
-                  )}
-                >
-                  Protein
-                </Text>
-              </View>
-              <View className="flex-1 items-center">
-                <Text className="text-center font-bold text-lg text-ut-burnt-orange">
-                  {totalCarbs.toFixed(1)}g
-                </Text>
-                <Text
-                  className={cn(
-                    'font-medium text-xs',
-                    isDarkMode ? 'text-gray-300' : 'text-ut-grey',
-                  )}
-                >
-                  Carbs
-                </Text>
-              </View>
-            </View>
+        <View className="mx-4 mb-3 flex-row items-center gap-x-2">
+          <DayArrow
+            testID="meal-plan-previous-day"
+            label="Previous day"
+            target={previousDay}
+            onPress={goTo}
+          >
+            <ChevronLeft size={18} color={theme.label} />
+          </DayArrow>
+          <Pressable
+            testID="meal-plan-day"
+            accessibilityRole="button"
+            accessibilityHint={selectedDate !== today ? 'Goes back to today' : undefined}
+            disabled={selectedDate === today}
+            onPress={() => goTo(today)}
+            className="h-9 flex-1 flex-row items-center justify-center gap-x-1.5"
+          >
+            <Text className="font-semibold text-[17px]" style={{ color: theme.label }}>
+              {dayLabel}
+            </Text>
+            {selectedDate !== today && (
+              <Text className="font-medium text-[15px]" style={{ color: theme.tint }}>
+                · Back to today
+              </Text>
+            )}
+          </Pressable>
+          <DayArrow testID="meal-plan-next-day" label="Next day" target={nextDay} onPress={goTo}>
+            <ChevronRight size={18} color={theme.label} />
+          </DayArrow>
+        </View>
 
-            <View
-              className={cn(
-                'my-1 w-full border-b',
-                isDarkMode ? 'border-neutral-800' : 'border-b-ut-grey/15',
-              )}
-            />
-          </View>
-        }
-        data={mealPlanItems}
-        contentContainerClassName="px-6"
-        renderItem={({ item }) => (
-          <MealPlanComponent
-            categoryName={item.categoryName}
-            food={item}
-            location={item.locationName}
-            selectedMenu={item.menuName}
-            quantity={item.quantity || 1}
-            date={selectedDate}
-            editable={editable}
-          />
-        )}
-        ListEmptyComponent={
-          <View className="mt-12 flex items-center justify-center">
-            <Text
-              className={cn(
-                'font-bold text-lg',
-                isDarkMode ? 'text-white' : 'text-ut-burnt-orange',
-              )}
-            >
+        {items.length === 0 ? (
+          <View className="mx-8 mt-12 items-center gap-y-2">
+            <ChefHat size={36} color={theme.tertiaryLabel} />
+            <Text className="font-semibold text-[17px]" style={{ color: theme.label }}>
               {editable ? 'Empty Meal Plan!' : 'Nothing logged'}
             </Text>
             <Text
-              className={cn('max-w-64 text-center', isDarkMode ? 'text-gray-300' : 'text-ut-grey')}
+              className="text-center text-[15px] leading-[22px]"
+              style={{ color: theme.secondaryLabel }}
             >
               {editable
-                ? 'Swipe right on a food item to add to your meal plan.'
+                ? 'Press and hold a food on any menu, or swipe right on it, to add it here.'
                 : 'You had nothing in your meal plan this day.'}
             </Text>
           </View>
-        }
-        stickyHeaderIndices={[0]}
-      />
-    </Container>
+        ) : (
+          <>
+            <View className="mx-4 mb-2">
+              <View
+                className="flex-row items-center justify-between px-4 py-3.5"
+                style={{ backgroundColor: theme.card, borderRadius: 22, borderCurve: 'continuous' }}
+              >
+                <View>
+                  <Text className="text-[12.5px]" style={{ color: theme.secondaryLabel }}>
+                    Total for the day
+                  </Text>
+                  <Text className="font-bold text-[38px]" style={{ color: theme.label }}>
+                    {formatNumber(sumNutrient(items, 'calories'))}
+                    <Text
+                      className="font-medium text-[16px]"
+                      style={{ color: theme.secondaryLabel }}
+                    >
+                      {' '}
+                      kcal
+                    </Text>
+                  </Text>
+                </View>
+                <Flame size={32} color={theme.tint} fill={theme.tint} />
+              </View>
+            </View>
+            <View className="mx-4 mb-5 flex-row gap-x-2">
+              <Tile
+                label="Protein"
+                value={formatGrams(sumNutrient(items, 'protein'))}
+                theme={theme}
+              />
+              <Tile
+                label="Carbs"
+                value={formatGrams(sumNutrient(items, 'total_carbohydrates'))}
+                theme={theme}
+              />
+              <Tile
+                label="Fat"
+                value={formatGrams(sumNutrient(items, 'total_fat'))}
+                theme={theme}
+              />
+            </View>
+
+            {meals.map((meal) => {
+              const mealItems = items.filter((item) => (item.menuName || 'Other') === meal);
+              return (
+                <View key={meal} className="mb-5">
+                  <View className="mx-9 mb-1.5 flex-row justify-between">
+                    <Text className="text-[13px]" style={{ color: theme.secondaryLabel }}>
+                      {meal}
+                    </Text>
+                    <Text className="text-[13px]" style={{ color: theme.secondaryLabel }}>
+                      {formatNumber(sumNutrient(mealItems, 'calories'))} kcal
+                    </Text>
+                  </View>
+                  <View
+                    className="mx-4 overflow-hidden"
+                    style={{ borderRadius: 26, borderCurve: 'continuous' }}
+                  >
+                    {mealItems.map((item, index) => (
+                      <PlanRow
+                        key={`${selectedDate}-${item.id}`}
+                        item={item}
+                        date={selectedDate}
+                        editable={editable}
+                        isFirst={index === 0}
+                      />
+                    ))}
+                  </View>
+                </View>
+              );
+            })}
+          </>
+        )}
+      </ScrollView>
+    </View>
   );
 };
 

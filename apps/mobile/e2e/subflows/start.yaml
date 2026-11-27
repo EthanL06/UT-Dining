@@ -21,13 +21,13 @@ env:
     text: Open
     optional: true
 - extendedWaitUntil:
-    visible: '.*Your planned meals.*|.*Would Like to Send You Notifications.*|.*to use your location.*|Enjoying.*'
+    visible: '(Breakfast|Lunch|Dinner) is served.*|.*Would Like to Send You Notifications.*|.*to use your location.*|Enjoying.*'
     timeout: 60000
 - runFlow:
     when:
-      notVisible: '.*Your planned meals.*'
+      notVisible: '(Breakfast|Lunch|Dinner) is served.*'
     commands:
       - runFlow: dismiss-alerts.yaml
 - extendedWaitUntil:
-    visible: '.*Your planned meals.*'
+    visible: '(Breakfast|Lunch|Dinner) is served.*'
     timeout: 30000

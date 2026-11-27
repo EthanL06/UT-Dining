@@ -1,0 +1,26 @@
+appId: com.ethanl06.ut-dining.dev
+name: The meal strip opens the dining hall and hides until the next meal
+---
+- runFlow: ../subflows/start.yaml
+- runFlow:
+    when:
+      visible:
+        id: meal-strip
+    commands:
+      - takeScreenshot: meal-strip
+      - tapOn:
+          id: meal-strip
+      - extendedWaitUntil:
+          visible: 'Maestro Grill(,.*)?'
+          timeout: 20000
+      - tapOn:
+          id: back-button
+      - tapOn:
+          id: meal-strip-dismiss
+      - extendedWaitUntil:
+          notVisible:
+            id: meal-strip
+          timeout: 5000
+      - runFlow: ../subflows/relaunch.yaml
+      - assertNotVisible:
+          id: meal-strip
