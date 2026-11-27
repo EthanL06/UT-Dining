@@ -1,0 +1,26 @@
+diff --git a/build/useScreens.js b/build/useScreens.js
+index fec20121290650f18f39bc18cbb9e4a2a1626133..08c28bfd83ca717567d97370b07172ae267b2b1d 100644
+--- a/build/useScreens.js
++++ b/build/useScreens.js
+@@ -364,9 +364,6 @@ function getQualifiedRouteComponent(value) {
+                     /*#__PURE__*/ (0, _jsxruntime().jsxs)(_zoomtransitioncontextproviders.ZoomTransitionTargetContextProvider, {
+                         route: route,
+                         children: [
+-                            /*#__PURE__*/ (0, _jsxruntime().jsx)(_ZoomTransitionEnabler.ZoomTransitionEnabler, {
+-                                route: route
+-                            }),
+                             /*#__PURE__*/ (0, _jsxruntime().jsx)(_react().default.Suspense, {
+                                 name: route ? `Route(${route.name})` : undefined,
+                                 fallback: // `ResolvedSuspenseFallback` only selects between statically defined
+@@ -380,7 +377,11 @@ function getQualifiedRouteComponent(value) {
+                                     hideWhenNestedAtLevel: activityThreshold,
+                                     children: screenContent
+                                 }) : screenContent
++                            }),
++                            /*#__PURE__*/ (0, _jsxruntime().jsx)(_ZoomTransitionEnabler.ZoomTransitionEnabler, {
++                                route: route
+                             })
++
+                         ]
+                     })
+                 ]

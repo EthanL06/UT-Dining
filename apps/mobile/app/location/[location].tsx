@@ -301,9 +301,6 @@ const Location = () => {
         options={{
           title: displayName,
           ...pushedScreenHeaderOptions(theme),
-          headerLargeTitle: false,
-          headerTransparent: false,
-          headerStyle: { backgroundColor: theme.background },
           headerRight: () => (
             <LocationHeaderButtons
               location={location}
