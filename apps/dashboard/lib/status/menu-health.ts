@@ -20,6 +20,7 @@ export interface DayHealth {
   expected: number;
   loaded: number;
   missing: string[];
+  complete: boolean;
   health: Health;
 }
 
@@ -51,18 +52,61 @@ export const getDayHealth = (
     .map((location) => location.name ?? 'Unnamed location');
   const loaded = expected.length - missing.length;
 
-  let health: Health = 'operational';
-  if (expected.length === 0 || !oldestMenuDate || day.date < oldestMenuDate) health = 'unknown';
-  else if (missing.length > 0) health = 'degraded';
+  const health: Health =
+    expected.length === 0 || !oldestMenuDate || day.date < oldestMenuDate
+      ? 'unknown'
+      : 'operational';
 
-  return { date: day.date, expected: expected.length, loaded, missing, health };
+  return {
+    date: day.date,
+    expected: expected.length,
+    loaded,
+    missing,
+    complete: missing.length === 0,
+    health,
+  };
 };
 
-export const getFreshnessHealth = (latestMenuDate: string | null, today: string): Health => {
-  if (!latestMenuDate) return 'outage';
-  if (latestMenuDate < today) return 'outage';
-  if (latestMenuDate < addDays(today, 1)) return 'degraded';
-  return 'operational';
+export interface ScrapeSignal {
+  health: Health;
+  startedAt: string | null;
+}
+
+export interface ScrapeHealth {
+  health: Health;
+  detail: string | null;
+}
+
+const HOUR = 60 * 60 * 1000;
+
+const ageHours = (value: string, now: number) => (now - Date.parse(value)) / HOUR;
+
+export const getScrapeHealth = (
+  run: ScrapeSignal | null,
+  lastMenuWrite: string | null,
+  now: number,
+  formatTime: (value: string) => string,
+): ScrapeHealth => {
+  if (run?.startedAt) {
+    if (run.health === 'outage') {
+      return { health: 'outage', detail: 'The last menu update failed.' };
+    }
+    if (ageHours(run.startedAt, now) > 30) {
+      return {
+        health: 'degraded',
+        detail: `Menus haven't been updated since ${formatTime(run.startedAt)}.`,
+      };
+    }
+    return { health: 'operational', detail: null };
+  }
+  if (!lastMenuWrite) return { health: 'outage', detail: 'There are no menus yet.' };
+  if (ageHours(lastMenuWrite, now) > 48) {
+    return {
+      health: 'degraded',
+      detail: `Menus haven't been updated since ${formatTime(lastMenuWrite)}.`,
+    };
+  }
+  return { health: 'operational', detail: null };
 };
 
 export const worstHealth = (values: Health[]): Health => {

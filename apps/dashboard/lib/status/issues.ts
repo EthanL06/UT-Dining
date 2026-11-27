@@ -1,9 +1,8 @@
-import { formatDay } from './format';
 import type { CheckedLocation } from './location-checks';
 import type { Health } from './menu-health';
 import type { MenuStatus } from './menu-status';
 import type { Probe } from './probes';
-import type { WorkflowRun } from './workflows';
+import { SCRAPER_WORKFLOW, type WorkflowRun } from './workflows';
 
 export interface IssueAction {
   label: string;
@@ -32,7 +31,6 @@ export interface IssueInput {
   pushFunction: Probe;
   workflows: WorkflowRun[];
   menus: MenuStatus;
-  openWithoutMenu: CheckedLocation[];
   hourProblems: { location: CheckedLocation; problems: string[] }[];
   coverage: Coverage | null;
 }
@@ -81,7 +79,7 @@ const probeIssue = (
 export const buildIssues = (input: IssueInput): Issue[] => {
   const issues: Issue[] = [];
   const ref = supabaseProjectRef(input.supabaseUrl);
-  const scraperRun = input.workflows.find((run) => run.workflow === 'scraper.yml');
+  const scraperRun = input.workflows.find((run) => run.workflow === SCRAPER_WORKFLOW);
   const scraperAction: IssueAction | null = scraperRun?.url
     ? { label: 'Open scraper runs', href: scraperRun.url }
     : null;
@@ -115,23 +113,9 @@ export const buildIssues = (input: IssueInput): Issue[] => {
     issues.push({
       id: 'freshness',
       health: input.menus.freshness,
-      title: input.menus.latestMenuDate
-        ? `Menus end on ${formatDay(input.menus.latestMenuDate)}`
-        : 'No menus in the database',
-      detail: 'The scraper should keep menus at least a day ahead.',
+      title: input.menus.freshnessDetail ?? 'Menus are out of date',
+      detail: 'The scraper should refresh menus every day.',
       headline: 'Menus are out of date',
-      action: scraperAction,
-    });
-  }
-
-  const today = input.menus.todayHealth;
-  if (today && (today.health === 'degraded' || today.health === 'outage')) {
-    issues.push({
-      id: 'today-missing',
-      health: today.health,
-      title: `Missing today's menus for ${plural(today.missing.length, 'location')}`,
-      detail: today.missing.join(', '),
-      headline: "Today's menus are incomplete",
       action: scraperAction,
     });
   }
@@ -167,17 +151,6 @@ export const buildIssues = (input: IssueInput): Issue[] => {
             href: 'https://github.com/settings/personal-access-tokens/new',
           }
         : null,
-    });
-  }
-
-  if (input.openWithoutMenu.length > 0) {
-    issues.push({
-      id: 'open-without-menu',
-      health: 'degraded',
-      title: `Open with no menu: ${plural(input.openWithoutMenu.length, 'location')}`,
-      detail: input.openWithoutMenu.map((location) => location.name).join(', '),
-      headline: 'Open locations are missing menus',
-      action: { label: 'Open locations', href: '/dashboard' },
     });
   }
 

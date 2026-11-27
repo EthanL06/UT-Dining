@@ -39,7 +39,7 @@ import { type CheckedLocation, getHourProblems, isOpenNow } from '@/lib/status/l
 import type { Health } from '@/lib/status/menu-health';
 import { getMenuStatus } from '@/lib/status/menu-status';
 import { type Probe, probeEdgeFunction, probeSupabase, probeWebsite } from '@/lib/status/probes';
-import { getLatestWorkflowRun, type WorkflowRun } from '@/lib/status/workflows';
+import { getLatestWorkflowRun, SCRAPER_WORKFLOW, type WorkflowRun } from '@/lib/status/workflows';
 import { getSupabaseEnv } from '@/lib/supabase/env';
 import { createClient } from '@/lib/supabase/server';
 
@@ -202,6 +202,13 @@ const runDetail = (run: WorkflowRun) => {
 export default async function StatusPage() {
   const supabase = await createClient();
   const now = toCentralTime();
+  const workflowRuns = Promise.all(
+    WORKFLOWS.map((workflow) => getLatestWorkflowRun(workflow.file, workflow.label)),
+  );
+  const menuStatus = workflowRuns.then((runs) => {
+    const run = runs.find((entry) => entry.workflow === SCRAPER_WORKFLOW);
+    return getMenuStatus(supabase, run?.startedAt ? run : null);
+  });
 
   const [
     menus,
@@ -215,7 +222,7 @@ export default async function StatusPage() {
     website,
     workflows,
   ] = await Promise.all([
-    getMenuStatus(supabase),
+    menuStatus,
     supabase.rpc('dashboard_status'),
     supabase
       .from('location')
@@ -231,7 +238,7 @@ export default async function StatusPage() {
     probeSupabase(),
     probeEdgeFunction('manual-push-notification'),
     probeWebsite(WEBSITE_URL),
-    Promise.all(WORKFLOWS.map((workflow) => getLatestWorkflowRun(workflow.file, workflow.label))),
+    workflowRuns,
   ]);
 
   const status = statusResult.error ? null : (statusResult.data as unknown as DashboardStatus);
@@ -251,9 +258,6 @@ export default async function StatusPage() {
   const today = menus.todayHealth;
   const scraper = workflows[0].health === 'unknown' ? workflows[1] : workflows[0];
   const openNow = locations.filter((location) => isOpenNow(location, now.day, now.time));
-  const openWithoutMenu = openNow.filter(
-    (location) => location.has_menus && !menusByLocation.has(location.id),
-  );
   const forceClosed = locations.filter((location) => location.force_close);
   const hourProblems = locations
     .map((location) => ({ location, problems: getHourProblems(location) }))
@@ -279,7 +283,6 @@ export default async function StatusPage() {
     pushFunction,
     workflows,
     menus,
-    openWithoutMenu,
     hourProblems,
     coverage,
   });
@@ -331,22 +334,23 @@ export default async function StatusPage() {
           health={menus.freshness}
           value={menus.latestMenuDate ? formatDay(menus.latestMenuDate) : 'No menus'}
         >
-          {daysAhead === null
-            ? 'Newest menu date in the database.'
-            : `${daysAhead} day${daysAhead === 1 ? '' : 's'} ahead. Last write ${formatRelative(status?.menu_dates.newest_updated_at ?? null)}.`}
+          {menus.freshnessDetail ??
+            (daysAhead === null
+              ? 'Newest menu date in the database.'
+              : `${daysAhead} day${daysAhead === 1 ? '' : 's'} ahead. Last write ${formatRelative(menus.lastMenuWrite ?? status?.menu_dates.newest_updated_at ?? null)}.`)}
         </StatCard>
         <StatCard
-          title="Menus loaded today"
+          title="Menus posted today"
           health={today?.health ?? 'unknown'}
           value={today ? `${today.loaded} / ${today.expected}` : '—'}
         >
           {today && today.missing.length > 0
-            ? `Missing: ${today.missing.join(', ')}`
-            : 'Open locations with menus today.'}
+            ? `UT hasn't posted: ${today.missing.join(', ')}. Usually a closure, not a problem.`
+            : 'Locations with menus that UT posted today.'}
         </StatCard>
         <StatCard
           title="Open right now"
-          health={openWithoutMenu.length > 0 ? 'degraded' : 'operational'}
+          health="operational"
           value={`${openNow.length} / ${locations.length}`}
         >
           {`${forceClosed.length} force-closed.`}
@@ -375,13 +379,7 @@ export default async function StatusPage() {
                     const expected =
                       today?.missing.includes(location.name ?? 'Unnamed location') ?? false;
                     const open = isOpenNow(location, now.day, now.time);
-                    const health: Health = entry
-                      ? 'operational'
-                      : expected
-                        ? open
-                          ? 'outage'
-                          : 'degraded'
-                        : 'unknown';
+                    const health: Health = entry ? 'operational' : 'unknown';
                     return (
                       <TableTr key={location.id}>
                         <TableTd>
@@ -406,7 +404,11 @@ export default async function StatusPage() {
                           )}
                         </TableTd>
                         <TableTd c={entry ? undefined : 'dimmed'}>
-                          {entry ? entry.names.join(', ') : expected ? 'Missing' : 'None expected'}
+                          {entry
+                            ? entry.names.join(', ')
+                            : expected
+                              ? 'Not posted by UT'
+                              : 'None expected'}
                         </TableTd>
                         <TableTd c="dimmed">{formatRelative(entry?.updatedAt ?? null)}</TableTd>
                       </TableTr>

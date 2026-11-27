@@ -97,3 +97,7 @@ export const getLatestWorkflowRun = async (
     return { ...empty, health: 'unknown', state: 'GitHub unreachable', note: null };
   }
 };
+
+export const SCRAPER_WORKFLOW =
+  process.env.STATUS_SCRAPER_WORKFLOW ??
+  (process.env.VERCEL_ENV === 'production' ? 'scraper.yml' : 'scraper-dev.yml');
