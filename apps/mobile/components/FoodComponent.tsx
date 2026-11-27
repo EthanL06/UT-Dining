@@ -177,7 +177,7 @@ const FoodComponent = ({
     </Pressable>
   ) : (
     <Link href={href} asChild>
-      <Link.Trigger>
+      <Link.Trigger withAppleZoom>
         <Pressable>{({ pressed }) => row(pressed)}</Pressable>
       </Link.Trigger>
       <Link.Preview />
