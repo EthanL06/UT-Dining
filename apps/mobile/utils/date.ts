@@ -11,6 +11,10 @@ export function formatDateForDisplay(dateKey: string, today = getTodayInCentralT
   return format(day, 'MMM d');
 }
 
+export function formatDay(day: Date, pattern: string): string {
+  return format(day, pattern);
+}
+
 export function formatDateForAPI(date: Date): string {
   return format(date, 'yyyy-MM-dd');
 }

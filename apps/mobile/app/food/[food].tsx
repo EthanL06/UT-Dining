@@ -4,11 +4,12 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Flame, Heart, Info, X } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import { useEffect, useEffectEvent } from 'react';
-import { ActivityIndicator, Image, Pressable, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
 import { GroupedRow, GroupedSection } from '~/components/ui/Grouped';
+import { Image } from '~/components/ui/Image';
 import { Text } from '~/components/ui/Text';
 import {
   ALLERGEN_ICONS,
@@ -135,7 +136,7 @@ const FoodScreen = () => {
               accessibilityLabel="About nutrition info"
               accessibilityRole="button"
               onPress={() => {
-                SheetManager.show('food-info', { context: 'food' });
+                void SheetManager.show('food-info', { context: 'food' });
               }}
               className="size-11 items-center justify-center rounded-full"
               style={{ backgroundColor: theme.card }}
@@ -217,7 +218,7 @@ const FoodScreen = () => {
                       <Image
                         source={ALLERGEN_ICONS[iconKey(tag)]}
                         className="size-5 rounded-full"
-                        resizeMode="contain"
+                        contentFit="contain"
                       />
                       <Text variant="footnote">{tag}</Text>
                     </View>

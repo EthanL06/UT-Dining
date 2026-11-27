@@ -1,0 +1,36 @@
+language js
+
+or {
+  `import * as $name from $source` as $import where {
+    $source <: or {
+      `"lucide-react-native"`,
+      `"lucide-react"`,
+      `"@tabler/icons-react"`,
+      `'lucide-react-native'`,
+      `'lucide-react'`,
+      `'@tabler/icons-react'`
+    },
+    register_diagnostic(span=$import, message="A namespace import pulls every icon into the bundle. Import each icon by name: import { Heart } from 'lucide-react-native'.", severity="error")
+  },
+  `import { $specifiers } from $source` where {
+    $source <: or {
+      `"lucide-react-native"`,
+      `"lucide-react"`,
+      `'lucide-react-native'`,
+      `'lucide-react'`
+    },
+    $specifiers <: contains `icons` as $icons,
+    register_diagnostic(span=$icons, message="The icons map holds every icon, so importing it bundles the whole library. Import each icon by name.", severity="error")
+  },
+  `export * from $source` as $export where {
+    $source <: or {
+      `"lucide-react-native"`,
+      `"lucide-react"`,
+      `"@tabler/icons-react"`,
+      `'lucide-react-native'`,
+      `'lucide-react'`,
+      `'@tabler/icons-react'`
+    },
+    register_diagnostic(span=$export, message="Re-exporting the whole icon library bundles every icon. Re-export only the icons you use, by name.", severity="error")
+  }
+}
