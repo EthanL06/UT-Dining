@@ -1,0 +1,108 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits", ":semanticCommitTypeAll(chore)"],
+  "baseBranchPatterns": ["staging"],
+  "timezone": "America/Chicago",
+  "schedule": ["* 0-6 * * 1"],
+  "labels": ["dependencies"],
+  "prConcurrentLimit": 8,
+  "prHourlyLimit": 0,
+  "minimumReleaseAge": "3 days",
+  "internalChecksFilter": "strict",
+  "postUpdateOptions": ["pnpmDedupe"],
+  "platformAutomerge": false,
+  "automergeType": "pr",
+  "automergeStrategy": "squash",
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "labels": ["dependencies", "security"],
+    "minimumReleaseAge": null
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["* 0-6 1-7 * 1"]
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/[^/]+\\.ya?ml$/"],
+      "matchStrings": ["WRANGLER_VERSION: (?<currentValue>\\d+\\.\\d+\\.\\d+)"],
+      "depNameTemplate": "wrangler",
+      "datasourceTemplate": "npm"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Patch updates: one weekly PR, merged by Renovate once every check passes",
+      "matchUpdateTypes": ["patch", "digest"],
+      "groupName": "patch updates",
+      "groupSlug": "patch",
+      "automerge": true
+    },
+    {
+      "description": "Minor updates: one weekly PR for review",
+      "matchUpdateTypes": ["minor"],
+      "groupName": "minor updates",
+      "groupSlug": "minor"
+    },
+    {
+      "description": "Mobile patches and minors share one PR and never merge without a dev build",
+      "matchFileNames": ["apps/mobile/package.json"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "groupName": "mobile dependencies",
+      "groupSlug": "mobile",
+      "automerge": false
+    },
+    {
+      "description": "0.x minors can break, so they get their own PR",
+      "matchUpdateTypes": ["minor"],
+      "matchCurrentVersion": "/^[~^]?0\\./",
+      "groupName": null
+    },
+    {
+      "description": "GitHub Actions in one PR",
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "groupSlug": "github-actions"
+    },
+    {
+      "description": "Expo SDK packages stay on the versions npx expo install picks; bump them with the SDK upgrade steps in AGENTS.md",
+      "matchPackageNames": ["expo", "expo-*", "@expo/*", "babel-preset-expo", "jest-expo"],
+      "enabled": false
+    },
+    {
+      "description": "Native packages whose versions come from the Expo SDK (expo/bundledNativeModules.json)",
+      "matchFileNames": ["apps/mobile/package.json"],
+      "matchPackageNames": [
+        "react",
+        "react-dom",
+        "@types/react",
+        "react-native",
+        "react-native-gesture-handler",
+        "react-native-maps",
+        "react-native-reanimated",
+        "react-native-safe-area-context",
+        "react-native-screens",
+        "react-native-svg",
+        "react-native-web",
+        "react-native-worklets",
+        "@react-native-async-storage/async-storage",
+        "@shopify/flash-list",
+        "lottie-react-native"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "TypeScript stays on 6.x because Expo tooling needs its JS API; tsgo carries TypeScript 7",
+      "matchPackageNames": ["typescript"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "Node and pnpm majors are a deliberate upgrade, and @types/node follows the Node runtime",
+      "matchPackageNames": ["node", "@types/node", "pnpm"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ]
+}

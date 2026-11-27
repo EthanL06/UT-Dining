@@ -1,4 +1,4 @@
-import { ChefHatIcon, CircleX, HeartIcon } from 'lucide-react-native';
+import { CircleX, HeartIcon } from 'lucide-react-native';
 import type { ViewStyle } from 'react-native';
 import Reanimated, {
   Extrapolation,
@@ -8,6 +8,7 @@ import Reanimated, {
   useAnimatedStyle,
 } from 'react-native-reanimated';
 
+import { MealPlanIcon } from '~/components/MealPlanIcon';
 import { COLORS } from '~/utils/colors';
 
 export const FavoriteAction = ({ progress }: { progress: SharedValue<number> }) => {
@@ -106,7 +107,7 @@ export const AddMealPlanAction = ({ progress }: { progress: SharedValue<number> 
       className="min-w-[6.5rem] flex-row items-center justify-end pr-4"
     >
       <Reanimated.View style={animatedStyle}>
-        <ChefHatIcon fill="#fff" stroke="#fff" />
+        <MealPlanIcon color="#fff" filled />
       </Reanimated.View>
     </Reanimated.View>
   );

@@ -30,6 +30,9 @@ The app works offline from the cache. Never make a screen query Supabase directl
 - Interactive icons and rows carry a `testID` that Maestro flows use. Keep them when you restyle, and add one when a flow needs to tap something new.
 - Release builds merge a touchable's texts into one accessibility label (`"J2 Dining, Closed"`), so Maestro matches names as `'Name(,.*)?'`.
 - Imports use the `~/` alias for this folder.
+- Haptics go through `utils/haptics.ts` (selection, tap, remove, success, warning, error). Biome rejects a direct `expo-haptics` import anywhere else. Fire `selection` only when a choice actually changes, `success` when an add commits, `remove` when a removal commits, `error` when a refresh or sync fails; plain navigation taps have none.
+- Only `services/` (and `utils/supabase.ts` itself) may import Supabase. Biome rejects `~/utils/supabase` and `@supabase/supabase-js` in screens, components, hooks and stores, which keeps the app offline-first.
+- Text: every raw string sits inside a `<Text>` (`noReactNativeRawText`). Use the shared typography components rather than React Native's `Text` once they exist; a Biome rule banning raw `Text` outside the typography module comes with them.
 - Pure helpers that do not import React Native, Expo or MMKV get a Vitest test next to them (`utils/*.test.ts`); `pnpm --filter @ut-dining/mobile test` runs them in about 1 s with `TZ=America/Chicago`.
 
 ## Verifying

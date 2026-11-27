@@ -130,7 +130,7 @@ const dayAbbreviations: Record<WeekDay, string> = {
 
 export function generateSchedule(
   locationData: schema.Location | null,
-  _todayFirst: boolean = true,
+  _todayFirst = true,
   date: Date = new Date(),
 ): { dayRange: string; time: string }[] {
   if (!locationData?.regular_service_hours) return [];
@@ -167,9 +167,8 @@ export function generateSchedule(
         lines.push(intervals.slice(i, i + 2).join(', '));
       }
       return lines.join('\n');
-    } else {
-      return 'Closed';
     }
+    return 'Closed';
   };
 
   const result: { dayRange: string; time: string }[] = [];
@@ -207,13 +206,14 @@ export const formatTimeSinceSync = (timeSinceSync: number): string => {
 
   if (days > 0) {
     return `${days} day${days === 1 ? '' : 's'} ago`;
-  } else if (hours > 0) {
-    return `${hours} hour${hours === 1 ? '' : 's'} ago`;
-  } else if (minutes > 0) {
-    return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
-  } else {
-    return 'Just now';
   }
+  if (hours > 0) {
+    return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+  }
+  if (minutes > 0) {
+    return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+  }
+  return 'Just now';
 };
 
 export function getLocationStatusText(

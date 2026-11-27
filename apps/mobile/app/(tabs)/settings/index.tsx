@@ -19,10 +19,10 @@ import {
   Moon,
   RefreshCcw,
   Shield,
-  Sparkles,
   Star,
   Type,
   Users,
+  Wrench,
 } from 'lucide-react-native';
 import React from 'react';
 import { Linking, ScrollView, Switch, Text, View } from 'react-native';
@@ -37,11 +37,9 @@ import { openStatusPage, useServiceStatus } from '~/hooks/useServiceStatus';
 import { getAppInformation } from '~/services/database/database';
 import type { AppInformation } from '~/services/database/schema';
 import { getOrCreateDeviceId } from '~/services/device/deviceId';
-import { useAppLaunchStore } from '~/store/useAppLaunchStore';
-import { useChangelogPromptStore, useChangelogStore } from '~/store/useChangelogStore';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
-import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
+import { showQaTools } from '~/utils/appVariant';
 import { haptics } from '~/utils/haptics';
 import { SERVICE_STATUS_COLORS } from '~/utils/serviceStatus';
 import { useTheme } from '~/utils/theme';
@@ -339,11 +337,6 @@ const SettingsPage = () => {
     isColorBlindMode,
     toggleColorBlindMode,
   } = useSettingsStore();
-  const { resetOnboarding } = useOnboardingStore();
-  const { resetRatingPrompt } = useAppLaunchStore();
-  const resetChangelog = useChangelogStore((state) => state.resetChangelog);
-  const changelogEntries = useChangelogStore((state) => state.entries);
-  const showChangelogPrompt = useChangelogPromptStore((state) => state.showPrompt);
   const db = useDatabase();
   const [appInfo, setAppInfo] = React.useState<AppInformation | null>(null);
   const deviceId = getOrCreateDeviceId();
@@ -451,52 +444,16 @@ const SettingsPage = () => {
           />
         </GroupedSection>
 
-        {__DEV__ && (
-          <GroupedSection header="Development (only visible in dev mode)">
+        {showQaTools && (
+          <GroupedSection header="Developer">
             <LinkRow
               isFirst
-              title="Reset Onboarding"
-              Icon={RefreshCcw}
-              color={ICON_COLORS.gray}
-              onPress={resetOnboarding}
-            />
-            <LinkRow
-              title="Reset Rating Prompt"
-              subtitle="Reset the rating prompt to test it again"
-              Icon={RefreshCcw}
-              color={ICON_COLORS.gray}
-              onPress={resetRatingPrompt}
-            />
-            <LinkRow
-              title="Preview Update Popup"
-              Icon={Sparkles}
-              color={ICON_COLORS.gray}
-              onPress={() =>
-                showChangelogPrompt({
-                  kind: 'update',
-                  version: changelogEntries[0]?.version ?? '1.0.0',
-                  required: false,
-                  releaseNotes: null,
-                })
-              }
-            />
-            <LinkRow
-              title="Preview What's New Popup"
-              Icon={Sparkles}
-              color={ICON_COLORS.gray}
-              onPress={() =>
-                showChangelogPrompt({
-                  kind: 'whats-new',
-                  version: changelogEntries[0]?.version ?? '1.0.0',
-                })
-              }
-            />
-            <LinkRow
-              title="Reset Changelog"
-              subtitle="Show What's New again on the next launch"
-              Icon={RefreshCcw}
-              color={ICON_COLORS.gray}
-              onPress={resetChangelog}
+              title="QA Menu"
+              subtitle="Replay prompts, reset data, test pushes"
+              testID="settings-qa-menu"
+              Icon={Wrench}
+              color={ICON_COLORS.orange}
+              onPress={() => router.push('/settings/qa')}
             />
           </GroupedSection>
         )}

@@ -20,7 +20,7 @@ failed=0
 step "Biome on changed files"
 files=()
 while IFS= read -r f; do [[ -f "$f" ]] && files+=("$f"); done <<<"$changed"
-if [[ ${#files[@]} -gt 0 ]] && pnpm exec biome check --no-errors-on-unmatched --files-ignore-unknown=true "${files[@]}"; then
+if [[ ${#files[@]} -gt 0 ]] && pnpm exec biome check --error-on-warnings --no-errors-on-unmatched --files-ignore-unknown=true "${files[@]}"; then
   ok "biome"
 else
   bad "biome (make fix applies the safe fixes)"
@@ -42,7 +42,7 @@ step "Also verify"
 has() { printf '%s\n' "$changed" | grep -vE '\.md$' | grep -qE "$1"; }
 hinted=0
 hint() { note "$1"; hinted=1; }
-has '^supabase/migrations/' && hint "migration changed: verifier-data skill, then make db-types and commit packages/supabase"
+has '^supabase/migrations/' && hint "migration changed: verifier-data skill, then make db-types, commit packages/supabase and run make db-check"
 has '^apps/scraper/' && hint "scraper changed: verifier-data skill step 5 (one day against local Supabase)"
 has '^(apps/dashboard|apps/website|packages/)|^pnpm-lock.yaml$' && hint "web app or package changed: make build, then the verifier-browser skill for UI changes"
 has '^apps/mobile/(app|components)/' && hint "mobile UI changed: verifier-mobile skill (macOS) or the screenshots described in apps/mobile/AGENTS.md"
