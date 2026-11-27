@@ -1,9 +1,10 @@
 import { formatCentralDateKey } from '@ut-dining/core';
 import { Stack } from 'expo-router';
-import { ChefHat, ChevronLeft, ChevronRight, Flame } from 'lucide-react-native';
+import { ChefHat, Flame } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { AppState, Alert as NativeAlert, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { DayStrip } from '~/components/DayStrip';
 import { formatGrams, formatNumber } from '~/components/mealPlan/format';
 import { PlanRow } from '~/components/mealPlan/PlanRow';
 import { UndoToast } from '~/components/mealPlan/UndoToast';
@@ -22,6 +23,7 @@ import {
 } from '~/store/useMealPlanStore';
 import { formatDateForDisplay } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
+import { planStripDates, PLAN_RANGE_STEP as RANGE_STEP } from '~/utils/mealPlanDays';
 import { type Theme, useTheme } from '~/utils/theme';
 
 const MEAL_ORDER = ['Breakfast', 'Lunch', 'Dinner'];
@@ -61,37 +63,6 @@ const Tile = ({ label, value, theme }: { label: string; value: number; theme: Th
     <CountUpText variant="title3" value={value} format={formatGrams} />
   </View>
 );
-
-const DayArrow = ({
-  testID,
-  label,
-  target,
-  onPress,
-  children,
-}: {
-  testID: string;
-  label: string;
-  target: string | null;
-  onPress: (date: string) => void;
-  children: React.ReactNode;
-}) => {
-  const theme = useTheme();
-  return (
-    <PressableScale
-      testID={testID}
-      accessibilityLabel={label}
-      accessibilityRole="button"
-      accessibilityState={{ disabled: !target }}
-      disabled={!target}
-      hitSlop={8}
-      onPress={() => target && onPress(target)}
-      className="size-9 items-center justify-center rounded-full"
-      style={{ backgroundColor: theme.card, opacity: target ? 1 : 0.4 }}
-    >
-      {children}
-    </PressableScale>
-  );
-};
 
 type ViewedDay = { kind: 'today' } | { kind: 'date'; date: string };
 
@@ -134,13 +105,12 @@ const MealPlan = () => {
     haptics.success();
     setUndo({ status: 'idle' });
   };
-  const days = useMemo(
-    () => Array.from(new Set([...planDates, today, selectedDate])).sort(),
-    [planDates, today, selectedDate],
+  const [range, setRange] = useState({ before: RANGE_STEP, after: RANGE_STEP });
+  const markedDates = useMemo(() => new Set(planDates), [planDates]);
+  const stripDates = useMemo(
+    () => planStripDates(today, range, [...planDates, selectedDate]),
+    [today, range, planDates, selectedDate],
   );
-  const dayIndex = days.indexOf(selectedDate);
-  const previousDay = dayIndex > 0 ? days[dayIndex - 1] : null;
-  const nextDay = dayIndex < days.length - 1 ? days[dayIndex + 1] : null;
   const editable = selectedDate >= today;
   const dayLabel = formatPlanDay(selectedDate);
 
@@ -205,33 +175,40 @@ const MealPlan = () => {
           Each day keeps its own plan, so you can look back on what you ate.
         </Text>
 
-        <View className="mx-4 mb-3 flex-row items-center gap-x-2">
-          <DayArrow
-            testID="meal-plan-previous-day"
-            label="Previous day"
-            target={previousDay}
-            onPress={goTo}
-          >
-            <ChevronLeft size={18} color={theme.label} />
-          </DayArrow>
-          <Pressable
-            testID="meal-plan-day"
-            accessibilityRole="button"
-            accessibilityHint={selectedDate !== today ? 'Goes back to today' : undefined}
-            disabled={selectedDate === today}
-            onPress={() => goTo(today)}
-            className="h-9 flex-1 flex-row items-center justify-center gap-x-1.5"
-          >
-            <Text variant="headline">{dayLabel}</Text>
-            {selectedDate !== today && (
-              <Text variant="subheadline" tone="tint">
-                · Back to today
-              </Text>
-            )}
-          </Pressable>
-          <DayArrow testID="meal-plan-next-day" label="Next day" target={nextDay} onPress={goTo}>
-            <ChevronRight size={18} color={theme.label} />
-          </DayArrow>
+        <View className="mx-4 mb-4">
+          <DayStrip
+            dates={stripDates}
+            selectedDate={selectedDate}
+            today={today}
+            onDateChange={goTo}
+            label={dayLabel}
+            labelTestID="meal-plan-day"
+            labelAccessory={
+              selectedDate !== today && (
+                <PressableScale
+                  testID="meal-plan-today"
+                  accessibilityRole="button"
+                  hitSlop={8}
+                  onPress={() => goTo(today)}
+                  className="h-8 justify-center rounded-full px-3"
+                  style={{ backgroundColor: theme.card }}
+                >
+                  <Text variant="footnote" emphasized tone="tint">
+                    Today
+                  </Text>
+                </PressableScale>
+              )
+            }
+            dayTestID={(date) => `meal-plan-day-${date}`}
+            markedDates={markedDates}
+            scrollable
+            onReachStart={() =>
+              setRange((current) => ({ ...current, before: current.before + RANGE_STEP }))
+            }
+            onReachEnd={() =>
+              setRange((current) => ({ ...current, after: current.after + RANGE_STEP }))
+            }
+          />
         </View>
 
         {items.length === 0 ? (

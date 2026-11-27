@@ -12,6 +12,15 @@ import { type MealPlanItem, useMealPlanStore } from '~/store/useMealPlanStore';
 import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
 
+const STEPPER_HEIGHT = 36;
+const STEPPER_BUTTON = {
+  width: 44,
+  height: STEPPER_HEIGHT,
+  alignItems: 'center',
+  justifyContent: 'center',
+} as const;
+const STEPPER_SLOP = { top: 4, bottom: 4, left: 0, right: 0 };
+
 type NutrientKey = 'calories' | 'protein' | 'total_carbohydrates' | 'total_fat';
 
 const amount = (item: MealPlanItem, key: NutrientKey) =>
@@ -41,7 +50,7 @@ export const PlanRow = ({
       onRemove(item);
       return;
     }
-    haptics.selection();
+    haptics.tap();
     updateQuantity(item.id, Math.min(next, 99), date);
   };
 
@@ -130,34 +139,44 @@ export const PlanRow = ({
                 />
                 {editable ? (
                   <View
-                    className="h-8 flex-row items-center rounded-full"
-                    style={{ backgroundColor: theme.fill }}
+                    testID="meal-plan-stepper"
+                    style={{
+                      height: STEPPER_HEIGHT,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      borderRadius: STEPPER_HEIGHT / 2,
+                      borderCurve: 'continuous',
+                      backgroundColor: theme.fill,
+                    }}
                   >
                     <PressableScale
                       testID="meal-plan-decrement"
                       accessibilityLabel={
                         quantity <= 1 ? 'Remove from Meal Plan' : 'Remove one serving'
                       }
-                      hitSlop={6}
+                      hitSlop={STEPPER_SLOP}
                       onPress={() => step(-1)}
-                      className="h-8 w-8 items-center justify-center"
+                      style={STEPPER_BUTTON}
                     >
-                      <Minus size={14} color={theme.label} />
+                      <Minus size={16} color={theme.label} />
                     </PressableScale>
+                    <View style={{ width: 1, height: 18, backgroundColor: theme.separator }} />
                     <RollingNumber
                       value={quantity}
                       variant="subheadline"
                       emphasized
                       testID="meal-plan-quantity"
-                      className="min-w-5"
+                      style={{ minWidth: 30, textAlign: 'center' }}
                     />
+                    <View style={{ width: 1, height: 18, backgroundColor: theme.separator }} />
                     <PressableScale
+                      testID="meal-plan-increment"
                       accessibilityLabel="Add one serving"
-                      hitSlop={6}
+                      hitSlop={STEPPER_SLOP}
                       onPress={() => step(1)}
-                      className="h-8 w-8 items-center justify-center"
+                      style={STEPPER_BUTTON}
                     >
-                      <Plus size={14} color={theme.label} />
+                      <Plus size={16} color={theme.label} />
                     </PressableScale>
                   </View>
                 ) : (
