@@ -3,7 +3,7 @@ import * as Network from 'expo-network';
 import * as StoreReview from 'expo-store-review';
 import { AppState } from 'react-native';
 
-import { getSafePostHog, posthogClient } from '~/services/analytics/posthog';
+import { analytics } from '~/services/analytics/posthog';
 import { useAppLaunchStore } from '~/store/useAppLaunchStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { log } from '~/utils/log';
@@ -58,7 +58,7 @@ const showIfDue = async (trigger: RatingTrigger) => {
     log.debug('Rating prompt not available on this device');
     return;
   }
-  getSafePostHog(posthogClient).capture('rating_prompt_requested', {
+  analytics.capture('rating_prompt_requested', {
     trigger,
     app_version: appVersion,
     launch_count: launches.launchCount,
