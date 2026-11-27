@@ -7,9 +7,11 @@
     "android": "APP_VARIANT=development expo run:android",
     "ios": "APP_VARIANT=development expo run:ios",
     "start": "APP_VARIANT=development expo start --dev-client",
+    "dev": "APP_VARIANT=development expo start --dev-client",
     "prebuild": "expo prebuild",
     "web": "expo start --web",
-    "typecheck": "node ../../node_modules/tsgo/bin/tsc --noEmit"
+    "typecheck": "node ../../node_modules/tsgo/bin/tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@expo/metro-runtime": "~58.0.15",
@@ -86,7 +88,8 @@
     "babel-preset-expo": "~58.0.20",
     "tailwindcss": "^3.4.17",
     "tanstack-query-dev-tools-expo-plugin": "^0.1.1",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "^5.0.5"
   },
   "expo": {
     "doctor": {

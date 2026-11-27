@@ -23,6 +23,7 @@ export const FavoriteAction = ({ progress }: { progress: SharedValue<number> }) 
 
   const backgroundStyle = useAnimatedStyle<ViewStyle>(() => {
     return {
+      opacity: interpolate(progress.value, [0, 0.02], [0, 1], Extrapolation.CLAMP),
       backgroundColor: interpolateColor(
         progress.value,
         [0, 0.8, 1],
@@ -56,6 +57,7 @@ export const RemoveAction = ({ progress }: { progress: SharedValue<number> }) =>
 
   const backgroundStyle = useAnimatedStyle<ViewStyle>(() => {
     return {
+      opacity: interpolate(progress.value, [0, 0.02], [0, 1], Extrapolation.CLAMP),
       backgroundColor: interpolateColor(
         progress.value,
         [0, 0.8, 1],
@@ -89,6 +91,7 @@ export const AddMealPlanAction = ({ progress }: { progress: SharedValue<number> 
 
   const backgroundStyle = useAnimatedStyle<ViewStyle>(() => {
     return {
+      opacity: interpolate(progress.value, [0, 0.02], [0, 1], Extrapolation.CLAMP),
       backgroundColor: interpolateColor(
         progress.value,
         [0, 0.8, 1],

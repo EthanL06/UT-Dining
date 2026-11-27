@@ -7,9 +7,10 @@ The marketing site for UT Dining: a feature overview, the changelog and the priv
 The website is part of the UT Dining monorepo. From the repo root:
 
 ```bash
-pnpm install
-pnpm --filter @ut-dining/website dev     # http://localhost:3000
+make setup
+make website          # http://localhost:3001
 pnpm --filter @ut-dining/website build
+WEBSITE_STATIC_EXPORT=1 pnpm --filter @ut-dining/website build   # GitHub Pages copy in apps/website/out
 ```
 
 ## Changelog

@@ -8,8 +8,9 @@ import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-if (!supabaseUrl || !serviceRoleKey) {
-  throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set');
+const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
+if (!supabaseUrl || !serviceRoleKey || !anonKey) {
+  throw new Error('SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and SUPABASE_ANON_KEY must be set');
 }
 
 const supabase = createClient(supabaseUrl, serviceRoleKey);
@@ -18,7 +19,25 @@ const BATCH_SIZE = 100;
 
 console.log('🔍 Starting manual push notification function...');
 
+const isAllowedCaller = async (req: Request) => {
+  const authorization = req.headers.get('Authorization');
+  if (!authorization) return false;
+  if (authorization === `Bearer ${serviceRoleKey}`) return true;
+  const caller = createClient(supabaseUrl, anonKey, {
+    global: { headers: { Authorization: authorization } },
+  });
+  const { data } = await caller.rpc('is_dashboard_admin');
+  return data === true;
+};
+
 Deno.serve(async (req) => {
+  if (!(await isAllowedCaller(req))) {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   const { title, body, redirect_url, type } = await req.json();
 
   if (!type) {

@@ -6,13 +6,13 @@
   "author": "Longhorn-Developers",
   "license": "MIT",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 3001",
     "build": "next build",
     "typecheck": "next typegen && node ../../node_modules/tsgo/bin/tsc --noEmit"
   },
   "dependencies": {
     "lucide-react": "^0.475.0",
-    "next": "^16.4.3",
+    "next": "^16.4.6",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-markdown": "^10.1.0"

@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr';
+import type { Database } from '@ut-dining/supabase';
 import { type NextRequest, NextResponse } from 'next/server';
 import { getSupabaseEnv } from './env';
 
@@ -8,7 +9,7 @@ export async function updateSession(request: NextRequest) {
   });
 
   const { url, anonKey } = getSupabaseEnv();
-  const supabase = createServerClient(url, anonKey, {
+  const supabase = createServerClient<Database>(url, anonKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();
@@ -25,41 +26,40 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  // Do not run code between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-
-  // IMPORTANT: DO NOT REMOVE auth.getUser()
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user && !request.nextUrl.pathname.startsWith('/login')) {
-    // no user, potentially respond by redirecting the user to the login page
+  const { pathname } = request.nextUrl;
+  const isPublicPath = pathname.startsWith('/login') || pathname.startsWith('/auth/');
+
+  const redirectTo = (path: string, search = '') => {
     const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
+    url.pathname = path;
+    url.search = search;
+    const response = NextResponse.redirect(url);
+    supabaseResponse.cookies.getAll().forEach((cookie) => response.cookies.set(cookie));
+    return response;
+  };
+
+  if (!user) {
+    return isPublicPath ? supabaseResponse : redirectTo('/login');
   }
 
-  if (user && !request.nextUrl.pathname.startsWith('/dashboard')) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
+  if (pathname.startsWith('/auth/')) {
+    return supabaseResponse;
   }
 
-  // IMPORTANT: You *must* return the supabaseResponse object as it is.
-  // If you're creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object to fit your needs, but avoid changing
-  //    the cookies!
-  // 4. Finally:
-  //    return myNewResponse
-  // If this is not done, you may be causing the browser and server to go out
-  // of sync and terminate the user's session prematurely!
+  const { data: isAdmin } = await supabase.rpc('is_dashboard_admin');
+
+  if (!isAdmin) {
+    await supabase.auth.signOut();
+    return redirectTo('/login', '?error=not_allowed');
+  }
+
+  if (!pathname.startsWith('/dashboard')) {
+    return redirectTo('/dashboard');
+  }
 
   return supabaseResponse;
 }

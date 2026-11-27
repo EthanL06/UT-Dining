@@ -1,0 +1,26 @@
+{
+  "name": "@ut-dining/cli",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Agent-friendly CLI for everything the UT Dining dashboard edits: locations, hours, app settings, support links, changelog and push notifications",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.ts",
+    "typecheck": "node ../../node_modules/tsgo/bin/tsc --noEmit",
+    "test": "vitest run"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "catalog:",
+    "@ut-dining/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@ut-dining/supabase": "workspace:*",
+    "@ut-dining/tsconfig": "workspace:*",
+    "typescript": "catalog:",
+    "vitest": "^5.0.5"
+  }
+}

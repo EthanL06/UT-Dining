@@ -8,7 +8,7 @@
   },
   "scripts": {
     "prepare": "lefthook install",
-    "dev": "./dev.sh",
+    "dev": "make dev",
     "dev:mobile": "pnpm --filter @ut-dining/mobile start",
     "dev:ios": "pnpm --filter @ut-dining/mobile ios",
     "dev:android": "pnpm --filter @ut-dining/mobile android",
@@ -26,7 +26,8 @@
     "db:new": "supabase migration new",
     "db:types": "supabase gen types typescript --local > packages/supabase/src/database.types.ts && biome format --write packages/supabase/src/database.types.ts",
     "env:local": "node scripts/env.ts --local",
-    "env:dev": "node scripts/env.ts --dev"
+    "env:dev": "node scripts/env.ts --dev",
+    "admin": "node apps/cli/src/index.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.1.2",

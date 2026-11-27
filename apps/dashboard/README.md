@@ -15,7 +15,7 @@ A modern dashboard for managing UT Austin dining hall locations, menus, and oper
 - **Menu Integration:**  
   See which locations have menus available.
 - **Authentication:**  
-  Secure login and session management.
+  Google sign-in through Supabase Auth, limited to the emails in `public.dashboard_admins`.
 - **Responsive UI:**  
   Built with Mantine for a modern, accessible experience.
 
@@ -43,11 +43,11 @@ A modern dashboard for managing UT Austin dining hall locations, menus, and oper
 The dashboard is part of the UT Dining monorepo. From the repo root:
 
 ```bash
-./setup.sh            # installs everything and writes apps/dashboard/.env.local
-./dev.sh dashboard    # http://localhost:3000
+make setup        # installs everything, starts local Supabase, writes apps/dashboard/.env.local
+make dashboard    # http://localhost:3000
 ```
 
-`pnpm env:local` points it at a local Supabase (`pnpm db:start`), and `pnpm env:dev` at the hosted dev project. Database migrations live in the root `supabase/` folder and the generated types come from `@ut-dining/supabase`.
+`make env-local` points it at local Supabase (`make db-up`), and `make env-dev` at the hosted dev project. Database migrations live in the root `supabase/` folder and the generated types come from `@ut-dining/supabase`.
 
 ## Deployment
 

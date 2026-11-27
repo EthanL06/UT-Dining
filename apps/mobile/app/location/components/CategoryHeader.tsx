@@ -1,10 +1,8 @@
 import { ChevronDown } from 'lucide-react-native';
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
-import { useSettingsStore } from '~/store/useSettingsStore';
-import { COLORS } from '~/utils/colors';
-import { cn } from '~/utils/utils';
+import { useTheme } from '~/utils/theme';
 
 interface CategoryHeaderProps {
   title: string;
@@ -13,22 +11,22 @@ interface CategoryHeaderProps {
 }
 
 const CategoryHeader = React.memo(({ title, isExpanded, onToggle }: CategoryHeaderProps) => {
-  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
+  const theme = useTheme();
 
   return (
-    <TouchableOpacity
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ expanded: isExpanded }}
       onPress={onToggle}
-      className="mb-3 flex-row items-center justify-between overflow-hidden"
+      className="mx-4 mt-5 mb-2 flex-row items-center justify-between px-1"
     >
-      <Text className={cn('font-bold text-2xl', isDarkMode ? 'text-white' : 'text-black')}>
+      <Text className="flex-1 font-bold text-[20px]" style={{ color: theme.label }}>
         {title}
       </Text>
-      <View
-        className={cn('duration-200 ease-in-out', isExpanded ? 'rotate-180 transform' : 'rotate-0')}
-      >
-        <ChevronDown size={20} color={isDarkMode ? '#fff' : COLORS['ut-grey']} />
+      <View style={{ transform: [{ rotate: isExpanded ? '180deg' : '0deg' }] }}>
+        <ChevronDown size={19} color={theme.secondaryLabel} />
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 });
 
