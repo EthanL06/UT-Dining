@@ -30,6 +30,9 @@ fi
 step "No added code comments"
 scripts/dev/check-comments.sh --base "$base" || failed=1
 
+step "File size"
+scripts/dev/check-file-size.sh || failed=1
+
 step "Typecheck and tests of affected packages"
 if TURBO_SCM_BASE="$merge_base" pnpm exec turbo run typecheck test --affected --output-logs=errors-only; then
   ok "typecheck and tests"
@@ -38,11 +41,16 @@ else
   failed=1
 fi
 
+if printf '%s\n' "$changed" | grep -qE '^supabase/functions/'; then
+  scripts/dev/functions-check.sh || failed=1
+fi
+
 step "Also verify"
 has() { printf '%s\n' "$changed" | grep -vE '\.md$' | grep -qE "$1"; }
 hinted=0
 hint() { note "$1"; hinted=1; }
-has '^supabase/migrations/' && hint "migration changed: verifier-data skill, then make db-types and commit packages/supabase"
+has '^supabase/migrations/' && hint "migration changed: verifier-data skill, then make db-types, commit packages/supabase and run make db-check"
+has '^supabase/functions/' && hint "edge function changed: deploy to dev only (supabase functions deploy <name> --project-ref bdnlfwyfgvaployvrivk); prod deploys happen with the cutover"
 has '^apps/scraper/' && hint "scraper changed: verifier-data skill step 5 (one day against local Supabase)"
 has '^(apps/dashboard|apps/website|packages/)|^pnpm-lock.yaml$' && hint "web app or package changed: make build, then the verifier-browser skill for UI changes"
 has '^apps/mobile/(app|components)/' && hint "mobile UI changed: verifier-mobile skill (macOS) or the screenshots described in apps/mobile/AGENTS.md"

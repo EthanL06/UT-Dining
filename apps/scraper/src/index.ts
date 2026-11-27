@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { config, dateRange } from './config.ts';
+import { config, dateRange, LOCATIONS } from './config.ts';
+import { buildReport, formatReport } from './health.ts';
 import { createClient } from './http.ts';
 import { scrape } from './scrape.ts';
 import { upload } from './upload.ts';
@@ -46,14 +47,43 @@ const main = async () => {
     );
   }
 
+  const report = buildReport({
+    dates,
+    locationDays: dates.length * LOCATIONS.length,
+    served: result.days.filter((day) => day.menus.length > 0).length,
+    notPosted: result.notPosted,
+    labels: result.labels,
+    blankLabels: result.blankLabels,
+    problems: result.problems,
+    unrecognizedAllergens: result.unrecognizedAllergens,
+    unknownIconFiles: result.unknownIcons,
+  });
+  for (const problem of report.problems) {
+    const where = [problem.locationName, problem.date].filter(Boolean).join(' ');
+    console.error(`Health ${problem.kind}: ${where ? `${where}: ` : ''}${problem.detail}`);
+  }
+  console.log(
+    report.healthy
+      ? 'Health: FoodPro pages parsed cleanly'
+      : `Health: ${report.problems.length} problems`,
+  );
+
   await mkdir(DATA_DIR, { recursive: true });
   const file = join(DATA_DIR, `ut_menus_${new Date().toISOString().replace(/[:.]/g, '-')}.json`);
   await writeFile(file, JSON.stringify(result.days, null, 2));
+  await writeFile(join(DATA_DIR, 'health.json'), JSON.stringify(report, null, 2));
+  await writeFile(join(DATA_DIR, 'health.md'), formatReport(report, process.env.RUN_URL));
   console.log(`Saved ${file}`);
 
+  if (report.problems.some((problem) => problem.kind === 'layout')) process.exitCode = 1;
+
   if (items === 0) {
-    console.error('No menu items were scraped');
-    process.exitCode = 1;
+    if (report.healthy && report.notPosted === report.locationDays) {
+      console.log('UT has not posted any menus for these days');
+    } else {
+      console.error('No menu items were scraped');
+      process.exitCode = 1;
+    }
     return;
   }
 

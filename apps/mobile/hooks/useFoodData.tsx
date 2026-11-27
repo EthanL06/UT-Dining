@@ -8,6 +8,7 @@ import {
   getFoodItem,
 } from '~/services/database/database';
 import type { Favorite } from '~/services/database/schema';
+import { log } from '~/utils/log';
 import { useDatabase } from './useDatabase';
 
 const formatNutritionKey = (key: string) =>
@@ -76,7 +77,7 @@ export function useFoodData(
 
         setFoodItem(item);
       } catch (error) {
-        console.error('❌ Error fetching food item:', error);
+        log.error('Error fetching food item', error);
       }
     };
 

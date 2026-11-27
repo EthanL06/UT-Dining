@@ -1,9 +1,10 @@
 import { router } from 'expo-router';
 import { ChefHat, ChevronLeft, Heart, Info } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { SheetManager } from 'react-native-actions-sheet';
 import FilterBar from '~/components/FilterBar';
+import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -103,7 +104,7 @@ const LocationHeader = React.memo(
                   className="h-11 justify-center rounded-full px-4"
                   style={{ backgroundColor: theme.card }}
                 >
-                  <Text className="text-[16px] font-semibold" style={{ color: theme.tint }}>
+                  <Text variant="callout" emphasized tone="tint">
                     Done
                   </Text>
                 </Pressable>
@@ -144,21 +145,20 @@ const LocationHeader = React.memo(
 
             {locationData?.force_close && (
               <View className="rounded-2xl bg-red-600 px-4 py-2.5">
-                <Text className="text-center text-[15px] font-bold text-white">
+                <Text variant="subheadline" emphasized tone="onTint" className="text-center">
                   Temporarily closed
                 </Text>
               </View>
             )}
 
             <View>
-              <Text className="text-[34px] leading-[41px] font-bold" style={{ color: theme.label }}>
-                {displayName}
-              </Text>
+              <Text variant="largeTitle">{displayName}</Text>
               {status !== '' && (
-                <Text className="text-[15px]" style={{ color: theme.secondaryLabel }}>
+                <Text variant="subheadline" tone="secondary">
                   <Text
-                    className="font-semibold"
-                    style={{ color: isOpen ? theme.tint : theme.secondaryLabel }}
+                    variant="subheadline"
+                    emphasized
+                    color={isOpen ? theme.tint : theme.secondaryLabel}
                   >
                     {isOpen ? 'Open' : status}
                   </Text>

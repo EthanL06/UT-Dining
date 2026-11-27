@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import type { FoodItem, Location } from '~/services/database/database';
+import { log } from '~/utils/log';
 
 export type ListItem =
   | { type: 'category_header'; id: string; title: string; isExpanded: boolean }
@@ -24,7 +25,7 @@ export function useCategoryExpansion(data: Location | null) {
           [categoryId]: !prev[categoryId],
         }));
       } catch (error) {
-        console.error('Error toggling category:', error);
+        log.error('Error toggling category', error);
       }
     },
     [expandedCategories],
@@ -68,7 +69,7 @@ export function useCategoryExpansion(data: Location | null) {
     try {
       setExpandedCategories({});
     } catch (error) {
-      console.error('Error resetting expanded categories:', error);
+      log.error('Error resetting expanded categories', error);
     }
   }, []);
 

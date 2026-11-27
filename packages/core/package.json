@@ -2,7 +2,7 @@
   "name": "@ut-dining/core",
   "version": "0.0.0",
   "private": true,
-  "description": "Pure UT Dining domain logic shared by the app and the dashboard: service hours, open/closed status, Central-time dates, payment methods",
+  "description": "Pure UT Dining domain logic shared by the app, the dashboard and the website: service hours, open/closed status, Central-time dates, payment methods",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

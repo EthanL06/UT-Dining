@@ -1,22 +1,13 @@
-import { Text, View } from 'react-native';
-
-import { useTheme } from '~/utils/theme';
+import { View } from 'react-native';
+import { Text } from '~/components/ui/Text';
 
 const OnboardingHeader = ({ title, subtitle }: { title: string; subtitle: string }) => {
-  const theme = useTheme();
-
   return (
     <View className="mb-6 px-8">
-      <Text
-        className="text-center text-[28px] leading-[33px] font-bold"
-        style={{ color: theme.label }}
-      >
+      <Text variant="title1" className="text-center">
         {title}
       </Text>
-      <Text
-        className="mx-auto mt-2 max-w-[320px] text-center text-[17px] leading-[23px]"
-        style={{ color: theme.secondaryLabel }}
-      >
+      <Text paragraph tone="secondary" className="mx-auto mt-2 max-w-[320px] text-center">
         {subtitle}
       </Text>
     </View>

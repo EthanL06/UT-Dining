@@ -12,10 +12,10 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 
 .PHONY: help setup install doctor \
 	dev mobile ios android dashboard website scrape admin \
-	db-up db-down db-status db-reset db-migrate db-new db-types db-seed db-fixtures db-psql db-studio \
+	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-psql db-studio \
 	env-local env-dev \
-	check verify check-comments fix lint typecheck test build \
-	sim sims e2e e2e-fixtures screenshots ios-app perf-build \
+	check verify check-comments check-size functions fix lint typecheck test build \
+	sim sims e2e e2e-fixtures screenshots ios-app perf-build size-report \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
 
@@ -47,6 +47,8 @@ help:
 	'  db-migrate      Apply new migrations, keeping data' \
 	'  db-new          New migration. NAME=add_meal_notes' \
 	'  db-types        Regenerate packages/supabase types from the local schema' \
+	'  db-check        Throwaway Postgres check of new migrations: backwards compatible, seed, types.' \
+	'                  BASE=origin/staging. Leaves the local stack alone' \
 	'  db-seed         Scrape real UT menus into the local database. DAYS=3' \
 	'  db-fixtures     Load the fixed E2E test menus' \
 	'  db-psql         psql on the local database. ARGS="-c \"select count(*) from menu\""' \
@@ -59,8 +61,12 @@ help:
 	'                  comment check, typecheck and tests of affected packages, then what else to verify' \
 	'  check           Biome, typecheck and tests of everything (run before pushing)' \
 	'  check-comments  Fail on added code comments. ARGS="--base origin/staging" (default: staged diff)' \
+	'  check-size      Fail on any source file over 500 lines (MAX_LINES=n to try another cap)' \
+	'  functions       Typecheck and test the Supabase edge functions with Deno (CI runs it too)' \
 	'  fix             Biome safe fixes' \
 	'  lint | typecheck | test | build' \
+	'  size-report     Mobile bundle and website sizes plus Lighthouse, against BASE=origin/staging (BASE= for none).' \
+	'                  Writes .context/size-report/report.md, the same comment CI posts on PRs. SKIP_LIGHTHOUSE=1' \
 	'' \
 	'iOS and E2E (macOS)' \
 	'  sim             Boot a simulator (SIM=<name or UDID>, else one with the dev build) and open it' \
@@ -138,6 +144,9 @@ db-new:
 db-types:
 	@$(DEV)/db.sh types
 
+db-check:
+	@$(DEV)/db-check.sh
+
 db-seed:
 	@$(DEV)/db.sh seed "$(DAYS)"
 
@@ -177,6 +186,12 @@ typecheck:
 test:
 	@pnpm test
 
+functions:
+	@$(DEV)/functions-check.sh
+
+check-size:
+	@$(DEV)/check-file-size.sh
+
 build:
 	@pnpm build
 
@@ -197,6 +212,9 @@ screenshots:
 
 ios-app:
 	@scripts/qa/ios-sim-app.sh $(ARGS)
+
+size-report:
+	@scripts/qa/size-report.sh local "$(if $(filter undefined,$(origin BASE)),origin/staging,$(BASE))"
 
 perf-build:
 	@test -n "$(APP)" -a -n "$(OUT)" || { echo 'usage: make perf-build APP=<base release .app> OUT=<dir> PERF_DEV_REF=<dev ref>' >&2; exit 2; }

@@ -1,11 +1,13 @@
 import { Link, router } from 'expo-router';
-import { Check, ChefHat, ChevronRight, Heart } from 'lucide-react-native';
+import { Check, ChevronRight, Heart } from 'lucide-react-native';
 import { useRef } from 'react';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 import ReanimatedSwipeable, {
   type SwipeableMethods,
   SwipeDirection,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
+import { MealPlanIcon } from '~/components/MealPlanIcon';
+import { Text } from '~/components/ui/Text';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import type { FoodItem } from '~/services/database/database';
 import { todayKey, useIsMealPlanItem } from '~/store/useMealPlanStore';
@@ -126,17 +128,17 @@ const FoodComponent = ({
         </View>
       )}
       <View className="flex-1 gap-y-0.5">
-        <Text numberOfLines={2} className="text-[16px]" style={{ color: theme.label }}>
+        <Text variant="callout" numberOfLines={2}>
           {food.name}
         </Text>
         {subtitle !== undefined && (
-          <Text className="text-[13.5px]" style={{ color: theme.secondaryLabel }}>
+          <Text variant="footnote" tone="secondary">
             {subtitle}
           </Text>
         )}
         {showExtraInfo && subtitle === undefined && (
           <View className="flex-row flex-wrap items-center gap-x-1.5">
-            <Text className="text-[13.5px]" style={{ color: theme.secondaryLabel }}>
+            <Text variant="footnote" tone="secondary">
               {displayNutrient(food.nutrition?.calories)} kcal ·{' '}
               {displayNutrient(food.nutrition?.protein)} protein ·{' '}
               {displayNutrient(food.nutrition?.total_carbohydrates)} carbs
@@ -156,7 +158,7 @@ const FoodComponent = ({
         )}
       </View>
       {showExtraInfo && isFavorite && <Heart size={15} color={theme.tint} fill={theme.tint} />}
-      {showExtraInfo && isMealPlan && <ChefHat size={15} color={theme.tint} />}
+      {showExtraInfo && isMealPlan && <MealPlanIcon size={15} color={theme.tint} filled />}
       {!selection?.selecting && <ChevronRight size={17} color={theme.tertiaryLabel} />}
     </View>
   );

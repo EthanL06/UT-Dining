@@ -66,7 +66,13 @@
         "useImportType": "error",
         "useNodejsImportProtocol": "error",
         "useTemplate": "error",
-        "useThrowOnlyError": "error"
+        "useThrowOnlyError": "error",
+        "noExcessiveLinesPerFile": {
+          "level": "error",
+          "options": {
+            "maxLines": 500
+          }
+        }
       },
       "complexity": {
         "noUselessFragments": "error",
@@ -103,7 +109,12 @@
   },
   "overrides": [
     {
-      "includes": ["apps/dashboard/components/dashboard/locations/add-location-modal.tsx"],
+      "includes": [
+        "apps/dashboard/components/dashboard/locations/add-location-modal.tsx",
+        "apps/dashboard/components/dashboard/locations/location-image-field.tsx",
+        "apps/dashboard/components/dashboard/locations/meal-times-fields.tsx",
+        "apps/dashboard/components/dashboard/locations/service-hours-fields.tsx"
+      ],
       "linter": {
         "rules": {
           "performance": {
@@ -153,7 +164,11 @@
               "options": {
                 "paths": {
                   "expo-haptics": "Use the helpers in ~/utils/haptics so every interaction gets the same feedback.",
-                  "@supabase/supabase-js": "Screens read the SQLite cache through hooks. Only services/ talks to Supabase; add the table to the sync instead."
+                  "@supabase/supabase-js": "Screens read the SQLite cache through hooks. Only services/ talks to Supabase; add the table to the sync instead.",
+                  "react-native": {
+                    "importNames": ["Text", "TextInput"],
+                    "message": "Use Text or TextInput from ~/components/ui/Text so every label uses the shared type scale."
+                  }
                 },
                 "patterns": [
                   {
@@ -161,6 +176,14 @@
                     "message": "Screens read the SQLite cache through hooks. Only services/ talks to Supabase; add the table to the sync instead."
                   }
                 ]
+              }
+            }
+          },
+          "suspicious": {
+            "noConsole": {
+              "level": "error",
+              "options": {
+                "allow": []
               }
             }
           }
@@ -176,7 +199,11 @@
               "level": "error",
               "options": {
                 "paths": {
-                  "expo-haptics": "Use the helpers in ~/utils/haptics so every interaction gets the same feedback."
+                  "expo-haptics": "Use the helpers in ~/utils/haptics so every interaction gets the same feedback.",
+                  "react-native": {
+                    "importNames": ["Text", "TextInput"],
+                    "message": "Use Text or TextInput from ~/components/ui/Text so every label uses the shared type scale."
+                  }
                 }
               }
             }
@@ -195,11 +222,55 @@
       }
     },
     {
+      "includes": ["apps/mobile/utils/log.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/mobile/components/ui/Text.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "expo-haptics": "Use the helpers in ~/utils/haptics so every interaction gets the same feedback.",
+                  "@supabase/supabase-js": "Screens read the SQLite cache through hooks. Only services/ talks to Supabase; add the table to the sync instead."
+                },
+                "patterns": [
+                  {
+                    "group": ["**/utils/supabase"],
+                    "message": "Screens read the SQLite cache through hooks. Only services/ talks to Supabase; add the table to the sync instead."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "includes": ["scripts/qa/perf/**"],
       "linter": {
         "rules": {
           "correctness": {
             "noUndeclaredDependencies": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/supabase/src/database.types.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noExcessiveLinesPerFile": "off"
           }
         }
       }

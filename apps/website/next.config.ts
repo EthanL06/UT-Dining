@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   basePath,
   trailingSlash: true,
   poweredByHeader: false,
+  transpilePackages: ['@ut-dining/core'],
   env: { NEXT_PUBLIC_BASE_PATH: basePath },
 };
 

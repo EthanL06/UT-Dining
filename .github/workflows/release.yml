@@ -1,0 +1,256 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Only show what would be released (no tag, release, changelog draft or build)
+        type: boolean
+        default: true
+      build:
+        description: Also start the App Store build (needs dry run off and the main branch)
+        type: boolean
+        default: false
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Prepare release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      tag: ${{ steps.plan.outputs.tag }}
+      released: ${{ steps.release.outputs.released }}
+    env:
+      LIVE: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run && github.ref == 'refs/heads/main') }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Refuse a live release outside main
+        if: github.event_name == 'workflow_dispatch' && !inputs.dry_run && github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::A live release only runs on main. Run it with dry run on, or from main."
+          exit 1
+
+      - name: Pick the commits to compare against
+        id: base
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          REF: ${{ github.ref }}
+        run: |
+          if [ -n "$PR_BASE" ]; then
+            echo "base=$PR_BASE" >> "$GITHUB_OUTPUT"
+          elif [ "$REF" != "refs/heads/main" ]; then
+            echo "base=$(git merge-base HEAD origin/main)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Draft notes and the changelog entry
+        id: plan
+        env:
+          BASE: ${{ steps.base.outputs.base }}
+        run: node apps/cli/src/release/main.ts --out "$RUNNER_TEMP/release" ${BASE:+--base "$BASE"}
+
+      - name: Compare with the App Store
+        id: store
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+          TAG_EXISTS: ${{ steps.plan.outputs.tag_exists }}
+        run: |
+          store="$(curl -fsS --retry 3 'https://itunes.apple.com/lookup?bundleId=com.ethanl06.ut-dining&country=us' | jq -r '.results[0].version // empty' || true)"
+          echo "version=$store" >> "$GITHUB_OUTPUT"
+          if [ -z "$store" ]; then
+            echo "::warning::Could not read the App Store version, so it was not compared."
+            exit 0
+          fi
+          if [ "$TAG_EXISTS" = "true" ]; then
+            exit 0
+          fi
+          if [ "$store" = "$VERSION" ] || [ "$(printf '%s\n%s\n' "$store" "$VERSION" | sort -V | tail -1)" != "$VERSION" ]; then
+            echo "blocked=true" >> "$GITHUB_OUTPUT"
+            message="The app version $VERSION is not newer than $store on the App Store. Bump apps/mobile/app.config.js and apps/mobile/package.json before promoting."
+            echo "::warning::$message"
+          fi
+
+      - name: Summarize
+        env:
+          DIR: ${{ steps.plan.outputs.dir }}
+          VERSION: ${{ steps.plan.outputs.version }}
+          TAG: ${{ steps.plan.outputs.tag }}
+          TAG_EXISTS: ${{ steps.plan.outputs.tag_exists }}
+          VERSIONS_MATCH: ${{ steps.plan.outputs.versions_match }}
+          BLOCKED: ${{ steps.store.outputs.blocked }}
+          STORE_VERSION: ${{ steps.store.outputs.version }}
+        run: |
+          if [ "$TAG_EXISTS" = "true" ]; then
+            echo "::warning::$TAG already exists, so nothing will be released. Bump the version in apps/mobile/app.config.js and apps/mobile/package.json to release."
+          fi
+          if [ "$VERSIONS_MATCH" != "true" ]; then
+            echo "::warning::apps/mobile/package.json and app.config.js have different versions."
+          fi
+          {
+            if [ "$LIVE" = "true" ]; then echo "# Release $VERSION"; else echo "# Release preview: $VERSION (dry run)"; fi
+            echo
+            if [ "$TAG_EXISTS" = "true" ]; then echo "> $TAG already exists. Nothing will be released."; echo; fi
+            if [ "$BLOCKED" = "true" ]; then echo "> $VERSION is not newer than $STORE_VERSION on the App Store. Bump the version before promoting."; echo; fi
+            cat "$DIR/notes.md"
+            echo
+            echo "## In-app changelog draft"
+            echo
+            echo '```json'
+            cat "$DIR/changelog.json"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-${{ steps.plan.outputs.version }}-${{ github.run_id }}
+          path: ${{ steps.plan.outputs.dir }}
+
+      - name: Tag and draft the GitHub release
+        id: release
+        if: env.LIVE == 'true' && steps.plan.outputs.tag_exists != 'true' && steps.store.outputs.blocked != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DIR: ${{ steps.plan.outputs.dir }}
+          VERSION: ${{ steps.plan.outputs.version }}
+          TAG: ${{ steps.plan.outputs.tag }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag -a "$TAG" -m "UT Dining $VERSION"
+          git push origin "refs/tags/$TAG"
+          gh release create "$TAG" --draft --verify-tag --title "UT Dining $VERSION" --notes-file "$DIR/notes.md"
+          echo "released=true" >> "$GITHUB_OUTPUT"
+
+      - name: Install the admin CLI
+        if: steps.release.outputs.released == 'true'
+        run: pnpm install --frozen-lockfile --filter @ut-dining/cli...
+
+      - name: Save the changelog draft
+        if: steps.release.outputs.released == 'true'
+        env:
+          SUPABASE_PROD_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PROD_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          DIR: ${{ steps.plan.outputs.dir }}
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          if [ -z "$SUPABASE_PROD_URL" ] || [ -z "$SUPABASE_PROD_SERVICE_KEY" ]; then
+            echo "::warning::SUPABASE_URL or SUPABASE_SERVICE_KEY is not set, so the changelog draft was not saved. It is in the run summary."
+            exit 0
+          fi
+          if pnpm -s admin changelog list --prod --json | jq -e --arg v "$VERSION" '.data[] | select(.version == $v)' > /dev/null; then
+            echo "::notice::A changelog entry for $VERSION already exists, so it was left as it is."
+            exit 0
+          fi
+          pnpm -s admin changelog upsert "$VERSION" --file "$DIR/changelog.json" --draft --prod --confirm-prod yrmylgizphirqqkzgbth
+          echo "::notice::Saved a hidden changelog draft for $VERSION. Review and publish it in the dashboard."
+
+      - name: Stop a release that is not newer than the App Store
+        if: env.LIVE == 'true' && steps.store.outputs.blocked == 'true'
+        run: |
+          echo "::error::Nothing was released because the app version is not newer than the App Store's. Bump it and push to main again."
+          exit 1
+
+  build:
+    name: Build for the App Store
+    needs: prepare
+    if: >-
+      needs.prepare.outputs.released == 'true' &&
+      (vars.RELEASE_EAS_BUILD == 'true' || (github.event_name == 'workflow_dispatch' && inputs.build))
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    outputs:
+      id: ${{ steps.build.outputs.id }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile --filter @ut-dining/mobile...
+
+      - name: Check the Expo token
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::Add an EXPO_TOKEN repository secret to build for the App Store."
+            exit 1
+          fi
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build on EAS
+        id: build
+        working-directory: apps/mobile
+        run: |
+          eas build --platform ios --profile production --non-interactive --wait --json > "$RUNNER_TEMP/build.json"
+          id="$(jq -r '.[0].id' "$RUNNER_TEMP/build.json")"
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          echo "EAS build: https://expo.dev/accounts/ethanl06/projects/ut-dining/builds/$id" >> "$GITHUB_STEP_SUMMARY"
+
+  submit:
+    name: Submit to App Store Connect
+    needs: [prepare, build]
+    if: needs.build.outputs.id != '' && vars.RELEASE_APP_STORE_SUBMIT == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment:
+      name: app-store
+      url: https://appstoreconnect.apple.com/apps
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile --filter @ut-dining/mobile...
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Submit the build
+        working-directory: apps/mobile
+        env:
+          BUILD_ID: ${{ needs.build.outputs.id }}
+        run: eas submit --platform ios --profile production --id "$BUILD_ID" --non-interactive --wait

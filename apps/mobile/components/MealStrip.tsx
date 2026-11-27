@@ -4,9 +4,9 @@ import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import { X } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
-
+import { Pressable, View } from 'react-native';
 import { StatusDot } from '~/components/ui/Grouped';
+import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import type { Location as LocationRow } from '~/services/database/schema';
 import { useMealStripStore } from '~/store/useMealStripStore';
@@ -110,14 +110,10 @@ export const MealStrip = ({
       className="h-full flex-row items-center gap-x-2.5 pr-2 pl-4"
     >
       <StatusDot open />
-      <Text
-        numberOfLines={1}
-        className="flex-1 text-[15px] font-semibold"
-        style={{ color: theme.label }}
-      >
+      <Text variant="subheadline" emphasized numberOfLines={1} className="flex-1">
         {strip.meal.name} at {displayName}
       </Text>
-      <Text className="text-[14px]" style={{ color: theme.secondaryLabel }}>
+      <Text variant="subheadline" tone="secondary">
         until {formatHhmm(strip.meal.end_time)}
       </Text>
       <Pressable

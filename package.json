@@ -19,7 +19,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "build": "turbo run build",
-    "check": "biome check --error-on-warnings && scripts/dev/check-comments.sh --all && turbo run typecheck test",
+    "check": "biome check --error-on-warnings && scripts/dev/check-comments.sh --all && scripts/dev/check-file-size.sh && turbo run typecheck test",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",

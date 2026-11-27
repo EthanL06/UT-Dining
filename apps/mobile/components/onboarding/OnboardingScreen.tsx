@@ -1,7 +1,7 @@
 import { ChevronLeft } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import React, { useCallback } from 'react';
-import { Modal, Pressable, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Modal, Pressable, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import Animated, {
   runOnJS,
   useAnimatedRef,
@@ -11,6 +11,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Text } from '~/components/ui/Text';
 import { getSafePostHog } from '~/services/analytics/posthog';
 import { ONBOARDING_STEPS, useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -258,7 +259,7 @@ const OnboardingScreen = ({ isOnboardingComplete }: OnboardingScreenProps) => {
               className="w-full rounded-full p-3"
               style={[{ backgroundColor: theme.tint }, animatedStyle]}
             >
-              <Text className="py-1.5 text-center text-[17px] font-semibold text-white">
+              <Text variant="headline" tone="onTint" className="py-1.5 text-center">
                 {currentStep === ONBOARDING_SCREENS.length - 1
                   ? 'Finish'
                   : (currentStep === 1 && !hasDataSelection) ||

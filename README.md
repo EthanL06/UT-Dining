@@ -5,8 +5,6 @@
 UT Dining is your companion app for exploring dining options at the University of Texas at Austin.
 Browse menus, check dining hours, and find the perfect meal on campus.
 
-> This project has been adopted by [Longhorn Developers](https://github.com/Longhorn-Developers). Originally created by [Ethan Lanting](https://github.com/EthanL06).
-
 <a href="https://apps.apple.com/us/app/ut-dining/id6743042002">
    <img alt="Download on the app store" src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" height="48">
 </a>
@@ -68,7 +66,7 @@ Website: [utdining.app](https://utdining.app) · Status: [status.utdining.app](h
   - Local: [SQLite](https://docs.expo.dev/versions/latest/sdk/sqlite/) with [Drizzle ORM](https://orm.drizzle.team/) (learn more [here](https://expo.dev/blog/modern-sqlite-for-react-native-apps))
 - **Data Fetching**: [TanStack Query](https://tanstack.com/query/latest) (React Query)
 - **Persistent Storage**: [MMKV](https://github.com/mrousavy/react-native-mmkv)
-- **Analytics**: [PostHog](https://posthog.com/) with session replay and auto-capture
+- **Analytics**: [PostHog](https://posthog.com/) for usage analytics and crash reports
 - **Styling**: [NativeWind](https://www.nativewind.dev/) (Tailwind CSS for React Native)
 - **Icons**: [Lucide React Native](https://lucide.dev/guide/packages/lucide-react-native)
 - **Code Quality**: [Biome](https://biomejs.dev/) for formatting and linting, TypeScript 7 (`tsgo`) for typechecking, [Vitest](https://vitest.dev/) for tests
@@ -76,13 +74,40 @@ Website: [utdining.app](https://utdining.app) · Status: [status.utdining.app](h
 
 ## How it Works
 
-<img src="https://github.com/user-attachments/assets/f1264b22-d0ad-44e8-9342-ec53ec94d37b"><br>
+```mermaid
+flowchart LR
+    FoodPro["UT FoodPro menus"]
+    Scraper["Scraper<br/>GitHub Actions<br/>1 AM and 9 AM Central, retries once"]
+    Supabase[("Supabase<br/>Postgres + edge functions")]
+    Dashboard["Dashboard + CLI<br/>dashboard.utdining.app"]
+    Status["Status page<br/>status.utdining.app"]
+    Website["Website<br/>utdining.app"]
+    App["Expo app"]
+    SQLite[("SQLite cache<br/>Drizzle ORM")]
+    ExpoPush["Expo Push"]
+    Upptime["Upptime<br/>every 5 minutes"]
 
-At the core of the system is a scheduled **GitHub Actions** workflow that runs every day at 7:00 AM UTC _(or 1:00 AM CST)_. It is responsible for scraping the dining menus from UT Austin, sourced from [this page](https://hf-foodpro.austin.utexas.edu/foodpro/location.aspx). Once the menus are scraped, the data is stored in a **Supabase** database. The web scraper lives in [`apps/scraper`](apps/scraper).
+    Scraper -- scrapes --> FoodPro
+    Scraper -- stores menus --> Supabase
+    Dashboard -- hours, closures, changelog, notifications --> Supabase
+    Supabase -- menus and status --> Status
+    Supabase -- changelog --> Website
+    Status -- /api/status --> Website
+    App -- syncs menus --> Supabase
+    App <--> SQLite
+    Supabase -- push notifications --> ExpoPush
+    ExpoPush --> App
+    Upptime -. checks .-> Website
+    Upptime -. checks .-> Dashboard
+    Upptime -. checks .-> Status
+    Upptime -. checks .-> Supabase
+```
 
-Hours, force closes, support links, the changelog and push notifications are managed from the admin dashboard ([`apps/dashboard`](apps/dashboard)) or its command line twin ([`apps/cli`](apps/cli)), and both write to the same Supabase database.
+At the core of the system is a scheduled **GitHub Actions** workflow that runs twice a day, at 1 AM and 9:17 AM Central. It is responsible for scraping the dining menus from UT Austin, sourced from [this page](https://hf-foodpro.austin.utexas.edu/foodpro/location.aspx). Once the menus are scraped, the data is stored in a **Supabase** database. The web scraper lives in [`apps/scraper`](apps/scraper), and a 5-day run finishes in under a minute ([performance](apps/scraper/README.md#performance)).
 
-Every 6 hours, the **Expo** mobile application fetches the latest menu data from the database, keeping the application up-to-date. To optimize performance and reduce loading times, the data is cached locally in an **SQLite** database using **Drizzle ORM**. This local cache allows the app to quickly retrieve the necessary information, ensuring a smooth, **offline-first** user experience.
+Hours, force closes, support links, the changelog and push notifications are managed from the admin dashboard ([`apps/dashboard`](apps/dashboard)) or its command line twin ([`apps/cli`](apps/cli)), and both write to the same Supabase database. Push notifications are sent by Supabase edge functions ([`supabase/functions`](supabase/functions)) through Expo Push.
+
+The **Expo** mobile application checks the database for new menu data when it opens, when it comes back online and every 30 minutes while it is open, keeping the application up-to-date. To optimize performance and reduce loading times, the data is cached locally in an **SQLite** database using **Drizzle ORM**. This local cache allows the app to quickly retrieve the necessary information, ensuring a smooth, **offline-first** user experience.
 
 ## Getting Started
 
@@ -184,7 +209,7 @@ UT-Dining/
 │   ├── dashboard/         # Admin dashboard (Next.js + Mantine, deployed on Vercel)
 │   ├── website/           # Public website, changelog and privacy policy (Next.js on Vercel, static copy on GitHub Pages)
 │   ├── cli/               # @ut-dining/cli: command line version of the dashboard (pnpm -s admin)
-│   └── scraper/           # Daily menu scraper (Node, runs on GitHub Actions at 07:00 UTC)
+│   └── scraper/           # Menu scraper (Node, runs on GitHub Actions twice a day)
 ├── packages/
 │   ├── core/              # @ut-dining/core: shared hours, open/closed status and Central-time logic
 │   ├── supabase/          # @ut-dining/supabase: generated database types shared by all apps
@@ -219,7 +244,7 @@ There are three Supabase databases. Nothing in development ever points at produc
 | Website (GitHub Pages copy) | [longhorn-developers.github.io/ut-dining-website](https://longhorn-developers.github.io/ut-dining-website/) | `website-deploy.yml` builds a static export on pushes to `main` and daily at 12:30 UTC. It exists because the App Store privacy-policy link points there. |
 | Dashboard | [dashboard.utdining.app](https://dashboard.utdining.app) on Vercel | Production builds from `main`, previews for `staging` and branches with an open PR |
 | Public status page | [status.utdining.app](https://status.utdining.app) | Served by the dashboard app, so it ships with the dashboard |
-| Scraper (production) | GitHub Actions | `scraper.yml`, daily at 07:00 UTC and on demand |
+| Scraper (production) | GitHub Actions | `scraper.yml`, daily at 07:00 and 15:17 UTC (1 AM and 9 AM Central), with one retry 10 minutes after a failure, and on demand |
 | Scraper (dev) | GitHub Actions | `scraper-dev.yml`, daily at 07:30 UTC, on pushes to `staging` and on demand |
 | Database migrations and edge functions | Supabase | Applied by hand. No workflow deploys them. Migrations must stay backwards compatible with the app versions already installed. |
 
@@ -248,10 +273,10 @@ Vercel only builds an app when its files, a workspace package it uses or a root 
 A: No, this is a student-created project that aims to improve the dining experience at UT Austin. While we use publicly available data from UT's University Housing and Dining, we are not officially affiliated with the university (yet 👀).
 
 **Q: Where does the menu data come from?**  
-A: The menu data is scraped daily from [UT Austin's official dining page](https://hf-foodpro.austin.utexas.edu/foodpro/location.aspx) using the scraper in [`apps/scraper`](apps/scraper).
+A: The menu data is scraped twice a day from [UT Austin's official dining page](https://hf-foodpro.austin.utexas.edu/foodpro/location.aspx) using the scraper in [`apps/scraper`](apps/scraper).
 
 **Q: How often is the menu data updated?**  
-A: The menu data is updated every day at 1:00 AM CST (7:00 AM UTC) to ensure you have the most current information.
+A: The scraper runs twice a day, at 1 AM and 9 AM Central, and retries once if a run fails.
 
 ### Development
 

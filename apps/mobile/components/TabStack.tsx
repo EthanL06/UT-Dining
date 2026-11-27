@@ -2,7 +2,9 @@ import { Stack } from 'expo-router';
 
 import { useTheme } from '~/utils/theme';
 
-export const TabStack = () => {
+type TabStackProps = { title: string; headerShown?: boolean };
+
+export const TabStack = ({ title, headerShown = true }: TabStackProps) => {
   const theme = useTheme();
 
   return (
@@ -18,6 +20,8 @@ export const TabStack = () => {
         headerLargeTitleStyle: { color: theme.label },
         contentStyle: { backgroundColor: theme.background },
       }}
-    />
+    >
+      <Stack.Screen name="index" options={{ title, headerShown }} />
+    </Stack>
   );
 };

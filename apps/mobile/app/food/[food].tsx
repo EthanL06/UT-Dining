@@ -1,11 +1,13 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Check, ChefHat, Flame, Heart, Info, X } from 'lucide-react-native';
+import { Flame, Heart, Info, X } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import { useEffect, useEffectEvent, useState } from 'react';
-import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MealPlanIcon } from '~/components/MealPlanIcon';
 import { GroupedRow, GroupedSection } from '~/components/ui/Grouped';
+import { Text } from '~/components/ui/Text';
 import {
   ALLERGEN_ICONS,
   type AllergenKey,
@@ -35,12 +37,10 @@ const Tile = ({ label, value, theme }: { label: string; value: string; theme: Th
     className="flex-1 px-3.5 py-3"
     style={{ backgroundColor: theme.card, borderRadius: 22, borderCurve: 'continuous' }}
   >
-    <Text className="text-[12.5px]" style={{ color: theme.secondaryLabel }}>
+    <Text variant="caption" tone="secondary">
       {label}
     </Text>
-    <Text className="text-[21px] font-bold" style={{ color: theme.label }}>
-      {value}
-    </Text>
+    <Text variant="title3">{value}</Text>
   </View>
 );
 
@@ -136,13 +136,8 @@ const FoodScreen = () => {
           {foodItem && (
             <>
               <View className="px-5 pb-3">
-                <Text
-                  className="text-[28px] leading-[33px] font-bold"
-                  style={{ color: theme.label }}
-                >
-                  {foodItem.name}
-                </Text>
-                <Text className="mt-0.5 text-[14.5px]" style={{ color: theme.secondaryLabel }}>
+                <Text variant="title1">{foodItem.name}</Text>
+                <Text variant="subheadline" tone="secondary" className="mt-0.5">
                   {[location, menu, category].filter(Boolean).join(' · ')}
                 </Text>
               </View>
@@ -157,10 +152,10 @@ const FoodScreen = () => {
                   }}
                 >
                   <View>
-                    <Text className="text-[12.5px]" style={{ color: theme.secondaryLabel }}>
+                    <Text variant="caption" tone="secondary">
                       Calories · {displayNutrient(foodItem.nutrition?.serving_size)}
                     </Text>
-                    <Text className="text-[34px] font-bold" style={{ color: theme.label }}>
+                    <Text variant="largeTitle">
                       {displayNutrient(foodItem.nutrition?.calories)}
                     </Text>
                   </View>
@@ -192,9 +187,7 @@ const FoodScreen = () => {
                         className="size-5 rounded-full"
                         resizeMode="contain"
                       />
-                      <Text className="text-[13px] font-medium" style={{ color: theme.label }}>
-                        {tag}
-                      </Text>
+                      <Text variant="footnote">{tag}</Text>
                     </View>
                   ))}
                 </View>
@@ -211,24 +204,19 @@ const FoodScreen = () => {
                       isFirst={index === 0}
                       title={
                         <Text
-                          className="text-[16px]"
-                          style={{
-                            color: indented ? theme.secondaryLabel : theme.label,
-                            paddingLeft: indented ? 14 : 0,
-                          }}
+                          variant="callout"
+                          tone={indented ? 'secondary' : 'primary'}
+                          style={{ paddingLeft: indented ? 14 : 0 }}
                         >
                           {item.key}
                         </Text>
                       }
                       trailing={
                         <View className="flex-row items-center gap-x-3">
-                          <Text className="text-[15px]" style={{ color: theme.secondaryLabel }}>
+                          <Text variant="subheadline" tone="secondary">
                             {displayNutrient(item.value)}
                           </Text>
-                          <Text
-                            className="w-10 text-right text-[15px] font-semibold"
-                            style={{ color: theme.label }}
-                          >
+                          <Text variant="subheadline" emphasized className="w-10 text-right">
                             {percent ?? ''}
                           </Text>
                         </View>
@@ -240,10 +228,7 @@ const FoodScreen = () => {
 
               <GroupedSection header="Ingredients">
                 <View className="px-4 py-3">
-                  <Text
-                    className="text-[14.5px] leading-[21px]"
-                    style={{ color: theme.secondaryLabel }}
-                  >
+                  <Text variant="subheadline" paragraph tone="secondary">
                     {foodItem.nutrition?.ingredients || 'Not listed'}
                   </Text>
                 </View>
@@ -281,7 +266,7 @@ const FoodScreen = () => {
                 color={isFavorite ? theme.tint : theme.label}
                 fill={isFavorite ? theme.tint : 'transparent'}
               />
-              <Text className="text-[15px] font-semibold" style={{ color: theme.label }}>
+              <Text variant="callout" emphasized>
                 {isFavorite ? 'Favorited' : 'Favorite'}
               </Text>
             </Pressable>
@@ -297,15 +282,12 @@ const FoodScreen = () => {
               className="h-12 flex-[1.4] flex-row items-center justify-center gap-x-2 rounded-full"
               style={{ backgroundColor: isMealPlan ? theme.tintSoft : theme.tint }}
             >
-              {isMealPlan ? (
-                <Check size={18} color={theme.tint} strokeWidth={3} />
-              ) : (
-                <ChefHat size={18} color="#FFFFFF" />
-              )}
-              <Text
-                className="text-[15px] font-semibold"
-                style={{ color: isMealPlan ? theme.tint : '#FFFFFF' }}
-              >
+              <MealPlanIcon
+                size={18}
+                color={isMealPlan ? theme.tint : '#FFFFFF'}
+                filled={isMealPlan}
+              />
+              <Text variant="callout" emphasized color={isMealPlan ? theme.tint : '#FFFFFF'}>
                 {isMealPlan ? 'In Meal Plan' : 'Add to Meal Plan'}
               </Text>
             </Pressable>

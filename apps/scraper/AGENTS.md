@@ -6,3 +6,4 @@ Daily FoodPro menu scraper. Read the root `AGENTS.md` first, then `README.md` he
 - Parsing lives in `src/parse.ts` with tests in `src/parse.test.ts`. A parser change needs a test built from a saved FoodPro HTML snippet, not a live request.
 - `src/config.ts` reads `SUPABASE_URL`, `SUPABASE_KEY` and `DAYS_TO_SCRAPE`; `.github/workflows/scraper.yml` maps the repo secrets `SUPABASE_URL` and `SUPABASE_SERVICE_KEY` onto them. Keep the two in step.
 - `scraper-dev.yml` scrapes into the hosted dev project on pushes to `staging` that touch the scraper. The daily production cron only runs from `main`.
+- `src/health.ts` decides whether FoodPro still parses. "No Data Available" means UT posted no menu and is never a failure. When the parser changes, keep `health.test.ts` passing so a real layout change still opens the `scraper-health` issue.

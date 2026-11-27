@@ -12,6 +12,8 @@ import {
   useChangelogStore,
 } from '~/store/useChangelogStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
+import { isDevVariant } from '~/utils/appVariant';
+import { log } from '~/utils/log';
 import { isNewerVersion } from '~/utils/version';
 import { useDatabase } from './useDatabase';
 
@@ -41,7 +43,10 @@ export const useVersionCheck = () => {
         update_required: updateRequired,
       });
 
-      if (updateRequired && requiredVersion) {
+      const dismissedInDev =
+        isDevVariant && useChangelogStore.getState().ignoredUpdateVersion === requiredVersion;
+
+      if (updateRequired && requiredVersion && !dismissedInDev) {
         useChangelogPromptStore.getState().showPrompt({
           kind: 'update',
           version: requiredVersion,
@@ -73,7 +78,7 @@ export const useVersionCheck = () => {
       });
       return true;
     } catch (error) {
-      console.warn('App Store version check failed:', error);
+      log.warn('App Store version check failed', { error });
       return false;
     }
   }, [db, posthog]);
@@ -149,16 +154,20 @@ export const useVersionCheck = () => {
 
   const handleIgnore = useCallback(
     (version: string) => {
+      const { prompt, hidePrompt } = useChangelogPromptStore.getState();
+      hidePrompt();
+      if (prompt?.preview) return;
       posthog.capture('update_ignored', { version });
       useChangelogStore.getState().ignoreUpdate(version);
-      useChangelogPromptStore.getState().hidePrompt();
     },
     [posthog],
   );
 
   const handleDismissWhatsNew = useCallback((version: string) => {
+    const { prompt, hidePrompt } = useChangelogPromptStore.getState();
+    hidePrompt();
+    if (prompt?.preview) return;
     useChangelogStore.getState().markVersionSeen(version);
-    useChangelogPromptStore.getState().hidePrompt();
   }, []);
 
   return { handleUpdate, handleIgnore, handleDismissWhatsNew };

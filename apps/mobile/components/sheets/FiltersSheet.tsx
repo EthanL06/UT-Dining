@@ -1,8 +1,10 @@
-import { ChefHat, Heart } from 'lucide-react-native';
+import { Heart } from 'lucide-react-native';
 import type React from 'react';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 import ActionSheet, { ScrollView, type SheetProps, useSheetRef } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MealPlanIcon } from '~/components/MealPlanIcon';
+import { Text } from '~/components/ui/Text';
 
 import { ALLERGEN_EXCEPTIONS, ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import { useFiltersStore } from '~/store/useFiltersStore';
@@ -36,10 +38,7 @@ const Chip = ({
       style={{ backgroundColor: isOn ? theme.tint : theme.card }}
     >
       {icon}
-      <Text
-        className={isOn ? 'text-[14px] font-semibold' : 'text-[14px] font-medium'}
-        style={{ color: isOn ? '#FFFFFF' : theme.label }}
-      >
+      <Text variant="subheadline" emphasized tone={isOn ? 'onTint' : 'primary'}>
         {label}
       </Text>
     </Pressable>
@@ -47,14 +46,11 @@ const Chip = ({
 };
 
 const SectionTitle = ({ title, subtitle }: { title: string; subtitle?: string }) => {
-  const theme = useTheme();
   return (
     <View className="mt-6 mb-2.5">
-      <Text className="text-[18px] font-bold" style={{ color: theme.label }}>
-        {title}
-      </Text>
+      <Text variant="title3">{title}</Text>
       {subtitle && (
-        <Text className="text-[13.5px]" style={{ color: theme.secondaryLabel }}>
+        <Text variant="footnote" tone="secondary">
           {subtitle}
         </Text>
       )}
@@ -121,13 +117,9 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
           className="h-9 justify-center rounded-full px-3.5"
           style={{ backgroundColor: theme.card, opacity: activeCount === 0 ? 0.5 : 1 }}
         >
-          <Text className="text-[15px] font-medium" style={{ color: theme.label }}>
-            Reset
-          </Text>
+          <Text variant="subheadline">Reset</Text>
         </Pressable>
-        <Text className="text-[17px] font-semibold" style={{ color: theme.label }}>
-          Filters
-        </Text>
+        <Text variant="headline">Filters</Text>
         <Pressable
           testID="filters-done-button"
           accessibilityRole="button"
@@ -135,7 +127,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
           className="h-9 justify-center rounded-full px-3.5"
           style={{ backgroundColor: theme.card }}
         >
-          <Text className="text-[15px] font-semibold" style={{ color: theme.tint }}>
+          <Text variant="subheadline" emphasized tone="tint">
             Done
           </Text>
         </Pressable>
@@ -164,7 +156,11 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
               onPress={toggleMealPlanFilter}
               icon={
                 <View className="size-7 items-center justify-center">
-                  <ChefHat size={16} color={filters.mealPlan ? '#FFFFFF' : theme.tint} />
+                  <MealPlanIcon
+                    size={16}
+                    color={filters.mealPlan ? '#FFFFFF' : theme.tint}
+                    filled={filters.mealPlan}
+                  />
                 </View>
               }
             />
@@ -202,10 +198,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
             ))}
           </View>
 
-          <Text
-            className="mt-6 text-[12.5px] leading-[17px]"
-            style={{ color: theme.secondaryLabel }}
-          >
+          <Text variant="caption" paragraph tone="secondary" className="mt-6">
             Allergen and dietary data comes from University Housing and Dining and may not always be
             accurate. Use discretion when making dietary choices.
           </Text>

@@ -1,7 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import * as Application from 'expo-application';
 import { router, Stack } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
 import {
   Accessibility,
   Activity,
@@ -20,31 +19,30 @@ import {
   Moon,
   RefreshCcw,
   Shield,
-  Sparkles,
   Star,
   Type,
   Users,
+  Wrench,
 } from 'lucide-react-native';
 import React from 'react';
-import { Linking, ScrollView, Switch, Text, View } from 'react-native';
+import { Linking, ScrollView, Switch, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
-
 import { GroupedRow, GroupedSection, IconSquare } from '~/components/ui/Grouped';
+import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationPermissions } from '~/hooks/useLocationPermissions';
 import { forceMenuSync } from '~/hooks/useMenuSync';
 import { useNotificationPermissions } from '~/hooks/useNotificationPermissions';
-import { useServiceStatus } from '~/hooks/useServiceStatus';
+import { openStatusPage, useServiceStatus } from '~/hooks/useServiceStatus';
 import { getAppInformation } from '~/services/database/database';
 import type { AppInformation } from '~/services/database/schema';
 import { getOrCreateDeviceId } from '~/services/device/deviceId';
-import { useAppLaunchStore } from '~/store/useAppLaunchStore';
-import { useChangelogPromptStore, useChangelogStore } from '~/store/useChangelogStore';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
-import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
+import { showQaTools } from '~/utils/appVariant';
 import { haptics } from '~/utils/haptics';
-import { SERVICE_STATUS_COLORS, STATUS_PAGE_URL } from '~/utils/serviceStatus';
+import { log } from '~/utils/log';
+import { SERVICE_STATUS_COLORS } from '~/utils/serviceStatus';
 import { useTheme } from '~/utils/theme';
 import { formatTimeSinceSync } from '~/utils/time';
 
@@ -169,7 +167,7 @@ const SyncDataRow = () => {
     } catch (error) {
       setSyncStatus('failed');
       haptics.error();
-      console.warn('Sync failed:', error);
+      log.warn('Sync failed', { error });
     }
   };
 
@@ -230,12 +228,7 @@ const PermissionRows = () => {
   );
 };
 
-const openStatusPage = () => {
-  WebBrowser.openBrowserAsync(STATUS_PAGE_URL).catch(() => Linking.openURL(STATUS_PAGE_URL));
-};
-
 const ServiceStatusRow = ({ isFirst }: { isFirst: boolean }) => {
-  const theme = useTheme();
   const { data: status } = useServiceStatus();
   return (
     <GroupedRow
@@ -251,7 +244,7 @@ const ServiceStatusRow = ({ isFirst }: { isFirst: boolean }) => {
               className="size-2 rounded-full"
               style={{ backgroundColor: SERVICE_STATUS_COLORS[status.health] }}
             />
-            <Text className="text-[15px]" style={{ color: theme.secondaryLabel }}>
+            <Text variant="subheadline" tone="secondary">
               {status.label}
             </Text>
           </View>
@@ -264,7 +257,6 @@ const ServiceStatusRow = ({ isFirst }: { isFirst: boolean }) => {
 };
 
 const InformationSection = ({ appInfo }: { appInfo: AppInformation }) => {
-  const theme = useTheme();
   const supportLinks = [...appInfo.support_links].sort((a, b) => a.order - b.order);
   const contributors = [...appInfo.credits_contributors]
     .sort((a, b) => a.order - b.order)
@@ -275,10 +267,10 @@ const InformationSection = ({ appInfo }: { appInfo: AppInformation }) => {
     <>
       <GroupedSection header="About">
         <View className="px-4 py-3.5">
-          <Text className="mb-1 text-[17px] font-semibold" style={{ color: theme.label }}>
+          <Text variant="headline" className="mb-1">
             {appInfo.about_title}
           </Text>
-          <Text className="text-[15px] leading-[22px]" style={{ color: theme.secondaryLabel }}>
+          <Text variant="subheadline" paragraph tone="secondary">
             {appInfo.about_description}
           </Text>
         </View>
@@ -344,11 +336,6 @@ const SettingsPage = () => {
     isColorBlindMode,
     toggleColorBlindMode,
   } = useSettingsStore();
-  const { resetOnboarding } = useOnboardingStore();
-  const { resetRatingPrompt } = useAppLaunchStore();
-  const resetChangelog = useChangelogStore((state) => state.resetChangelog);
-  const changelogEntries = useChangelogStore((state) => state.entries);
-  const showChangelogPrompt = useChangelogPromptStore((state) => state.showPrompt);
   const db = useDatabase();
   const [appInfo, setAppInfo] = React.useState<AppInformation | null>(null);
   const deviceId = getOrCreateDeviceId();
@@ -456,52 +443,16 @@ const SettingsPage = () => {
           />
         </GroupedSection>
 
-        {__DEV__ && (
-          <GroupedSection header="Development (only visible in dev mode)">
+        {showQaTools && (
+          <GroupedSection header="Developer">
             <LinkRow
               isFirst
-              title="Reset Onboarding"
-              Icon={RefreshCcw}
-              color={ICON_COLORS.gray}
-              onPress={resetOnboarding}
-            />
-            <LinkRow
-              title="Reset Rating Prompt"
-              subtitle="Reset the rating prompt to test it again"
-              Icon={RefreshCcw}
-              color={ICON_COLORS.gray}
-              onPress={resetRatingPrompt}
-            />
-            <LinkRow
-              title="Preview Update Popup"
-              Icon={Sparkles}
-              color={ICON_COLORS.gray}
-              onPress={() =>
-                showChangelogPrompt({
-                  kind: 'update',
-                  version: changelogEntries[0]?.version ?? '1.0.0',
-                  required: false,
-                  releaseNotes: null,
-                })
-              }
-            />
-            <LinkRow
-              title="Preview What's New Popup"
-              Icon={Sparkles}
-              color={ICON_COLORS.gray}
-              onPress={() =>
-                showChangelogPrompt({
-                  kind: 'whats-new',
-                  version: changelogEntries[0]?.version ?? '1.0.0',
-                })
-              }
-            />
-            <LinkRow
-              title="Reset Changelog"
-              subtitle="Show What's New again on the next launch"
-              Icon={RefreshCcw}
-              color={ICON_COLORS.gray}
-              onPress={resetChangelog}
+              title="QA Menu"
+              subtitle="Replay prompts, reset data, test pushes"
+              testID="settings-qa-menu"
+              Icon={Wrench}
+              color={ICON_COLORS.orange}
+              onPress={() => router.push('/settings/qa')}
             />
           </GroupedSection>
         )}
@@ -509,11 +460,11 @@ const SettingsPage = () => {
         {appInfo && <InformationSection appInfo={appInfo} />}
 
         <View className="mt-1 items-center">
-          <Text className="text-[13px]" style={{ color: theme.secondaryLabel }}>
+          <Text variant="footnote" tone="secondary">
             Version {Application.nativeApplicationVersion}
           </Text>
           {deviceId && (
-            <Text className="mt-1 text-[10px]" style={{ color: theme.tertiaryLabel }}>
+            <Text variant="caption2" tone="tertiary" className="mt-1">
               {deviceId}
             </Text>
           )}

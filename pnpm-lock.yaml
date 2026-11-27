@@ -168,6 +168,9 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
+      vitest:
+        specifier: ^5.0.5
+        version: 5.0.5(@types/node@24.0.3)(vite@8.3.5(@types/node@24.0.3)(esbuild@0.25.6)(jiti@2.7.0)(terser@5.43.1)(tsx@4.23.15)(yaml@2.8.0))
 
   apps/mobile:
     dependencies:
@@ -428,6 +431,9 @@ importers:
 
   apps/website:
     dependencies:
+      '@ut-dining/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       lucide-react:
         specifier: ^0.475.0
         version: 0.475.0(react@19.3.1)
