@@ -34,8 +34,14 @@ export const useChangelogStore = create<ChangelogState>()(
 );
 
 export type ChangelogPrompt =
-  | { kind: 'update'; version: string; required: boolean; releaseNotes: string | null }
-  | { kind: 'whats-new'; version: string };
+  | {
+      kind: 'update';
+      version: string;
+      required: boolean;
+      releaseNotes: string | null;
+      preview?: boolean;
+    }
+  | { kind: 'whats-new'; version: string; preview?: boolean };
 
 interface ChangelogPromptState {
   prompt: ChangelogPrompt | null;
