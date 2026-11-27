@@ -14,6 +14,13 @@
     for (const button of document.querySelectorAll('[data-theme-toggle]')) {
       button.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
     }
+    const choice = stored() || 'system';
+    for (const button of document.querySelectorAll('[data-theme-choice]')) {
+      button.setAttribute(
+        'aria-pressed',
+        button.getAttribute('data-theme-choice') === choice ? 'true' : 'false',
+      );
+    }
   };
   apply(stored() || (media.matches ? 'dark' : 'light'));
   media.addEventListener('change', (event) => {
@@ -32,6 +39,19 @@
     if (!(event.target instanceof Element)) return;
     for (const menu of document.querySelectorAll('details[data-menu][open]')) {
       if (!menu.contains(event.target) || event.target.closest('a')) menu.removeAttribute('open');
+    }
+    const choice = event.target.closest('[data-theme-choice]');
+    if (choice) {
+      const value = choice.getAttribute('data-theme-choice');
+      try {
+        if (value === 'light' || value === 'dark') localStorage.setItem('theme', value);
+        else localStorage.removeItem('theme');
+      } catch {}
+      apply(
+        stored() ||
+          (value === 'light' || value === 'dark' ? value : media.matches ? 'dark' : 'light'),
+      );
+      return;
     }
     if (!event.target.closest('[data-theme-toggle]')) return;
     const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
