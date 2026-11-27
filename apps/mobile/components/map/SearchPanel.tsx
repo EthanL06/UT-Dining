@@ -1,6 +1,5 @@
 import { Building2, Clock, Search, UtensilsCrossed } from 'lucide-react-native';
 import { Pressable, View } from 'react-native';
-import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { type Coordinates, type Place, walkFrom } from '~/utils/mapPlaces';
 import type { BuildingMatch, SearchMatch } from '~/utils/mapSearch';
@@ -9,6 +8,7 @@ import { useTheme } from '~/utils/theme';
 import { SHEET_CONTENT_GAP } from './PlaceCard';
 import { PlaceRow, placeDetail, RowGroup, SheetRow } from './PlaceRow';
 import { PLACE_ICONS, usePlaceColor } from './placeStyle';
+import { SheetScrollView } from './SheetScrollView';
 import { SkeletonRows } from './SkeletonRows';
 
 export type ResolvedRecent = { kind: 'place'; place: Place } | { kind: 'query'; query: string };
@@ -201,7 +201,7 @@ export const SearchPanel = ({
   });
 
   return (
-    <OverflowScrollView
+    <SheetScrollView
       testID="map-search-results"
       containerStyle={{ flex: 1 }}
       keyboardShouldPersistTaps="handled"
@@ -273,6 +273,6 @@ export const SearchPanel = ({
           )}
         </>
       )}
-    </OverflowScrollView>
+    </SheetScrollView>
   );
 };

@@ -1,0 +1,53 @@
+name: Update open PRs
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+    inputs:
+      all:
+        description: Update every open PR that is behind staging, not only the ones sharing files
+        type: boolean
+        default: false
+
+concurrency:
+  group: update-prs
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    name: Merge staging into overlapping PRs
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ secrets.PR_UPDATE_TOKEN }}
+      RANGE: ${{ github.event.before }}..${{ github.event.after }}
+      ALL: ${{ github.event_name == 'workflow_dispatch' && inputs.all }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          sparse-checkout: |
+            scripts/dev/ops
+            .node-version
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .node-version
+
+      - name: Update overlapping PRs
+        run: |
+          args=()
+          if [ "$ALL" = "true" ]; then
+            args+=(--all)
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            args+=(--range "$RANGE")
+          fi
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::notice::PR_UPDATE_TOKEN is not set, so this run only reports. Pushes made with the default GITHUB_TOKEN do not start CI, so the update needs a token of Ethan's."
+            export GH_TOKEN="${{ github.token }}"
+            args+=(--dry-run)
+          fi
+          node scripts/dev/ops/update-prs.ts "${args[@]}"

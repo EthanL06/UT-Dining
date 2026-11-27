@@ -95,7 +95,21 @@ help:
 	'  clean           Stop Metro, delete E2E simulator clones, remove merged clean worktrees, clear caches' \
 	'  stop            Stop Metro and local Supabase, shut down every simulator' \
 	'  clean-metro | clean-sims | clean-worktrees | clean-caches' \
-	'  clean-deps      Delete every node_modules (then make install)'
+	'  clean-deps      Delete every node_modules (then make install)' \
+	'' \
+	'PRs and ops (GitHub REST through gh: works in cloud sessions and on the Mac)' \
+	'  status          Open PRs with CI and merge state, what waits on Ethan, what needs an agent, staging runs' \
+	'  pr-ready        Merge staging in when behind, wait for the required checks, green or red with log tails.' \
+	'                  PR=<n> ARGS="--no-update --no-wait --timeout 40"' \
+	'  pr-setup        Attribution lines, assignee and review request, labels, inline images.' \
+	'                  PR=<n> THREAD=<url> LABELS="mobile" IMAGES=<dir>' \
+	'  update-prs      Merge staging into open PRs that share files with the latest staging change. ARGS="--all --dry-run"' \
+	'  ota-check       Follow the staging OTA update for a merge until it is live. PR=<merged n> or ARGS="--sha <sha>"' \
+	'  cleanup         Merged branches (remote and local), finished worktrees, stale simulator clones. YES=1 deletes' \
+	'  data-change     Admin CLI commands as one change: backup, dry run, apply, read back.' \
+	'                  PLAN=<file> TARGET=local|dev|prod APPLY=1 CONFIRM=<prod ref>' \
+	'  cutover         The 2.0.0 cutover steps from #25 and #64: checks, dry runs, one guarded prod step at a time.' \
+	'                  ARGS="--run <step> --confirm-prod <prod ref>"'
 
 setup:
 	@$(DEV)/setup.sh
@@ -281,3 +295,30 @@ clean-deps:
 
 stop:
 	@$(DEV)/clean.sh stop
+
+OPS := node scripts/dev/ops
+.PHONY: status pr-ready pr-setup update-prs ota-check cleanup data-change cutover
+
+status:
+	@$(OPS)/status.ts $(ARGS)
+
+pr-ready:
+	@$(OPS)/pr-ready.ts $(PR) $(ARGS)
+
+pr-setup:
+	@$(OPS)/pr-setup.ts $(PR) $(if $(THREAD),--thread "$(THREAD)") $(foreach label,$(LABELS),--label "$(label)") $(if $(IMAGES),--images "$(IMAGES)") $(ARGS)
+
+update-prs:
+	@$(OPS)/update-prs.ts $(ARGS)
+
+ota-check:
+	@$(OPS)/ota-check.ts $(if $(PR),--pr $(PR)) $(ARGS)
+
+cleanup:
+	@$(OPS)/cleanup.ts $(if $(filter 1,$(YES)),--yes) $(ARGS)
+
+data-change:
+	@$(OPS)/data-change.ts "$(PLAN)" $(if $(TARGET),--target $(TARGET)) $(if $(filter 1,$(APPLY)),--apply) $(if $(CONFIRM),--confirm-prod $(CONFIRM)) $(ARGS)
+
+cutover:
+	@$(OPS)/cutover.ts $(ARGS)
