@@ -19,7 +19,11 @@ export default {
           image: './assets/icons/splash-icon.png',
           imageWidth: 200,
           resizeMode: 'contain',
-          backgroundColor: '#ffffff',
+          backgroundColor: '#F2F2F7',
+          dark: {
+            image: './assets/icons/splash-icon.png',
+            backgroundColor: '#000000',
+          },
         },
       ],
       [
@@ -71,16 +75,6 @@ export default {
           'UT Dining needs your location to show your location on the map.',
         NSLocationUsageDescription:
           'UT Dining needs your location to show your location on the map.',
-      },
-      splash: {
-        image: './assets/icons/splash-icon.png',
-        resizeMode: 'contain',
-        backgroundColor: '#ffffff',
-        dark: {
-          image: './assets/icons/splash-icon.png',
-          resizeMode: 'contain',
-          backgroundColor: '#171717',
-        },
       },
     },
     android: {
