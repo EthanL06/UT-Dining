@@ -12,7 +12,7 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 
 .PHONY: help setup install doctor \
 	dev mobile ios android dashboard website scrape admin \
-	db-up db-down db-status db-reset db-migrate db-new db-types db-seed db-fixtures db-psql db-studio \
+	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-psql db-studio \
 	env-local env-dev \
 	check verify check-comments functions fix lint typecheck test build \
 	sim sims e2e e2e-fixtures screenshots perf-build \
@@ -47,6 +47,8 @@ help:
 	'  db-migrate      Apply new migrations, keeping data' \
 	'  db-new          New migration. NAME=add_meal_notes' \
 	'  db-types        Regenerate packages/supabase types from the local schema' \
+	'  db-check        Throwaway Postgres check of new migrations: backwards compatible, seed, types.' \
+	'                  BASE=origin/staging. Leaves the local stack alone' \
 	'  db-seed         Scrape real UT menus into the local database. DAYS=3' \
 	'  db-fixtures     Load the fixed E2E test menus' \
 	'  db-psql         psql on the local database. ARGS="-c \"select count(*) from menu\""' \
@@ -137,6 +139,9 @@ db-new:
 
 db-types:
 	@$(DEV)/db.sh types
+
+db-check:
+	@$(DEV)/db-check.sh
 
 db-seed:
 	@$(DEV)/db.sh seed "$(DAYS)"

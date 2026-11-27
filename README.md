@@ -5,8 +5,6 @@
 UT Dining is your companion app for exploring dining options at the University of Texas at Austin.
 Browse menus, check dining hours, and find the perfect meal on campus.
 
-> This project has been adopted by [Longhorn Developers](https://github.com/Longhorn-Developers). Originally created by [Ethan Lanting](https://github.com/EthanL06).
-
 <a href="https://apps.apple.com/us/app/ut-dining/id6743042002">
    <img alt="Download on the app store" src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" height="48">
 </a>

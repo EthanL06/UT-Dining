@@ -64,7 +64,7 @@ export const parseMealLinks = (html: string): string[] => {
   return [...links];
 };
 
-const iconFlag = (src: string): FlagKey | undefined => {
+export const iconFlag = (src: string): FlagKey | undefined => {
   const file = src.slice(src.lastIndexOf('/') + 1).replace(/\.\w+$/, '');
   return ICON_FLAGS[file.toLowerCase().replaceAll(' ', '_')];
 };
