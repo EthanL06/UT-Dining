@@ -1,3 +1,4 @@
+import { formatCentral } from '@ut-dining/core';
 import * as Notifications from 'expo-notifications';
 import { Bell, Send } from 'lucide-react-native';
 
@@ -15,7 +16,7 @@ export const PushSection = () => {
       Notifications.scheduleNotificationAsync({
         content: {
           title: 'QA test notification',
-          body: `Local notification sent at ${new Date().toLocaleTimeString()}`,
+          body: `Local notification sent at ${formatCentral(Date.now(), { timeStyle: 'medium' })}`,
           data: { type: 'system_announcement' },
         },
         trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 3 },

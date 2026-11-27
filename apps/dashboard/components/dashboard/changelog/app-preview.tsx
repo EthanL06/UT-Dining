@@ -2,6 +2,7 @@
 
 import { Group, SegmentedControl, Stack, Switch } from '@mantine/core';
 import { IconChevronLeft, IconChevronRight, IconChevronUp } from '@tabler/icons-react';
+import { formatCentralDateKey } from '@ut-dining/core';
 import { type CSSProperties, useState } from 'react';
 import type { ChangelogChange } from '@/types/changelog';
 import { CHANGELOG_ICON_OPTIONS } from './changelog-icons';
@@ -32,11 +33,7 @@ const palette = (dark: boolean) => ({
 type Palette = ReturnType<typeof palette>;
 
 const formatMonthYear = (date: string | null) =>
-  date
-    ? new Date(`${date}T12:00:00`)
-        .toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-        .toUpperCase()
-    : null;
+  date ? formatCentralDateKey(date, { month: 'long', year: 'numeric' }).toUpperCase() : null;
 
 function Badge({ version }: { version: string }) {
   return (

@@ -3,17 +3,11 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { MapPin, Navigation, X } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import { useEffect, useEffectEvent, useState } from 'react';
-import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  ScrollView,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PLACE_ICONS, usePlaceColor } from '~/components/map/MapSheet';
 import PlaceDetails, { openPlaceDirections } from '~/components/PlaceDetails';
+import { Image } from '~/components/ui/Image';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
@@ -92,7 +86,7 @@ export default function LocationGenericScreen() {
             <Image
               source={{ uri: locationData.image as string }}
               style={{ width, height: COVER_HEIGHT }}
-              resizeMode="cover"
+              contentFit="cover"
               onError={() => setImageFailed(true)}
             />
           ) : (

@@ -17,7 +17,7 @@ const Changelog = () => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    refreshChangelog().then((loaded) => setStatus(loaded ? 'loaded' : 'failed'));
+    void refreshChangelog().then((loaded) => setStatus(loaded ? 'loaded' : 'failed'));
   }, []);
 
   const latestVersion = entries[0]?.version;

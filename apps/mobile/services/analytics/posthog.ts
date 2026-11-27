@@ -30,7 +30,7 @@ export function getSafePostHog(posthog: PostHog | undefined) {
   return {
     screen: (name?: string, properties?: PostHogEventProperties) => {
       if (posthog && name) {
-        posthog.screen(name, properties);
+        void posthog.screen(name, properties);
       }
     },
     capture: (eventName: string, properties?: PostHogEventProperties) => {

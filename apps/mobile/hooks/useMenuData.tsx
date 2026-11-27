@@ -58,7 +58,7 @@ export function useMenuData(location: string, date?: string) {
     if (menuNames.length > 0 && queryClient) {
       menuNames.forEach((menuName) => {
         if (menuName) {
-          queryClient.prefetchQuery({
+          void queryClient.prefetchQuery({
             queryKey: ['menuData', location, menuName, targetDate],
             queryFn: () => getLocationMenuData(db, location, menuName, targetDate),
             staleTime: 5 * 60 * 1000,
@@ -82,7 +82,7 @@ export function useMenuData(location: string, date?: string) {
           .then((names) => {
             for (const menuName of names) {
               if (!menuName) continue;
-              queryClient.prefetchQuery({
+              void queryClient.prefetchQuery({
                 queryKey: ['menuData', location, menuName, date],
                 queryFn: () => getLocationMenuData(db, location, menuName, date),
                 staleTime: 5 * 60 * 1000,
