@@ -5,8 +5,8 @@ import ActionSheet, { ScrollView, type SheetProps, useSheetRef } from 'react-nat
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
 import { Image } from '~/components/ui/Image';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
-
 import { ALLERGEN_EXCEPTIONS, ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import { useFiltersStore } from '~/store/useFiltersStore';
 import { haptics } from '~/utils/haptics';
@@ -133,7 +133,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
           </Text>
         </Pressable>
       </View>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <OverflowScrollView as={ScrollView} showsVerticalScrollIndicator={false}>
         <View className="px-4 pb-6">
           <SectionTitle title="My items" />
           <View className="flex-row flex-wrap gap-2">
@@ -204,7 +204,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
             accurate. Use discretion when making dietary choices.
           </Text>
         </View>
-      </ScrollView>
+      </OverflowScrollView>
     </ActionSheet>
   );
 };
