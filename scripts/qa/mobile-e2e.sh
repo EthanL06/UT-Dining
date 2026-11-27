@@ -5,11 +5,14 @@ usage() {
   cat <<'EOF'
 Usage: scripts/qa/mobile-e2e.sh [--sim <UDID>] [--release] [--port <metro port>]
                                 [--fixture-server [port]] [--shards <n>] [--retry-failed]
+                                [--status-bar]
                                 [maestro test args...]
 
 Runs the Maestro flows in apps/mobile/e2e on an iOS Simulator against local Supabase.
 
   --sim <UDID>             Simulator to use. Defaults to $SIM, then to the only booted simulator.
+                           A comma-separated list runs the flows split across those simulators,
+                           which all need the app installed.
   --release                The installed app is a release build of com.ethanl06.ut-dining.dev,
                            so skip Metro.
   --port <port>            Metro port for the development client. Default 8081.
@@ -19,6 +22,7 @@ Runs the Maestro flows in apps/mobile/e2e on an iOS Simulator against local Supa
   --shards <n>             Split the flows across n simulators that run at the same time. The
                            extra simulators are clones of --sim (app included) and are deleted
                            afterwards. Each one needs about 2 GB of RAM.
+  --status-bar             Set a clean status bar (9:41, full battery) on every simulator used.
   --retry-failed           Run the flows that failed once more, in a fresh Maestro session. The
                            exit code comes from the retry. Reports go to <output>/retry.
 
@@ -36,6 +40,8 @@ DEV_CLIENT=true
 METRO_PORT=8081
 SHARDS=1
 RETRIES=0
+STATUS_BAR=false
+EXTRA_SIMS=()
 MAESTRO_ARGS=()
 
 while [[ $# -gt 0 ]]; do
@@ -45,6 +51,7 @@ while [[ $# -gt 0 ]]; do
     --port) METRO_PORT="$2"; shift 2 ;;
     --shards) SHARDS="$2"; shift 2 ;;
     --retry-failed) RETRIES=1; shift ;;
+    --status-bar) STATUS_BAR=true; shift ;;
     --fixture-server)
       if [[ "${2:-}" =~ ^[0-9]+$ ]]; then FIXTURE_PORT="$2"; shift 2; else FIXTURE_PORT=54331; shift; fi ;;
     -h|--help) usage; exit 0 ;;
@@ -77,6 +84,9 @@ cleanup() {
   fi
   if [[ -n "$FIXTURE_PID" ]]; then
     kill "$FIXTURE_PID" 2>/dev/null || true
+  fi
+  if [[ "$STATUS_BAR" == true ]]; then
+    xcrun simctl status_bar "$SIM" clear 2>/dev/null || true
   fi
   if [[ "$WAS_BOOTED" == false ]]; then
     xcrun simctl shutdown "$SIM" 2>/dev/null || true
@@ -115,9 +125,19 @@ if [[ -z "$SIM" ]]; then
   SIM="$BOOTED"
 fi
 
+if [[ "$SIM" == *,* ]]; then
+  IFS=, read -r -a SIM_LIST <<<"$SIM"
+  SIM="${SIM_LIST[0]}"
+  EXTRA_SIMS=("${SIM_LIST[@]:1}")
+  SHARDS=${#SIM_LIST[@]}
+  for device in "${SIM_LIST[@]}"; do
+    xcrun simctl get_app_container "$device" "$APP_ID" >/dev/null 2>&1 || fail "$APP_ID is not installed on $device."
+  done
+fi
+
 if ! xcrun simctl list devices booted | grep -q "$SIM"; then WAS_BOOTED=false; fi
 
-if [[ "$SHARDS" -gt 1 ]]; then
+if [[ "$SHARDS" -gt 1 && ${#EXTRA_SIMS[@]} -eq 0 ]]; then
   xcrun simctl get_app_container "$SIM" "$APP_ID" >/dev/null 2>&1 || fail "$APP_ID is not installed on $SIM."
   step "Cloning $SIM into $((SHARDS - 1)) more simulators"
   xcrun simctl shutdown "$SIM" 2>/dev/null || true
@@ -127,7 +147,7 @@ if [[ "$SHARDS" -gt 1 ]]; then
   done
 fi
 
-DEVICES=("$SIM" ${CLONES[@]+"${CLONES[@]}"})
+DEVICES=("$SIM" ${EXTRA_SIMS[@]+"${EXTRA_SIMS[@]}"} ${CLONES[@]+"${CLONES[@]}"})
 for device in "${DEVICES[@]}"; do
   step "Booting simulator $device"
   xcrun simctl boot "$device" 2>/dev/null || true
@@ -135,6 +155,9 @@ done
 for device in "${DEVICES[@]}"; do
   xcrun simctl bootstatus "$device" -b >/dev/null
   xcrun simctl ui "$device" appearance light
+  if [[ "$STATUS_BAR" == true ]]; then
+    xcrun simctl status_bar "$device" override --time 9:41 --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3
+  fi
 done
 
 APP_PATH="$(xcrun simctl get_app_container "$SIM" "$APP_ID" 2>/dev/null)" || fail "$APP_ID is not installed on $SIM. Build it with: pnpm --filter @ut-dining/mobile ios --device $SIM"
