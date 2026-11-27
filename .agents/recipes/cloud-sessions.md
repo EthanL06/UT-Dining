@@ -9,6 +9,7 @@ Claude Code cloud sessions run in a Linux container behind a proxy. These limits
 - Blocked by the proxy: ruleset writes (`/rulesets` returns 403) and branch deletes (`git push --delete` and `DELETE git/refs`). For a ruleset, put the JSON in the PR or a project file and ask Ethan to apply it. For a branch you must delete, push a commit to it with a push-triggered workflow that deletes its own ref with `GITHUB_TOKEN` (`contents: write`), then delete that run. Usually just leave the branch: `branch-cleanup.yml` deletes it once its PR merges.
 - Force pushes are refused by the session's safety check. To update a PR branch, merge `staging` into it; PRs are squash merged, so the history does not matter.
 - `Fixes #N` does not close issues when a PR merges into `staging`, because it is not the default branch. Close them by hand with `state_reason=completed`.
+- Git hooks: the SessionStart hook's `pnpm install` installs them through Lefthook. If `make doctor` says one is missing (for example the session started before `pnpm install`), run `pnpm exec lefthook install`. Let the pre-push hook run on every push; a red CI run costs a minute and a Vercel deploy from the 100 a day, the hook a few seconds. AGENTS.md (Git hooks) has the details and the bypass rule.
 - CI (`ci.yml`) takes about a minute. The Maestro iOS workflow runs only on PRs from `staging` into `main` and on manual dispatch.
 
 ## Screenshots for a PR

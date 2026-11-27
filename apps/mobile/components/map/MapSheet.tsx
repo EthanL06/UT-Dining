@@ -23,7 +23,8 @@ export type SheetMode = 'browse' | 'search' | 'place';
 
 const SPRING = { damping: 22, stiffness: 220, mass: 0.6 };
 
-const FULL_TOP_GAP = 10;
+const SHEET_TOP_GAP = 12;
+export const SHEET_HALF_FRACTION = 0.42;
 
 export const MapSheet = ({
   ref,
@@ -55,10 +56,10 @@ export const MapSheet = ({
   const insets = useSafeAreaInsets();
   const heights: Record<Detent, number> = {
     collapsed: 178,
-    half: Math.round(windowHeight * 0.42),
+    half: Math.round(windowHeight * SHEET_HALF_FRACTION),
     full: Math.min(
       Math.round(windowHeight * 0.78),
-      windowHeight - insets.top - FULL_TOP_GAP - bottomOffset,
+      windowHeight - insets.top - SHEET_TOP_GAP - bottomOffset,
     ),
   };
   const height = useSharedValue(heights.half);
@@ -99,7 +100,7 @@ export const MapSheet = ({
     })
     .onUpdate((event) => {
       height.value = Math.min(
-        heights.full + 20,
+        heights.full,
         Math.max(heights.collapsed - 20, dragStart.value - event.translationY),
       );
     })

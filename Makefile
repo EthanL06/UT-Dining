@@ -14,7 +14,7 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 	dev mobile ios android dashboard website scrape places admin mobile-preview \
 	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-psql db-studio \
 	env-local env-dev \
-	check verify check-comments check-size check-state functions fix lint typecheck test build \
+	check verify pre-push check-staged check-comments check-size check-state functions fix lint typecheck test build \
 	sim sims e2e e2e-fixtures screenshots ios-app perf-build size-report \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
@@ -60,7 +60,9 @@ help:
 	'Quality' \
 	'  verify          Fast check of what changed since BASE=origin/staging: Biome on changed files,' \
 	'                  comment check, typecheck and tests of affected packages, then what else to verify' \
-	'  check           Biome, typecheck and tests of everything (run before pushing)' \
+	'  check           Biome, typecheck and tests of everything' \
+	'  pre-push        What the pre-push hook runs: CI checks scoped to packages affected since BASE=origin/staging' \
+	'  check-staged    What the pre-commit hook runs on staged files: no env files, keys, secrets or files over 1 MB' \
 	'  check-comments  Fail on added code comments. ARGS="--base origin/staging" (default: staged diff)' \
 	'  check-size      Fail on any source file over 500 lines (MAX_LINES=n to try another cap)' \
 	'  check-state     Fail on implicit state machines (2+ boolean useState in one function, string-typed status)' \
@@ -176,6 +178,12 @@ check:
 
 verify:
 	@$(DEV)/verify.sh
+
+pre-push:
+	@$(DEV)/pre-push.sh </dev/null
+
+check-staged:
+	@$(DEV)/check-staged.sh
 
 check-comments:
 	@$(DEV)/check-comments.sh $(ARGS)

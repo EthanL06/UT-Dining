@@ -9,7 +9,7 @@ import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BrowseList } from '~/components/map/BrowseList';
 import { ClosedDot, ClusterPin, IconPin, LabelPin } from '~/components/map/MapPins';
-import { MapSheet, type MapSheetHandle } from '~/components/map/MapSheet';
+import { MapSheet, type MapSheetHandle, SHEET_HALF_FRACTION } from '~/components/map/MapSheet';
 import { PlaceCard } from '~/components/map/PlaceCard';
 import type { MapFilterId } from '~/components/map/placeStyle';
 import { SearchPanel } from '~/components/map/SearchPanel';
@@ -206,6 +206,9 @@ const MapPage = () => {
 
   const zoom = zoomLevelFor(region);
   const screen = useWindowDimensions();
+  const halfSheetHeight = Math.round(screen.height * SHEET_HALF_FRACTION);
+  const mapControlsHeight = Math.min(sheetHeight, halfSheetHeight);
+  const isSheetAboveHalf = sheetHeight > halfSheetHeight;
   const clusters = useMemo(
     () => (zoom === 'labels' ? [] : clusterPlaces(pinnedPlaces, region, screen.width)),
     [zoom, pinnedPlaces, region, screen.width],
@@ -300,7 +303,10 @@ const MapPage = () => {
         mapPadding={{
           top: insets.top,
           right: 0,
-          bottom: Math.max(0, sheetHeight + bottomOffset + MAP_ATTRIBUTION_GAP - mapSafeAreaBottom),
+          bottom: Math.max(
+            0,
+            mapControlsHeight + bottomOffset + MAP_ATTRIBUTION_GAP - mapSafeAreaBottom,
+          ),
           left: MAP_ATTRIBUTION_INSET,
         }}
         loadingEnabled
@@ -328,7 +334,7 @@ const MapPage = () => {
           : pinnedPlaces.map(renderPlace)}
       </MapView>
 
-      {hasLocationPermission && userCoordinates && (
+      {hasLocationPermission && userCoordinates && !isSheetAboveHalf && (
         <Pressable
           testID="map-locate-button"
           accessibilityLabel="Show my location"
@@ -342,7 +348,7 @@ const MapPage = () => {
           }}
           className="absolute right-4 size-11 items-center justify-center rounded-full"
           style={{
-            bottom: bottomOffset + sheetHeight + 12,
+            bottom: bottomOffset + mapControlsHeight + 12,
             backgroundColor: theme.card,
             shadowColor: '#000',
             shadowOpacity: 0.18,
