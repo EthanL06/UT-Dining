@@ -41,8 +41,8 @@ import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
 import { homeView, toSyncStatus } from '~/utils/homeView';
+import { displayLocationName } from '~/utils/locationName';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
-import { getLocationName } from '~/utils/locations';
 import { log } from '~/utils/log';
 import { PULL_TRIGGER, type RefreshResult, type RefreshStatus } from '~/utils/pullRefresh';
 import { readCachedMenuData } from '~/utils/queries';
@@ -170,11 +170,9 @@ const TypeChip = ({
 const LocationRows = ({
   entries,
   currentTime,
-  db,
 }: {
   entries: LocationEntry[];
   currentTime: Date;
-  db: DrizzleDB;
 }) => {
   const theme = useTheme();
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
@@ -201,7 +199,7 @@ const LocationRows = ({
                 closesInMinutes={getMinutesUntilClose(location, currentTime)}
               />
             }
-            title={getLocationName(db, name, useColloquialNames)}
+            title={displayLocationName(location, useColloquialNames)}
             titleColor={isOpen ? theme.label : theme.secondaryLabel}
             subtitle={getLocationStatusText(location, isOpen, currentTime)}
             showChevron
@@ -460,12 +458,12 @@ export default function Home() {
 
           {open.length > 0 && (
             <GroupedSection header="Open now">
-              <LocationRows entries={open} currentTime={currentTime} db={drizzleDb} />
+              <LocationRows entries={open} currentTime={currentTime} />
             </GroupedSection>
           )}
           {closed.length > 0 && (
             <GroupedSection header="Closed">
-              <LocationRows entries={closed} currentTime={currentTime} db={drizzleDb} />
+              <LocationRows entries={closed} currentTime={currentTime} />
             </GroupedSection>
           )}
         </Reanimated.ScrollView>

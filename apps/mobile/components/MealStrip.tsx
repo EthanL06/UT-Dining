@@ -14,8 +14,8 @@ import { useMealStripStore } from '~/store/useMealStripStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
+import { displayLocationName } from '~/utils/locationName';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
-import { getLocationName } from '~/utils/locations';
 import { readCachedMenuData } from '~/utils/queries';
 import { useTheme } from '~/utils/theme';
 import { getCurrentMeal } from '~/utils/time';
@@ -85,11 +85,10 @@ export const MealStrip = ({
   strip: NonNullable<ReturnType<typeof useCurrentMealStrip>>;
 }) => {
   const theme = useTheme();
-  const db = useDatabase();
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
   const dismissMeal = useMealStripStore((state) => state.dismissMeal);
   const locationName = strip.location.name ?? '';
-  const displayName = getLocationName(db, locationName, useColloquialNames);
+  const displayName = displayLocationName(strip.location, useColloquialNames);
 
   return (
     <Pressable
