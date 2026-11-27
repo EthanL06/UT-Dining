@@ -13,12 +13,12 @@ export default function NotFound() {
     <div className="min-h-screen">
       <SiteHeader />
       <main className="mx-auto max-w-290 px-6 pt-16">
-        <div className="rounded-[28px] bg-tile px-7 py-20 text-center">
-          <h1 className="font-bold text-5xl tracking-[-0.04em]">Nothing on this menu.</h1>
-          <p className="mt-4 text-[19px] text-muted">That page doesn't exist.</p>
+        <div className="bg-tile rounded-[28px] px-7 py-20 text-center">
+          <h1 className="text-5xl font-bold tracking-[-0.04em]">Nothing on this menu.</h1>
+          <p className="text-muted mt-4 text-[19px]">That page doesn't exist.</p>
           <Link
             href="/"
-            className="mt-8 inline-block rounded-2xl bg-strong px-6 py-4 font-semibold text-on-strong hover:opacity-90"
+            className="bg-strong text-on-strong mt-8 inline-block rounded-2xl px-6 py-4 font-semibold hover:opacity-90"
           >
             Back to home
           </Link>

@@ -74,7 +74,7 @@ const Tile = ({ label, value, theme }: { label: string; value: string; theme: Th
     <Text className="text-[12.5px]" style={{ color: theme.secondaryLabel }}>
       {label}
     </Text>
-    <Text className="font-bold text-[21px]" style={{ color: theme.label }}>
+    <Text className="text-[21px] font-bold" style={{ color: theme.label }}>
       {value}
     </Text>
   </View>
@@ -229,7 +229,7 @@ const PlanRow = ({
               </View>
             </View>
             <View className="items-end gap-y-1">
-              <Text className="font-semibold text-[15px]" style={{ color: theme.label }}>
+              <Text className="text-[15px] font-semibold" style={{ color: theme.label }}>
                 {formatNumber(amount(item, 'calories'))}
               </Text>
               {editable ? (
@@ -247,7 +247,7 @@ const PlanRow = ({
                   </Pressable>
                   <Text
                     testID="meal-plan-quantity"
-                    className="min-w-5 text-center font-semibold text-[14px]"
+                    className="min-w-5 text-center text-[14px] font-semibold"
                     style={{ color: theme.label }}
                   >
                     {quantity}
@@ -351,7 +351,7 @@ const MealPlan = () => {
               className="h-11 justify-center rounded-full px-4"
               style={{ backgroundColor: theme.card }}
             >
-              <Text className="font-semibold text-[16px]" style={{ color: theme.tint }}>
+              <Text className="text-[16px] font-semibold" style={{ color: theme.tint }}>
                 Reset
               </Text>
             </Pressable>
@@ -360,7 +360,7 @@ const MealPlan = () => {
 
         <Text
           testID="meal-plan-title"
-          className="px-5 pt-3 pb-1 font-bold text-[34px]"
+          className="px-5 pt-3 pb-1 text-[34px] font-bold"
           style={{ color: theme.label }}
         >
           Meal Plan
@@ -389,11 +389,11 @@ const MealPlan = () => {
             onPress={() => goTo(today)}
             className="h-9 flex-1 flex-row items-center justify-center gap-x-1.5"
           >
-            <Text className="font-semibold text-[17px]" style={{ color: theme.label }}>
+            <Text className="text-[17px] font-semibold" style={{ color: theme.label }}>
               {dayLabel}
             </Text>
             {selectedDate !== today && (
-              <Text className="font-medium text-[15px]" style={{ color: theme.tint }}>
+              <Text className="text-[15px] font-medium" style={{ color: theme.tint }}>
                 · Back to today
               </Text>
             )}
@@ -406,7 +406,7 @@ const MealPlan = () => {
         {items.length === 0 ? (
           <View className="mx-8 mt-12 items-center gap-y-2">
             <ChefHat size={36} color={theme.tertiaryLabel} />
-            <Text className="font-semibold text-[17px]" style={{ color: theme.label }}>
+            <Text className="text-[17px] font-semibold" style={{ color: theme.label }}>
               {editable ? 'Empty Meal Plan!' : 'Nothing logged'}
             </Text>
             <Text
@@ -429,10 +429,10 @@ const MealPlan = () => {
                   <Text className="text-[12.5px]" style={{ color: theme.secondaryLabel }}>
                     Total for the day
                   </Text>
-                  <Text className="font-bold text-[38px]" style={{ color: theme.label }}>
+                  <Text className="text-[38px] font-bold" style={{ color: theme.label }}>
                     {formatNumber(sumNutrient(items, 'calories'))}
                     <Text
-                      className="font-medium text-[16px]"
+                      className="text-[16px] font-medium"
                       style={{ color: theme.secondaryLabel }}
                     >
                       {' '}

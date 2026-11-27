@@ -107,7 +107,7 @@ const LocationHeader = React.memo(
                   className="h-11 justify-center rounded-full px-4"
                   style={{ backgroundColor: theme.card }}
                 >
-                  <Text className="font-semibold text-[16px]" style={{ color: theme.tint }}>
+                  <Text className="text-[16px] font-semibold" style={{ color: theme.tint }}>
                     Done
                   </Text>
                 </Pressable>
@@ -148,14 +148,14 @@ const LocationHeader = React.memo(
 
             {locationData?.force_close && (
               <View className="rounded-2xl bg-red-600 px-4 py-2.5">
-                <Text className="text-center font-bold text-[15px] text-white">
+                <Text className="text-center text-[15px] font-bold text-white">
                   Temporarily closed
                 </Text>
               </View>
             )}
 
             <View>
-              <Text className="font-bold text-[34px] leading-[41px]" style={{ color: theme.label }}>
+              <Text className="text-[34px] leading-[41px] font-bold" style={{ color: theme.label }}>
                 {displayName}
               </Text>
               {status !== '' && (

@@ -101,7 +101,7 @@ export function DashboardNavbar() {
   ));
 
   return (
-    <nav className="flex h-[46.875rem] w-[5rem] flex-col border-gray-200 border-r-1 bg-white p-md">
+    <nav className="p-md flex h-[46.875rem] w-[5rem] flex-col border-r-1 border-gray-200 bg-white">
       <Center>
         <Image src={'/logo.png'} alt="Logo" width={40} height={40} />
       </Center>
@@ -116,7 +116,7 @@ export function DashboardNavbar() {
         {isDevelopment && (
           <Tooltip label="Development Mode" position="right" transitionProps={{ duration: 0 }}>
             <UnstyledButton
-              className="group hover:!bg-[var(--mantine-color-blue-7)] flex items-center justify-center rounded-md"
+              className="group flex items-center justify-center rounded-md hover:!bg-[var(--mantine-color-blue-7)]"
               h={50}
               w={50}
               bg="blue.6"

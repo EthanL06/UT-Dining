@@ -35,7 +35,7 @@ const CompleteScreen = ({ width, isCurrentScreen }: Props) => {
       />
       <Text
         style={{ marginTop: -48, color: theme.label }}
-        className="text-center font-bold text-[28px] leading-[33px]"
+        className="text-center text-[28px] leading-[33px] font-bold"
       >
         You're all set 🤘
       </Text>

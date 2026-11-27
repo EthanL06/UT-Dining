@@ -100,7 +100,7 @@ const LabelPin = ({ place }: { place: Place }) => {
       </View>
       <Text
         numberOfLines={1}
-        className="max-w-40 font-semibold text-[13px]"
+        className="max-w-40 text-[13px] font-semibold"
         style={{ color: theme.label }}
       >
         {place.name}
@@ -131,7 +131,7 @@ const ClusterPin = ({ cluster }: { cluster: Cluster }) => {
         shadowOffset: { width: 0, height: 2 },
       }}
     >
-      <Text className="font-bold text-[15px] text-white">{cluster.places.length}</Text>
+      <Text className="text-[15px] font-bold text-white">{cluster.places.length}</Text>
     </View>
   );
 };

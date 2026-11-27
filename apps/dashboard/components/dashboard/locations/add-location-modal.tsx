@@ -472,7 +472,7 @@ export function AddLocationModal({
       defaultStartTime = lastRange.close + 100;
       // Set end time to 1 hour after start time, or end of day if that would exceed it
       const proposedEndTime = defaultStartTime + 100; // 1 hour later
-      defaultEndTime = proposedEndTime > 2359 ? 2359 : proposedEndTime;
+      defaultEndTime = Math.min(proposedEndTime, 2359);
     }
 
     const newRange: TimeRange = {

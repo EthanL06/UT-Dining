@@ -49,7 +49,7 @@ export const timeOfDay = (
 
 // Database-based version of getTodaySchedule
 export function getTodaySchedule(locationData: schema.Location | null, date: Date = new Date()) {
-  if (!locationData || !locationData.regular_service_hours) return null;
+  if (!locationData?.regular_service_hours) return null;
 
   const ranges = getOpenRanges(
     locationData.regular_service_hours as Partial<ServiceHours>,
@@ -153,7 +153,7 @@ export function generateSchedule(
   _todayFirst: boolean = true,
   date: Date = new Date(),
 ): { dayRange: string; time: string }[] {
-  if (!locationData || !locationData.regular_service_hours) return [];
+  if (!locationData?.regular_service_hours) return [];
 
   const serviceHours = locationData.regular_service_hours as Partial<ServiceHours>;
   const dayOrder: WeekDay[] = [

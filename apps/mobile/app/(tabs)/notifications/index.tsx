@@ -102,8 +102,8 @@ const NotificationRow = ({
                 <Text
                   className={
                     notification.isRead
-                      ? 'flex-1 font-semibold text-[16px]'
-                      : 'flex-1 font-bold text-[16px]'
+                      ? 'flex-1 text-[16px] font-semibold'
+                      : 'flex-1 text-[16px] font-bold'
                   }
                   style={{ color: theme.label }}
                 >
@@ -199,7 +199,7 @@ const Notifications = () => {
                   hitSlop={8}
                   className="px-1.5"
                 >
-                  <Text className="font-semibold text-[16px]" style={{ color: theme.tint }}>
+                  <Text className="text-[16px] font-semibold" style={{ color: theme.tint }}>
                     Read All
                   </Text>
                 </Pressable>
@@ -213,7 +213,7 @@ const Notifications = () => {
       >
         {groups.length === 0 ? (
           <View className="mt-16 items-center px-10">
-            <Text className="font-semibold text-[17px]" style={{ color: theme.label }}>
+            <Text className="text-[17px] font-semibold" style={{ color: theme.label }}>
               No Notifications Yet
             </Text>
             <Text

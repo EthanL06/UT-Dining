@@ -26,7 +26,7 @@ const WeekStrip = ({ selectedDate, onDateChange }: WeekStripProps) => {
     <View>
       <Text
         testID="selected-date"
-        className="mb-2 font-semibold text-[15px]"
+        className="mb-2 text-[15px] font-semibold"
         style={{ color: theme.label }}
       >
         {formatDateForDisplay(createDateFromString(selectedDate))}
@@ -65,7 +65,7 @@ const WeekStrip = ({ selectedDate, onDateChange }: WeekStripProps) => {
                 }}
               >
                 <Text
-                  className="font-semibold text-[16px]"
+                  className="text-[16px] font-semibold"
                   style={{ color: isSelected ? '#FFFFFF' : isToday ? theme.tint : theme.label }}
                 >
                   {format(day, 'd')}

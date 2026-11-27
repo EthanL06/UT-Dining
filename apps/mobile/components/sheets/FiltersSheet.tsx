@@ -9,6 +9,59 @@ import { ALLERGEN_EXCEPTIONS, ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import { useFiltersStore } from '~/store/useFiltersStore';
 import { useTheme } from '~/utils/theme';
 
+const Chip = ({
+  label,
+  isOn,
+  onPress,
+  icon,
+  testID,
+}: {
+  label: string;
+  isOn: boolean;
+  onPress: () => void;
+  icon: React.ReactNode;
+  testID?: string;
+}) => {
+  const theme = useTheme();
+  return (
+    <Pressable
+      testID={testID}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isOn }}
+      onPress={() => {
+        Haptics.selectionAsync();
+        onPress();
+      }}
+      className="h-10 flex-row items-center gap-x-1.5 rounded-full pr-3.5 pl-1.5"
+      style={{ backgroundColor: isOn ? theme.tint : theme.card }}
+    >
+      {icon}
+      <Text
+        className={isOn ? 'text-[14px] font-semibold' : 'text-[14px] font-medium'}
+        style={{ color: isOn ? '#FFFFFF' : theme.label }}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+};
+
+const SectionTitle = ({ title, subtitle }: { title: string; subtitle?: string }) => {
+  const theme = useTheme();
+  return (
+    <View className="mt-6 mb-2.5">
+      <Text className="text-[18px] font-bold" style={{ color: theme.label }}>
+        {title}
+      </Text>
+      {subtitle && (
+        <Text className="text-[13.5px]" style={{ color: theme.secondaryLabel }}>
+          {subtitle}
+        </Text>
+      )}
+    </View>
+  );
+};
+
 const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
   const insets = useSafeAreaInsets();
   const sheetRef = useSheetRef();
@@ -46,53 +99,6 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
     Object.values(filters.allergens).filter(Boolean).length +
     Object.values(filters.dietary).filter(Boolean).length;
 
-  const Chip = ({
-    label,
-    isOn,
-    onPress,
-    icon,
-    testID,
-  }: {
-    label: string;
-    isOn: boolean;
-    onPress: () => void;
-    icon: React.ReactNode;
-    testID?: string;
-  }) => (
-    <Pressable
-      testID={testID}
-      accessibilityRole="button"
-      accessibilityState={{ selected: isOn }}
-      onPress={() => {
-        Haptics.selectionAsync();
-        onPress();
-      }}
-      className="h-10 flex-row items-center gap-x-1.5 rounded-full pr-3.5 pl-1.5"
-      style={{ backgroundColor: isOn ? theme.tint : theme.card }}
-    >
-      {icon}
-      <Text
-        className={isOn ? 'font-semibold text-[14px]' : 'font-medium text-[14px]'}
-        style={{ color: isOn ? '#FFFFFF' : theme.label }}
-      >
-        {label}
-      </Text>
-    </Pressable>
-  );
-
-  const SectionTitle = ({ title, subtitle }: { title: string; subtitle?: string }) => (
-    <View className="mt-6 mb-2.5">
-      <Text className="font-bold text-[18px]" style={{ color: theme.label }}>
-        {title}
-      </Text>
-      {subtitle && (
-        <Text className="text-[13.5px]" style={{ color: theme.secondaryLabel }}>
-          {subtitle}
-        </Text>
-      )}
-    </View>
-  );
-
   return (
     <ActionSheet
       id={sheetId}
@@ -119,11 +125,11 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
           className="h-9 justify-center rounded-full px-3.5"
           style={{ backgroundColor: theme.card, opacity: activeCount === 0 ? 0.5 : 1 }}
         >
-          <Text className="font-medium text-[15px]" style={{ color: theme.label }}>
+          <Text className="text-[15px] font-medium" style={{ color: theme.label }}>
             Reset
           </Text>
         </Pressable>
-        <Text className="font-semibold text-[17px]" style={{ color: theme.label }}>
+        <Text className="text-[17px] font-semibold" style={{ color: theme.label }}>
           Filters
         </Text>
         <Pressable
@@ -133,7 +139,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
           className="h-9 justify-center rounded-full px-3.5"
           style={{ backgroundColor: theme.card }}
         >
-          <Text className="font-semibold text-[15px]" style={{ color: theme.tint }}>
+          <Text className="text-[15px] font-semibold" style={{ color: theme.tint }}>
             Done
           </Text>
         </Pressable>

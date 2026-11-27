@@ -31,7 +31,7 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
   const hiddenCount = changes.length - previewChanges.length;
 
   const titleClass = cn(
-    'font-extrabold text-2xl tracking-[-0.3px]',
+    'text-2xl font-extrabold tracking-[-0.3px]',
     isDarkMode ? 'text-white' : 'text-[#111111]',
   );
   const bodyClass = cn(
@@ -117,7 +117,7 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
               </>
             ) : (
               <>
-                <Text className="font-bold text-[13px] text-ut-burnt-orange tracking-[0.5px]">
+                <Text className="text-ut-burnt-orange text-[13px] font-bold tracking-[0.5px]">
                   VERSION {prompt.version}
                 </Text>
                 <Text className={cn('mt-0.5', titleClass)}>What's new</Text>
@@ -148,7 +148,7 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
                 >
                   <Text
                     className={cn(
-                      'font-semibold text-base',
+                      'text-base font-semibold',
                       isDarkMode ? 'text-gray-200' : 'text-[#3A3F48]',
                     )}
                   >
@@ -158,20 +158,20 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
                 <TouchableOpacity
                   testID="changelog-update-button"
                   activeOpacity={0.8}
-                  className="h-[52px] flex-1 items-center justify-center rounded-full bg-ut-burnt-orange"
+                  className="bg-ut-burnt-orange h-[52px] flex-1 items-center justify-center rounded-full"
                   onPress={() => onUpdate(prompt.version)}
                 >
-                  <Text className="font-bold text-base text-white">Update</Text>
+                  <Text className="text-base font-bold text-white">Update</Text>
                 </TouchableOpacity>
               </View>
             ) : (
               <TouchableOpacity
                 testID="changelog-update-button"
                 activeOpacity={0.8}
-                className="mt-[22px] h-[52px] items-center justify-center rounded-full bg-ut-burnt-orange"
+                className="bg-ut-burnt-orange mt-[22px] h-[52px] items-center justify-center rounded-full"
                 onPress={() => onUpdate(prompt.version)}
               >
-                <Text className="font-bold text-base text-white">Update</Text>
+                <Text className="text-base font-bold text-white">Update</Text>
               </TouchableOpacity>
             )
           ) : (
@@ -182,7 +182,7 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
                 className="mt-2.5 min-h-11 flex-row items-center gap-x-1"
                 onPress={openChangelog}
               >
-                <Text className="font-semibold text-[15px] text-ut-burnt-orange">
+                <Text className="text-ut-burnt-orange text-[15px] font-semibold">
                   {hiddenCount > 0 ? `Show all ${changes.length} changes` : 'See full changelog'}
                 </Text>
                 <ChevronRight size={16} color={COLORS['ut-burnt-orange']} strokeWidth={2.4} />
@@ -190,10 +190,10 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
               <TouchableOpacity
                 testID="changelog-continue-button"
                 activeOpacity={0.8}
-                className="mt-2 h-[54px] items-center justify-center rounded-full bg-ut-burnt-orange"
+                className="bg-ut-burnt-orange mt-2 h-[54px] items-center justify-center rounded-full"
                 onPress={() => onDismissWhatsNew(prompt.version)}
               >
-                <Text className="font-bold text-[17px] text-white">Continue</Text>
+                <Text className="text-[17px] font-bold text-white">Continue</Text>
               </TouchableOpacity>
             </>
           )}

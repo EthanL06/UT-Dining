@@ -12,7 +12,7 @@ export function AppStoreButton() {
       </svg>
       <span className="flex flex-col leading-none">
         <span className="text-[11px] tracking-wide">Download on the</span>
-        <span className="mt-0.5 font-semibold text-[22px] tracking-[-0.02em]">App Store</span>
+        <span className="mt-0.5 text-[22px] font-semibold tracking-[-0.02em]">App Store</span>
       </span>
     </a>
   );

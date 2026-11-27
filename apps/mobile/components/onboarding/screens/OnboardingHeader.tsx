@@ -8,7 +8,7 @@ const OnboardingHeader = ({ title, subtitle }: { title: string; subtitle: string
   return (
     <View className="mb-6 px-8">
       <Text
-        className="text-center font-bold text-[28px] leading-[33px]"
+        className="text-center text-[28px] leading-[33px] font-bold"
         style={{ color: theme.label }}
       >
         {title}

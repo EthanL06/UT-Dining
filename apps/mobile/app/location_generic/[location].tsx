@@ -97,12 +97,12 @@ export default function LocationGenericScreen() {
         <View className="px-5 pt-4 pb-3">
           {locationData.force_close && (
             <View className="mb-3 rounded-2xl bg-red-600 px-4 py-2.5">
-              <Text className="text-center font-bold text-[15px] text-white">
+              <Text className="text-center text-[15px] font-bold text-white">
                 Temporarily closed
               </Text>
             </View>
           )}
-          <Text className="font-bold text-[28px] leading-[33px]" style={{ color: theme.label }}>
+          <Text className="text-[28px] leading-[33px] font-bold" style={{ color: theme.label }}>
             {displayName}
           </Text>
           <Text className="mt-0.5 text-[15px]" style={{ color: theme.secondaryLabel }}>
@@ -126,7 +126,7 @@ export default function LocationGenericScreen() {
             style={{ backgroundColor: theme.tint }}
           >
             <Navigation size={17} color="#FFFFFF" />
-            <Text className="font-semibold text-[16px] text-white">Directions</Text>
+            <Text className="text-[16px] font-semibold text-white">Directions</Text>
           </Pressable>
         </View>
 
@@ -139,7 +139,7 @@ export default function LocationGenericScreen() {
             className="mx-4 mt-2 h-12 items-center justify-center rounded-full"
             style={{ backgroundColor: theme.fill }}
           >
-            <Text className="font-semibold text-[16px]" style={{ color: theme.label }}>
+            <Text className="text-[16px] font-semibold" style={{ color: theme.label }}>
               Back to Home
             </Text>
           </Pressable>

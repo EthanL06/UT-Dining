@@ -20,7 +20,7 @@ const CategoryHeader = React.memo(({ title, isExpanded, onToggle }: CategoryHead
       onPress={onToggle}
       className="mx-4 mt-5 mb-2 flex-row items-center justify-between px-1"
     >
-      <Text className="flex-1 font-bold text-[20px]" style={{ color: theme.label }}>
+      <Text className="flex-1 text-[20px] font-bold" style={{ color: theme.label }}>
         {title}
       </Text>
       <View style={{ transform: [{ rotate: isExpanded ? '180deg' : '0deg' }] }}>

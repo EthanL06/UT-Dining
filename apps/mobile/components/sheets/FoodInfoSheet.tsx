@@ -15,22 +15,19 @@ const entries = Object.entries(ALLERGEN_ICONS);
 const ALLERGENS = entries.filter(([key]) => !ALLERGEN_EXCEPTIONS.has(key));
 const DIETARY = entries.filter(([key]) => ALLERGEN_EXCEPTIONS.has(key));
 
-const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
-  const insets = useSafeAreaInsets();
-  const sheetRef = useSheetRef();
+const Section = ({
+  title,
+  subtitle,
+  items,
+}: {
+  title: string;
+  subtitle: string;
+  items: typeof entries;
+}) => {
   const theme = useTheme();
-
-  const Section = ({
-    title,
-    subtitle,
-    items,
-  }: {
-    title: string;
-    subtitle: string;
-    items: typeof entries;
-  }) => (
+  return (
     <View className="mt-4">
-      <Text className="font-bold text-[18px]" style={{ color: theme.label }}>
+      <Text className="text-[18px] font-bold" style={{ color: theme.label }}>
         {title}
       </Text>
       <Text className="mb-2.5 text-[13.5px]" style={{ color: theme.secondaryLabel }}>
@@ -44,7 +41,7 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
             style={{ backgroundColor: theme.card }}
           >
             <Image source={icon} className="size-7 rounded-full" resizeMode="contain" />
-            <Text className="font-medium text-[14px]" style={{ color: theme.label }}>
+            <Text className="text-[14px] font-medium" style={{ color: theme.label }}>
               {displayName(key)}
             </Text>
           </View>
@@ -52,6 +49,12 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
       </View>
     </View>
   );
+};
+
+const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
+  const insets = useSafeAreaInsets();
+  const sheetRef = useSheetRef();
+  const theme = useTheme();
 
   return (
     <ActionSheet
@@ -69,7 +72,7 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
     >
       <View className="flex-row items-center justify-between px-4 pt-1 pb-2">
         <View className="w-[68px]" />
-        <Text className="font-semibold text-[17px]" style={{ color: theme.label }}>
+        <Text className="text-[17px] font-semibold" style={{ color: theme.label }}>
           Food Legend
         </Text>
         <Pressable
@@ -79,7 +82,7 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
           className="h-9 w-[68px] items-center justify-center rounded-full"
           style={{ backgroundColor: theme.card }}
         >
-          <Text className="font-semibold text-[15px]" style={{ color: theme.tint }}>
+          <Text className="text-[15px] font-semibold" style={{ color: theme.tint }}>
             Done
           </Text>
         </Pressable>
