@@ -64,6 +64,10 @@ jobs:
         if: steps.scope.outputs.docs_only != 'true'
         run: scripts/dev/check-state-machines.sh
 
+      - name: Simulator lease and sweeper tests
+        if: steps.scope.outputs.docs_only != 'true'
+        run: scripts/dev/sim-lease-test.sh
+
       - name: No unused files, exports or dependencies
         if: steps.scope.outputs.docs_only != 'true'
         run: pnpm knip --no-progress --no-config-hints

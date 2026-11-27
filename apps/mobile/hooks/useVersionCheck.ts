@@ -1,8 +1,7 @@
 import * as Application from 'expo-application';
-import { usePostHog } from 'posthog-react-native';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { AppState, Linking, Platform } from 'react-native';
-import { getSafePostHog } from '~/services/analytics/posthog';
+import { analytics as posthog } from '~/services/analytics/posthog';
 import { APP_STORE_URL, fetchAppStoreRelease } from '~/services/appStore/appStore';
 import { getAppInformation } from '~/services/database/database';
 import {
@@ -22,8 +21,6 @@ const APP_STORE_CHECK_INTERVAL_MS = 60 * 60 * 1000;
 
 export const useVersionCheck = () => {
   const db = useDatabase();
-  const rawPosthog = usePostHog();
-  const posthog = useMemo(() => getSafePostHog(rawPosthog), [rawPosthog]);
   const lastAppStoreCheckRef = useRef(0);
   const launchedWithOnboardingDone = useRef(useOnboardingStore.getState().isOnboardingComplete);
 
@@ -81,7 +78,7 @@ export const useVersionCheck = () => {
       log.warn('App Store version check failed', { error });
       return false;
     }
-  }, [db, posthog]);
+  }, [db]);
 
   const checkWhatsNew = useCallback(async (changelogLoaded: boolean, isReturningUser: boolean) => {
     const currentVersion = Application.nativeApplicationVersion;
@@ -121,25 +118,22 @@ export const useVersionCheck = () => {
     return () => subscription.remove();
   }, [checkForUpdate, checkWhatsNew]);
 
-  const openAppStore = useCallback(
-    async (version: string) => {
-      posthog.capture('update_button_pressed', {
-        platform: Platform.OS,
-        app_store_url: APP_STORE_URL ?? '',
-        version,
-      });
+  const openAppStore = useCallback(async (version: string) => {
+    posthog.capture('update_button_pressed', {
+      platform: Platform.OS,
+      app_store_url: APP_STORE_URL ?? '',
+      version,
+    });
 
-      if (!APP_STORE_URL) return;
-      try {
-        await Linking.openURL(APP_STORE_URL);
-      } catch (error) {
-        posthog.capture('update_button_error', {
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
-      }
-    },
-    [posthog],
-  );
+    if (!APP_STORE_URL) return;
+    try {
+      await Linking.openURL(APP_STORE_URL);
+    } catch (error) {
+      posthog.capture('update_button_error', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  }, []);
 
   const handleUpdate = useCallback(
     (version: string) => {
@@ -152,16 +146,13 @@ export const useVersionCheck = () => {
     [openAppStore],
   );
 
-  const handleIgnore = useCallback(
-    (version: string) => {
-      const { prompt, hidePrompt } = useChangelogPromptStore.getState();
-      hidePrompt();
-      if (prompt?.preview) return;
-      posthog.capture('update_ignored', { version });
-      useChangelogStore.getState().ignoreUpdate(version);
-    },
-    [posthog],
-  );
+  const handleIgnore = useCallback((version: string) => {
+    const { prompt, hidePrompt } = useChangelogPromptStore.getState();
+    hidePrompt();
+    if (prompt?.preview) return;
+    posthog.capture('update_ignored', { version });
+    useChangelogStore.getState().ignoreUpdate(version);
+  }, []);
 
   const handleDismissWhatsNew = useCallback((version: string) => {
     const { prompt, hidePrompt } = useChangelogPromptStore.getState();

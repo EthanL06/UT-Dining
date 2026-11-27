@@ -1,7 +1,7 @@
 import { useCallback, useSyncExternalStore } from 'react';
 import { Alert, Linking } from 'react-native';
 import { usePermission } from '~/hooks/usePermission';
-import { getSafePostHog, posthogClient } from '~/services/analytics/posthog';
+import { analytics } from '~/services/analytics/posthog';
 import {
   mutedNearbyZones,
   requestNearbyPermissions,
@@ -52,7 +52,7 @@ export function useNearbyAlerts() {
     try {
       const result = await requestNearbyPermissions();
       await Promise.all([refreshLocation(), refreshNotifications()]);
-      getSafePostHog(posthogClient).capture('nearby_alerts_toggled', { enabled: true, result });
+      analytics.capture('nearby_alerts_toggled', { enabled: true, result });
       if (result === 'granted') {
         setEnabled(true);
         haptics.success();
@@ -66,7 +66,7 @@ export function useNearbyAlerts() {
 
   const turnOff = useCallback(() => {
     setEnabled(false);
-    getSafePostHog(posthogClient).capture('nearby_alerts_toggled', { enabled: false });
+    analytics.capture('nearby_alerts_toggled', { enabled: false });
   }, [setEnabled]);
 
   const resumeMuted = useCallback(() => {

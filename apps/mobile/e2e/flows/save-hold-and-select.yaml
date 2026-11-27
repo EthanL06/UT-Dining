@@ -43,7 +43,7 @@ name: Press and hold adds a food, and Select Multiple adds several at once
 - repeat:
     while:
       notVisible:
-        id: meal-plan-title
+        id: meal-plan-screen
     times: 3
     commands:
       - tapOn:
