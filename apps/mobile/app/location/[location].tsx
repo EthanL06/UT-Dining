@@ -155,7 +155,7 @@ const Location = () => {
 
   useEffect(() => {
     if (posthog) {
-      posthog.screen(location);
+      void posthog.screen(location);
     }
   }, [location, posthog]);
 
@@ -263,6 +263,7 @@ const Location = () => {
     <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: insets.top }}>
       <Stack.Screen options={{ title: 'Location' }} />
       <FlashList
+        alwaysBounceVertical={false}
         extraData={[favoriteNames, canMealPlan, selecting, selectedIds]}
         ref={listRef}
         onScroll={handleScroll}

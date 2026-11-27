@@ -25,12 +25,12 @@ export const DataSection = () => {
 
   const syncNow = () => {
     if (isRunning('sync')) return;
-    run('sync', () => forceMenuSync(db, queryClient));
+    void run('sync', () => forceMenuSync(db, queryClient));
   };
 
   const redownload = () => {
     if (isRunning('redownload')) return;
-    run('redownload', async () => {
+    void run('redownload', async () => {
       setMenuDayVersions({});
       await forceMenuSync(db, queryClient);
     });

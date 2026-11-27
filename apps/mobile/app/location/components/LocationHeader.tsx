@@ -7,6 +7,7 @@ import FilterBar from '~/components/FilterBar';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
+import { useNow } from '~/hooks/useNow';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
@@ -76,7 +77,7 @@ const LocationHeader = React.memo(
     const displayName = useLocationName(location, useColloquialNames);
     const mealTimes = useMealTimes(location);
 
-    const now = new Date();
+    const now = useNow();
     const isOpen = locationData
       ? isLocationOpenNow(locationData, getLocationIdsWithMenus(db, getTodayInCentralTime()), now)
       : false;
@@ -132,7 +133,7 @@ const LocationHeader = React.memo(
                     theme={theme}
                     onPress={() => {
                       if (!locationData) return;
-                      SheetManager.show('location-about', {
+                      void SheetManager.show('location-about', {
                         payload: { location: locationData },
                       });
                     }}

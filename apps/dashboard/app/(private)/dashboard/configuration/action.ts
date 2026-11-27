@@ -1,5 +1,6 @@
 'use server';
 
+import { log } from '@/lib/log';
 import { createClient } from '@/lib/supabase/server';
 import type {
   AppConfig,
@@ -18,7 +19,7 @@ export async function getAppConfig(): Promise<AppConfig> {
     .single();
 
   if (error) {
-    console.error('Error fetching app configuration:', error);
+    log.error('Error fetching app configuration:', error);
     return {
       title: 'UT Dining',
       description: 'Find dining locations, menus, and meal times across UT Austin campus.',
@@ -55,7 +56,7 @@ export async function updateAppConfig(config: AppConfig): Promise<AppConfig> {
       .single();
 
     if (insertError) {
-      console.error('Error creating app configuration:', insertError);
+      log.error('Error creating app configuration:', insertError);
       return config;
     }
 
@@ -65,7 +66,7 @@ export async function updateAppConfig(config: AppConfig): Promise<AppConfig> {
     };
   }
   if (fetchError) {
-    console.error('Error checking existing app configuration:', fetchError);
+    log.error('Error checking existing app configuration:', fetchError);
     return config;
   }
 
@@ -81,7 +82,7 @@ export async function updateAppConfig(config: AppConfig): Promise<AppConfig> {
     .single();
 
   if (error) {
-    console.error('Error updating app configuration:', error);
+    log.error('Error updating app configuration:', error);
     return config;
   }
 
@@ -100,7 +101,7 @@ export async function getCreditsConfig(): Promise<CreditsConfig> {
     .single();
 
   if (error) {
-    console.error('Error fetching credits configuration:', error);
+    log.error('Error fetching credits configuration:', error);
     return {
       contributors: [],
     };
@@ -139,7 +140,7 @@ export async function updateCreditsConfig(config: CreditsConfig): Promise<Credit
       .single();
 
     if (insertError) {
-      console.error('Error creating credits configuration:', insertError);
+      log.error('Error creating credits configuration:', insertError);
       return config;
     }
 
@@ -153,7 +154,7 @@ export async function updateCreditsConfig(config: CreditsConfig): Promise<Credit
     };
   }
   if (fetchError) {
-    console.error('Error checking existing credits configuration:', fetchError);
+    log.error('Error checking existing credits configuration:', fetchError);
     return config;
   }
 
@@ -168,7 +169,7 @@ export async function updateCreditsConfig(config: CreditsConfig): Promise<Credit
     .single();
 
   if (error) {
-    console.error('Error updating credits configuration:', error);
+    log.error('Error updating credits configuration:', error);
     return config;
   }
 
@@ -188,7 +189,7 @@ export async function getHelpSupportConfig(): Promise<HelpSupportConfig> {
   const { data, error } = await supabase.from('app_information').select('support_links').single();
 
   if (error) {
-    console.error('Error fetching help & support configuration:', error);
+    log.error('Error fetching help & support configuration:', error);
     return {
       links: [],
     };
@@ -230,7 +231,7 @@ export async function updateHelpSupportConfig(
       .single();
 
     if (insertError) {
-      console.error('Error creating help & support configuration:', insertError);
+      log.error('Error creating help & support configuration:', insertError);
       return config;
     }
 
@@ -245,7 +246,7 @@ export async function updateHelpSupportConfig(
     };
   }
   if (fetchError) {
-    console.error('Error checking existing help & support configuration:', fetchError);
+    log.error('Error checking existing help & support configuration:', fetchError);
     return config;
   }
 
@@ -260,7 +261,7 @@ export async function updateHelpSupportConfig(
     .single();
 
   if (error) {
-    console.error('Error updating help & support configuration:', error);
+    log.error('Error updating help & support configuration:', error);
     return config;
   }
 

@@ -2,6 +2,7 @@
 
 import { ActionIcon, Badge, Group, Paper, Table, Text, Tooltip } from '@mantine/core';
 import { IconExternalLink, IconTrash } from '@tabler/icons-react';
+import { formatCentral } from '@ut-dining/core';
 import type { Tables } from '@ut-dining/supabase';
 
 type ScheduledNotification = Tables<'notifications'> & {
@@ -68,7 +69,9 @@ export function ScheduledNotificationsTable({
               </Table.Td>
 
               <Table.Td>
-                <Text size="sm">{new Date(notification?.scheduled_at || '').toLocaleString()}</Text>
+                <Text size="sm">
+                  {notification?.scheduled_at ? formatCentral(notification.scheduled_at) : '-'}
+                </Text>
               </Table.Td>
 
               <Table.Td>
@@ -107,7 +110,7 @@ export function ScheduledNotificationsTable({
 
               <Table.Td>
                 <Text size="sm" c="dimmed">
-                  {new Date(notification.created_at).toLocaleString()}
+                  {formatCentral(notification.created_at)}
                 </Text>
               </Table.Td>
 

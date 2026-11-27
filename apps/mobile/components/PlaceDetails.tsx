@@ -1,16 +1,28 @@
 import { MapPin } from 'lucide-react-native';
-import { Image, Linking, Platform, View } from 'react-native';
+import { Linking, Platform, View } from 'react-native';
 import { GroupedRow, GroupedSection } from '~/components/ui/Grouped';
+import { Image } from '~/components/ui/Image';
 import { Text } from '~/components/ui/Text';
 import { PAYMENT_INFO_ICONS } from '~/data/PaymentInfo';
 import type { useLocationDetails } from '~/hooks/useLocationDetails';
+import { directionsUrl } from '~/utils/directions';
+import { log } from '~/utils/log';
 import { useTheme } from '~/utils/theme';
 import { generateSchedule } from '~/utils/time';
 
 export type PlaceData = NonNullable<ReturnType<typeof useLocationDetails>['locationData']>;
 
 export const openPlaceDirections = (place: PlaceData) => {
-  Linking.openURL(Platform.OS === 'ios' ? place.apple_maps_link : place.google_maps_link);
+  const url = directionsUrl(
+    {
+      link: Platform.OS === 'ios' ? place.apple_maps_link : place.google_maps_link,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      address: place.address,
+    },
+    Platform.OS === 'ios' ? 'ios' : 'android',
+  );
+  if (url) Linking.openURL(url).catch((error) => log.warn('Could not open directions', { error }));
 };
 
 const PlaceDetails = ({ place }: { place: PlaceData }) => {
@@ -61,7 +73,7 @@ const PlaceDetails = ({ place }: { place: PlaceData }) => {
                   <Image
                     source={PAYMENT_INFO_ICONS[method as keyof typeof PAYMENT_INFO_ICONS]}
                     className="size-7"
-                    resizeMode="contain"
+                    contentFit="contain"
                   />
                 ) : undefined
               }
