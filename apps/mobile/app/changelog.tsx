@@ -1,18 +1,16 @@
-import { router, Stack } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
+import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ActivityIndicator, View } from 'react-native';
 import { ChangelogEntryCard } from '~/components/changelog/ChangelogEntryView';
+import { largeTitleHeaderOptions } from '~/components/TabStack';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { refreshChangelog, useChangelogStore } from '~/store/useChangelogStore';
-import { useSettingsStore } from '~/store/useSettingsStore';
 import { COLORS } from '~/utils/colors';
+import { useTheme } from '~/utils/theme';
 
 const Changelog = () => {
-  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
-  const insets = useSafeAreaInsets();
+  const theme = useTheme();
   const entries = useChangelogStore((state) => state.entries);
   const [status, setStatus] = useState<'loading' | 'loaded' | 'failed'>('loading');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -25,32 +23,16 @@ const Changelog = () => {
   const isExpanded = (version: string) => expanded[version] ?? version === latestVersion;
 
   return (
-    <View style={{ flex: 1, backgroundColor: isDarkMode ? '#000000' : '#F2F2F7' }}>
-      <Stack.Screen options={{ title: 'Changelog', headerShown: false }} />
-      <View style={{ paddingTop: insets.top }}>
-        <View className="px-4 pt-2">
-          <Pressable
-            testID="back-button"
-            accessibilityLabel="Back"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            className="size-11 items-center justify-center rounded-full"
-            style={{ backgroundColor: isDarkMode ? '#1C1C1E' : '#FFFFFF' }}
-          >
-            <ChevronLeft size={22} color={isDarkMode ? '#FFFFFF' : '#000000'} />
-          </Pressable>
-        </View>
-        <Text variant="largeTitle" testID="changelog-title" className="px-5 pt-3 pb-1">
-          Changelog
-        </Text>
-      </View>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
+      <Stack.Screen options={{ title: 'Changelog', ...largeTitleHeaderOptions(theme) }} />
       <OverflowScrollView
         divider={false}
         testID="changelog-list"
         showsVerticalScrollIndicator={false}
+        contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           padding: 16,
-          paddingBottom: insets.bottom + 48,
+          paddingBottom: 48,
           gap: 10,
         }}
       >

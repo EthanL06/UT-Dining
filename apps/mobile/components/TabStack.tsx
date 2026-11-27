@@ -1,8 +1,20 @@
 import { Stack } from 'expo-router';
 
-import { useTheme } from '~/utils/theme';
+import { type Theme, useTheme } from '~/utils/theme';
 
 type TabStackProps = { title: string; headerShown?: boolean };
+
+export const largeTitleHeaderOptions = (theme: Theme) => ({
+  headerShown: true,
+  headerLargeTitle: true,
+  headerTransparent: true,
+  headerShadowVisible: false,
+  headerLargeTitleShadowVisible: false,
+  headerLargeStyle: { backgroundColor: 'transparent' },
+  headerTintColor: theme.tint,
+  headerTitleStyle: { color: theme.label },
+  headerLargeTitleStyle: { color: theme.label },
+});
 
 export const TabStack = ({ title, headerShown = true }: TabStackProps) => {
   const theme = useTheme();
@@ -10,14 +22,7 @@ export const TabStack = ({ title, headerShown = true }: TabStackProps) => {
   return (
     <Stack
       screenOptions={{
-        headerLargeTitle: true,
-        headerTransparent: true,
-        headerShadowVisible: false,
-        headerLargeTitleShadowVisible: false,
-        headerLargeStyle: { backgroundColor: 'transparent' },
-        headerTintColor: theme.tint,
-        headerTitleStyle: { color: theme.label },
-        headerLargeTitleStyle: { color: theme.label },
+        ...largeTitleHeaderOptions(theme),
         contentStyle: { backgroundColor: theme.background },
       }}
     >

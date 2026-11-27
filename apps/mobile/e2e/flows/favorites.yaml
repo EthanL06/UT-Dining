@@ -32,14 +32,14 @@ name: Favorites can be added from a food or a hold and removed with a hold
 - repeat:
     while:
       notVisible:
-        id: favorites-title
+        id: favorites-screen
     times: 3
     commands:
       - tapOn:
           id: location-favorites-button
       - waitForAnimationToEnd
 - assertVisible:
-    id: favorites-title
+    id: favorites-screen
 - assertVisible: 'Maestro Veggie Burger(,.*)?'
 - assertVisible: 'Maestro Grilled Chicken(,.*)?'
 - takeScreenshot: favorites

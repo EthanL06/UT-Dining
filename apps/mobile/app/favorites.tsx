@@ -1,11 +1,11 @@
 import { and, eq, inArray } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, Stack } from 'expo-router';
-import { ChevronLeft, Heart } from 'lucide-react-native';
+import { Heart } from 'lucide-react-native';
 import { useMemo } from 'react';
 import { Pressable, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FoodComponent, { type RowPosition } from '~/components/FoodComponent';
+import { largeTitleHeaderOptions } from '~/components/TabStack';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
@@ -120,7 +120,6 @@ const FavoriteSection = ({
 const Favorites = () => {
   const db = useDatabase();
   const theme = useTheme();
-  const insets = useSafeAreaInsets();
   const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
   const { data: favorites } = useLiveQuery(db.select().from(schema.favorites));
 
@@ -144,29 +143,16 @@ const Favorites = () => {
   const notToday = sorted.filter((item) => !matches.has(matchKey(item.name, item.location_name)));
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: insets.top }}>
-      <Stack.Screen options={{ title: 'Favorites', headerShown: false }} />
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
+      <Stack.Screen options={{ title: 'Favorites', ...largeTitleHeaderOptions(theme) }} />
       <OverflowScrollView
+        testID="favorites-screen"
         divider={false}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingBottom: 32 }}
       >
-        <View className="px-4 pt-2">
-          <Pressable
-            testID="back-button"
-            accessibilityLabel="Back"
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            className="size-11 items-center justify-center rounded-full"
-            style={{ backgroundColor: theme.card }}
-          >
-            <ChevronLeft size={22} color={theme.label} />
-          </Pressable>
-        </View>
-        <Text variant="largeTitle" testID="favorites-title" className="px-5 pt-3 pb-1">
-          Favorites
-        </Text>
         {sorted.length > 0 && (
-          <Text variant="subheadline" tone="secondary" className="px-5 pb-4">
+          <Text variant="subheadline" tone="secondary" className="px-5 pt-1 pb-4">
             Press and hold a favorite to remove it.
           </Text>
         )}
