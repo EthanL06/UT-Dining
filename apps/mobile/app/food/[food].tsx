@@ -18,6 +18,7 @@ import {
   INDENTED_NUTRITION,
 } from '~/data/AllergenInfo';
 import { useDatabase } from '~/hooks/useDatabase';
+import { useFavorite } from '~/hooks/useFavorite';
 import { useFoodData } from '~/hooks/useFoodData';
 import { analytics } from '~/services/analytics/posthog';
 import * as schema from '~/services/database/schema';
@@ -53,7 +54,7 @@ const percentOfDailyValue = (key: string, value: unknown) => {
   return `${Math.round((Number.parseFloat(String(value)) / dailyValue) * 100)}%`;
 };
 
-const FoodScreen = () => {
+export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
   const params = useLocalSearchParams<{
     food: string;
     menu: string;
@@ -78,7 +79,7 @@ const FoodScreen = () => {
       ),
     [food, location],
   );
-  const isFavorite = favoriteRows.length > 0;
+  const isFavorite = useFavorite(food ?? '', location ?? '', favoriteRows.length > 0);
   const planDate = date || todayKey();
   const canMealPlan = planDate >= todayKey();
   const isMealPlan = useIsMealPlanItem(
@@ -120,7 +121,10 @@ const FoodScreen = () => {
           divider={false}
           contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
         >
-          <View className="flex-row items-center justify-between px-4 pt-4 pb-2">
+          <View
+            className="flex-row items-center justify-between px-4 pb-2"
+            style={{ paddingTop: pushed ? insets.top + 8 : 16 }}
+          >
             <Pressable
               testID="back-button"
               accessibilityLabel="Close"
@@ -334,5 +338,7 @@ const FoodScreen = () => {
     </SheetProvider>
   );
 };
+
+const FoodScreen = () => <FoodDetail />;
 
 export default FoodScreen;
