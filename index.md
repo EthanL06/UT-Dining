@@ -1,0 +1,12 @@
+iOS screenshots of 02de81dcfcc9fb07ba0fcbd2d8ed832a274833a2 (fixture data)
+
+| Screen | Light | Dark |
+|---|---|---|
+| changelog | <img src="https://raw.githubusercontent.com/EthanL06/UT-Dining/a3a90e2925c9b63f75e8c3645a642fa75c7a2221/changelog-light.png" width="220"> | <img src="https://raw.githubusercontent.com/EthanL06/UT-Dining/a3a90e2925c9b63f75e8c3645a642fa75c7a2221/changelog-dark.png" width="220"> |
+| favorites | <img src="https://raw.githubusercontent.com/EthanL06/UT-Dining/a3a90e2925c9b63f75e8c3645a642fa75c7a2221/favorites-light.png" width="220"> | <img src="https://raw.githubusercontent.com/EthanL06/UT-Dining/a3a90e2925c9b63f75e8c3645a642fa75c7a2221/favorites-dark.png" width="220"> |
+| home | <img src="https://raw.githubusercontent.com/EthanL06/UT-Dining/a3a90e2925c9b63f75e8c3645a642fa75c7a2221/home-light.png" width="220"> | <img src="https://raw.githubusercontent.com/EthanL06/UT-Dining/a3a90e2925c9b63f75e8c3645a642fa75c7a2221/home-dark.png" width="220"> |
+| j2-dining | <img src="https://raw.githubusercontent.com/EthanL06/UT-Dining/a3a90e2925c9b63f75e8c3645a642fa75c7a2221/j2-dining-light.png" width="220"> | <img src="https://raw.githubusercontent.com/EthanL06/UT-Dining/a3a90e2925c9b63f75e8c3645a642fa75c7a2221/j2-dining-dark.png" width="220"> |
+| map | <img src="https://raw.githubusercontent.com/EthanL06/UT-Dining/a3a90e2925c9b63f75e8c3645a642fa75c7a2221/map-light.png" width="220"> | <img src="https://raw.githubusercontent.com/EthanL06/UT-Dining/a3a90e2925c9b63f75e8c3645a642fa75c7a2221/map-dark.png" width="220"> |
+| meal-plan | <img src="https://raw.githubusercontent.com/EthanL06/UT-Dining/a3a90e2925c9b63f75e8c3645a642fa75c7a2221/meal-plan-light.png" width="220"> | <img src="https://raw.githubusercontent.com/EthanL06/UT-Dining/a3a90e2925c9b63f75e8c3645a642fa75c7a2221/meal-plan-dark.png" width="220"> |
+| notifications | <img src="https://raw.githubusercontent.com/EthanL06/UT-Dining/a3a90e2925c9b63f75e8c3645a642fa75c7a2221/notifications-light.png" width="220"> | <img src="https://raw.githubusercontent.com/EthanL06/UT-Dining/a3a90e2925c9b63f75e8c3645a642fa75c7a2221/notifications-dark.png" width="220"> |
+| settings | <img src="https://raw.githubusercontent.com/EthanL06/UT-Dining/a3a90e2925c9b63f75e8c3645a642fa75c7a2221/settings-light.png" width="220"> | <img src="https://raw.githubusercontent.com/EthanL06/UT-Dining/a3a90e2925c9b63f75e8c3645a642fa75c7a2221/settings-dark.png" width="220"> |
