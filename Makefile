@@ -20,7 +20,7 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-sample db-fresh db-psql db-studio \
 	env-local env-dev \
 	check verify pre-push check-staged check-comments check-size check-state check-unused functions fix lint typecheck test build \
-	sim sims sim-lease sim-release sim-leases e2e e2e-fixtures screenshots pr-screenshots ios-app perf-build size-report \
+	sim sims sim-lease sim-release sim-leases sims-idle sim-sweeper e2e e2e-fixtures screenshots pr-screenshots ios-app perf-build size-report \
 	merge-pr agent-permissions \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
@@ -87,6 +87,8 @@ help:
 	'  sim-lease       Your own simulator clone for this session, prints "<UDID> <slot>". OWNER=<thread> ARGS="--wait 300"' \
 	'  sim-release     Delete a leased clone. SIM=<UDID>' \
 	'  sim-leases      Who holds which simulator slot' \
+	'  sims-idle       Shut down booted simulators no lease or running process uses, then quit Simulator' \
+	'  sim-sweeper     Install the launchd job that shuts down simulators idle for 20 min (every 5 min). ARGS=uninstall|status' \
 	'  e2e             Maestro flows against local Supabase. ARGS="--shards 3 --retry-failed"' \
 	'  e2e-fixtures    Maestro flows against the fixture server, no Docker needed' \
 	'  screenshots     Every screen in apps/mobile/e2e/screenshots.txt, light and dark, into .context/screenshots' \
@@ -276,6 +278,12 @@ sim-release:
 
 sim-leases:
 	@$(DEV)/sim-lease.sh list
+
+sims-idle:
+	@$(DEV)/sim-lease.sh idle --shutdown
+
+sim-sweeper:
+	@$(DEV)/sim-lease.sh sweeper $(if $(ARGS),$(ARGS),install)
 
 pr-screenshots:
 	@scripts/qa/pr-screenshots.sh $(PR) $(SCREENS) $(ARGS)
