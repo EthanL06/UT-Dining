@@ -3,7 +3,6 @@ import { router } from 'expo-router';
 import { ChevronLeft, CircleAlert, MapPin, Navigation, Utensils, X } from 'lucide-react-native';
 import { Platform, Pressable, View } from 'react-native';
 import { StatusDot } from '~/components/ui/Grouped';
-import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { directionsUrl } from '~/utils/directions';
 import { log } from '~/utils/log';
@@ -11,6 +10,7 @@ import type { Coordinates, Place } from '~/utils/mapPlaces';
 import { walkFrom, walkLabel } from '~/utils/mapPlaces';
 import { useTheme } from '~/utils/theme';
 import { PlaceIcon } from './placeStyle';
+import { SheetScrollView } from './SheetScrollView';
 
 const openDirections = (place: Place) => {
   const url = directionsUrl(
@@ -98,7 +98,7 @@ export const PlaceCard = ({
           </Pressable>
         </View>
       </View>
-      <OverflowScrollView
+      <SheetScrollView
         testID="map-place-scroll"
         containerStyle={{ flex: 1 }}
         contentContainerClassName="px-4 pt-1"
@@ -177,7 +177,7 @@ export const PlaceCard = ({
             </Text>
           </Pressable>
         )}
-      </OverflowScrollView>
+      </SheetScrollView>
     </View>
   );
 };
