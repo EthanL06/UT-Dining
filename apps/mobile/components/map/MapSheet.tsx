@@ -7,12 +7,14 @@ import Reanimated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlassSurface, useLiquidGlass } from '~/components/ui/Glass';
 import { Text, TextInput } from '~/components/ui/Text';
 import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
+import { LAYER_FADE_IN_MS, LAYER_FADE_OUT_MS } from './SheetLayer';
 import { SheetDragProvider } from './SheetScrollView';
 
 export { MAP_FILTERS, type MapFilterId, PLACE_ICONS, usePlaceColor } from './placeStyle';
@@ -26,6 +28,7 @@ export type SheetMode = 'browse' | 'search' | 'place';
 const SPRING = { damping: 22, stiffness: 220, mass: 0.6 };
 
 const SHEET_TOP_GAP = 12;
+const SEARCH_ROW_HEIGHT = 40;
 export const SHEET_HALF_FRACTION = 0.42;
 
 export const MapSheet = ({
@@ -71,6 +74,18 @@ export const MapSheet = ({
   const hasMoved = useSharedValue(false);
   const scrollY = useSharedValue(0);
   const [detent, setDetent] = useState<Detent>('half');
+  const searchShown = useSharedValue(mode === 'place' ? 0 : 1);
+
+  useEffect(() => {
+    searchShown.value = withTiming(mode === 'place' ? 0 : 1, {
+      duration: mode === 'place' ? LAYER_FADE_IN_MS + LAYER_FADE_OUT_MS : LAYER_FADE_IN_MS,
+    });
+  }, [mode, searchShown]);
+
+  const searchRowStyle = useAnimatedStyle(() => ({
+    height: SEARCH_ROW_HEIGHT * searchShown.value,
+    opacity: Math.max(0, searchShown.value * 2 - 1),
+  }));
 
   const snapTo = (next: Detent) => {
     height.value = withSpring(heights[next], SPRING);
@@ -175,7 +190,12 @@ export const MapSheet = ({
               className="mb-2.5 h-[5px] w-9 self-center rounded-full"
               style={{ backgroundColor: theme.tertiaryLabel }}
             />
-            {mode !== 'place' && (
+            <Reanimated.View
+              style={[searchRowStyle, { overflow: 'hidden' }]}
+              pointerEvents={mode === 'place' ? 'none' : 'auto'}
+              accessibilityElementsHidden={mode === 'place'}
+              importantForAccessibility={mode === 'place' ? 'no-hide-descendants' : 'auto'}
+            >
               <View className="mx-4 flex-row items-center gap-x-3">
                 <View
                   className="h-10 flex-1 flex-row items-center gap-x-2 rounded-full px-3"
@@ -229,7 +249,7 @@ export const MapSheet = ({
                   </Pressable>
                 )}
               </View>
-            )}
+            </Reanimated.View>
           </View>
           <View style={{ flex: 1 }}>{children}</View>
         </Reanimated.View>

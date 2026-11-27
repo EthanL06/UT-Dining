@@ -13,6 +13,7 @@ import { MapSheet, type MapSheetHandle, SHEET_HALF_FRACTION } from '~/components
 import { PlaceCard } from '~/components/map/PlaceCard';
 import type { MapFilterId } from '~/components/map/placeStyle';
 import { SearchPanel } from '~/components/map/SearchPanel';
+import { SheetLayer } from '~/components/map/SheetLayer';
 import { GlassButton, useLiquidGlass } from '~/components/ui/Glass';
 import { MICROWAVE_LOCATIONS } from '~/data/MicrowaveLocations';
 import { useDatabase } from '~/hooks/useDatabase';
@@ -382,41 +383,41 @@ const MapPage = () => {
         bottomOffset={bottomOffset}
         onHeightChange={setSheetHeight}
       >
-        {selectedPlace ? (
-          <View style={{ flex: 1 }}>
+        <SheetLayer layerKey={selectedPlace ? `place-${selectedPlace.name}` : 'list'}>
+          {selectedPlace ? (
             <PlaceCard
               place={selectedPlace}
               userCoordinates={userCoordinates}
               foods={mapSearch.selectedFoods}
               onClose={mapSearch.back}
             />
-          </View>
-        ) : search.status === 'searching' ? (
-          <SearchPanel
-            query={mapSearch.query}
-            searchedQuery={mapSearch.searchedQuery}
-            isLoaded={isLoaded}
-            results={mapSearch.results}
-            buildings={mapSearch.buildings}
-            menuMatches={mapSearch.menuMatches}
-            recents={mapSearch.recents}
-            userCoordinates={userCoordinates}
-            onPickPlace={focusPlace}
-            onRunQuery={runQuery}
-            onClearQuery={() => mapSearch.setQuery('')}
-            onClearRecents={mapSearch.clearRecents}
-          />
-        ) : (
-          <BrowseList
-            places={filteredPlaces}
-            isLoaded={isLoaded}
-            filters={filters}
-            userCoordinates={userCoordinates}
-            onToggleFilter={toggleFilter}
-            onClearFilters={() => setFilters(new Set())}
-            onSelectPlace={focusPlace}
-          />
-        )}
+          ) : search.status === 'searching' ? (
+            <SearchPanel
+              query={mapSearch.query}
+              searchedQuery={mapSearch.searchedQuery}
+              isLoaded={isLoaded}
+              results={mapSearch.results}
+              buildings={mapSearch.buildings}
+              menuMatches={mapSearch.menuMatches}
+              recents={mapSearch.recents}
+              userCoordinates={userCoordinates}
+              onPickPlace={focusPlace}
+              onRunQuery={runQuery}
+              onClearQuery={() => mapSearch.setQuery('')}
+              onClearRecents={mapSearch.clearRecents}
+            />
+          ) : (
+            <BrowseList
+              places={filteredPlaces}
+              isLoaded={isLoaded}
+              filters={filters}
+              userCoordinates={userCoordinates}
+              onToggleFilter={toggleFilter}
+              onClearFilters={() => setFilters(new Set())}
+              onSelectPlace={focusPlace}
+            />
+          )}
+        </SheetLayer>
       </MapSheet>
     </View>
   );
