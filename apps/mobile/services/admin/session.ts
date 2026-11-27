@@ -46,6 +46,14 @@ export const signInAsAdmin = async (): Promise<AdminAccess> => {
   return checkAdminAccess();
 };
 
+export const setLocalAdminSession = async (accessToken: string, refreshToken: string) => {
+  const { error } = await adminClient.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
+  if (error) throw new Error(error.message);
+};
+
 export const signOutAdmin = async () => {
   await adminClient.auth.signOut({ scope: 'local' });
 };

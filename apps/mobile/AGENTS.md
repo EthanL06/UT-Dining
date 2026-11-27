@@ -17,7 +17,7 @@ The app works offline from the cache. Never make a screen query Supabase directl
 | Path | What |
 |---|---|
 | `app/` | Expo Router routes. `(tabs)/` is Home (`index`), Map, Notifications, Settings. `location/[location].tsx` is a dining hall menu, `location_generic/` a place with no menu, `food/[food].tsx` one item, plus `favorites`, `meal-plan`, `changelog` |
-| `app/e2e-setup.tsx` | Dev-build-only deep link `ut-dining://e2e-setup` that skips onboarding for Maestro. `?theme=dark` sets the theme and `?serviceStatus=degraded` (or `outage`) fakes the live status so the Home banner shows |
+| `app/e2e-setup.tsx` | Dev-build-only deep link `ut-dining://e2e-setup` that skips onboarding for Maestro. `?theme=dark` sets the theme and `?serviceStatus=degraded` (or `outage`) fakes the live status so the Home banner shows. Against local Supabase only, `?adminAccessToken=…&adminRefreshToken=…` signs the admin tools in, for screenshots (the server still checks the token) |
 | `components/` | Shared UI. `components/sheets/` are react-native-actions-sheet sheets registered in `Sheets.tsx` |
 | `services/database/` | SQLite cache: `sync.ts` (Supabase to SQLite), `menus.ts`, `locations.ts`, `favorites.ts`, `notifications.ts` (reads and writes), `types.ts`, `schema.ts`. `database.ts` re-exports them all, so existing `~/services/database/database` imports keep working |
 | `components/qa/` | Sections of the dev-only QA menu (`app/(tabs)/settings/qa.tsx`) |
