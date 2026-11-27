@@ -27,4 +27,11 @@ describe('menuEmptyState', () => {
     });
     expect(menuEmptyState(base)).toMatchObject({ subtitle: 'Please try again later.' });
   });
+
+  it('says when no menu was posted for the day, unless a sync may bring one', () => {
+    expect(menuEmptyState({ ...base, menu: 'none' })).toMatchObject({
+      title: 'No menu for this day',
+    });
+    expect(menuEmptyState({ ...base, menu: 'none', syncing: true })).toEqual({ kind: 'syncing' });
+  });
 });
