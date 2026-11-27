@@ -113,10 +113,12 @@ Lefthook (`lefthook.yml`) installs the hooks from the root `prepare` script, so 
 
 Covers every word a user reads: screen and row titles, subtitles, settings footers, empty and error states, alerts, permission prompts, notifications, onboarding, the website and the status page. Read the copy around the screen you are changing and match it.
 
+Write from the user's side, never the code's. Describe what the user sees, does and gets, in the words a student would use, not how the app, iOS or the backend works. If a line would only make sense to someone who has read the code, rewrite it.
+
 - Lead with what the user gets. The title is the benefit, the body is the one thing to do plus anything that would worry them. Not what the app or iOS does behind the scenes.
 - Say it once. Each sentence adds something new. Cut a line that restates the title or another line.
 - Name the thing: "Nearby Menus", "your meal plan", "favorites". Never "this", "these features" or "all of these".
-- No internals. Users never read about geofences, regions, background modes, sync, cache, OTA or the database. Use the words iOS shows them, such as the Always option for location.
+- No technical words. Users never read about geofences, regions, background modes, sync, cache, OTA, servers, the database, IDs or error codes. Use the words iOS shows them, such as the Always option for location.
 - Keep it short. A title fits on one line, a body or footer is one or two short sentences, a row subtitle is a fragment with no period.
 - Talk to the user as "you" and the app as "we", with contractions. Calm and friendly. An exclamation mark only for a warm moment, never in an error.
 - State privacy as a plain fact ("Your location never leaves your phone."), not as a promise ("We take your privacy seriously.").
@@ -129,6 +131,7 @@ Covers every word a user reads: screen and row titles, subtitles, settings foote
 | --- | --- | --- |
 | Location Always prompt | **See what's cooking when you walk in** Set location to Always and we'll show the menu when you arrive at a dining hall. Your location never leaves your phone. | **Allow background location** iOS needs Always access so the app can monitor geofence regions in the background. Your location stays on your device and is only used for these features. |
 | Settings footer | Nearby Menus works entirely on your phone. Your location is never sent anywhere. | All of these run on your device using region monitoring, so your location stays private and never leaves your device. |
+| Refreshing menus | Getting today's menus… | Syncing menu versions from the server… |
 | Empty meal plan | Press and hold a food on any menu to add it here. | No items. |
 | Missing menu | UT hasn't posted a menu here for this day. | Error: menu query returned 0 rows. |
 | Row subtitle | Shows where you are on the map | This setting enables the display of your current location on the map. |
