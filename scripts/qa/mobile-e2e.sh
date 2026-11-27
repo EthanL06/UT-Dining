@@ -5,7 +5,7 @@ usage() {
   cat <<'EOF'
 Usage: scripts/qa/mobile-e2e.sh [--sim <UDID>] [--release] [--port <metro port>]
                                 [--fixture-server [port]] [--shards <n>] [--retry-failed]
-                                [maestro test args...]
+                                [--suite e2e|qa] [maestro test args...]
 
 Runs the Maestro flows in apps/mobile/e2e on an iOS Simulator against local Supabase.
 
@@ -21,6 +21,9 @@ Runs the Maestro flows in apps/mobile/e2e on an iOS Simulator against local Supa
                            afterwards. Each one needs about 2 GB of RAM.
   --retry-failed           Run the flows that failed once more, in a fresh Maestro session. The
                            exit code comes from the retry. Reports go to <output>/retry.
+  --suite qa               Run the regression flows in apps/mobile/e2e/qa against the sample data
+                           of scripts/dev/sample (make db-sample, or the fixture server's sample
+                           set) instead of the e2e flows and their fixture menus.
 
 Anything else goes to `maestro test`, for example a single flow file or `--include-tags smoke`.
 Output goes to .context/maestro/<timestamp>, or to $E2E_OUT when it is set.
@@ -36,6 +39,7 @@ DEV_CLIENT=true
 METRO_PORT=8081
 SHARDS=1
 RETRIES=0
+SUITE=e2e
 MAESTRO_ARGS=()
 
 while [[ $# -gt 0 ]]; do
@@ -45,6 +49,7 @@ while [[ $# -gt 0 ]]; do
     --port) METRO_PORT="$2"; shift 2 ;;
     --shards) SHARDS="$2"; shift 2 ;;
     --retry-failed) RETRIES=1; shift ;;
+    --suite) SUITE="$2"; shift 2 ;;
     --fixture-server)
       if [[ "${2:-}" =~ ^[0-9]+$ ]]; then FIXTURE_PORT="$2"; shift 2; else FIXTURE_PORT=54331; shift; fi ;;
     -h|--help) usage; exit 0 ;;
@@ -53,6 +58,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 fail() { echo "mobile-e2e: $*" >&2; exit 1; }
+[[ "$SUITE" == e2e || "$SUITE" == qa ]] || fail "--suite is e2e or qa."
+FLOW_DIR="$E2E_DIR"
+if [[ "$SUITE" == qa ]]; then FLOW_DIR="$E2E_DIR/qa"; fi
 [[ "$SHARDS" =~ ^[1-9][0-9]*$ ]] || { echo "mobile-e2e: --shards needs a whole number." >&2; exit 1; }
 step() { echo "==> $*"; }
 
@@ -86,7 +94,9 @@ trap cleanup EXIT
 
 if [[ -n "$FIXTURE_PORT" ]]; then
   step "Starting the fixture server on port $FIXTURE_PORT"
-  node "$ROOT/scripts/qa/e2e-fixture-server.ts" "$FIXTURE_PORT" > "$OUT/fixture-server.log" 2>&1 &
+  FIXTURE_DATA=e2e
+  if [[ "$SUITE" == qa ]]; then FIXTURE_DATA=sample; fi
+  node "$ROOT/scripts/qa/e2e-fixture-server.ts" "$FIXTURE_PORT" "$FIXTURE_DATA" > "$OUT/fixture-server.log" 2>&1 &
   FIXTURE_PID=$!
   for _ in $(seq 1 20); do
     curl -sf "http://127.0.0.1:$FIXTURE_PORT/health" >/dev/null && break
@@ -99,8 +109,13 @@ else
   API_URL="$(sed -n 's/^API_URL="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' <<<"$STATUS")"
   [[ "$API_URL" == http://127.0.0.1:* ]] || fail "API_URL is '$API_URL', not a local address. Refusing to write fixtures."
 
-  step "Loading fixture menus into J2 Dining"
-  (cd "$ROOT" && node scripts/qa/e2e-load-fixtures.ts)
+  if [[ "$SUITE" == qa ]]; then
+    step "Loading the sample menus and places"
+    (cd "$ROOT" && node scripts/dev/sample/load.ts)
+  else
+    step "Loading fixture menus into J2 Dining"
+    (cd "$ROOT" && node scripts/qa/e2e-load-fixtures.ts)
+  fi
 
   ENV_FILE="$ROOT/apps/mobile/.env.local"
   if ! grep -q "^EXPO_PUBLIC_SUPABASE_URL=\"\{0,1\}$API_URL" "$ENV_FILE" 2>/dev/null; then
@@ -157,7 +172,7 @@ if [[ "$DEV_CLIENT" == true ]]; then
   fi
 fi
 
-[[ ${#MAESTRO_ARGS[@]} -gt 0 ]] || MAESTRO_ARGS=("$E2E_DIR")
+[[ ${#MAESTRO_ARGS[@]} -gt 0 ]] || MAESTRO_ARGS=("$FLOW_DIR")
 for i in "${!MAESTRO_ARGS[@]}"; do
   arg="${MAESTRO_ARGS[$i]}"
   if [[ -e "$arg" && "$arg" != /* ]]; then MAESTRO_ARGS[$i]="$PWD/$arg"; fi

@@ -1,8 +1,9 @@
 import { createServer } from 'node:http';
-import { buildRestTables } from './e2e-fixtures.ts';
+import { buildRestTables, type FixtureData } from './e2e-fixtures.ts';
 
 const port = Number(process.argv[2] ?? process.env.FIXTURE_PORT ?? 54331);
-const tables = buildRestTables();
+const data: FixtureData = process.argv[3] === 'sample' ? 'sample' : 'e2e';
+const tables = buildRestTables(undefined, data);
 
 type Row = Record<string, unknown>;
 
@@ -149,5 +150,5 @@ server.listen(port, '127.0.0.1', () => {
   const counts = Object.entries(tables)
     .map(([name, rows]) => `${name}=${rows.length}`)
     .join(' ');
-  console.log(`Fixture server on http://127.0.0.1:${port} (${counts})`);
+  console.log(`Fixture server on http://127.0.0.1:${port}, ${data} data (${counts})`);
 });

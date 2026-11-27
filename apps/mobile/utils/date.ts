@@ -1,6 +1,6 @@
 import { toCentralTime } from '@ut-dining/core';
 import { addDays, differenceInCalendarDays, format, isToday, startOfDay, subDays } from 'date-fns';
-import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
+import { formatInTimeZone, fromZonedTime, toZonedTime } from 'date-fns-tz';
 
 export function formatDateForDisplay(dateKey: string, today = getTodayInCentralTime()): string {
   const day = createDateFromString(dateKey);
@@ -63,4 +63,12 @@ export function createDateFromString(dateString: string): Date {
   const [year, month, day] = dateString.split('-').map(Number);
   const date = new Date(year, month - 1, day);
   return startOfDay(date);
+}
+
+export function centralInstant(dateKey: string, hhmm: string): Date {
+  return fromZonedTime(`${dateKey}T${hhmm}:00`, 'America/Chicago');
+}
+
+export function shiftDateKey(dateKey: string, days: number): string {
+  return format(addDays(createDateFromString(dateKey), days), 'yyyy-MM-dd');
 }

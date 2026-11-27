@@ -8,6 +8,8 @@ import { useNotificationsStore } from '~/store/useNotificationsStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { isDevVariant } from '~/utils/appVariant';
+import { realNow, setQaClock } from '~/utils/qaClock';
+import { parseQaClock } from '~/utils/qaClockTarget';
 import { parseServiceStatus } from '~/utils/serviceStatus';
 
 export default function E2ESetup() {
@@ -16,15 +18,21 @@ export default function E2ESetup() {
   const markRatingPromptShown = useAppLaunchStore((state) => state.markRatingPromptShown);
   const setVisibleSince = useNotificationsStore((state) => state.setVisibleSince);
   const queryClient = useQueryClient();
-  const { theme, serviceStatus } = useLocalSearchParams<{
+  const { theme, serviceStatus, clock, days, rating } = useLocalSearchParams<{
     theme?: string;
     serviceStatus?: string;
+    clock?: string;
+    days?: string;
+    rating?: string;
   }>();
 
   useEffect(() => {
     if (isDevVariant) {
+      const clockRequest = parseQaClock({ clock, days }, realNow());
+      if (clockRequest.kind === 'set') setQaClock(clockRequest.at);
+      if (clockRequest.kind === 'off') setQaClock(null);
       skipOnboarding();
-      markRatingPromptShown();
+      if (rating !== 'on') markRatingPromptShown();
       setVisibleSince(0);
       if (theme === 'dark' || theme === 'light') setDarkMode(theme === 'dark');
       const status = parseServiceStatus({ status: serviceStatus });
@@ -38,6 +46,9 @@ export default function E2ESetup() {
     markRatingPromptShown,
     theme,
     serviceStatus,
+    clock,
+    days,
+    rating,
     queryClient,
   ]);
 

@@ -1,0 +1,18 @@
+appId: com.ethanl06.ut-dining.dev
+env:
+  CLOCK: ${CLOCK || '12:30'}
+  DAYS: ${DAYS || '0'}
+  RATING: ${RATING || 'off'}
+---
+- openLink: ut-dining://e2e-setup?clock=${encodeURIComponent(CLOCK)}&days=${DAYS}&rating=${RATING}
+- extendedWaitUntil:
+    visible: Open in .*
+    timeout: 10000
+    optional: true
+- tapOn:
+    text: Open
+    optional: true
+- extendedWaitUntil:
+    visible: 'Good (Morning|Afternoon|Evening).*|.*Would Like to Send You Notifications.*|.*to use your location.*'
+    timeout: 60000
+- assertNotVisible: '.*Would Like to Send You Notifications.*|.*to use your location.*'

@@ -63,6 +63,13 @@ Decide with one question: did the iOS fingerprint change? It changes with native
 - Hit an edge case the sample data lacks? Add it to `scripts/dev/sample/data.json` and its README table in the same PR.
 - Real menus: `make db-seed DAYS=3` scrapes UT's site into the local database. The fixed E2E menus: `make db-fixtures`.
 
+## Regression QA on the app
+
+- Before you hand over a change to the app, run `make qa SIM=<UDID>` on Ethan's Mac (through a Remote Control session, on your own simulator clone). It runs the flows in `apps/mobile/e2e/qa` against the sample data at fixed Central times, about 10 minutes. It loads the sample data into local Supabase itself (no reset); `make db-fresh` first if the database is in an unknown state. Add `ARGS=--fixture-server` to skip Docker and local Supabase; the app must then be built or started with `EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:54331`.
+- One flow: `make qa SIM=<UDID> ARGS=apps/mobile/e2e/qa/central-time.yaml`.
+- When the Mac is offline, add the `qa` label to the PR: `.github/workflows/mobile-qa.yml` runs the same suite on a GitHub macOS runner (about 30 to 60 minutes). It is optional and not a required check.
+- Fixed a bug you found by hand? Add a flow for it to `apps/mobile/e2e/qa` (and the edge case to the sample data) in the same PR.
+
 ## Production cutover (2.0.0)
 
 - Before the `staging` to `main` merge: the checklist in PR #25 (prod migrations in order, prod Auth URLs, support links, the App Store release, the website move). Each prod step needs Ethan's OK.

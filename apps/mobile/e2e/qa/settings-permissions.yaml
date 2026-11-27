@@ -1,0 +1,25 @@
+appId: com.ethanl06.ut-dining.dev
+name: Settings shows permissions as Off, asks once, then refreshes to On
+tags:
+  - qa
+---
+- runFlow:
+    file: subflows/start-at.yaml
+    env:
+      PERMISSIONS: unset
+- tapOn:
+    id: settings-tab
+- scrollUntilVisible:
+    element: 'Notifications(,.*)?'
+    direction: DOWN
+- assertVisible: 'Notifications(, Off)?'
+- tapOn: 'Notifications(,.*)?'
+- extendedWaitUntil:
+    visible: .*Would Like to Send You Notifications.*
+    timeout: 10000
+- tapOn: Allow
+- extendedWaitUntil:
+    visible: 'Notifications, On|On'
+    timeout: 10000
+- takeScreenshot: settings-permissions-on
+- assertVisible: 'Location(,.*)?'

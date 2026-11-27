@@ -1,0 +1,19 @@
+appId: com.ethanl06.ut-dining.dev
+env:
+  PLACE: ${PLACE || 'J2 Dining'}
+  FILTER: ${FILTER || 'Dining Hall'}
+  READY: ${READY || '.*'}
+---
+- tapOn: '${FILTER}(,.*)?'
+- scrollUntilVisible:
+    element: '${PLACE}(,.*)?'
+    direction: DOWN
+    timeout: 60000
+- tapOn: '${PLACE}(,.*)?'
+- extendedWaitUntil:
+    visible:
+      id: back-button
+    timeout: 20000
+- extendedWaitUntil:
+    visible: ${READY}
+    timeout: 20000

@@ -1,0 +1,51 @@
+appId: com.ethanl06.ut-dining.dev
+name: Past days offer favorites only, and changing the day or meal ends Select Multiple
+tags:
+  - qa
+---
+- runFlow: subflows/start-at.yaml
+- runFlow:
+    file: subflows/open-place.yaml
+    env:
+      PLACE: J2 Dining
+      READY: '(Comfort|Grill)(,.*)?'
+- tapOn: Lunch
+- longPressOn: 'Chicken Tikka Masala(,.*)?'
+- extendedWaitUntil:
+    visible: Select Multiple
+    timeout: 5000
+- tapOn: Select Multiple
+- extendedWaitUntil:
+    visible:
+      id: select-done-button
+    timeout: 5000
+- tapOn:
+    id: menu-day-1
+- extendedWaitUntil:
+    notVisible:
+      id: select-done-button
+    timeout: 5000
+- longPressOn: 'Chicken Tikka Masala(,.*)?'
+- tapOn: Select Multiple
+- extendedWaitUntil:
+    visible:
+      id: select-done-button
+    timeout: 5000
+- tapOn: Dinner
+- extendedWaitUntil:
+    notVisible:
+      id: select-done-button
+    timeout: 5000
+- tapOn:
+    id: menu-day--1
+- extendedWaitUntil:
+    visible:
+      id: selected-date
+      text: Yesterday
+    timeout: 5000
+- longPressOn: 'Chicken Tikka Masala(,.*)?'
+- extendedWaitUntil:
+    visible: Add to Favorites
+    timeout: 5000
+- assertNotVisible: Add to Meal Plan
+- takeScreenshot: past-day-hold-menu

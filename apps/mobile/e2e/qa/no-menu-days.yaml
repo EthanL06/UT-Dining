@@ -1,0 +1,36 @@
+appId: com.ethanl06.ut-dining.dev
+name: A day UT never posted and a hall on break show No menu, not another day's food
+tags:
+  - qa
+---
+- runFlow: subflows/start-at.yaml
+- runFlow:
+    file: subflows/open-place.yaml
+    env:
+      PLACE: JCL Dining
+      READY: '(Asian Kitchen|Halal Grill|Salad Bar)(,.*)?'
+- tapOn:
+    id: menu-day-2
+- extendedWaitUntil:
+    visible: No menu for this day
+    timeout: 10000
+- assertNotVisible: 'Orange Chicken(,.*)?'
+- takeScreenshot: no-menu-day
+- tapOn:
+    id: menu-day-3
+- extendedWaitUntil:
+    visible: '(Asian Kitchen|Halal Grill|Salad Bar)(,.*)?'
+    timeout: 10000
+- tapOn:
+    id: back-button
+- runFlow:
+    file: subflows/open-place.yaml
+    env:
+      PLACE: Kins Dining
+      READY: No menu for this day
+- assertNotVisible: 'Roast Turkey(,.*)?'
+- tapOn:
+    id: menu-day--1
+- extendedWaitUntil:
+    visible: '(Home Style|Pizza)(,.*)?'
+    timeout: 10000

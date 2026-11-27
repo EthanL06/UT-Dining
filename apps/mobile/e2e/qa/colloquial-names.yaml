@@ -1,0 +1,56 @@
+appId: com.ethanl06.ut-dining.dev
+name: With colloquial names on, the map opens Jarket's details and search finds Jendy's
+tags:
+  - qa
+---
+- runFlow: subflows/start-at.yaml
+- tapOn:
+    id: settings-tab
+- scrollUntilVisible:
+    element:
+      id: settings-colloquial-names-switch
+    direction: DOWN
+- tapOn:
+    id: settings-colloquial-names-switch
+- tapOn:
+    id: map-tab
+- runFlow: ../subflows/dismiss-alerts.yaml
+- tapOn:
+    id: map-search-input
+- inputText: Jarket
+- extendedWaitUntil:
+    visible: 'Jarket(,.*)?'
+    timeout: 10000
+- tapOn:
+    text: 'Jarket(,.*)?'
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: map-view-place-button
+    timeout: 5000
+- assertVisible: Details
+- tapOn:
+    id: map-view-place-button
+- extendedWaitUntil:
+    visible:
+      id: generic-directions-button
+    timeout: 10000
+- assertNotVisible:
+    id: place-unavailable
+- tapOn:
+    id: back-button
+- tapOn:
+    id: map-place-close
+- tapOn:
+    id: map-search-input
+- eraseText
+- inputText: Wendy
+- extendedWaitUntil:
+    visible: "Jendy's(,.*)?"
+    timeout: 10000
+- tapOn:
+    id: search-tab
+- inputText: Jendy
+- extendedWaitUntil:
+    visible: "Jendy's(,.*)?"
+    timeout: 10000

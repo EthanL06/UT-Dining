@@ -1,0 +1,25 @@
+appId: com.ethanl06.ut-dining.dev
+name: The rating prompt waits for a third launch at least three days after the first
+tags:
+  - qa
+---
+- runFlow:
+    file: subflows/start-at.yaml
+    env:
+      RATING: 'on'
+- runFlow: subflows/relaunch.yaml
+- assertNotVisible: Enjoying.*
+- runFlow: subflows/relaunch.yaml
+- assertNotVisible: Enjoying.*
+- runFlow:
+    file: subflows/set-clock.yaml
+    env:
+      CLOCK: '12:30'
+      DAYS: '4'
+      RATING: 'on'
+- runFlow: subflows/relaunch.yaml
+- extendedWaitUntil:
+    visible: Enjoying.*
+    timeout: 15000
+- takeScreenshot: rating-prompt
+- tapOn: Not Now

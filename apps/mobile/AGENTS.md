@@ -17,14 +17,14 @@ The app works offline from the cache. Never make a screen query Supabase directl
 | Path | What |
 |---|---|
 | `app/` | Expo Router routes. `(tabs)/` is Home (`index`), Map, Notifications, Settings. `location/[location].tsx` is a dining hall menu, `location_generic/` a place with no menu, `food/[food].tsx` one item, plus `favorites`, `meal-plan`, `changelog` |
-| `app/e2e-setup.tsx` | Dev-build-only deep link `ut-dining://e2e-setup` that skips onboarding for Maestro. `?theme=dark` sets the theme and `?serviceStatus=degraded` (or `outage`) fakes the live status so the Home banner shows |
+| `app/e2e-setup.tsx` | Dev-build-only deep link `ut-dining://e2e-setup` that skips onboarding for Maestro. `?theme=dark` sets the theme, `?serviceStatus=degraded` (or `outage`) fakes the live status so the Home banner shows, `?clock=20:30` (with `&days=3` to move the date, `clock=off` to stop) fixes the app's clock at that Central time on today's Central date (`utils/qaClock.ts`, dev bundle only, kept across relaunches), and `?rating=on` leaves the rating prompt armed |
 | `components/` | Shared UI. `components/sheets/` are react-native-actions-sheet sheets registered in `Sheets.tsx` |
 | `services/database/` | SQLite cache: `sync.ts` (Supabase to SQLite), `menus.ts`, `locations.ts`, `favorites.ts`, `notifications.ts` (reads and writes), `types.ts`, `schema.ts`. `database.ts` re-exports them all, so existing `~/services/database/database` imports keep working |
 | `components/qa/` | Sections of the dev-only QA menu (`app/(tabs)/settings/qa.tsx`) |
 | `services/` | Side effects: database, PostHog analytics, push notifications, App Store version check, rating prompt, changelog (read from the Supabase `changelog` table) |
 | `utils/` | Helpers. `time.ts` and `date.ts` wrap `@ut-dining/core` for screens; `filter.ts` is the menu filters |
 | `drizzle/` | Generated SQLite migrations for the cache. Change `services/database/schema.ts`, then run `npx drizzle-kit generate` here; it also rewrites `drizzle/migrations.js`. Never edit these by hand |
-| `e2e/` | Maestro flows, subflows and fixture menus. See `e2e/README.md` |
+| `e2e/` | Maestro flows, subflows and fixture menus. `e2e/qa/` holds the regression flows `make qa` runs on the sample data. See `e2e/README.md` |
 
 ## Conventions
 
