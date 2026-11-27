@@ -1,7 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import * as Application from 'expo-application';
 import { router, Stack } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
 import {
   Accessibility,
   Activity,
@@ -34,7 +33,7 @@ import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationPermissions } from '~/hooks/useLocationPermissions';
 import { forceMenuSync } from '~/hooks/useMenuSync';
 import { useNotificationPermissions } from '~/hooks/useNotificationPermissions';
-import { useServiceStatus } from '~/hooks/useServiceStatus';
+import { openStatusPage, useServiceStatus } from '~/hooks/useServiceStatus';
 import { getAppInformation } from '~/services/database/database';
 import type { AppInformation } from '~/services/database/schema';
 import { getOrCreateDeviceId } from '~/services/device/deviceId';
@@ -42,7 +41,8 @@ import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { showQaTools } from '~/utils/appVariant';
 import { haptics } from '~/utils/haptics';
-import { SERVICE_STATUS_COLORS, STATUS_PAGE_URL } from '~/utils/serviceStatus';
+import { log } from '~/utils/log';
+import { SERVICE_STATUS_COLORS } from '~/utils/serviceStatus';
 import { useTheme } from '~/utils/theme';
 import { formatTimeSinceSync } from '~/utils/time';
 
@@ -167,7 +167,7 @@ const SyncDataRow = () => {
     } catch (error) {
       setSyncStatus('failed');
       haptics.error();
-      console.warn('Sync failed:', error);
+      log.warn('Sync failed', { error });
     }
   };
 
@@ -226,10 +226,6 @@ const PermissionRows = () => {
       />
     </>
   );
-};
-
-const openStatusPage = () => {
-  WebBrowser.openBrowserAsync(STATUS_PAGE_URL).catch(() => Linking.openURL(STATUS_PAGE_URL));
 };
 
 const ServiceStatusRow = ({ isFirst }: { isFirst: boolean }) => {

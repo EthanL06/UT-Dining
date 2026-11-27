@@ -24,6 +24,7 @@ import { getTodayInCentralTime } from '~/utils/date';
 import { filterFoodItems } from '~/utils/filter';
 import { addFoodsToMealPlan, favoriteFoods } from '~/utils/foodActions';
 import { haptics } from '~/utils/haptics';
+import { log } from '~/utils/log';
 import { useTheme } from '~/utils/theme';
 import { displayNutrient } from '~/utils/utils';
 import CategoryHeader from './components/CategoryHeader';
@@ -237,7 +238,7 @@ const Location = () => {
         resetExpandedCategories();
       }
     } catch (error) {
-      console.error('Error resetting menu state:', error);
+      log.error('Error resetting menu state', error);
     }
   }, [resetExpandedCategories]);
 

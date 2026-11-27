@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { Alert, AppState, Linking, Text, View } from 'react-native';
 
 import { GroupedRow, GroupedSection, IconSquare } from '~/components/ui/Grouped';
+import { log } from '~/utils/log';
 import { useTheme } from '~/utils/theme';
 import OnboardingHeader from './OnboardingHeader';
 
@@ -54,7 +55,7 @@ const PermissionsScreen = ({ width, onPermissionsChange }: Props) => {
         const { status: notificationStatus } = await Notifications.requestPermissionsAsync();
         apply(toState(locationStatus, notificationStatus));
       } catch (error) {
-        console.error('Error requesting permissions:', error);
+        log.error('Error requesting permissions', error);
       }
     };
 
@@ -64,7 +65,7 @@ const PermissionsScreen = ({ width, onPermissionsChange }: Props) => {
         const { status: notificationStatus } = await Notifications.getPermissionsAsync();
         apply(toState(locationStatus, notificationStatus));
       } catch (error) {
-        console.error('Error checking permissions:', error);
+        log.error('Error checking permissions', error);
       }
     };
 

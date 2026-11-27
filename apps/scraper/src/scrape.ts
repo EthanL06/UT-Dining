@@ -1,5 +1,12 @@
 import { mergeAllergens, resolveAllergens } from './allergens.ts';
 import { LOCATIONS, shortMenuUrl } from './config.ts';
+import {
+  checkMenuPage,
+  checkShortMenu,
+  isBlankLabel,
+  type Problem,
+  unknownIcons,
+} from './health.ts';
 import type { HttpClient } from './http.ts';
 import { parseLabel, parseMealLinks, parseMenuPage } from './parse.ts';
 import type { Food, Label, LocationDay, Menu, MenuPage, MenuRow } from './types.ts';
@@ -16,7 +23,11 @@ export interface ScrapeResult {
   days: LocationDay[];
   failures: ScrapeFailure[];
   labels: number;
+  blankLabels: number;
+  notPosted: number;
+  problems: Problem[];
   unrecognizedAllergens: Set<string>;
+  unknownIcons: Set<string>;
 }
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
@@ -25,6 +36,10 @@ export const scrape = async (http: HttpClient, dates: string[]): Promise<ScrapeR
   const labels = new Map<string, Promise<Label>>();
   const failures: ScrapeFailure[] = [];
   const unrecognizedAllergens = new Set<string>();
+  const unknownIconFiles = new Set<string>();
+  const problems: Problem[] = [];
+  let blankLabels = 0;
+  let notPosted = 0;
 
   const label = (recipe: string, link: string) => {
     let pending = labels.get(recipe);
@@ -32,6 +47,7 @@ export const scrape = async (http: HttpClient, dates: string[]): Promise<ScrapeR
       pending = http.get(link).then((html) => {
         const parsed = parseLabel(html);
         for (const text of parsed.unrecognized) unrecognizedAllergens.add(text);
+        if (isBlankLabel(parsed)) blankLabels++;
         return parsed;
       });
       labels.set(recipe, pending);
@@ -71,7 +87,19 @@ export const scrape = async (http: HttpClient, dates: string[]): Promise<ScrapeR
     const url = shortMenuUrl(location, date);
     let mealLinks: string[];
     try {
-      mealLinks = parseMealLinks(await http.get(url));
+      const html = await http.get(url);
+      mealLinks = parseMealLinks(html);
+      const status = checkShortMenu(html, mealLinks);
+      if (status === 'not-posted') notPosted++;
+      if (status === 'unrecognized') {
+        problems.push({
+          kind: 'layout',
+          locationName: location.name,
+          date,
+          url,
+          detail: 'The location page has no meal links and no "No Data Available" note',
+        });
+      }
     } catch (error) {
       failures.push({
         locationName: location.name,
@@ -80,6 +108,13 @@ export const scrape = async (http: HttpClient, dates: string[]): Promise<ScrapeR
         url,
         error: message(error),
       });
+      problems.push({
+        kind: 'unreachable',
+        locationName: location.name,
+        date,
+        url,
+        detail: message(error),
+      });
       return null;
     }
 
@@ -87,7 +122,21 @@ export const scrape = async (http: HttpClient, dates: string[]): Promise<ScrapeR
     const menus = await Promise.all(
       mealLinks.map(async (link) => {
         try {
-          return await buildMenu(parseMenuPage(await http.get(link)));
+          const html = await http.get(link);
+          const page = parseMenuPage(html);
+          const broken = checkMenuPage(html, page);
+          if (broken) {
+            complete = false;
+            problems.push({
+              kind: 'layout',
+              locationName: location.name,
+              date,
+              url: link,
+              detail: broken,
+            });
+          }
+          for (const icon of unknownIcons(html)) unknownIconFiles.add(icon);
+          return await buildMenu(page);
         } catch (error) {
           complete = false;
           failures.push({
@@ -96,6 +145,13 @@ export const scrape = async (http: HttpClient, dates: string[]): Promise<ScrapeR
             stage: 'menu',
             url: link,
             error: message(error),
+          });
+          problems.push({
+            kind: 'unreachable',
+            locationName: location.name,
+            date,
+            url: link,
+            detail: message(error),
           });
           return null;
         }
@@ -118,6 +174,10 @@ export const scrape = async (http: HttpClient, dates: string[]): Promise<ScrapeR
     days: results.filter((day): day is LocationDay => day !== null),
     failures,
     labels: labels.size,
+    blankLabels,
+    notPosted,
+    problems,
     unrecognizedAllergens,
+    unknownIcons: unknownIconFiles,
   };
 };

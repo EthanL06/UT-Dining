@@ -66,7 +66,13 @@
         "useImportType": "error",
         "useNodejsImportProtocol": "error",
         "useTemplate": "error",
-        "useThrowOnlyError": "error"
+        "useThrowOnlyError": "error",
+        "noExcessiveLinesPerFile": {
+          "level": "error",
+          "options": {
+            "maxLines": 500
+          }
+        }
       },
       "complexity": {
         "noUselessFragments": "error",
@@ -103,7 +109,12 @@
   },
   "overrides": [
     {
-      "includes": ["apps/dashboard/components/dashboard/locations/add-location-modal.tsx"],
+      "includes": [
+        "apps/dashboard/components/dashboard/locations/add-location-modal.tsx",
+        "apps/dashboard/components/dashboard/locations/location-image-field.tsx",
+        "apps/dashboard/components/dashboard/locations/meal-times-fields.tsx",
+        "apps/dashboard/components/dashboard/locations/service-hours-fields.tsx"
+      ],
       "linter": {
         "rules": {
           "performance": {
@@ -163,6 +174,14 @@
                 ]
               }
             }
+          },
+          "suspicious": {
+            "noConsole": {
+              "level": "error",
+              "options": {
+                "allow": []
+              }
+            }
           }
         }
       }
@@ -195,11 +214,31 @@
       }
     },
     {
+      "includes": ["apps/mobile/utils/log.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["scripts/qa/perf/**"],
       "linter": {
         "rules": {
           "correctness": {
             "noUndeclaredDependencies": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/supabase/src/database.types.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noExcessiveLinesPerFile": "off"
           }
         }
       }

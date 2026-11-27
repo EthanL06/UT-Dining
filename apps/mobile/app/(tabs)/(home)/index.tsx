@@ -20,6 +20,7 @@ import {
 import type { FilterType } from '~/components/FilterBar';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
 import OnboardingScreen from '~/components/onboarding/OnboardingScreen';
+import { ServiceStatusBanner } from '~/components/ServiceStatusBanner';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
 import { forceMenuSync, useMenuSync } from '~/hooks/useMenuSync';
 import type { DrizzleDB } from '~/services/database/database';
@@ -30,6 +31,7 @@ import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
 import { getLocationName } from '~/utils/locations';
+import { log } from '~/utils/log';
 import { readCachedMenuData } from '~/utils/queries';
 import { type Theme, useTheme } from '~/utils/theme';
 import { formatTimeSinceSync, getLocationStatusText, timeOfDay } from '~/utils/time';
@@ -235,7 +237,7 @@ export default function Home() {
 
       await Promise.race([forceMenuSync(drizzleDb, queryClient), timeoutPromise]);
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      log.warn('Error refreshing data', { error });
       haptics.error();
     } finally {
       clearTimeout(timeoutId);
@@ -353,6 +355,8 @@ export default function Home() {
                   : ''
               }`}
           </Text>
+
+          <ServiceStatusBanner />
 
           <View className="mx-4 mb-3 flex-row gap-x-2">
             <QuickLink

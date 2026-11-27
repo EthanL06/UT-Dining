@@ -1,23 +1,6 @@
-export const CHANGELOG_ICONS = [
-  'sparkles',
-  'zap',
-  'rocket',
-  'arrow-up-down',
-  'refresh-cw',
-  'shield-check',
-  'wrench',
-  'layout',
-  'moon',
-  'palette',
-  'utensils',
-  'calendar',
-  'map',
-  'map-pin',
-  'bell',
-  'wifi-off',
-] as const;
+import type { ChangelogIcon } from '@ut-dining/core';
 
-export type ChangelogIcon = (typeof CHANGELOG_ICONS)[number];
+export { CHANGELOG_ICONS, type ChangelogIcon } from '@ut-dining/core';
 
 export interface ChangelogChange {
   title: string;

@@ -1,53 +1,24 @@
 import {
+  CHANGELOG_ICONS,
+  type ChangelogIcon,
+  checkChangelogChanges,
+  compareVersions,
   formatHhmm,
   type Hhmm,
+  isValidVersion,
   type MealTime,
   PAYMENT_METHODS,
   type ServiceHours,
+  type StoredChangelogChange,
   type TimeRange,
   WEEKDAYS,
   type Weekday,
 } from '@ut-dining/core';
 import { CliError } from './output.ts';
 
-export const CHANGELOG_ICONS = [
-  'sparkles',
-  'zap',
-  'rocket',
-  'arrow-up-down',
-  'refresh-cw',
-  'shield-check',
-  'wrench',
-  'layout',
-  'moon',
-  'palette',
-  'utensils',
-  'calendar',
-  'map',
-  'map-pin',
-  'bell',
-  'wifi-off',
-] as const;
+export type ChangelogChange = StoredChangelogChange;
 
-export type ChangelogIcon = (typeof CHANGELOG_ICONS)[number];
-
-export interface ChangelogChange {
-  icon: ChangelogIcon;
-  title: string;
-  description?: string;
-}
-
-export const isValidVersion = (version: string) => /^\d+\.\d+\.\d+$/.test(version);
-
-export const compareVersions = (a: string, b: string) => {
-  const left = a.split('.').map(Number);
-  const right = b.split('.').map(Number);
-  for (let i = 0; i < Math.max(left.length, right.length); i++) {
-    const diff = (left[i] || 0) - (right[i] || 0);
-    if (diff !== 0) return diff;
-  }
-  return 0;
-};
+export { CHANGELOG_ICONS, type ChangelogIcon, compareVersions, isValidVersion };
 
 export const parseVersion = (value: string | undefined): string => {
   const version = value?.trim() ?? '';
@@ -176,25 +147,9 @@ export const parseChange = (value: string): ChangelogChange => {
 };
 
 export const normalizeChanges = (value: unknown): ChangelogChange[] => {
-  if (!Array.isArray(value)) throw new CliError('"changes" must be a list.');
-  return value.map((change, index) => {
-    if (
-      !change ||
-      typeof change !== 'object' ||
-      typeof change.title !== 'string' ||
-      !change.title.trim()
-    ) {
-      throw new CliError(`Change ${index + 1} needs a "title".`);
-    }
-    const icon = change.icon ?? 'sparkles';
-    if (!(CHANGELOG_ICONS as readonly string[]).includes(icon)) {
-      throw new CliError(`Unknown icon "${icon}". Icons: ${CHANGELOG_ICONS.join(', ')}.`);
-    }
-    const description = typeof change.description === 'string' ? change.description.trim() : '';
-    return description
-      ? { icon, title: change.title.trim(), description }
-      : { icon, title: change.title.trim() };
-  });
+  const checked = checkChangelogChanges(value);
+  if (!checked.ok) throw new CliError(checked.error);
+  return checked.value;
 };
 
 export const parseValue = (raw: string): unknown => {
