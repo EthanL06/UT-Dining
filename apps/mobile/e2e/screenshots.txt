@@ -7,5 +7,6 @@ favorites favorites .*No Favorites Yet.*
 meal-plan meal-plan .*Each day keeps its own plan.*
 changelog changelog .*Changelog.*
 j2-dining location/J2%20Dining .*Search this menu.*
+food-details food/Maestro%20Veggie%20Burger?location=J2%20Dining&menu=Lunch&category=Maestro%20Grill .*Nutrition Facts.*
 error-screen qa-error?kind=crash .*Something went wrong.*
 migration-error qa-error?kind=migration .*Couldn.t open the menu cache.*
