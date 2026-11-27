@@ -13,7 +13,6 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -22,6 +21,7 @@ import { MealPlanIcon } from '~/components/MealPlanIcon';
 import OnboardingScreen from '~/components/onboarding/OnboardingScreen';
 import { ServiceStatusBanner } from '~/components/ServiceStatusBanner';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
+import { Text } from '~/components/ui/Text';
 import { forceMenuSync, useMenuSync } from '~/hooks/useMenuSync';
 import type { DrizzleDB } from '~/services/database/database';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
@@ -31,6 +31,7 @@ import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
 import { getLocationName } from '~/utils/locations';
+import { log } from '~/utils/log';
 import { readCachedMenuData } from '~/utils/queries';
 import { type Theme, useTheme } from '~/utils/theme';
 import { formatTimeSinceSync, getLocationStatusText, timeOfDay } from '~/utils/time';
@@ -108,7 +109,7 @@ const QuickLink = ({
           style={{ backgroundColor: pressed ? theme.fill : 'transparent' }}
         >
           {icon}
-          <Text className="text-[15px] font-semibold" style={{ color: theme.label }}>
+          <Text variant="subheadline" emphasized>
             {title}
           </Text>
         </View>
@@ -138,10 +139,7 @@ const TypeChip = ({
     className="h-[34px] justify-center rounded-full px-3.5"
     style={{ backgroundColor: selected ? theme.tint : theme.fill }}
   >
-    <Text
-      className={selected ? 'text-[14px] font-semibold' : 'text-[14px] font-medium'}
-      style={{ color: selected ? '#FFFFFF' : theme.label }}
-    >
+    <Text variant="subheadline" emphasized tone={selected ? 'onTint' : 'primary'}>
       {title}
     </Text>
   </Pressable>
@@ -236,7 +234,7 @@ export default function Home() {
 
       await Promise.race([forceMenuSync(drizzleDb, queryClient), timeoutPromise]);
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      log.warn('Error refreshing data', { error });
       haptics.error();
     } finally {
       clearTimeout(timeoutId);
@@ -260,10 +258,8 @@ export default function Home() {
   if (isError) {
     return (
       <CenteredMessage>
-        <Text className="text-lg font-bold" style={{ color: theme.label }}>
-          Failed to load data!
-        </Text>
-        <Text className="mb-4 max-w-64 text-center" style={{ color: theme.secondaryLabel }}>
+        <Text variant="title3">Failed to load data!</Text>
+        <Text variant="subheadline" tone="secondary" className="mb-4 max-w-64 text-center">
           If you just updated the app, close and reopen the app.
         </Text>
         <TouchableOpacity
@@ -271,7 +267,9 @@ export default function Home() {
           className="rounded-full px-4 py-2"
           style={{ backgroundColor: theme.tint }}
         >
-          <Text className="font-bold text-white">Reload</Text>
+          <Text variant="subheadline" emphasized tone="onTint">
+            Reload
+          </Text>
         </TouchableOpacity>
       </CenteredMessage>
     );
@@ -305,10 +303,10 @@ export default function Home() {
         </CenteredMessage>
       ) : locations.length === 0 && syncUnavailable ? (
         <CenteredMessage>
-          <Text className="mb-1 text-lg font-bold" style={{ color: theme.label }}>
+          <Text variant="title3" className="mb-1">
             Can't load menus yet
           </Text>
-          <Text className="mb-4 text-center" style={{ color: theme.secondaryLabel }}>
+          <Text variant="subheadline" tone="secondary" className="mb-4 text-center">
             UT Dining needs a connection the first time you open it.
           </Text>
           <TouchableOpacity
@@ -316,7 +314,9 @@ export default function Home() {
             className="rounded-full px-4 py-2"
             style={{ backgroundColor: theme.tint }}
           >
-            <Text className="font-bold text-white">Try again</Text>
+            <Text variant="subheadline" emphasized tone="onTint">
+              Try again
+            </Text>
           </TouchableOpacity>
         </CenteredMessage>
       ) : (
@@ -338,14 +338,10 @@ export default function Home() {
             className="mx-4 mb-4 size-12"
             resizeMode="contain"
           />
-          <Text
-            accessibilityRole="header"
-            className="mx-5 text-[32px] font-bold"
-            style={{ color: theme.label }}
-          >
+          <Text variant="largeTitle" accessibilityRole="header" className="mx-5">
             {greeting(currentTime)}
           </Text>
-          <Text className="mx-5 mb-4 text-[15px]" style={{ color: theme.secondaryLabel }}>
+          <Text variant="subheadline" tone="secondary" className="mx-5 mb-4">
             {MEAL_MESSAGE[timeOfDay(currentTime)]}
             {syncUnavailable &&
               ` · ${onlineManager.isOnline() ? "Couldn't update" : 'Offline'}${

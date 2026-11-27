@@ -7,6 +7,7 @@ import { Platform } from 'react-native';
 import { useDatabase } from '~/hooks/useDatabase';
 import { getOrCreateDeviceId } from '~/services/device/deviceId';
 import { usePushNotificationsStore } from '~/store/usePushNotificationsStore';
+import { log } from '~/utils/log';
 import { supabase } from '~/utils/supabase';
 import { insertNotification } from '../database/database';
 
@@ -41,7 +42,7 @@ export function PushNotificationsInitializer() {
       }
 
       if (!Device.isDevice) {
-        console.log('Must use physical device for push notifications.');
+        log.debug('Must use physical device for push notifications.');
         return;
       }
 
@@ -87,9 +88,9 @@ export function PushNotificationsInitializer() {
         });
 
         if (error) {
-          console.error('❌ Error inserting push token:', error);
+          log.error('Error inserting push token', error);
         } else {
-          console.log('✅ Push token registered:', token);
+          log.debug('Push token registered', { token });
         }
       } else if (data.push_token !== token) {
         const { error } = await supabase.from('user_devices').upsert({
@@ -99,12 +100,12 @@ export function PushNotificationsInitializer() {
         });
 
         if (error) {
-          console.error('❌ Error updating push token:', error);
+          log.error('Error updating push token', error);
         } else {
-          console.log('✅ Push token updated:', token);
+          log.debug('Push token updated', { token });
         }
       } else {
-        console.log('✅ Push token already synced.');
+        log.debug('Push token already synced.');
       }
     }
 
@@ -112,7 +113,7 @@ export function PushNotificationsInitializer() {
 
     const notificationListener = Notifications.addNotificationReceivedListener(
       async (notification) => {
-        console.log('📱 Notification foreground received:', JSON.stringify(notification, null, 2));
+        log.debug('Notification foreground received', { notification });
         setNotification(notification);
 
         if (db) {
@@ -126,7 +127,7 @@ export function PushNotificationsInitializer() {
               type: notification.request.content.data?.type as string | undefined,
             });
           } catch (error) {
-            console.error('❌ Error saving notification to database:', error);
+            log.error('Error saving notification to database', error);
           }
         }
       },
@@ -134,7 +135,7 @@ export function PushNotificationsInitializer() {
 
     const responseListener = Notifications.addNotificationResponseReceivedListener(
       async (response) => {
-        console.log('📱 Notification background response:', JSON.stringify(response, null, 2));
+        log.debug('Notification background response', { response });
         const notification = response.notification;
         setNotification(notification);
 
@@ -151,7 +152,7 @@ export function PushNotificationsInitializer() {
               type: response.notification.request.content.data?.type as string | undefined,
             });
           } catch (error) {
-            console.error('❌ Error saving notification response to database:', error);
+            log.error('Error saving notification response to database', error);
           }
         }
 
@@ -167,7 +168,7 @@ export function PushNotificationsInitializer() {
     return () => {
       notificationListener.remove();
       responseListener.remove();
-      console.log('✅ Push notification listeners cleaned up.');
+      log.debug('Push notification listeners cleaned up.');
     };
   }, [setDeviceId, setExpoPushToken, setNotification, db]);
 

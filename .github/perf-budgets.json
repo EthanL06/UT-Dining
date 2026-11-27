@@ -1,0 +1,9 @@
+{
+  "enforce": false,
+  "mobile": { "maxBytecodeGrowthKb": 50, "maxBytecodeGrowthPercent": 1 },
+  "website": { "maxPageJsGzipKb": 200, "maxJsGrowthPercent": 5 },
+  "lighthouse": {
+    "minScores": { "performance": 90, "accessibility": 95, "best-practices": 90, "seo": 90 },
+    "maxScoreDrop": 5
+  }
+}

@@ -6,7 +6,7 @@ import {
 } from '@tanstack/react-query';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
-import { Stack } from 'expo-router';
+import { type ErrorBoundaryProps, Stack } from 'expo-router';
 import { openDatabaseSync, type SQLiteDatabase, SQLiteProvider } from 'expo-sqlite';
 import { PostHogProvider } from 'posthog-react-native';
 import { Suspense, useEffect } from 'react';
@@ -24,9 +24,10 @@ import type * as schema from '../services/database/schema';
 import '../global.css';
 import * as Device from 'expo-device';
 import * as Network from 'expo-network';
+import { AppErrorScreen, MIGRATION_ERROR_COPY } from '~/components/AppErrorScreen';
 import { VersionCheckProvider } from '~/components/VersionCheckProvider';
 import { usePostHogScreens } from '~/hooks/usePostHogScreens';
-import { POSTHOG_API_KEY, POSTHOG_CONFIG } from '~/services/analytics/posthog';
+import { POSTHOG_CONFIG, posthogClient } from '~/services/analytics/posthog';
 import { PushNotificationsInitializer } from '~/services/notifications/notifications';
 import { ratingService } from '~/services/rating/rating';
 import { useAppLaunchStore } from '~/store/useAppLaunchStore';
@@ -88,17 +89,16 @@ const AppContent = () => {
 
   useEffect(() => {
     if (success) {
-      console.log('✅ Database migrated successfully');
-
       incrementLaunchCount();
-
       ratingService.checkAndShowRatingPrompt();
-    } else if (error) {
-      console.error('❌ Error migrating database:', error);
     }
-  }, [success, error, incrementLaunchCount]);
+  }, [success, incrementLaunchCount]);
 
-  if (!success && !error) return null;
+  if (error) {
+    return <AppErrorScreen {...MIGRATION_ERROR_COPY} error={error} source="sqlite-migration" />;
+  }
+
+  if (!success) return null;
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -174,15 +174,26 @@ const AppContent = () => {
   );
 };
 
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  return (
+    <AppErrorScreen
+      title="Something went wrong"
+      message="This screen hit an error. Try again, or restart the app if it keeps happening."
+      error={error}
+      source="router-error-boundary"
+      onRetry={retry}
+    />
+  );
+}
+
 export default function Layout() {
-  if (!POSTHOG_API_KEY) {
+  if (!posthogClient) {
     return <AppContent />;
   }
 
   return (
     <PostHogProvider
-      apiKey={POSTHOG_CONFIG.apiKey}
-      options={POSTHOG_CONFIG.options}
+      client={posthogClient}
       autocapture={POSTHOG_CONFIG.autocapture}
       debug={POSTHOG_CONFIG.debug}
     >

@@ -14,8 +14,8 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 	dev mobile ios android dashboard website scrape admin mobile-preview \
 	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-psql db-studio \
 	env-local env-dev \
-	check verify check-comments functions fix lint typecheck test build \
-	sim sims e2e e2e-fixtures screenshots perf-build \
+	check verify check-comments check-size functions fix lint typecheck test build \
+	sim sims e2e e2e-fixtures screenshots perf-build size-report \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
 
@@ -61,9 +61,12 @@ help:
 	'                  comment check, typecheck and tests of affected packages, then what else to verify' \
 	'  check           Biome, typecheck and tests of everything (run before pushing)' \
 	'  check-comments  Fail on added code comments. ARGS="--base origin/staging" (default: staged diff)' \
+	'  check-size      Fail on any source file over 500 lines (MAX_LINES=n to try another cap)' \
 	'  functions       Typecheck and test the Supabase edge functions with Deno (CI runs it too)' \
 	'  fix             Biome safe fixes' \
 	'  lint | typecheck | test | build' \
+	'  size-report     Mobile bundle and website sizes plus Lighthouse, against BASE=origin/staging (BASE= for none).' \
+	'                  Writes .context/size-report/report.md, the same comment CI posts on PRs. SKIP_LIGHTHOUSE=1' \
 	'' \
 	'iOS and E2E (macOS)' \
 	'  sim             Boot a simulator (SIM=<name or UDID>, else one with the dev build) and open it' \
@@ -186,6 +189,9 @@ test:
 functions:
 	@$(DEV)/functions-check.sh
 
+check-size:
+	@$(DEV)/check-file-size.sh
+
 build:
 	@pnpm build
 
@@ -203,6 +209,9 @@ e2e-fixtures:
 
 screenshots:
 	@scripts/qa/mobile-screenshots.sh $(if $(SIM),--sim "$$($(DEV)/sim.sh pick)") $(ARGS)
+
+size-report:
+	@scripts/qa/size-report.sh local "$(if $(filter undefined,$(origin BASE)),origin/staging,$(BASE))"
 
 perf-build:
 	@test -n "$(APP)" -a -n "$(OUT)" || { echo 'usage: make perf-build APP=<base release .app> OUT=<dir> PERF_DEV_REF=<dev ref>' >&2; exit 2; }

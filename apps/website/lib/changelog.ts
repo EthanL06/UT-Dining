@@ -1,3 +1,4 @@
+import { compareVersions } from '@ut-dining/core';
 import fallback from '@/content/changelog.json';
 
 export type ChangelogChange = {
@@ -12,16 +13,6 @@ export type ChangelogEntry = {
   summary: string | null;
   changes: ChangelogChange[];
 };
-
-function compareVersions(a: string, b: string) {
-  const pa = a.split('.').map(Number);
-  const pb = b.split('.').map(Number);
-  for (let i = 0; i < 3; i++) {
-    const diff = (pb[i] ?? 0) - (pa[i] ?? 0);
-    if (diff !== 0) return diff;
-  }
-  return 0;
-}
 
 export const CHANGELOG_REVALIDATE_SECONDS = 300;
 
@@ -57,7 +48,7 @@ export async function fetchPublished(source: ChangelogSource): Promise<Changelog
 }
 
 export function sortEntries(entries: ChangelogEntry[]) {
-  return [...entries].sort((a, b) => compareVersions(a.version, b.version));
+  return [...entries].sort((a, b) => compareVersions(b.version, a.version));
 }
 
 export async function getChangelog(): Promise<ChangelogEntry[]> {

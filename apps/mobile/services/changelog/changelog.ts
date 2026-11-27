@@ -1,15 +1,8 @@
+import { isChangelogIcon } from '@ut-dining/core';
 import type { Json } from '@ut-dining/supabase';
 import { supabase } from '~/utils/supabase';
 import { isNewerVersion } from '~/utils/version';
-import {
-  CHANGELOG_ICONS,
-  type ChangelogChange,
-  type ChangelogEntry,
-  type ChangelogIcon,
-} from './types';
-
-const isChangelogIcon = (value: unknown): value is ChangelogIcon =>
-  typeof value === 'string' && (CHANGELOG_ICONS as readonly string[]).includes(value);
+import type { ChangelogChange, ChangelogEntry } from './types';
 
 const parseChanges = (changes: Json): ChangelogChange[] => {
   if (!Array.isArray(changes)) return [];

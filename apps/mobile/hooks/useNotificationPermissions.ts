@@ -1,6 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
+import { log } from '~/utils/log';
 
 export function useNotificationPermissions() {
   const [permissionStatus, setPermissionStatus] = useState<Notifications.PermissionStatus | null>(
@@ -13,7 +14,7 @@ export function useNotificationPermissions() {
       const { status } = await Notifications.getPermissionsAsync();
       setPermissionStatus(status);
     } catch (error) {
-      console.error('Error checking notification permissions:', error);
+      log.error('Error checking notification permissions', error);
       setPermissionStatus(Notifications.PermissionStatus.DENIED);
     } finally {
       setIsLoading(false);
@@ -36,7 +37,7 @@ export function useNotificationPermissions() {
       setPermissionStatus(status);
       return status;
     } catch (error) {
-      console.error('Error requesting notification permissions:', error);
+      log.error('Error requesting notification permissions', error);
       return Notifications.PermissionStatus.DENIED;
     }
   };

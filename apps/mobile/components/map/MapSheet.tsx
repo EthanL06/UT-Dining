@@ -16,15 +16,7 @@ import {
   X,
 } from 'lucide-react-native';
 import { type ReactNode, useEffect } from 'react';
-import {
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import { Platform, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Reanimated, {
   runOnJS,
@@ -32,8 +24,8 @@ import Reanimated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-
 import { StatusDot } from '~/components/ui/Grouped';
+import { Text, TextInput } from '~/components/ui/Text';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { haptics } from '~/utils/haptics';
 import type { Coordinates, Place } from '~/utils/mapPlaces';
@@ -116,10 +108,8 @@ const PlaceCard = ({
       <View className="flex-row items-start gap-x-3">
         <PlaceIcon type={place.type} size={44} />
         <View className="flex-1">
-          <Text className="text-[22px] leading-[27px] font-bold" style={{ color: theme.label }}>
-            {place.name}
-          </Text>
-          <Text className="text-[14px]" style={{ color: theme.secondaryLabel }}>
+          <Text variant="title2">{place.name}</Text>
+          <Text variant="subheadline" tone="secondary">
             {[typeLabel, walk ? `${walk} min walk` : null].filter(Boolean).join(' · ')}
           </Text>
         </View>
@@ -139,10 +129,7 @@ const PlaceCard = ({
       {place.type !== 'microwave' && (
         <View className="mt-3 flex-row items-center gap-x-2">
           <StatusDot open={place.isOpen} />
-          <Text
-            className="text-[15px] font-medium"
-            style={{ color: place.isOpen ? theme.label : theme.secondaryLabel }}
-          >
+          <Text variant="subheadline" color={place.isOpen ? theme.label : theme.secondaryLabel}>
             {place.status}
           </Text>
         </View>
@@ -157,7 +144,9 @@ const PlaceCard = ({
           style={{ backgroundColor: theme.tint }}
         >
           <Navigation size={17} color="#FFFFFF" />
-          <Text className="text-[16px] font-semibold text-white">Directions</Text>
+          <Text variant="callout" emphasized tone="onTint">
+            Directions
+          </Text>
         </Pressable>
         {place.type !== 'microwave' && (
           <Pressable
@@ -176,7 +165,7 @@ const PlaceCard = ({
             ) : (
               <MapPin size={17} color={theme.label} />
             )}
-            <Text className="text-[16px] font-semibold" style={{ color: theme.label }}>
+            <Text variant="callout" emphasized>
               {place.hasMenu ? 'View Menu' : 'Details'}
             </Text>
           </Pressable>
@@ -189,14 +178,14 @@ const PlaceCard = ({
           style={{ backgroundColor: theme.tintSoft }}
         >
           <CircleAlert size={16} color={theme.tint} />
-          <Text className="text-[14px] font-medium" style={{ color: theme.tint }}>
+          <Text variant="subheadline" tone="tint">
             {place.note}
           </Text>
         </View>
       )}
 
       {place.description !== '' && (
-        <Text className="mt-4 text-[15px] leading-[22px]" style={{ color: theme.secondaryLabel }}>
+        <Text variant="subheadline" paragraph tone="secondary" className="mt-4">
           {place.description}
         </Text>
       )}
@@ -207,7 +196,7 @@ const PlaceCard = ({
         className="mt-4 flex-row items-center gap-x-2"
       >
         <MapPin size={15} color={theme.secondaryLabel} />
-        <Text className="flex-1 text-[14px]" style={{ color: theme.secondaryLabel }}>
+        <Text variant="subheadline" tone="secondary" className="flex-1">
           {place.address}
         </Text>
       </Pressable>
@@ -253,14 +242,10 @@ const PlaceRow = ({
           )}
           <PlaceIcon type={place.type} />
           <View className="flex-1">
-            <Text numberOfLines={1} className="text-[16px]" style={{ color: theme.label }}>
+            <Text variant="callout" numberOfLines={1}>
               {place.name}
             </Text>
-            <Text
-              numberOfLines={1}
-              className="text-[13.5px]"
-              style={{ color: theme.secondaryLabel }}
-            >
+            <Text variant="footnote" tone="secondary" numberOfLines={1}>
               {[detail, walk ? `${walk} min walk` : null].filter(Boolean).join(' · ')}
             </Text>
           </View>
@@ -398,10 +383,7 @@ export const MapSheet = ({
                 className="h-[34px] justify-center rounded-full px-3.5"
                 style={{ backgroundColor: isOn ? theme.tint : theme.fill }}
               >
-                <Text
-                  className={isOn ? 'text-[14px] font-semibold' : 'text-[14px] font-medium'}
-                  style={{ color: isOn ? '#FFFFFF' : theme.label }}
-                >
+                <Text variant="subheadline" emphasized tone={isOn ? 'onTint' : 'primary'}>
                   {filter.label}
                 </Text>
               </Pressable>
@@ -409,7 +391,7 @@ export const MapSheet = ({
           })}
         </ScrollView>
         {visible.length === 0 ? (
-          <Text className="mx-5 mt-2 text-[15px]" style={{ color: theme.secondaryLabel }}>
+          <Text variant="subheadline" tone="secondary" className="mx-5 mt-2">
             No places match. Try turning off a filter.
           </Text>
         ) : (
@@ -467,10 +449,9 @@ export const MapSheet = ({
               <Search size={17} color={theme.secondaryLabel} />
               <TextInput
                 testID="map-search-input"
-                className="flex-1 text-[16px]"
-                style={{ color: theme.label }}
+                variant="callout"
+                className="flex-1"
                 placeholder="Search campus dining"
-                placeholderTextColor={theme.secondaryLabel}
                 value={query}
                 onChangeText={onQueryChange}
                 onFocus={() => snapTo('full')}

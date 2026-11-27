@@ -34,3 +34,5 @@ android
 .lavish/
 .worktrees/
 .claude/worktrees/
+
+.lighthouseci/

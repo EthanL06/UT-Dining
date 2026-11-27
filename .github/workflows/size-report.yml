@@ -1,0 +1,171 @@
+name: Size and performance
+
+on:
+  pull_request:
+    paths:
+      - apps/mobile/**
+      - apps/website/**
+      - packages/core/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - .github/perf-budgets.json
+      - .github/workflows/size-report.yml
+      - scripts/qa/size-report.*
+  push:
+    branches: [staging]
+    paths:
+      - apps/mobile/**
+      - apps/website/**
+      - packages/core/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - .github/perf-budgets.json
+      - .github/workflows/size-report.yml
+      - scripts/qa/size-report.*
+  workflow_dispatch:
+
+concurrency:
+  group: size-report-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  REPORT_VERSION: v1
+  BASE_SHA: ${{ github.event.pull_request.base.sha }}
+  HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+jobs:
+  measure:
+    name: Measure ${{ matrix.kind }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        kind: [mobile, website]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Measure this commit
+        run: scripts/qa/size-report.sh measure ${{ matrix.kind }} "$GITHUB_WORKSPACE" "$RUNNER_TEMP/report/head.json"
+
+      - name: Save the staging report for later PRs
+        if: github.event_name == 'push'
+        run: |
+          mkdir -p .size-report
+          cp "$RUNNER_TEMP/report/head.json" .size-report/${{ matrix.kind }}.json
+
+      - if: github.event_name == 'push'
+        uses: actions/cache/save@v6
+        with:
+          path: .size-report
+          key: size-report-${{ env.REPORT_VERSION }}-${{ matrix.kind }}-${{ github.sha }}
+
+      - name: Restore the staging report
+        if: github.event_name == 'pull_request'
+        id: base-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: .size-report
+          key: size-report-${{ env.REPORT_VERSION }}-${{ matrix.kind }}-${{ env.BASE_SHA }}
+
+      - name: Measure staging
+        if: github.event_name == 'pull_request' && steps.base-cache.outputs.cache-hit != 'true'
+        run: |
+          git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          git worktree add --detach "$RUNNER_TEMP/base" "$BASE_SHA"
+          (cd "$RUNNER_TEMP/base" && pnpm install --frozen-lockfile)
+          mkdir -p .size-report
+          scripts/qa/size-report.sh measure ${{ matrix.kind }} "$RUNNER_TEMP/base" .size-report/${{ matrix.kind }}.json
+
+      - if: github.event_name == 'pull_request' && steps.base-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: .size-report
+          key: size-report-${{ env.REPORT_VERSION }}-${{ matrix.kind }}-${{ env.BASE_SHA }}
+
+      - name: Compare
+        if: github.event_name == 'pull_request'
+        run: |
+          node scripts/qa/size-report.ts compare \
+            --base .size-report/${{ matrix.kind }}.json --base-sha "$BASE_SHA" \
+            --head "$RUNNER_TEMP/report/head.json" --head-sha "$HEAD_SHA" \
+            --out "$RUNNER_TEMP/report/${{ matrix.kind }}.json"
+
+      - if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: size-report-${{ matrix.kind }}
+          path: ${{ runner.temp }}/report/${{ matrix.kind }}.json
+          retention-days: 14
+
+  comment:
+    name: Post the report
+    needs: measure
+    if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: |
+            .node-version
+            .github/perf-budgets.json
+            scripts/qa/size-report.ts
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: size-report-*
+          merge-multiple: true
+          path: ${{ runner.temp }}/report
+
+      - name: Render
+        id: render
+        run: |
+          if [ ! -f "$RUNNER_TEMP/report/mobile.json" ] && [ ! -f "$RUNNER_TEMP/report/website.json" ]; then
+            echo "::warning::Neither measurement finished, so there is nothing to post."
+            exit 0
+          fi
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+          node scripts/qa/size-report.ts render \
+            --mobile "$RUNNER_TEMP/report/mobile.json" \
+            --website "$RUNNER_TEMP/report/website.json" \
+            --budgets .github/perf-budgets.json \
+            --out "$RUNNER_TEMP/report/comment.md"
+          cat "$RUNNER_TEMP/report/comment.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create or update the PR comment
+        if: steps.render.outputs.ready == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          marker='<!-- pr-size-report -->'
+          existing=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
+            --jq "[.[] | select(.body | startswith(\"$marker\")) | .id] | first // empty")
+          if [ -n "$existing" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$existing" \
+              -F body=@"$RUNNER_TEMP/report/comment.md" > /dev/null
+          else
+            gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" \
+              -F body=@"$RUNNER_TEMP/report/comment.md" > /dev/null
+          fi

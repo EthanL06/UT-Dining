@@ -23,8 +23,15 @@ import {
   Title,
 } from '@mantine/core';
 import { toCentralTime } from '@ut-dining/core';
-import type { ReactNode } from 'react';
-import { HealthBadge, HealthDot } from '@/components/status/health';
+import {
+  CheckRow,
+  probeDetail,
+  Row,
+  runDetail,
+  Section,
+  StatCard,
+} from '@/components/dashboard/status/status-parts';
+import { HealthDot } from '@/components/status/health';
 import { StatusVerdict } from '@/components/status/verdict';
 import {
   formatBytes,
@@ -38,8 +45,8 @@ import { buildIssues, coverageHealth } from '@/lib/status/issues';
 import { type CheckedLocation, getHourProblems, isOpenNow } from '@/lib/status/location-checks';
 import type { Health } from '@/lib/status/menu-health';
 import { getMenuStatus } from '@/lib/status/menu-status';
-import { type Probe, probeEdgeFunction, probeSupabase, probeWebsite } from '@/lib/status/probes';
-import { getLatestWorkflowRun, SCRAPER_WORKFLOW, type WorkflowRun } from '@/lib/status/workflows';
+import { probeEdgeFunction, probeSupabase, probeWebsite } from '@/lib/status/probes';
+import { getLatestWorkflowRun, SCRAPER_WORKFLOW } from '@/lib/status/workflows';
 import { getSupabaseEnv } from '@/lib/supabase/env';
 import { createClient } from '@/lib/supabase/server';
 
@@ -73,131 +80,6 @@ const WORKFLOWS = [
   { file: 'dev-supabase-keepalive.yml', label: 'Dev Supabase keepalive' },
   { file: 'ci.yml', label: 'CI' },
 ];
-
-function StatCard({
-  title,
-  health,
-  value,
-  children,
-}: {
-  title: string;
-  health: Health;
-  value: ReactNode;
-  children?: ReactNode;
-}) {
-  return (
-    <Card withBorder radius="md" padding="md">
-      <Group justify="space-between" mb={6} wrap="nowrap">
-        <Text fz="sm" c="dimmed" fw={500}>
-          {title}
-        </Text>
-        <HealthBadge health={health} />
-      </Group>
-      <Text fz={26} fw={650} lh={1.2}>
-        {value}
-      </Text>
-      {children && (
-        <Text fz="sm" c="dimmed" mt={6} component="div">
-          {children}
-        </Text>
-      )}
-    </Card>
-  );
-}
-
-function Section({
-  title,
-  aside,
-  children,
-}: {
-  title: string;
-  aside?: ReactNode;
-  children: ReactNode;
-}) {
-  return (
-    <Card withBorder radius="md" padding="lg">
-      <Group justify="space-between" mb="sm" gap="xs">
-        <Title order={3} fz="md">
-          {title}
-        </Title>
-        {aside}
-      </Group>
-      {children}
-    </Card>
-  );
-}
-
-function Row({ label, children }: { label: ReactNode; children: ReactNode }) {
-  return (
-    <Group justify="space-between" align="flex-start" wrap="nowrap" gap="md" py={5}>
-      <Text fz="sm" c="dimmed">
-        {label}
-      </Text>
-      <Text fz="sm" fw={500} ta="right" component="div">
-        {children}
-      </Text>
-    </Group>
-  );
-}
-
-function CheckRow({
-  name,
-  health,
-  detail,
-  href,
-}: {
-  name: string;
-  health: Health;
-  detail: string;
-  href?: string | null;
-}) {
-  return (
-    <Group
-      gap="sm"
-      wrap="nowrap"
-      py={8}
-      style={{ borderBottom: '1px solid var(--mantine-color-gray-1)' }}
-    >
-      <HealthDot health={health} size={8} />
-      <Stack gap={0} style={{ flex: 1, minWidth: 0 }}>
-        <Text fz="sm">
-          {href ? (
-            <Anchor href={href} target="_blank" fz="sm" c="inherit">
-              {name}
-            </Anchor>
-          ) : (
-            name
-          )}
-        </Text>
-        {detail && (
-          <Text fz="xs" c="dimmed">
-            {detail}
-          </Text>
-        )}
-      </Stack>
-      <HealthBadge health={health} />
-    </Group>
-  );
-}
-
-const probeDetail = (probe: Probe) =>
-  [
-    probe.health === 'operational' ? null : probe.detail,
-    probe.latencyMs === null ? null : `${probe.latencyMs} ms`,
-  ]
-    .filter(Boolean)
-    .join(' · ');
-
-const runDetail = (run: WorkflowRun) => {
-  if (run.startedAt) {
-    return [formatRelative(run.startedAt), formatDuration(run.durationSeconds)]
-      .filter((part) => part !== '—')
-      .join(' · ');
-  }
-  if (run.state === 'GitHub API 403') return 'GitHub rate limit';
-  if (run.state === 'Not on main') return 'Not on main yet';
-  return run.state;
-};
 
 export default async function StatusPage() {
   const supabase = await createClient();

@@ -1,5 +1,6 @@
 'use server';
 
+import { checkChangelogChanges } from '@ut-dining/core';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import {
@@ -58,20 +59,12 @@ export async function saveChangelogEntry(input: ChangelogEntryInput): Promise<Ac
     return { success: false, message: 'Version must look like 2.0.0.' };
   }
 
-  const changes = input.changes
-    .map((change) => ({
-      icon: isChangelogIcon(change.icon) ? change.icon : 'sparkles',
-      title: change.title.trim(),
-      description: change.description.trim(),
-    }))
-    .filter((change) => change.title)
-    .map(({ icon, title, description }) =>
-      description ? { icon, title, description } : { icon, title },
-    );
-
-  if (changes.length === 0) {
-    return { success: false, message: 'Add at least one change.' };
-  }
+  const checked = checkChangelogChanges(
+    input.changes.filter((change) => change.title.trim()),
+    { requireOne: true },
+  );
+  if (!checked.ok) return { success: false, message: checked.error };
+  const changes = checked.value;
 
   const row = {
     version,

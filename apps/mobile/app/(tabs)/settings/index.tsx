@@ -25,10 +25,10 @@ import {
   Wrench,
 } from 'lucide-react-native';
 import React from 'react';
-import { Linking, ScrollView, Switch, Text, View } from 'react-native';
+import { Linking, ScrollView, Switch, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
-
 import { GroupedRow, GroupedSection, IconSquare } from '~/components/ui/Grouped';
+import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationPermissions } from '~/hooks/useLocationPermissions';
 import { forceMenuSync } from '~/hooks/useMenuSync';
@@ -41,6 +41,7 @@ import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { showQaTools } from '~/utils/appVariant';
 import { haptics } from '~/utils/haptics';
+import { log } from '~/utils/log';
 import { SERVICE_STATUS_COLORS } from '~/utils/serviceStatus';
 import { useTheme } from '~/utils/theme';
 import { formatTimeSinceSync } from '~/utils/time';
@@ -166,7 +167,7 @@ const SyncDataRow = () => {
     } catch (error) {
       setSyncStatus('failed');
       haptics.error();
-      console.warn('Sync failed:', error);
+      log.warn('Sync failed', { error });
     }
   };
 
@@ -228,7 +229,6 @@ const PermissionRows = () => {
 };
 
 const ServiceStatusRow = ({ isFirst }: { isFirst: boolean }) => {
-  const theme = useTheme();
   const { data: status } = useServiceStatus();
   return (
     <GroupedRow
@@ -244,7 +244,7 @@ const ServiceStatusRow = ({ isFirst }: { isFirst: boolean }) => {
               className="size-2 rounded-full"
               style={{ backgroundColor: SERVICE_STATUS_COLORS[status.health] }}
             />
-            <Text className="text-[15px]" style={{ color: theme.secondaryLabel }}>
+            <Text variant="subheadline" tone="secondary">
               {status.label}
             </Text>
           </View>
@@ -257,7 +257,6 @@ const ServiceStatusRow = ({ isFirst }: { isFirst: boolean }) => {
 };
 
 const InformationSection = ({ appInfo }: { appInfo: AppInformation }) => {
-  const theme = useTheme();
   const supportLinks = [...appInfo.support_links].sort((a, b) => a.order - b.order);
   const contributors = [...appInfo.credits_contributors]
     .sort((a, b) => a.order - b.order)
@@ -268,10 +267,10 @@ const InformationSection = ({ appInfo }: { appInfo: AppInformation }) => {
     <>
       <GroupedSection header="About">
         <View className="px-4 py-3.5">
-          <Text className="mb-1 text-[17px] font-semibold" style={{ color: theme.label }}>
+          <Text variant="headline" className="mb-1">
             {appInfo.about_title}
           </Text>
-          <Text className="text-[15px] leading-[22px]" style={{ color: theme.secondaryLabel }}>
+          <Text variant="subheadline" paragraph tone="secondary">
             {appInfo.about_description}
           </Text>
         </View>
@@ -461,11 +460,11 @@ const SettingsPage = () => {
         {appInfo && <InformationSection appInfo={appInfo} />}
 
         <View className="mt-1 items-center">
-          <Text className="text-[13px]" style={{ color: theme.secondaryLabel }}>
+          <Text variant="footnote" tone="secondary">
             Version {Application.nativeApplicationVersion}
           </Text>
           {deviceId && (
-            <Text className="mt-1 text-[10px]" style={{ color: theme.tertiaryLabel }}>
+            <Text variant="caption2" tone="tertiary" className="mt-1">
               {deviceId}
             </Text>
           )}
