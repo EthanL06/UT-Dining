@@ -60,10 +60,8 @@ export default {
         'expo-sqlite',
         {
           enableFTS: true,
-          useSQLCipher: true,
           android: {
             enableFTS: false,
-            useSQLCipher: false,
           },
           ios: {
             customBuildFlags: ['-DSQLITE_ENABLE_DBSTAT_VTAB=1 -DSQLITE_ENABLE_SNAPSHOT=1'],

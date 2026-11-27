@@ -147,7 +147,7 @@ When something looks off, run `make doctor`. It checks Node, pnpm, dependencies,
 
 ### Mobile app
 
-The app uses native modules (MMKV, SQLCipher), so it runs in a [development build](https://docs.expo.dev/develop/development-builds/introduction/), not Expo Go.
+The app uses native modules (MMKV, SQLite), so it runs in a [development build](https://docs.expo.dev/develop/development-builds/introduction/), not Expo Go.
 
 ```sh
 make sim                     # boot a simulator (one with the dev build if there is one) and open it
