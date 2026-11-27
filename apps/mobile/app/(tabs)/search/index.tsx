@@ -1,7 +1,7 @@
 import { and, asc, eq, like } from 'drizzle-orm';
 import { router, Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView } from 'react-native';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
@@ -70,7 +70,7 @@ export default function Search() {
   const now = new Date();
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background }}>
+    <>
       <Stack.Screen
         options={{
           title: 'Search',
@@ -78,12 +78,14 @@ export default function Search() {
             placeholder: "Search today's menus",
             onChangeText: (event) => setQuery(event.nativeEvent.text),
             hideWhenScrolling: false,
+            hideNavigationBar: false,
           },
         }}
       />
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         keyboardDismissMode="on-drag"
+        style={{ flex: 1, backgroundColor: theme.background }}
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
       >
         {!results ? (
@@ -157,6 +159,6 @@ export default function Search() {
           </>
         )}
       </ScrollView>
-    </View>
+    </>
   );
 }

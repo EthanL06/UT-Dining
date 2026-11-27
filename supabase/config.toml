@@ -309,6 +309,12 @@ entrypoint = "./functions/manual-push-notification/index.ts"
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/manual-push-notification/*.html" ]
 
+[functions.qa-test-push]
+enabled = true
+verify_jwt = false
+import_map = "./functions/qa-test-push/deno.json"
+entrypoint = "./functions/qa-test-push/index.ts"
+
 [functions.scheduled-push-notification]
 enabled = true
 verify_jwt = true

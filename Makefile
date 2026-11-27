@@ -11,7 +11,7 @@ DAYS ?= 3
 export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 
 .PHONY: help setup install doctor \
-	dev mobile ios android dashboard website scrape admin \
+	dev mobile ios android dashboard website scrape admin mobile-preview \
 	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-psql db-studio \
 	env-local env-dev \
 	check verify check-comments check-size functions fix lint typecheck test build \
@@ -77,6 +77,7 @@ help:
 	'  ios-app         Release simulator app into .context/app; reuses the native build unless native code changed' \
 	'  perf-build      Timing-harness test apps from a release .app. APP=<base .app> OUT=<dir> PERF_DEV_REF=<ref>' \
 	'                  The rest of the timing run is in scripts/qa/perf/README.md' \
+	'  mobile-preview  Dev app build (only if native code changed) + EAS Update. ARGS="staging" or ARGS="pr <n>"' \
 	'' \
 	'Worktrees' \
 	'  worktree        New worktree in .worktrees/ from origin/staging, env files and deps included. NAME=feat-x' \
@@ -219,6 +220,9 @@ size-report:
 perf-build:
 	@test -n "$(APP)" -a -n "$(OUT)" || { echo 'usage: make perf-build APP=<base release .app> OUT=<dir> PERF_DEV_REF=<dev ref>' >&2; exit 2; }
 	@scripts/qa/perf/build.sh "$(APP)" "$(OUT)"
+
+mobile-preview:
+	@scripts/ci/mobile-preview.sh $(ARGS)
 
 worktree:
 	@$(DEV)/worktree.sh new "$(NAME)" $(BASE)

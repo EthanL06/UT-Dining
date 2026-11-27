@@ -66,7 +66,7 @@ pnpm -s admin locations set-meal-times j2 --meal Breakfast=07:00-10:30 --meal Lu
 pnpm -s admin locations move "Jester City Market" --to 2
 
 pnpm -s admin config show
-pnpm -s admin support-links update faq --url https://example.com/faq
+pnpm -s admin support-links update "privacy policy" --url https://utdining.app/privacy-policy/
 pnpm -s admin credits add --name "New Contributor"
 
 pnpm -s admin changelog upsert 2.0.0 --summary "A fresh look" \

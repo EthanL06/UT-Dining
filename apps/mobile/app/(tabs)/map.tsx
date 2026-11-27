@@ -2,10 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import * as Location from 'expo-location';
 import { LocateFixed } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, useWindowDimensions, View } from 'react-native';
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import type { Region } from 'react-native-maps';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { type MapFilterId, MapSheet, PLACE_ICONS, usePlaceColor } from '~/components/map/MapSheet';
 import { Text } from '~/components/ui/Text';
 import { MICROWAVE_LOCATIONS } from '~/data/MicrowaveLocations';
@@ -36,6 +36,8 @@ const INITIAL_REGION: Region = {
 };
 
 const TAB_BAR_CLEARANCE = 92;
+const MAP_ATTRIBUTION_GAP = 10;
+const MAP_ATTRIBUTION_INSET = 4;
 
 const coordinatesMatch = (a: Coordinates, b: Coordinates) =>
   Math.abs(a.latitude - b.latitude) < 1e-6 && Math.abs(a.longitude - b.longitude) < 1e-6;
@@ -134,6 +136,12 @@ const ClusterPin = ({ cluster }: { cluster: Cluster }) => {
   );
 };
 
+const NativeBottomInset = ({ onChange }: { onChange: (bottom: number) => void }) => {
+  const { bottom } = useSafeAreaInsets();
+  useEffect(() => onChange(bottom), [bottom, onChange]);
+  return null;
+};
+
 const MapPage = () => {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -148,6 +156,7 @@ const MapPage = () => {
   const [filters, setFilters] = useState<Set<MapFilterId>>(new Set());
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [sheetHeight, setSheetHeight] = useState(0);
+  const [mapSafeAreaBottom, setMapSafeAreaBottom] = useState(0);
   const bottomOffset = TAB_BAR_CLEARANCE + insets.bottom - 34;
 
   const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
@@ -307,6 +316,9 @@ const MapPage = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
+      <SafeAreaProvider style={StyleSheet.absoluteFill} pointerEvents="none">
+        <NativeBottomInset onChange={setMapSafeAreaBottom} />
+      </SafeAreaProvider>
       <MapView
         ref={mapRef}
         style={{ flex: 1 }}
@@ -316,7 +328,12 @@ const MapPage = () => {
         showsPointsOfInterests={false}
         onRegionChangeComplete={setRegion}
         userInterfaceStyle={isDarkMode ? 'dark' : 'light'}
-        mapPadding={{ top: insets.top, right: 0, bottom: sheetHeight + bottomOffset, left: 0 }}
+        mapPadding={{
+          top: insets.top,
+          right: 0,
+          bottom: Math.max(0, sheetHeight + bottomOffset + MAP_ATTRIBUTION_GAP - mapSafeAreaBottom),
+          left: MAP_ATTRIBUTION_INSET,
+        }}
         loadingEnabled
         loadingBackgroundColor={theme.background}
       >

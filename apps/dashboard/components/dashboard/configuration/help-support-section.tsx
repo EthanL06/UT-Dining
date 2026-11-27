@@ -13,7 +13,6 @@ interface HelpSupportSectionProps {
 
 const DEFAULT_LINKS = [
   { label: 'Contact Support', url: '' },
-  { label: 'FAQ', url: '' },
   { label: 'Privacy Policy', url: '' },
   { label: 'Source Code', url: '' },
 ];

@@ -1,6 +1,21 @@
 import { execSync } from 'node:child_process';
 
-const IS_DEV = process.env.APP_VARIANT === 'development';
+const VARIANT = process.env.APP_VARIANT ?? 'production';
+const IS_DEV = VARIANT !== 'production';
+const STAGING_CHANNEL = 'staging';
+const DEV_UPDATES_ENABLED = process.env.DEV_UPDATES === '1';
+
+const updatesConfig = () => {
+  const url = 'https://u.expo.dev/005ee5ea-5ec3-4d96-af00-5d6203694b74';
+  if (!IS_DEV) return { url };
+  return {
+    url,
+    enabled: DEV_UPDATES_ENABLED,
+    checkAutomatically: 'ON_LOAD',
+    fallbackToCacheTimeout: 0,
+    requestHeaders: { 'expo-channel-name': STAGING_CHANNEL },
+  };
+};
 
 const readGitCommit = () => {
   if (process.env.EAS_BUILD_GIT_COMMIT_HASH) {
@@ -20,7 +35,7 @@ export default {
     name: IS_DEV ? 'UT Dining (Dev)' : 'UT Dining',
     slug: 'ut-dining',
     version: '1.2.4',
-    scheme: 'ut-dining',
+    scheme: IS_DEV ? ['ut-dining', 'ut-dining-dev'] : 'ut-dining',
     web: {
       bundler: 'metro',
       output: 'static',
@@ -112,10 +127,8 @@ export default {
     },
     owner: 'ethanl06',
     runtimeVersion: {
-      policy: 'appVersion',
+      policy: IS_DEV ? 'fingerprint' : 'appVersion',
     },
-    updates: {
-      url: 'https://u.expo.dev/005ee5ea-5ec3-4d96-af00-5d6203694b74',
-    },
+    updates: updatesConfig(),
   },
 };
