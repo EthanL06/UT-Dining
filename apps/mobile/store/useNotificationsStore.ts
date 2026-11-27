@@ -35,11 +35,17 @@ const notificationsStorage = {
 interface NotificationsState {
   visibleSince: number;
   lastVisited: number | null;
+  setVisibleSince: (timestamp: number) => void;
   setLastVisited: (timestamp: number) => void;
 }
 
 export const useNotificationsStore = create<NotificationsState>((set) => ({
   visibleSince: loadVisibleSince(),
+
+  setVisibleSince: (timestamp: number) => {
+    miscStorage.set(NOTIFICATIONS_VISIBLE_SINCE_KEY, timestamp);
+    set({ visibleSince: timestamp });
+  },
   lastVisited: notificationsStorage.getLastVisited(),
 
   setLastVisited: (timestamp: number) => {
