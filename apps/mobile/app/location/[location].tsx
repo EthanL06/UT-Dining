@@ -314,6 +314,7 @@ const Location = () => {
             placement: 'stacked',
             autoCapitalize: 'none',
             obscureBackground: false,
+            hideNavigationBar: false,
             hideWhenScrolling: false,
             textColor: theme.label,
             tintColor: theme.tint,
