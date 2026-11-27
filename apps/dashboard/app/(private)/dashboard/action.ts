@@ -1,6 +1,7 @@
 'use server';
 
 import type { Json } from '@ut-dining/supabase';
+import { log } from '@/lib/log';
 import { createClient } from '@/lib/supabase/server';
 import type { Location } from '@/types/location';
 
@@ -30,11 +31,11 @@ export async function addLocation(location: Location) {
     .single();
 
   if (error) {
-    console.error('❌ Insert error:', error.message);
+    log.error('❌ Insert error:', error.message);
     throw error;
   }
 
-  console.log('✅ Location added successfully:', data.name);
+  log.info('✅ Location added successfully:', data.name);
   return data as unknown as Location;
 }
 
@@ -44,11 +45,11 @@ export async function deleteLocation(locationId: string) {
   const { error } = await supabase.from('location').delete().eq('id', locationId);
 
   if (error) {
-    console.error('❌ Delete error:', error.message);
+    log.error('❌ Delete error:', error.message);
     throw new Error(`Failed to delete location: ${error.message}`);
   }
 
-  console.log('🗑️ Location deleted successfully');
+  log.info('🗑️ Location deleted successfully');
   return { success: true };
 }
 
@@ -80,11 +81,11 @@ export async function updateLocation(locationId: string, location: Location) {
     .single();
 
   if (error) {
-    console.error('❌ Update error:', error.message);
+    log.error('❌ Update error:', error.message);
     throw new Error(`Failed to update location: ${error.message}`);
   }
 
-  console.log('✏️ Location updated successfully:', data.name);
+  log.info('✏️ Location updated successfully:', data.name);
   return data as unknown as Location;
 }
 
@@ -102,11 +103,11 @@ export async function toggleForceClose(locationId: string, forceClose: boolean) 
     .single();
 
   if (error) {
-    console.error('❌ Force close toggle error:', error.message);
+    log.error('❌ Force close toggle error:', error.message);
     throw new Error(`Failed to toggle force close: ${error.message}`);
   }
 
-  console.log(`🔒 Location force close ${forceClose ? 'enabled' : 'disabled'}:`, data.name);
+  log.info(`🔒 Location force close ${forceClose ? 'enabled' : 'disabled'}:`, data.name);
   return data as unknown as Location;
 }
 
@@ -120,12 +121,12 @@ export async function checkLocationHasMenus(locationId: string): Promise<boolean
     .limit(1);
 
   if (error) {
-    console.error('❌ Menu check error:', error.message);
+    log.error('❌ Menu check error:', error.message);
     return false;
   }
 
   const hasMenus = data && data.length > 0;
-  console.log(`🍽️ Location ${locationId} has menus:`, hasMenus);
+  log.info(`🍽️ Location ${locationId} has menus:`, hasMenus);
   return hasMenus;
 }
 
@@ -141,10 +142,10 @@ export async function updateLocationDisplayOrder(locationId: string, displayOrde
     .eq('id', locationId);
 
   if (error) {
-    console.error('❌ Display order update error:', error.message);
+    log.error('❌ Display order update error:', error.message);
     throw new Error(`Failed to update display order: ${error.message}`);
   }
 
-  console.log(`🔢 Location ${locationId} display_order set to ${displayOrder}`);
+  log.info(`🔢 Location ${locationId} display_order set to ${displayOrder}`);
   return { success: true };
 }

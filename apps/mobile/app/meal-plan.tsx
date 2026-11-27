@@ -1,12 +1,15 @@
+import { formatCentralDateKey } from '@ut-dining/core';
 import { router, Stack } from 'expo-router';
 import { ChefHat, ChevronLeft, ChevronRight, Flame, Minus, Plus } from 'lucide-react-native';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AppState, Image, Alert as NativeAlert, Pressable, ScrollView, View } from 'react-native';
+import { AppState, Alert as NativeAlert, Pressable, View } from 'react-native';
 import ReanimatedSwipeable, {
   type SwipeableMethods,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RemoveAction } from '~/components/AnimatedActions';
+import { Image } from '~/components/ui/Image';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import {
@@ -17,7 +20,7 @@ import {
   useMealPlanItems,
   useMealPlanStore,
 } from '~/store/useMealPlanStore';
-import { createDateFromString, formatDateForDisplay } from '~/utils/date';
+import { formatDateForDisplay } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
 import { type Theme, useTheme } from '~/utils/theme';
 
@@ -52,10 +55,9 @@ const useToday = () => {
 };
 
 const formatPlanDay = (date: string) => {
-  const day = createDateFromString(date);
-  const label = formatDateForDisplay(day);
+  const label = formatDateForDisplay(date);
   if (['Today', 'Yesterday', 'Tomorrow'].includes(label)) return label;
-  return day.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  return formatCentralDateKey(date, { weekday: 'long', month: 'short', day: 'numeric' });
 };
 
 const Tile = ({ label, value, theme }: { label: string; value: string; theme: Theme }) => (
@@ -212,7 +214,7 @@ const PlanRow = ({
                     key={key}
                     source={ALLERGEN_ICONS[key as keyof typeof ALLERGEN_ICONS]}
                     className="size-[15px] rounded-full"
-                    resizeMode="contain"
+                    contentFit="contain"
                   />
                 ))}
               </View>
@@ -315,7 +317,10 @@ const MealPlan = () => {
   return (
     <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: insets.top }}>
       <Stack.Screen options={{ title: 'Meal Plan', headerShown: false }} />
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
+      <OverflowScrollView
+        divider={false}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
+      >
         <View className="flex-row items-center justify-between px-4 pt-2">
           <Pressable
             testID="back-button"
@@ -459,7 +464,7 @@ const MealPlan = () => {
             })}
           </>
         )}
-      </ScrollView>
+      </OverflowScrollView>
     </View>
   );
 };

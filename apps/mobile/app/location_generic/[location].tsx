@@ -1,13 +1,14 @@
 import * as Device from 'expo-device';
-import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { MapPin, Navigation, X } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import { useEffect, useEffectEvent, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Pressable, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PLACE_ICONS, usePlaceColor } from '~/components/map/MapSheet';
 import PlaceDetails, { openPlaceDirections } from '~/components/PlaceDetails';
+import { Image } from '~/components/ui/Image';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { getSafePostHog } from '~/services/analytics/posthog';
@@ -78,7 +79,10 @@ export default function LocationGenericScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
+      <OverflowScrollView
+        divider={false}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
+      >
         <View style={{ height: COVER_HEIGHT, backgroundColor: typeColor }}>
           {showImage ? (
             <Image
@@ -157,7 +161,7 @@ export default function LocationGenericScreen() {
             </Text>
           </Pressable>
         )}
-      </ScrollView>
+      </OverflowScrollView>
     </View>
   );
 }

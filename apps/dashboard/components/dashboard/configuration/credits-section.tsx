@@ -21,6 +21,7 @@ import { notifications } from '@mantine/notifications';
 import { IconDeviceFloppy, IconPlus } from '@tabler/icons-react';
 import { useState } from 'react';
 import { updateCreditsConfig } from '@/app/(private)/dashboard/configuration/action';
+import { log } from '@/lib/log';
 import type { Contributor, CreditsConfig } from '@/types/config';
 import { DraggableContributorItem } from './draggable-contributor-item';
 
@@ -141,7 +142,7 @@ export function CreditsSection({ initialConfig }: CreditsSectionProps) {
         autoClose: 3000,
       });
     } catch (error) {
-      console.error('Failed to update credits section:', error);
+      log.error('Failed to update credits section:', error);
 
       notifications.show({
         title: 'Error',

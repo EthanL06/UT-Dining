@@ -1,4 +1,3 @@
-import { format } from 'date-fns';
 import { Pressable, View } from 'react-native';
 import { Text } from '~/components/ui/Text';
 
@@ -7,6 +6,7 @@ import {
   createDateFromString,
   formatDateForAPI,
   formatDateForDisplay,
+  formatDay,
   getTodayInCentralTime,
 } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
@@ -26,7 +26,7 @@ const WeekStrip = ({ selectedDate, onDateChange }: WeekStripProps) => {
   return (
     <View>
       <Text variant="subheadline" emphasized testID="selected-date" className="mb-2">
-        {formatDateForDisplay(createDateFromString(selectedDate))}
+        {formatDateForDisplay(selectedDate)}
       </Text>
       <View className="flex-row justify-between">
         {DAY_OFFSETS.map((offset) => {
@@ -41,7 +41,7 @@ const WeekStrip = ({ selectedDate, onDateChange }: WeekStripProps) => {
               testID={`menu-day-${offset}`}
               accessibilityRole="button"
               accessibilityState={{ selected: isSelected }}
-              accessibilityLabel={format(day, 'EEEE, MMMM d')}
+              accessibilityLabel={formatDay(day, 'EEEE, MMMM d')}
               onPress={() => {
                 if (isSelected) return;
                 haptics.selection();
@@ -51,7 +51,7 @@ const WeekStrip = ({ selectedDate, onDateChange }: WeekStripProps) => {
               style={{ width: 46 }}
             >
               <Text variant="caption" tone="secondary">
-                {format(day, 'EEEEE')}
+                {formatDay(day, 'EEEEE')}
               </Text>
               <View
                 className="size-10 items-center justify-center rounded-full"
@@ -66,7 +66,7 @@ const WeekStrip = ({ selectedDate, onDateChange }: WeekStripProps) => {
                   emphasized
                   color={isSelected ? '#FFFFFF' : isToday ? theme.tint : theme.label}
                 >
-                  {format(day, 'd')}
+                  {formatDay(day, 'd')}
                 </Text>
               </View>
             </Pressable>

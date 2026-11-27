@@ -1,6 +1,7 @@
 import * as StoreReview from 'expo-store-review';
 
 import { useAppLaunchStore } from '~/store/useAppLaunchStore';
+import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { log } from '~/utils/log';
 
 export interface RatingService {
@@ -13,7 +14,7 @@ class RatingServiceImpl implements RatingService {
     try {
       const { shouldShowRatingPrompt, markRatingPromptShown } = useAppLaunchStore.getState();
 
-      if (!shouldShowRatingPrompt()) {
+      if (!useOnboardingStore.getState().isOnboardingComplete || !shouldShowRatingPrompt()) {
         return;
       }
 

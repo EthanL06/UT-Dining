@@ -55,7 +55,3 @@ export const table = (rows: Record<string, unknown>[], columns?: string[]): stri
     ...rows.map((row) => line(keys.map((key) => cell(row[key])))),
   ].join('\n');
 };
-
-export const fail = (message: string): never => {
-  throw new CliError(message);
-};
