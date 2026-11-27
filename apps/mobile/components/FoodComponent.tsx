@@ -121,7 +121,7 @@ const FoodComponent = ({
           {selection.selected && <Check size={15} color="#FFFFFF" strokeWidth={3} />}
         </View>
       )}
-      <View className="flex-1 gap-y-0.5">
+      <View className="flex-1">
         <Text variant="callout" numberOfLines={2}>
           {food.name}
         </Text>
@@ -131,7 +131,7 @@ const FoodComponent = ({
           </Text>
         )}
         {showExtraInfo && subtitle === undefined && (
-          <View className="flex-row flex-wrap items-center gap-x-1.5">
+          <View className="flex-row flex-wrap items-center gap-x-1.5 gap-y-[3px]">
             <Text variant="footnote" tone="secondary">
               {displayNutrient(food.nutrition?.calories)} kcal ·{' '}
               {displayNutrient(food.nutrition?.protein)} protein ·{' '}
