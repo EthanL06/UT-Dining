@@ -11,8 +11,8 @@ import * as schema from '~/services/database/schema';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
+import { displayLocationName } from '~/utils/locationName';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
-import { getLocationName } from '~/utils/locations';
 import { containsPattern } from '~/utils/search';
 import { useTheme } from '~/utils/theme';
 import { getLocationStatusText, getMinutesUntilClose } from '~/utils/time';
@@ -34,6 +34,7 @@ const searchToday = (db: DrizzleDB, query: string) => {
       category: schema.menu_category.title,
       menu: schema.menu.name,
       location: schema.location.name,
+      locationColloquialName: schema.location.colloquial_name,
     })
     .from(schema.food_item)
     .innerJoin(schema.menu_category, eq(schema.food_item.menu_category_id, schema.menu_category.id))
@@ -126,7 +127,7 @@ export default function Search() {
                           closesInMinutes={getMinutesUntilClose(place, now)}
                         />
                       }
-                      title={getLocationName(db, name, useColloquialNames)}
+                      title={displayLocationName(place, useColloquialNames)}
                       subtitle={getLocationStatusText(place, isOpen, now)}
                       showChevron
                       onPress={() =>
@@ -156,7 +157,7 @@ export default function Search() {
                     key={food.id}
                     isFirst={index === 0}
                     title={food.name ?? ''}
-                    subtitle={`${getLocationName(db, food.location ?? '', useColloquialNames)} · ${food.menu}`}
+                    subtitle={`${displayLocationName({ name: food.location, colloquial_name: food.locationColloquialName }, useColloquialNames)} · ${food.menu}`}
                     detail={food.calories ? `${food.calories} kcal` : undefined}
                     showChevron
                     onPress={() =>
