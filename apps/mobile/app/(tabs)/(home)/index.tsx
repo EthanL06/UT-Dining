@@ -10,7 +10,6 @@ import { Heart } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Image,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -22,6 +21,7 @@ import { MealPlanIcon } from '~/components/MealPlanIcon';
 import OnboardingScreen from '~/components/onboarding/OnboardingScreen';
 import { ServiceStatusBanner } from '~/components/ServiceStatusBanner';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
+import { Image } from '~/components/ui/Image';
 import { Text } from '~/components/ui/Text';
 import { forceMenuSync, useMenuSync } from '~/hooks/useMenuSync';
 import { useNow } from '~/hooks/useNow';
@@ -42,7 +42,7 @@ import * as schema from '../../../services/database/schema';
 
 const SPLASH_SCREEN_DURATION = 200;
 
-SplashScreen.preventAutoHideAsync();
+void SplashScreen.preventAutoHideAsync();
 SplashScreen.setOptions({
   duration: SPLASH_SCREEN_DURATION,
   fade: true,
@@ -341,7 +341,7 @@ export default function Home() {
             source={appIcon}
             accessibilityLabel="UT Dining"
             className="mx-4 mb-4 size-12"
-            resizeMode="contain"
+            contentFit="contain"
           />
           <Text variant="largeTitle" accessibilityRole="header" className="mx-5">
             {greeting(currentTime)}

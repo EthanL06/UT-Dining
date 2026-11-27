@@ -2,6 +2,7 @@ import { ActivityIndicator, Pressable, View } from 'react-native';
 import ActionSheet, { ScrollView, type SheetProps, useSheetRef } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import PlaceDetails from '~/components/PlaceDetails';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -47,7 +48,11 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
           </Text>
         </Pressable>
       </View>
-      <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 560 }}>
+      <OverflowScrollView
+        as={ScrollView}
+        showsVerticalScrollIndicator={false}
+        style={{ maxHeight: 560 }}
+      >
         {status === 'loading' ? (
           <View className="items-center py-10">
             <ActivityIndicator size="small" />
@@ -61,7 +66,7 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
             <PlaceDetails place={locationData} />
           </View>
         )}
-      </ScrollView>
+      </OverflowScrollView>
     </ActionSheet>
   );
 };

@@ -2,6 +2,7 @@
 
 import { checkChangelogChanges } from '@ut-dining/core';
 import { revalidatePath } from 'next/cache';
+import { log } from '@/lib/log';
 import { createClient } from '@/lib/supabase/server';
 import {
   type ChangelogChange,
@@ -36,7 +37,7 @@ export async function getChangelogEntries(): Promise<ChangelogEntry[]> {
     .select('id, version, release_date, summary, changes, is_published, updated_at');
 
   if (error) {
-    console.error('Error fetching changelog:', error);
+    log.error('Error fetching changelog:', error);
     return [];
   }
 
@@ -81,7 +82,7 @@ export async function saveChangelogEntry(input: ChangelogEntryInput): Promise<Ac
     : await supabase.from('changelog').insert(row);
 
   if (error) {
-    console.error('Error saving changelog entry:', error);
+    log.error('Error saving changelog entry:', error);
     return {
       success: false,
       message: error.code === '23505' ? `Version ${version} already has an entry.` : error.message,
@@ -97,7 +98,7 @@ export async function deleteChangelogEntry(id: string): Promise<ActionResult> {
   const { error } = await supabase.from('changelog').delete().eq('id', id);
 
   if (error) {
-    console.error('Error deleting changelog entry:', error);
+    log.error('Error deleting changelog entry:', error);
     return { success: false, message: error.message };
   }
 

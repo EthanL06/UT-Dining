@@ -3,9 +3,10 @@ import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, Stack } from 'expo-router';
 import { ChevronLeft, Heart } from 'lucide-react-native';
 import { useMemo } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FoodComponent, { type RowPosition } from '~/components/FoodComponent';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import type { DrizzleDB } from '~/services/database/database';
@@ -145,7 +146,10 @@ const Favorites = () => {
   return (
     <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: insets.top }}>
       <Stack.Screen options={{ title: 'Favorites', headerShown: false }} />
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
+      <OverflowScrollView
+        divider={false}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
+      >
         <View className="px-4 pt-2">
           <Pressable
             testID="back-button"
@@ -191,7 +195,7 @@ const Favorites = () => {
             <FavoriteSection title="Not today" items={notToday} matches={matches} db={db} />
           </>
         )}
-      </ScrollView>
+      </OverflowScrollView>
     </View>
   );
 };
