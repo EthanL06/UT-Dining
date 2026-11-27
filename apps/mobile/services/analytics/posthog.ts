@@ -1,4 +1,4 @@
-import type { PostHog } from 'posthog-react-native';
+import { PostHog } from 'posthog-react-native';
 
 type PostHogEventProperties = Parameters<PostHog['capture']>[1];
 
@@ -9,8 +9,14 @@ export const POSTHOG_CONFIG = {
   apiKey: POSTHOG_API_KEY,
   options: {
     host: 'https://us.i.posthog.com',
-    enableSessionReplay: true,
+    enableSessionReplay: false,
     disabled: IS_DEV,
+    errorTracking: {
+      autocapture: {
+        uncaughtExceptions: true,
+        unhandledRejections: true,
+      },
+    },
   },
   autocapture: {
     captureScreens: false,
@@ -40,16 +46,6 @@ export function getSafePostHog(posthog: PostHog | undefined) {
   };
 }
 
-if (!POSTHOG_API_KEY) {
-  console.warn(
-    '⚠️ PostHog analytics are disabled. To enable analytics, add EXPO_PUBLIC_POSTHOG_API_KEY to your environment variables. See README.md for more information.',
-  );
-} else if (POSTHOG_CONFIG.options.disabled) {
-  console.log(
-    'ℹ️  PostHog analytics disabled in development mode. To enable analytics in development, set `disabled: false` in POSTHOG_CONFIG options.',
-  );
-} else if (!POSTHOG_CONFIG.debug) {
-  console.log('✅ PostHog analytics enabled (debug disabled)');
-} else {
-  console.log('✅ PostHog analytics enabled (debug enabled)');
-}
+export const posthogClient = POSTHOG_API_KEY
+  ? new PostHog(POSTHOG_API_KEY, POSTHOG_CONFIG.options)
+  : undefined;

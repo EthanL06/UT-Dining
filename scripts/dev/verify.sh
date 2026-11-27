@@ -30,6 +30,9 @@ fi
 step "No added code comments"
 scripts/dev/check-comments.sh --base "$base" || failed=1
 
+step "File size"
+scripts/dev/check-file-size.sh || failed=1
+
 step "Typecheck and tests of affected packages"
 if TURBO_SCM_BASE="$merge_base" pnpm exec turbo run typecheck test --affected --output-logs=errors-only; then
   ok "typecheck and tests"

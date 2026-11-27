@@ -1,6 +1,7 @@
 import * as Location from 'expo-location';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
+import { log } from '~/utils/log';
 
 export function useLocationPermissions() {
   const [permissionStatus, setPermissionStatus] = useState<Location.PermissionStatus | null>(null);
@@ -11,7 +12,7 @@ export function useLocationPermissions() {
       const { status } = await Location.getForegroundPermissionsAsync();
       setPermissionStatus(status);
     } catch (error) {
-      console.error('Error checking location permissions:', error);
+      log.error('Error checking location permissions', error);
       setPermissionStatus(Location.PermissionStatus.DENIED);
     } finally {
       setIsLoading(false);
@@ -34,7 +35,7 @@ export function useLocationPermissions() {
       setPermissionStatus(status);
       return status;
     } catch (error) {
-      console.error('Error requesting location permissions:', error);
+      log.error('Error requesting location permissions', error);
       return Location.PermissionStatus.DENIED;
     }
   };

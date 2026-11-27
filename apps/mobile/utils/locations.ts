@@ -3,6 +3,7 @@ import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 
 import { useDatabase } from '~/hooks/useDatabase';
 import * as schema from '~/services/database/schema';
+import { log } from '~/utils/log';
 
 export interface MealTimes {
   breakfast?: { openTime: number; closeTime: number };
@@ -33,7 +34,7 @@ export const getLocationName = (
 
     return locationName;
   } catch (error) {
-    console.error('Error fetching location name from database:', error);
+    log.error('Error fetching location name from database', error);
     return locationName;
   }
 };
@@ -73,7 +74,7 @@ export const getMealTimes = (
 
     return null;
   } catch (error) {
-    console.error('Error fetching meal times from database:', error);
+    log.error('Error fetching meal times from database', error);
     return null;
   }
 };

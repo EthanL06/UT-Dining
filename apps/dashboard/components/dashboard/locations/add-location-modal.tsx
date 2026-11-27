@@ -1,29 +1,27 @@
-import {
-  ActionIcon,
-  Avatar,
-  Button,
-  Card,
-  Checkbox,
-  Divider,
-  Group,
-  Modal,
-  Paper,
-  Select,
-  SimpleGrid,
-  Stack,
-  Switch,
-  Text,
-  Textarea,
-  TextInput,
-  Tooltip,
-} from '@mantine/core';
+import { Button, Group, Modal, Stack, Switch, Text } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { modals } from '@mantine/modals';
 import { notifications } from '@mantine/notifications';
-import { IconCopy, IconPlus, IconTrash, IconX } from '@tabler/icons-react';
+import { IconX } from '@tabler/icons-react';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { paymentMethodOptions } from '@/lib/payment-methods';
-import type { Location, LocationType, MealTime, TimeRange } from '@/types/location';
+import type { Location, LocationType, MealTime } from '@/types/location';
+import { LocationDetailsFields } from './location-details-fields';
+import {
+  copyTooltipLabel,
+  daysOfWeek,
+  hasLocationFormChanges,
+  nextTimeRange,
+  toLocationFormValues,
+  validateMealTimes,
+  validatePaymentMethodsRequired,
+  validateServiceHours,
+  validateServiceHoursRequired,
+} from './location-form-utils';
+import { LocationImageField } from './location-image-field';
+import { MealTimesFields } from './meal-times-fields';
+import { PaymentMethodsField } from './payment-methods-field';
+import { ServiceHoursFields } from './service-hours-fields';
 
 interface AddLocationModalProps {
   opened: boolean;
@@ -31,112 +29,6 @@ interface AddLocationModalProps {
   onSubmit: (formData: Location) => Promise<void>;
   editingLocation?: Location | null;
   locationTypes: LocationType[];
-}
-
-const daysOfWeek = [
-  'monday',
-  'tuesday',
-  'wednesday',
-  'thursday',
-  'friday',
-  'saturday',
-  'sunday',
-] as const;
-
-const mealTimeOptions = [
-  { value: 'Breakfast', label: 'Breakfast' },
-  { value: 'Lunch', label: 'Lunch' },
-  { value: 'Dinner', label: 'Dinner' },
-];
-
-function validateServiceHours(value: { timeRanges: TimeRange[]; isClosed: boolean }) {
-  if (value.isClosed) {
-    return null;
-  }
-
-  if (!value.timeRanges || value.timeRanges.length === 0) {
-    return 'At least one time range is required when day is open';
-  }
-
-  for (let i = 0; i < value.timeRanges.length; i++) {
-    const range = value.timeRanges[i];
-
-    if (range.open === undefined || range.close === undefined) {
-      return `Time range ${i + 1}: Both open and close times are required`;
-    }
-
-    if (range.close <= range.open) {
-      return `Time range ${i + 1}: Close time must be after open time`;
-    }
-  }
-
-  const sortedRanges = [...value.timeRanges].sort((a, b) => a.open - b.open);
-  for (let i = 0; i < sortedRanges.length - 1; i++) {
-    const current = sortedRanges[i];
-    const next = sortedRanges[i + 1];
-
-    if (current.close > next.open) {
-      return 'Time ranges cannot overlap';
-    }
-
-    if (current.close === next.open) {
-      return 'Time ranges must have at least a 15-minute gap between them';
-    }
-  }
-
-  return null;
-}
-
-function militaryToTimeInput(militaryTime: number): string {
-  const hours = Math.floor(militaryTime / 100);
-  const minutes = militaryTime % 100;
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-}
-
-function timeInputToMilitary(timeInput: string): number {
-  const [hours, minutes] = timeInput.split(':').map(Number);
-  return hours * 100 + minutes;
-}
-
-function validateServiceHoursRequired(
-  serviceHours: Location['regular_service_hours'],
-): string | null {
-  const allDaysClosed = daysOfWeek.every((day) => serviceHours[day].isClosed);
-  if (allDaysClosed) {
-    return 'At least one day must have service hours';
-  }
-  return null;
-}
-
-function validatePaymentMethodsRequired(paymentMethods: string[]): string | null {
-  if (paymentMethods.length === 0) {
-    return 'At least one payment method is required';
-  }
-  return null;
-}
-
-function validateMealTimes(mealTimes: MealTime[]): string | null {
-  for (let i = 0; i < mealTimes.length; i++) {
-    const mealTime = mealTimes[i];
-    if (!mealTime.name || mealTime.name.trim() === '') {
-      return `Meal time ${i + 1}: Meal name is required`;
-    }
-    if (mealTime.end_time <= mealTime.start_time) {
-      return `Meal time ${i + 1}: End time must be after start time`;
-    }
-  }
-
-  const sortedMealTimes = [...mealTimes].sort((a, b) => a.start_time - b.start_time);
-  for (let i = 0; i < sortedMealTimes.length - 1; i++) {
-    const current = sortedMealTimes[i];
-    const next = sortedMealTimes[i + 1];
-
-    if (current.end_time > next.start_time) {
-      return `Meal times cannot overlap: ${current.name} and ${next.name} have overlapping times`;
-    }
-  }
-
-  return null;
 }
 
 export function AddLocationModal({
@@ -165,51 +57,7 @@ export function AddLocationModal({
 
   const isEditing = !!localEditingLocation;
 
-  const getInitialValues = (): Location => {
-    if (localEditingLocation) {
-      return {
-        ...localEditingLocation,
-        colloquial_name: localEditingLocation.colloquial_name || '',
-        image: localEditingLocation.image || '',
-        apple_maps_link: localEditingLocation.apple_maps_link || '',
-        google_maps_link: localEditingLocation.google_maps_link || '',
-        meal_times: localEditingLocation.meal_times || [],
-        has_menus: localEditingLocation.has_menus ?? false,
-      };
-    }
-
-    return {
-      name: '',
-      colloquial_name: '',
-      description: '',
-      address: '',
-      image: '',
-      apple_maps_link: '',
-      google_maps_link: '',
-      latitude: 0,
-      longitude: 0,
-      regular_service_hours: {
-        monday: { timeRanges: [{ open: 700, close: 1000 }], isClosed: false },
-        tuesday: { timeRanges: [{ open: 700, close: 1000 }], isClosed: false },
-        wednesday: {
-          timeRanges: [{ open: 700, close: 1000 }],
-          isClosed: false,
-        },
-        thursday: { timeRanges: [{ open: 700, close: 1000 }], isClosed: false },
-        friday: { timeRanges: [{ open: 700, close: 1000 }], isClosed: false },
-        saturday: { timeRanges: [{ open: 700, close: 1000 }], isClosed: false },
-        sunday: { timeRanges: [{ open: 700, close: 1000 }], isClosed: false },
-      },
-      meal_times: [],
-      methods_of_payment: [],
-      status: 'open',
-      type_id: '',
-      force_close: false,
-      has_menus: false,
-      updated_at: new Date().toISOString(),
-    } as Location;
-  };
-
+  const getInitialValues = (): Location => toLocationFormValues(localEditingLocation);
   const form = useForm<Location>({
     initialValues: getInitialValues(),
     validate: {
@@ -304,19 +152,12 @@ export function AddLocationModal({
     }
   }, [localEditingLocation, opened]);
 
-  const hasFormChanges = (): boolean => {
-    if (!initialFormData) return false;
-
-    const formChanged = JSON.stringify(form.values) !== JSON.stringify(initialFormData.formValues);
-
-    const paymentMethodsChanged =
-      JSON.stringify(selectedPaymentMethods) !== JSON.stringify(initialFormData.paymentMethods);
-
-    const mealTimesChanged =
-      JSON.stringify(mealTimes) !== JSON.stringify(initialFormData.mealTimes);
-
-    return formChanged || paymentMethodsChanged || mealTimesChanged;
-  };
+  const hasFormChanges = () =>
+    hasLocationFormChanges(initialFormData, {
+      formValues: form.values,
+      paymentMethods: selectedPaymentMethods,
+      mealTimes,
+    });
 
   async function handleSubmit(values: Location) {
     setServiceHoursError(null);
@@ -427,20 +268,7 @@ export function AddLocationModal({
   function addTimeRange(day: keyof Location['regular_service_hours']) {
     const currentRanges = form.values.regular_service_hours[day].timeRanges;
 
-    let defaultStartTime = 700;
-    let defaultEndTime = 1000;
-
-    if (currentRanges.length > 0) {
-      const lastRange = currentRanges[currentRanges.length - 1];
-      defaultStartTime = lastRange.close + 100;
-      const proposedEndTime = defaultStartTime + 100;
-      defaultEndTime = Math.min(proposedEndTime, 2359);
-    }
-
-    const newRange: TimeRange = {
-      open: defaultStartTime,
-      close: defaultEndTime,
-    };
+    const newRange = nextTimeRange(currentRanges);
 
     form.setFieldValue(`regular_service_hours.${day}.timeRanges`, [...currentRanges, newRange]);
 
@@ -474,13 +302,7 @@ export function AddLocationModal({
     }
   }
 
-  const getCopyTooltipLabel = (dayIndex: number): string => {
-    const nextDay = daysOfWeek[dayIndex + 1];
-    if (copiedDay === daysOfWeek[dayIndex]) {
-      return 'Copied!';
-    }
-    return `Copy times to ${nextDay?.charAt(0).toUpperCase()}${nextDay?.slice(1)}`;
-  };
+  const getCopyTooltipLabel = (dayIndex: number) => copyTooltipLabel(dayIndex, copiedDay);
 
   const handleCopyClick = (day: keyof Location['regular_service_hours']) => {
     copyTimesToNextDay(day);
@@ -613,182 +435,8 @@ export function AddLocationModal({
         })}
       >
         <Stack gap="md">
-          <Group grow gap="md">
-            <TextInput
-              label="Name"
-              description="Official name of the location"
-              placeholder="Enter location name"
-              required
-              {...form.getInputProps('name')}
-            />
-
-            <TextInput
-              label="Colloquial Name"
-              description="Nickname for the location (optional)"
-              placeholder="Enter colloquial name"
-              variant="filled"
-              {...form.getInputProps('colloquial_name')}
-            />
-          </Group>
-
-          <Group grow gap="md" align="flex-end">
-            <Select
-              label="Location Type"
-              description="Select the type of dining location"
-              placeholder="Choose location type"
-              required
-              data={locationTypes.map((type) => ({
-                value: type.id,
-                label: type.name,
-              }))}
-              {...form.getInputProps('type_id')}
-            />
-          </Group>
-
-          <Textarea
-            label="Description"
-            placeholder="Enter location description"
-            required
-            autosize
-            minRows={3}
-            {...form.getInputProps('description')}
-          />
-
-          <TextInput
-            label="Address"
-            placeholder="Enter location address"
-            required
-            {...form.getInputProps('address')}
-          />
-
-          <Group grow gap="md">
-            <TextInput
-              label="Apple Maps Link"
-              placeholder="Enter Apple Maps URL"
-              required
-              {...form.getInputProps('apple_maps_link')}
-            />
-
-            <TextInput
-              label="Google Maps Link"
-              placeholder="Enter Google Maps URL"
-              required
-              {...form.getInputProps('google_maps_link')}
-            />
-          </Group>
-
-          <Group grow gap="md">
-            <TextInput
-              label="Latitude"
-              description="Decimal degrees (e.g., 30.2849)"
-              placeholder="Enter latitude"
-              type="number"
-              step="any"
-              required
-              {...form.getInputProps('latitude')}
-            />
-
-            <TextInput
-              label="Longitude"
-              description="Decimal degrees (e.g., -97.7341)"
-              placeholder="Enter longitude"
-              type="number"
-              step="any"
-              required
-              {...form.getInputProps('longitude')}
-            />
-          </Group>
-
-          <div>
-            <TextInput
-              label="Image URL"
-              description="Image for dining location (optional)"
-              placeholder="Enter image URL"
-              variant="filled"
-              {...form.getInputProps('image')}
-              onChange={(event) => {
-                form.getInputProps('image').onChange(event);
-                if (imageError) {
-                  setImageError(false);
-                }
-              }}
-              error={imageError ? 'Image failed to load. Please check the URL.' : undefined}
-            />
-
-            {form.values.image && form.values.image.trim() !== '' && (
-              <Paper
-                p="md"
-                mt="xs"
-                withBorder
-                style={{
-                  backgroundColor: 'var(--mantine-color-gray-0)',
-                  borderStyle: 'dashed',
-                  borderColor: 'var(--mantine-color-gray-4)',
-                }}
-              >
-                <Text size="xs" c="dimmed" mb="xs">
-                  Image Preview:
-                </Text>
-                <div style={{ position: 'relative' }}>
-                  <img
-                    src={form.values.image}
-                    alt="Location preview"
-                    style={{
-                      maxHeight: '200px',
-                      objectFit: 'cover',
-                      borderRadius: '8px',
-                      display: 'block',
-                      aspectRatio: '16/9',
-                    }}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const errorContainer = target.parentElement?.querySelector(
-                        '.error-message',
-                      ) as HTMLElement;
-                      if (errorContainer) {
-                        errorContainer.style.display = 'flex';
-                      }
-                      setImageError(true);
-                    }}
-                    onLoad={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      const errorContainer = target.parentElement?.querySelector(
-                        '.error-message',
-                      ) as HTMLElement;
-                      if (errorContainer) {
-                        errorContainer.style.display = 'none';
-                      }
-                      setImageError(false);
-                    }}
-                  />
-                  <div
-                    className="error-message"
-                    style={{
-                      display: 'none',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: '100%',
-                      height: '200px',
-                      backgroundColor: 'var(--mantine-color-red-0)',
-                      border: '2px dashed var(--mantine-color-red-3)',
-                      borderRadius: '8px',
-                      flexDirection: 'column',
-                      gap: '8px',
-                    }}
-                  >
-                    <IconX size={32} color="var(--mantine-color-red-6)" />
-                    <Text size="sm" c="red" ta="center" fw={500}>
-                      Failed to load image
-                    </Text>
-                    <Text size="xs" c="red" ta="center">
-                      Please check the URL and try again
-                    </Text>
-                  </div>
-                </div>
-              </Paper>
-            )}
-          </div>
+          <LocationDetailsFields form={form} locationTypes={locationTypes} />
+          <LocationImageField form={form} imageError={imageError} setImageError={setImageError} />
 
           <Group justify="space-between" align="center">
             <div>
@@ -807,334 +455,31 @@ export function AddLocationModal({
             />
           </Group>
 
-          <div>
-            <Group align="center" mb="xs" gap={'xs'}>
-              <Text size="sm" fw={500}>
-                Regular Service Hours
-                <Text span size="xs" c="red" ml={4}>
-                  *
-                </Text>
-              </Text>
+          <ServiceHoursFields
+            form={form}
+            serviceHoursError={serviceHoursError}
+            setServiceHoursError={setServiceHoursError}
+            addTimeRange={addTimeRange}
+            removeTimeRange={removeTimeRange}
+            updateTimeRange={updateTimeRange}
+            getCopyTooltipLabel={getCopyTooltipLabel}
+            handleCopyClick={handleCopyClick}
+          />
 
-              <Text size="xs" c="dimmed">
-                (in CST)
-              </Text>
-            </Group>
+          <MealTimesFields
+            mealTimes={mealTimes}
+            mealTimesError={mealTimesError}
+            addMealTime={addMealTime}
+            removeMealTime={removeMealTime}
+            updateMealTime={updateMealTime}
+          />
 
-            <Stack gap={0}>
-              {daysOfWeek.map((day, index) => (
-                <div key={day}>
-                  <Paper p="sm" pr={0} radius={0} style={{ border: 'none' }}>
-                    <Group justify="space-between" align="flex-start">
-                      <Group gap="md" align="flex-start" style={{ flex: 1 }}>
-                        <Text size="sm" fw={500} w={80} tt={'capitalize'}>
-                          {day}
-                        </Text>
-
-                        <Stack gap="xs" style={{ flex: 1 }}>
-                          {!form.values.regular_service_hours[day].isClosed ? (
-                            <>
-                              {form.values.regular_service_hours[day].timeRanges.map(
-                                (timeRange, rangeIndex) => (
-                                  <Group key={rangeIndex} gap="xs" align="center">
-                                    <Text size="xs" c="dimmed" w={20}>
-                                      #{rangeIndex + 1}
-                                    </Text>
-
-                                    <TextInput
-                                      type="time"
-                                      size="sm"
-                                      variant="filled"
-                                      w={125}
-                                      aria-label={`${day} range ${rangeIndex + 1} start time`}
-                                      value={militaryToTimeInput(timeRange.open)}
-                                      onChange={(event) => {
-                                        const militaryTime = timeInputToMilitary(
-                                          event.currentTarget.value,
-                                        );
-                                        updateTimeRange(day, rangeIndex, 'open', militaryTime);
-                                      }}
-                                    />
-                                    <Text size="sm" c="dimmed">
-                                      to
-                                    </Text>
-                                    <TextInput
-                                      type="time"
-                                      size="sm"
-                                      w={125}
-                                      variant="filled"
-                                      aria-label={`${day} range ${rangeIndex + 1} end time`}
-                                      value={militaryToTimeInput(timeRange.close)}
-                                      onChange={(event) => {
-                                        const militaryTime = timeInputToMilitary(
-                                          event.currentTarget.value,
-                                        );
-                                        updateTimeRange(day, rangeIndex, 'close', militaryTime);
-                                      }}
-                                    />
-                                    {form.values.regular_service_hours[day].timeRanges.length >
-                                      1 && (
-                                      <ActionIcon
-                                        size="sm"
-                                        variant="subtle"
-                                        color="red"
-                                        onClick={() => removeTimeRange(day, rangeIndex)}
-                                      >
-                                        <IconTrash size={14} />
-                                      </ActionIcon>
-                                    )}
-                                  </Group>
-                                ),
-                              )}
-
-                              <Group gap="xs" mt="xs">
-                                <Button
-                                  variant="subtle"
-                                  size="xs"
-                                  leftSection={<IconPlus size={14} />}
-                                  onClick={() => addTimeRange(day)}
-                                  style={{
-                                    flex: 1,
-                                  }}
-                                >
-                                  Add Time Range
-                                </Button>
-                                <Tooltip
-                                  label={getCopyTooltipLabel(index)}
-                                  position="top"
-                                  style={{
-                                    visibility:
-                                      index < daysOfWeek.length - 1 ? 'visible' : 'hidden',
-                                  }}
-                                >
-                                  <ActionIcon
-                                    size="sm"
-                                    variant="subtle"
-                                    color="orange"
-                                    onClick={() => handleCopyClick(day)}
-                                    style={{
-                                      visibility:
-                                        index < daysOfWeek.length - 1 ? 'visible' : 'hidden',
-                                    }}
-                                  >
-                                    <IconCopy size={14} />
-                                  </ActionIcon>
-                                </Tooltip>
-                              </Group>
-                            </>
-                          ) : (
-                            <Text size="sm" c="red">
-                              Closed
-                            </Text>
-                          )}
-                        </Stack>
-                      </Group>
-
-                      <Tooltip
-                        label={
-                          form.values.regular_service_hours[day].isClosed
-                            ? 'Mark as open'
-                            : 'Mark as closed'
-                        }
-                        position="left"
-                      >
-                        <Switch
-                          size="sm"
-                          color="orange"
-                          checked={!form.values.regular_service_hours[day].isClosed}
-                          onChange={(event) => {
-                            const isOpen = event.currentTarget.checked;
-                            form.setFieldValue(`regular_service_hours.${day}.isClosed`, !isOpen);
-
-                            if (
-                              isOpen &&
-                              form.values.regular_service_hours[day].timeRanges.length === 0
-                            ) {
-                              form.setFieldValue(`regular_service_hours.${day}.timeRanges`, [
-                                { open: 700, close: 1000 },
-                              ]);
-                            }
-
-                            if (serviceHoursError) {
-                              setServiceHoursError(null);
-                            }
-                          }}
-                        />
-                      </Tooltip>
-                    </Group>
-
-                    {form.errors[`regular_service_hours.${day}`] && (
-                      <Text size="xs" c="red" mt="xs">
-                        {form.errors[`regular_service_hours.${day}`]}
-                      </Text>
-                    )}
-                  </Paper>
-
-                  {index < daysOfWeek.length - 1 && <Divider />}
-                </div>
-              ))}
-            </Stack>
-            {serviceHoursError && (
-              <Text size="xs" c="red" mt="xs">
-                {serviceHoursError}
-              </Text>
-            )}
-          </div>
-
-          <div>
-            <Group justify="space-between" align="center">
-              <div>
-                <Text size="sm" fw={500}>
-                  Meal Times
-                </Text>
-                <Text size="xs" c="dimmed" mb="md">
-                  Define specific meal periods (optional)
-                </Text>
-              </div>
-              <Button
-                variant="subtle"
-                size="xs"
-                leftSection={<IconPlus size={14} />}
-                onClick={addMealTime}
-                disabled={mealTimes.length >= mealTimeOptions.length}
-              >
-                Add Meal Time
-              </Button>
-            </Group>
-
-            {mealTimes.length > 0 ? (
-              <Stack gap={0}>
-                {mealTimes.map((mealTime, index) => (
-                  <div key={index}>
-                    <Paper p="sm" radius={0} style={{ border: 'none' }}>
-                      <Group gap="sm" align="flex-end">
-                        <Select
-                          label="Meal Name"
-                          placeholder="Select meal type"
-                          data={mealTimeOptions.filter((option) => {
-                            if (option.value === mealTime.name) return true;
-                            return !mealTimes.some(
-                              (meal, mealIndex) =>
-                                mealIndex !== index && meal.name === option.value,
-                            );
-                          })}
-                          value={mealTime.name}
-                          onChange={(value) => updateMealTime(index, 'name', value || '')}
-                          style={{ flex: 1 }}
-                          searchable
-                          clearable
-                        />
-                        <TextInput
-                          label="Start Time"
-                          type="time"
-                          value={militaryToTimeInput(mealTime.start_time)}
-                          onChange={(event) => {
-                            const militaryTime = timeInputToMilitary(event.currentTarget.value);
-                            updateMealTime(index, 'start_time', militaryTime);
-                          }}
-                          w={125}
-                          variant="filled"
-                        />
-                        <TextInput
-                          label="End Time"
-                          type="time"
-                          value={militaryToTimeInput(mealTime.end_time)}
-                          onChange={(event) => {
-                            const militaryTime = timeInputToMilitary(event.currentTarget.value);
-                            updateMealTime(index, 'end_time', militaryTime);
-                          }}
-                          w={125}
-                          variant="filled"
-                        />
-                        <ActionIcon
-                          variant="subtle"
-                          color="red"
-                          onClick={() => removeMealTime(index)}
-                        >
-                          <IconTrash size={16} />
-                        </ActionIcon>
-                      </Group>
-                    </Paper>
-
-                    {index < mealTimes.length - 1 && <Divider />}
-                  </div>
-                ))}
-              </Stack>
-            ) : (
-              <Text size="sm" c="dimmed" ta="center" py="md">
-                No meal times defined
-              </Text>
-            )}
-            {mealTimesError && (
-              <Text size="xs" c="red" mt="xs">
-                {mealTimesError}
-              </Text>
-            )}
-          </div>
-
-          <div>
-            <Group justify="space-between" align="center" mb={'xs'}>
-              <Group gap="xs" align="center">
-                <Text size="sm" fw={500}>
-                  Methods of Payment
-                  <Text span size="xs" c="red" ml={4}>
-                    *
-                  </Text>
-                </Text>
-              </Group>
-              <Button variant="subtle" size="xs" onClick={handleChooseAllPaymentMethods}>
-                Choose All
-              </Button>
-            </Group>
-            <SimpleGrid cols={2} spacing="xs">
-              {paymentMethodOptions.map((option) => (
-                <Card
-                  key={option.value}
-                  withBorder
-                  p="sm"
-                  radius="md"
-                  style={{
-                    cursor: 'pointer',
-                    backgroundColor: selectedPaymentMethods.includes(option.value)
-                      ? 'var(--mantine-color-UTColors-0)'
-                      : 'transparent',
-                    borderColor: selectedPaymentMethods.includes(option.value)
-                      ? 'var(--mantine-color-UTColors-4)'
-                      : 'var(--mantine-color-gray-3)',
-                  }}
-                  onClick={() =>
-                    handlePaymentMethodChange(
-                      option.value,
-                      !selectedPaymentMethods.includes(option.value),
-                    )
-                  }
-                >
-                  <Group gap="sm" align="center">
-                    <Avatar size="sm" radius="xl" color={option.color}>
-                      {option.avatar}
-                    </Avatar>
-                    <div style={{ flex: 1 }}>
-                      <Text size="sm" fw={500}>
-                        {option.label}
-                      </Text>
-                    </div>
-                    <Checkbox
-                      checked={selectedPaymentMethods.includes(option.value)}
-                      onChange={(event) =>
-                        handlePaymentMethodChange(option.value, event.currentTarget.checked)
-                      }
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  </Group>
-                </Card>
-              ))}
-            </SimpleGrid>
-            {paymentMethodsError && (
-              <Text size="xs" c="red" mt="xs">
-                {paymentMethodsError}
-              </Text>
-            )}
-          </div>
+          <PaymentMethodsField
+            selectedPaymentMethods={selectedPaymentMethods}
+            paymentMethodsError={paymentMethodsError}
+            handlePaymentMethodChange={handlePaymentMethodChange}
+            handleChooseAllPaymentMethods={handleChooseAllPaymentMethods}
+          />
 
           <Group justify="flex-end" mt="md">
             <Button variant="subtle" onClick={handleModalClose} disabled={isSubmitting}>
