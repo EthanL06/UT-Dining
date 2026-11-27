@@ -9,6 +9,9 @@ Usage: scripts/qa/mobile-screenshots.sh [--out <dir>] [--list <file>] [--themes 
 Screenshots every screen in apps/mobile/e2e/screenshots.txt, once per theme, on an iOS Simulator.
 Each line of the list is "<name> [deep link path]". The path is opened as ut-dining://<path>;
 no path means Home. Files are <out>/<name>-<theme>.png. Default out: .context/screenshots.
+Each theme is its own flow, so --sim <UDID>,<UDID> takes the themes on two simulators at once.
+System alerts are dismissed once per theme, after the first launch; permissions are granted at
+launch and e2e-setup marks the rating prompt as shown, so later launches have none.
 USAGE
 }
 
@@ -32,8 +35,10 @@ done
 [[ -f "$LIST" ]] || { echo "mobile-screenshots: no list at $LIST" >&2; exit 1; }
 mkdir -p "$OUT"
 OUT="$(cd "$OUT" && pwd)"
-FLOW="$OUT/screenshots.yaml"
+FLOWS="$OUT/flows"
 ALERTS="$E2E_DIR/subflows/dismiss-alerts.yaml"
+rm -rf "$FLOWS"
+mkdir -p "$FLOWS"
 
 open_app() {
   cat <<YAML
@@ -46,22 +51,22 @@ open_app() {
       true: \${DEV_CLIENT == 'true'}
     commands:
       - openLink: exp+ut-dining://expo-development-client/?url=\${encodeURIComponent(METRO_URL)}&disableOnboarding=1
-- runFlow: $ALERTS
 YAML
 }
 
-{
-  cat <<YAML
+for theme in $THEMES; do
+  {
+    cat <<YAML
 appId: com.ethanl06.ut-dining.dev
-name: Screenshots
+name: Screenshots $theme
 env:
   DEV_CLIENT: \${DEV_CLIENT || 'true'}
   METRO_URL: \${METRO_URL || 'http://localhost:8081'}
 ---
 YAML
-  open_app true
-  for theme in $THEMES; do
+    open_app true
     cat <<YAML
+- runFlow: $ALERTS
 - openLink: ut-dining://e2e-setup?theme=$theme
 - runFlow: $ALERTS
 - extendedWaitUntil:
@@ -73,12 +78,9 @@ YAML
     while read -r name path; do
       [[ -z "$name" || "$name" == \#* ]] && continue
       echo "- stopApp"
+      open_app false
       if [[ -n "${path:-}" ]]; then
-        open_app false | sed '$d'
         echo "- openLink: ut-dining://$path"
-        echo "- runFlow: $ALERTS"
-      else
-        open_app false
       fi
       cat <<YAML
 - waitForAnimationToEnd:
@@ -86,11 +88,11 @@ YAML
 - takeScreenshot: $name-$theme
 YAML
     done < "$LIST"
-  done
-} > "$FLOW"
+  } > "$FLOWS/screenshots-$theme.yaml"
+done
 
 RUN_DIR="$ROOT/.context/maestro/screenshots-$(date +%Y%m%d-%H%M%S)"
-E2E_OUT="$RUN_DIR" "$ROOT/scripts/qa/mobile-e2e.sh" ${PASS[@]+"${PASS[@]}"} "$FLOW"
+E2E_OUT="$RUN_DIR" "$ROOT/scripts/qa/mobile-e2e.sh" --status-bar ${PASS[@]+"${PASS[@]}"} "$FLOWS"
 find "$RUN_DIR" -name '*.png' | while read -r png; do
   base="$(basename "$png")"
   for theme in $THEMES; do
