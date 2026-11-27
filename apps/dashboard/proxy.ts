@@ -1,20 +1,22 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import { isStatusHost } from './lib/status/site';
 import { updateSession } from './lib/supabase/middleware';
 
-const isStatusHost = (host: string | null) => host?.split(':')[0].startsWith('status.') ?? false;
+const STATUS_HOST_PATHS = new Set(['/status', '/api/status', '/robots.txt', '/sitemap.xml']);
+const PUBLIC_PATHS = new Set(['/status', '/api/status', '/robots.txt']);
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (isStatusHost(request.headers.get('host'))) {
-    if (pathname === '/status' || pathname === '/api/status') return NextResponse.next();
+    if (STATUS_HOST_PATHS.has(pathname)) return NextResponse.next();
     const url = request.nextUrl.clone();
     url.pathname = '/status';
     url.search = '';
     return NextResponse.rewrite(url);
   }
 
-  if (pathname === '/status' || pathname === '/api/status') {
+  if (PUBLIC_PATHS.has(pathname)) {
     return NextResponse.next();
   }
 
