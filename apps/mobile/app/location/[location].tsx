@@ -7,6 +7,7 @@ import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useSt
 import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RowPosition } from '~/components/FoodComponent';
+import { StaggerIn } from '~/components/motion/StaggerIn';
 import { Text } from '~/components/ui/Text';
 import type { ListItem } from '~/hooks/useCategoryExpansion';
 import { useCategoryExpansion } from '~/hooks/useCategoryExpansion';
@@ -196,33 +197,38 @@ const Location = () => {
   );
 
   const renderItem = useCallback(
-    ({ item }: { item: ListItem }) => {
+    ({ item, index }: { item: ListItem; index: number }) => {
+      const menuKey = `${selectedMenu ?? ''}|${selectedDate}`;
       switch (item.type) {
         case 'category_header':
           return (
-            <CategoryHeader
-              id={item.id}
-              title={item.title}
-              isExpanded={item.isExpanded}
-              onToggle={handleToggleCategory}
-            />
+            <StaggerIn index={index} trigger={menuKey}>
+              <CategoryHeader
+                id={item.id}
+                title={item.title}
+                isExpanded={item.isExpanded}
+                onToggle={handleToggleCategory}
+              />
+            </StaggerIn>
           );
 
         case 'food_item': {
           return (
-            <FoodItemRow
-              item={item}
-              selectedMenu={selectedMenu ?? ''}
-              location={location as string}
-              date={selectedDate}
-              db={db}
-              isFavorite={favoriteNames.has(item.data.name ?? '')}
-              canMealPlan={canMealPlan}
-              selecting={selecting}
-              selected={selectedIds.has(item.id)}
-              onToggleSelect={toggleSelected}
-              onSelectMultiple={startSelecting}
-            />
+            <StaggerIn index={index} trigger={menuKey}>
+              <FoodItemRow
+                item={item}
+                selectedMenu={selectedMenu ?? ''}
+                location={location as string}
+                date={selectedDate}
+                db={db}
+                isFavorite={favoriteNames.has(item.data.name ?? '')}
+                canMealPlan={canMealPlan}
+                selecting={selecting}
+                selected={selectedIds.has(item.id)}
+                onToggleSelect={toggleSelected}
+                onSelectMultiple={startSelecting}
+              />
+            </StaggerIn>
           );
         }
 
