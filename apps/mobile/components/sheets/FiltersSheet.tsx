@@ -1,11 +1,14 @@
 import { Heart } from 'lucide-react-native';
 import type React from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import ActionSheet, { ScrollView, type SheetProps, useSheetRef } from 'react-native-actions-sheet';
+import Reanimated, { useReducedMotion, ZoomIn, ZoomOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
+import { RollingNumber } from '~/components/motion/RollingNumber';
 import { Image } from '~/components/ui/Image';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import { ALLERGEN_EXCEPTIONS, ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import { useFiltersStore } from '~/store/useFiltersStore';
@@ -27,7 +30,7 @@ const Chip = ({
 }) => {
   const theme = useTheme();
   return (
-    <Pressable
+    <PressableScale
       testID={testID}
       accessibilityRole="button"
       accessibilityState={{ selected: isOn }}
@@ -42,7 +45,7 @@ const Chip = ({
       <Text variant="subheadline" emphasized tone={isOn ? 'onTint' : 'primary'}>
         {label}
       </Text>
-    </Pressable>
+    </PressableScale>
   );
 };
 
@@ -63,6 +66,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
   const insets = useSafeAreaInsets();
   const sheetRef = useSheetRef();
   const theme = useTheme();
+  const reduceMotion = useReducedMotion();
 
   const {
     filters,
@@ -107,7 +111,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
       useBottomSafeAreaPadding
     >
       <View className="flex-row items-center justify-between px-4 pt-1 pb-2">
-        <Pressable
+        <PressableScale
           testID="filters-reset-button"
           accessibilityRole="button"
           disabled={activeCount === 0}
@@ -119,9 +123,29 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
           style={{ backgroundColor: theme.card, opacity: activeCount === 0 ? 0.5 : 1 }}
         >
           <Text variant="subheadline">Reset</Text>
-        </Pressable>
-        <Text variant="headline">Filters</Text>
-        <Pressable
+        </PressableScale>
+        <View className="flex-row items-center gap-x-1.5">
+          <Text variant="headline">Filters</Text>
+          {activeCount > 0 && (
+            <Reanimated.View
+              entering={reduceMotion ? undefined : ZoomIn.springify().damping(14)}
+              exiting={reduceMotion ? undefined : ZoomOut.duration(140)}
+              testID="filters-active-count"
+              style={{
+                height: 22,
+                minWidth: 22,
+                paddingHorizontal: 6,
+                borderRadius: 11,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: theme.tint,
+              }}
+            >
+              <RollingNumber value={activeCount} variant="footnote" emphasized tone="onTint" />
+            </Reanimated.View>
+          )}
+        </View>
+        <PressableScale
           testID="filters-done-button"
           accessibilityRole="button"
           onPress={() => sheetRef.current?.hide()}
@@ -131,7 +155,7 @@ const FiltersSheet = ({ sheetId }: SheetProps<'filters'>) => {
           <Text variant="subheadline" emphasized tone="tint">
             Done
           </Text>
-        </Pressable>
+        </PressableScale>
       </View>
       <OverflowScrollView as={ScrollView} showsVerticalScrollIndicator={false}>
         <View className="px-4 pb-6">

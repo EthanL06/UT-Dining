@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import { reloadApp } from '~/services/qa/updates';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -42,7 +43,7 @@ export function AppErrorScreen({ title, message, error, source, onRetry }: AppEr
       <Text variant="callout" tone="secondary" className="text-center">
         {message}
       </Text>
-      <Pressable
+      <PressableScale
         testID="app-error-retry"
         accessibilityRole="button"
         onPress={onRetry ?? restart}
@@ -52,7 +53,7 @@ export function AppErrorScreen({ title, message, error, source, onRetry }: AppEr
         <Text variant="callout" emphasized tone="onTint">
           {onRetry ? 'Try again' : 'Restart app'}
         </Text>
-      </Pressable>
+      </PressableScale>
     </View>
   );
 }

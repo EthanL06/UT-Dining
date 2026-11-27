@@ -2,7 +2,10 @@ import { Link } from 'expo-router';
 import { Minus, Plus } from 'lucide-react-native';
 import { Pressable, View } from 'react-native';
 import { formatGrams, formatNumber } from '~/components/mealPlan/format';
+import { CountUpText } from '~/components/motion/CountUpText';
+import { RollingNumber } from '~/components/motion/RollingNumber';
 import { Image } from '~/components/ui/Image';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import { type MealPlanItem, useMealPlanStore } from '~/store/useMealPlanStore';
@@ -119,15 +122,18 @@ export const PlanRow = ({
                 </View>
               </View>
               <View className="items-end gap-y-1">
-                <Text variant="subheadline" emphasized>
-                  {formatNumber(amount(item, 'calories'))}
-                </Text>
+                <CountUpText
+                  variant="subheadline"
+                  emphasized
+                  value={amount(item, 'calories')}
+                  format={formatNumber}
+                />
                 {editable ? (
                   <View
                     className="h-8 flex-row items-center rounded-full"
                     style={{ backgroundColor: theme.fill }}
                   >
-                    <Pressable
+                    <PressableScale
                       testID="meal-plan-decrement"
                       accessibilityLabel={
                         quantity <= 1 ? 'Remove from Meal Plan' : 'Remove one serving'
@@ -137,23 +143,22 @@ export const PlanRow = ({
                       className="h-8 w-8 items-center justify-center"
                     >
                       <Minus size={14} color={theme.label} />
-                    </Pressable>
-                    <Text
+                    </PressableScale>
+                    <RollingNumber
+                      value={quantity}
                       variant="subheadline"
                       emphasized
                       testID="meal-plan-quantity"
-                      className="min-w-5 text-center"
-                    >
-                      {quantity}
-                    </Text>
-                    <Pressable
+                      className="min-w-5"
+                    />
+                    <PressableScale
                       accessibilityLabel="Add one serving"
                       hitSlop={6}
                       onPress={() => step(1)}
                       className="h-8 w-8 items-center justify-center"
                     >
                       <Plus size={14} color={theme.label} />
-                    </Pressable>
+                    </PressableScale>
                   </View>
                 ) : (
                   <Text variant="footnote" tone="secondary" testID="meal-plan-quantity">
