@@ -42,7 +42,8 @@ name: Press and hold adds a food, and Select Multiple adds several at once
     direction: UP
 - repeat:
     while:
-      notVisible: Your Meal Plan
+      notVisible:
+        id: meal-plan-title
     times: 3
     commands:
       - tapOn:
@@ -51,3 +52,14 @@ name: Press and hold adds a food, and Select Multiple adds several at once
 - assertVisible: 'Maestro Grilled Chicken(,.*)?'
 - assertVisible: 'Maestro Veggie Burger(,.*)?'
 - assertVisible: 'Maestro Tofu Bowl(,.*)?'
+- tapOn:
+    id: meal-plan-reset-button
+- extendedWaitUntil:
+    visible: Reset today's meal plan?
+    timeout: 5000
+- tapOn:
+    text: Reset
+    index: 1
+- extendedWaitUntil:
+    visible: Empty Meal Plan!
+    timeout: 5000
