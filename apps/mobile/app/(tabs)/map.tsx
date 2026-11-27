@@ -249,7 +249,9 @@ const MapPage = () => {
       (place) =>
         (!filters.has('open') || place.isOpen) &&
         (typeFilters.length === 0 || typeFilters.includes(place.type)) &&
-        (needle === '' || place.name.toLowerCase().includes(needle)),
+        (needle === '' ||
+          place.name.toLowerCase().includes(needle) ||
+          (place.locationName?.toLowerCase().includes(needle) ?? false)),
     );
   }, [places, filters, query]);
 

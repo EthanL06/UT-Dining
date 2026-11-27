@@ -3,6 +3,7 @@
 import { closestCenter, DndContext, type DragEndEvent, type UniqueIdentifier } from '@dnd-kit/core';
 import { arrayMove, SortableContext } from '@dnd-kit/sortable';
 import { Paper, Table } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { IconGripVertical } from '@tabler/icons-react';
 import { useEffect, useId, useState } from 'react';
 import { updateLocationDisplayOrder } from '@/app/(private)/dashboard/action';
@@ -54,7 +55,16 @@ function SortableLocationsTable({
       const newIndex = items.indexOf(over.id);
       const newItems = arrayMove(items, oldIndex, newIndex);
       setItems(newItems);
-      await Promise.all(newItems.map((id, idx) => updateLocationDisplayOrder(id as string, idx)));
+      try {
+        await Promise.all(newItems.map((id, idx) => updateLocationDisplayOrder(id as string, idx)));
+      } catch {
+        setItems(items);
+        notifications.show({
+          title: 'Order not saved',
+          message: 'The new order could not be saved. Try again.',
+          color: 'red',
+        });
+      }
     }
     onDragEnd(event);
   };
