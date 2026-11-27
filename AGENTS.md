@@ -63,7 +63,7 @@ When Ethan asks to change app data (hours, force close, locations, support links
 - No AI attribution in commits, PR bodies or comments: no `Co-Authored-By` or session trailers, no "Generated with" lines.
 - PRs target `staging` and are squash merged with a hand-written message. Ask Ethan before merging. Only Ethan promotes `staging` to `main`, which ships production.
 - Conventional commits (enforced by commitlint through Lefthook) and conventional PR titles (the "Conventional PR title" check, required on `main`). Branches are `<type>-<kebab-description>`, e.g. `feat-meal-reminders`.
-- A PR that changes UI includes screenshots (both themes for the app; the `screenshots` label runs the mobile screenshot workflow).
+- A PR that changes UI includes screenshots (both themes for the app). For the app, take them on Ethan's Mac Simulator by default (`make screenshots SIM=<UDID>`, see `apps/mobile/e2e/README.md`). The `screenshots` label runs the CI workflow instead: use it only when asked, or when the Mac is offline. CI also takes a full set after every merge to `staging` that touches the app, on `assets/staging`, without blocking anything.
 - Test only against local Supabase or the hosted dev project. Never point a test, build, script or session at production.
 - Migrations must be backwards compatible, because the shipped app and the deployed dashboard keep running against the new schema: add columns, tables and functions; do not drop, rename or change the type of anything existing code reads. Never edit a migration that is already on `staging`.
 - Biome formats and lints everything: single quotes, 2 spaces, 100 columns.

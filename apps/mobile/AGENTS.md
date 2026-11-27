@@ -39,5 +39,6 @@ The app works offline from the cache. Never make a screen query Supabase directl
 
 - Static: `make verify` from the repo root.
 - On a Simulator (macOS only): the verifier-mobile skill, or `make e2e SIM=<UDID>` for the Maestro suite.
+- A release simulator app: `make ios-app`. It runs a full Xcode build only when the Expo fingerprint changes (native code, a native dependency or `app.config.js`); otherwise it reuses the saved native build and rebuilds only the JavaScript in a few minutes.
 - A change to native dependencies, `app.config.js` or `eas.json` needs a new development build before anything can be verified.
 - The Expo dev client's floating Tools button covers the food screen's top-right icons in dev builds. Turn it off in the dev menu before tapping there; release builds do not have it.

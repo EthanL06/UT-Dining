@@ -3,6 +3,19 @@ name: Mobile screenshots
 on:
   pull_request:
     types: [labeled, synchronize, reopened]
+    paths:
+      - apps/mobile/**
+      - packages/core/**
+      - pnpm-lock.yaml
+      - scripts/qa/**
+      - .github/actions/ios-sim-app/**
+      - .github/workflows/mobile-screenshots.yml
+  push:
+    branches: [staging]
+    paths:
+      - apps/mobile/**
+      - packages/core/**
+      - pnpm-lock.yaml
   workflow_dispatch:
 
 concurrency:
@@ -13,7 +26,7 @@ jobs:
   screenshots:
     name: Take screenshots
     if: >-
-      github.event_name == 'workflow_dispatch' ||
+      github.event_name != 'pull_request' ||
       (contains(github.event.pull_request.labels.*.name, 'screenshots') &&
       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: macos-26
@@ -26,7 +39,7 @@ jobs:
       EXPO_PUBLIC_SUPABASE_ANON_KEY: fixture
       MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000
       MAESTRO_VERSION: 2.12.1
-      TOPIC: ${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
+      TOPIC: ${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || (github.event_name == 'push' && 'staging') || format('run-{0}', github.run_id) }}
     steps:
       - uses: actions/checkout@v7
 
