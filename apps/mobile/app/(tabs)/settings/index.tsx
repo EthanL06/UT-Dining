@@ -1,5 +1,4 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import * as Application from 'expo-application';
 import { router, Stack } from 'expo-router';
 import {
   Accessibility,
@@ -27,6 +26,7 @@ import {
 import React from 'react';
 import { Linking, Switch, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
+import { VersionLabel } from '~/components/admin/VersionLabel';
 import { NearbyAlertsRow } from '~/components/nearby/NearbyAlertsRow';
 import { GroupedRow, GroupedSection, IconSquare } from '~/components/ui/Grouped';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
@@ -451,9 +451,7 @@ const SettingsPage = () => {
         {appInfo && <InformationSection appInfo={appInfo} />}
 
         <View className="mt-1 items-center">
-          <Text variant="footnote" tone="secondary">
-            Version {Application.nativeApplicationVersion}
-          </Text>
+          <VersionLabel />
           {deviceId && (
             <Text variant="caption2" tone="tertiary" className="mt-1">
               {deviceId}

@@ -1,5 +1,5 @@
 import { mergeAllergens, resolveAllergens } from './allergens.ts';
-import { LOCATIONS, shortMenuUrl } from './config.ts';
+import { type LOCATIONS, shortMenuUrl } from './config.ts';
 import {
   checkMenuPage,
   checkShortMenu,
@@ -32,7 +32,11 @@ export interface ScrapeResult {
 
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
-export const scrape = async (http: HttpClient, dates: string[]): Promise<ScrapeResult> => {
+export const scrape = async (
+  http: HttpClient,
+  dates: string[],
+  locations: readonly (typeof LOCATIONS)[number][],
+): Promise<ScrapeResult> => {
   const labels = new Map<string, Promise<Label>>();
   const failures: ScrapeFailure[] = [];
   const unrecognizedAllergens = new Set<string>();
@@ -167,7 +171,7 @@ export const scrape = async (http: HttpClient, dates: string[]): Promise<ScrapeR
   };
 
   const results = await Promise.all(
-    dates.flatMap((date) => LOCATIONS.map((location) => scrapeLocationDay(location, date))),
+    dates.flatMap((date) => locations.map((location) => scrapeLocationDay(location, date))),
   );
 
   return {
