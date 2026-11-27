@@ -176,12 +176,17 @@ check "release with no match succeeds" "'$LEASE' release --pr 999 2>/dev/null"
 
 step "sweep releases leases of merged or closed PRs and removed worktrees"
 gh_answer "repos/EthanL06/UT-Dining/pulls/171" "merged"
+WT_O="$(repo o feat-open-number)"
+O="$(lease "$WT_O" open-number --pr 172)"
+gh_answer "repos/EthanL06/UT-Dining/pulls/172" ""
 gh_answer "repos/EthanL06/UT-Dining/pulls?head=EthanL06:feat-open-pr&state=all&per_page=1" ""
 sweep --dry-run
 check "--dry-run changes nothing" "leased '$C'"
 sweep
 check "lease of merged #171 (owner pr-171) released" "! leased '$C'"
 check "lease of a branch with an open PR kept" "leased '$B'"
+check "lease of an open PR by number kept" "leased '$O'"
+"$LEASE" release "$O" 2>/dev/null
 F="$(lease "$WT_B" closed-branch)"
 gh_answer "repos/EthanL06/UT-Dining/pulls?head=EthanL06:feat-open-pr&state=all&per_page=1" "closed #172"
 sweep
