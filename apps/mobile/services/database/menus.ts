@@ -1,4 +1,4 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, like, sql } from 'drizzle-orm';
 import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import { getTodayInCentralTime } from '~/utils/date';
 import { log } from '~/utils/log';
@@ -333,3 +333,28 @@ export const findServedFoodItem = async (
   );
   return best ? toFoodItem(best) : null;
 };
+
+export const searchFoodsServed = (
+  db: ExpoSQLiteDatabase<typeof schema>,
+  query: string,
+  date: string,
+  limit = 200,
+) =>
+  db
+    .selectDistinct({
+      food: schema.food_item.name,
+      location: schema.location.name,
+      menu: schema.menu.name,
+    })
+    .from(schema.food_item)
+    .innerJoin(schema.menu_category, eq(schema.food_item.menu_category_id, schema.menu_category.id))
+    .innerJoin(schema.menu, eq(schema.menu_category.menu_id, schema.menu.id))
+    .innerJoin(schema.location, eq(schema.menu.location_id, schema.location.id))
+    .where(
+      and(
+        eq(schema.menu.date, date),
+        like(schema.food_item.name, `%${query.replace(/[%_]/g, '')}%`),
+      ),
+    )
+    .limit(limit)
+    .all();
