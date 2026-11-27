@@ -178,7 +178,7 @@ const Notifications = () => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background }}>
+    <>
       <Stack.Screen
         options={{
           title: 'Notifications',
@@ -204,6 +204,7 @@ const Notifications = () => {
       <OverflowScrollView
         divider={false}
         contentInsetAdjustmentBehavior="automatic"
+        style={{ flex: 1, backgroundColor: theme.background }}
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
       >
         {groups.length === 0 ? (
@@ -229,7 +230,7 @@ const Notifications = () => {
           ))
         )}
       </OverflowScrollView>
-    </View>
+    </>
   );
 };
 
