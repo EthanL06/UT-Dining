@@ -1,3 +1,4 @@
+import { log } from '../_shared/log.ts';
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import { broadcast, createDeviceStore, json, type PushReport } from '../_shared/push.ts';
@@ -23,7 +24,7 @@ Deno.serve(async (_req) => {
       .order('scheduled_at');
 
     if (queryError) {
-      console.error('Failed to query scheduled notifications:', queryError);
+      log.error('Failed to query scheduled notifications:', queryError);
       return json({ error: 'Failed to query scheduled notifications' }, 500);
     }
     if (!due || due.length === 0) {
@@ -39,7 +40,7 @@ Deno.serve(async (_req) => {
         .eq('sent', false)
         .select('id');
       if (claimError) {
-        console.error(`Failed to claim notification ${notification.id}:`, claimError);
+        log.error(`Failed to claim notification ${notification.id}:`, claimError);
         continue;
       }
       if (!claimed || claimed.length === 0) continue;
@@ -59,16 +60,16 @@ Deno.serve(async (_req) => {
       );
 
       if (report.recipients > 0 && report.accepted === 0) {
-        console.error(`Expo accepted none of notification ${notification.id}:`, report.errors);
+        log.error(`Expo accepted none of notification ${notification.id}:`, report.errors);
         await supabase.from('notifications').update({ sent: false }).eq('id', notification.id);
       }
       processed.push({ id: notification.id, scheduled_at: notification.scheduled_at, ...report });
     }
 
-    console.log('Scheduled push run:', JSON.stringify(processed));
+    log.info('Scheduled push run:', JSON.stringify(processed));
     return json({ success: true, processed: processed.length, notifications: processed });
   } catch (error) {
-    console.error('Unexpected error:', error);
+    log.error('Unexpected error:', error);
     return json({ error: 'Internal server error' }, 500);
   }
 });

@@ -1,8 +1,9 @@
-import { Image, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import ActionSheet, { ScrollView, type SheetProps, useSheetRef } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Image } from '~/components/ui/Image';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
-
 import { ALLERGEN_EXCEPTIONS, ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import { useTheme } from '~/utils/theme';
 
@@ -39,7 +40,7 @@ const Section = ({
             className="h-10 flex-row items-center gap-x-1.5 rounded-full pr-3.5 pl-1.5"
             style={{ backgroundColor: theme.card }}
           >
-            <Image source={icon} className="size-7 rounded-full" resizeMode="contain" />
+            <Image source={icon} className="size-7 rounded-full" contentFit="contain" />
             <Text variant="subheadline">{displayName(key)}</Text>
           </View>
         ))}
@@ -82,7 +83,11 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
           </Text>
         </Pressable>
       </View>
-      <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 560 }}>
+      <OverflowScrollView
+        as={ScrollView}
+        showsVerticalScrollIndicator={false}
+        style={{ maxHeight: 560 }}
+      >
         <View className="px-4 pb-6">
           <Section
             title="Allergens"
@@ -99,7 +104,7 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
             accurate. Use discretion when making dietary choices.
           </Text>
         </View>
-      </ScrollView>
+      </OverflowScrollView>
     </ActionSheet>
   );
 };

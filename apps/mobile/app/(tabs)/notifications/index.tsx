@@ -1,10 +1,12 @@
+import { daysBetweenDateKeys, formatCentral, toCentralTime } from '@ut-dining/core';
 import { eq, sql } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { type Href, router, Stack, useFocusEffect } from 'expo-router';
 import { Bell, ChefHat, type LucideIcon, MapPin, Megaphone, Star } from 'lucide-react-native';
 import { useCallback, useMemo } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { GroupedSection } from '~/components/ui/Grouped';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import * as schema from '~/services/database/schema';
@@ -33,13 +35,9 @@ const TYPE_STYLE: Record<string, { Icon: LucideIcon; color: string }> = {
 };
 const DEFAULT_TYPE_STYLE = { Icon: Bell, color: '#333F48' };
 
-const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
 const dayGroup = (sentAt: string | null, today: Date) => {
   if (!sentAt) return 'Earlier';
-  const days = Math.round(
-    (startOfDay(today).getTime() - startOfDay(new Date(sentAt)).getTime()) / 86_400_000,
-  );
+  const days = daysBetweenDateKeys(toCentralTime(new Date(sentAt)).date, toCentralTime(today).date);
   if (days <= 0) return 'Today';
   if (days === 1) return 'Yesterday';
   return 'Earlier';
@@ -47,12 +45,9 @@ const dayGroup = (sentAt: string | null, today: Date) => {
 
 const formatSentAt = (sentAt: string | null, group: string) => {
   if (!sentAt) return '';
-  const date = new Date(sentAt);
-  if (group === 'Today') {
-    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-  }
+  if (group === 'Today') return formatCentral(sentAt, { hour: 'numeric', minute: '2-digit' });
   if (group === 'Yesterday') return 'Yesterday';
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return formatCentral(sentAt, { month: 'short', day: 'numeric' });
 };
 
 const NotificationRow = ({
@@ -206,7 +201,8 @@ const Notifications = () => {
             : undefined,
         }}
       />
-      <ScrollView
+      <OverflowScrollView
+        divider={false}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
       >
@@ -232,7 +228,7 @@ const Notifications = () => {
             </GroupedSection>
           ))
         )}
-      </ScrollView>
+      </OverflowScrollView>
     </View>
   );
 };

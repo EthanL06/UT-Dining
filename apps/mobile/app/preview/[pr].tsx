@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, View } from 'react-native';
 import { Text } from '~/components/ui/Text';
 import { fetchPrPreviews } from '~/services/qa/previews';
-import { switchUpdateChannel } from '~/services/qa/updates';
+import { consumeReloadReplay, switchUpdateChannel } from '~/services/qa/updates';
 import { isDevVariant } from '~/utils/appVariant';
 import { isCompatiblePreview, parsePrNumber } from '~/utils/previews';
 import { useTheme } from '~/utils/theme';
@@ -21,6 +21,11 @@ const loadPreview = async (pr: number): Promise<string> => {
     : `Loading PR #${pr}…`;
 };
 
+const isReloadReplay = async (pr: number) => {
+  const initialUrl = await Linking.getInitialURL().catch(() => null);
+  return parsePrNumber(initialUrl?.match(/preview\/(\d+)/)?.[1]) === pr && consumeReloadReplay();
+};
+
 type PreviewState = { status: 'loading' } | { status: 'done'; message: string };
 
 export default function OpenPrPreview() {
@@ -34,8 +39,14 @@ export default function OpenPrPreview() {
       router.replace('/');
       return;
     }
-    loadPreview(number)
-      .then((message) => setPreview({ status: 'done', message }))
+    isReloadReplay(number)
+      .then((replay) => {
+        if (replay) router.replace('/');
+        return replay ? null : loadPreview(number);
+      })
+      .then((message) => {
+        if (message !== null) setPreview({ status: 'done', message });
+      })
       .catch((error: unknown) =>
         setPreview({
           status: 'done',

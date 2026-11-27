@@ -9,6 +9,25 @@
     "ignoreUnknown": false,
     "includes": ["**", "!**/*.md"]
   },
+  "plugins": [
+    {
+      "path": "./biome-plugins/no-device-time-zone.grit",
+      "includes": [
+        "apps/**/*.ts",
+        "apps/**/*.tsx",
+        "packages/**/*.ts",
+        "packages/**/*.tsx",
+        "!**/*.test.ts",
+        "!**/*.test.tsx",
+        "!packages/core/src/central-time.ts",
+        "!apps/mobile/utils/date.ts"
+      ]
+    },
+    {
+      "path": "./biome-plugins/no-icon-barrel.grit",
+      "includes": ["apps/**/*.ts", "apps/**/*.tsx", "packages/**/*.ts", "packages/**/*.tsx"]
+    }
+  ],
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
@@ -36,6 +55,9 @@
         }
       },
       "nursery": {
+        "noFloatingPromises": "error",
+        "noMisusedPromises": "error",
+        "useExhaustiveSwitchCases": "error",
         "useTailwindSortedClasses": {
           "level": "warn",
           "fix": "safe",
@@ -49,7 +71,13 @@
         "noImplicitAnyLet": "error",
         "noSkippedTests": "error",
         "noTsIgnore": "error",
-        "noVar": "error"
+        "noVar": "error",
+        "noConsole": {
+          "level": "error",
+          "options": {
+            "allow": []
+          }
+        }
       },
       "style": {
         "noEnum": "error",
@@ -166,9 +194,11 @@
                   "expo-haptics": "Use the helpers in ~/utils/haptics so every interaction gets the same feedback.",
                   "@supabase/supabase-js": "Screens read the SQLite cache through hooks. Only services/ talks to Supabase; add the table to the sync instead.",
                   "react-native": {
-                    "importNames": ["Text", "TextInput"],
-                    "message": "Use Text or TextInput from ~/components/ui/Text so every label uses the shared type scale."
-                  }
+                    "importNames": ["Text", "TextInput", "Image", "ImageBackground"],
+                    "message": "Use Text or TextInput from ~/components/ui/Text so every label uses the shared type scale, and Image from ~/components/ui/Image (expo-image) for caching and the shared styling."
+                  },
+                  "date-fns": "Dates go through ~/utils/date so every day and time is computed in Central time.",
+                  "date-fns-tz": "Dates go through ~/utils/date so every day and time is computed in Central time."
                 },
                 "patterns": [
                   {
@@ -201,9 +231,11 @@
                 "paths": {
                   "expo-haptics": "Use the helpers in ~/utils/haptics so every interaction gets the same feedback.",
                   "react-native": {
-                    "importNames": ["Text", "TextInput"],
-                    "message": "Use Text or TextInput from ~/components/ui/Text so every label uses the shared type scale."
-                  }
+                    "importNames": ["Text", "TextInput", "Image", "ImageBackground"],
+                    "message": "Use Text or TextInput from ~/components/ui/Text so every label uses the shared type scale, and Image from ~/components/ui/Image (expo-image) for caching and the shared styling."
+                  },
+                  "date-fns": "Dates go through ~/utils/date so every day and time is computed in Central time.",
+                  "date-fns-tz": "Dates go through ~/utils/date so every day and time is computed in Central time."
                 }
               }
             }
@@ -222,7 +254,14 @@
       }
     },
     {
-      "includes": ["apps/mobile/utils/log.ts"],
+      "includes": [
+        "apps/mobile/utils/log.ts",
+        "apps/dashboard/lib/log.ts",
+        "apps/website/lib/log.ts",
+        "apps/scraper/src/log.ts",
+        "supabase/functions/_shared/log.ts",
+        "scripts/**"
+      ],
       "linter": {
         "rules": {
           "suspicious": {
@@ -241,7 +280,9 @@
               "options": {
                 "paths": {
                   "expo-haptics": "Use the helpers in ~/utils/haptics so every interaction gets the same feedback.",
-                  "@supabase/supabase-js": "Screens read the SQLite cache through hooks. Only services/ talks to Supabase; add the table to the sync instead."
+                  "@supabase/supabase-js": "Screens read the SQLite cache through hooks. Only services/ talks to Supabase; add the table to the sync instead.",
+                  "date-fns": "Dates go through ~/utils/date so every day and time is computed in Central time.",
+                  "date-fns-tz": "Dates go through ~/utils/date so every day and time is computed in Central time."
                 },
                 "patterns": [
                   {
@@ -271,6 +312,26 @@
         "rules": {
           "style": {
             "noExcessiveLinesPerFile": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/mobile/utils/date.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/mobile/components/ui/Image.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": "off"
           }
         }
       }
