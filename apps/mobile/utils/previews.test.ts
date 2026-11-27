@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   formatPreviewAge,
   isCompatiblePreview,
+  isReplayedLaunchLink,
   parsePreviews,
   parsePrNumber,
   previewsUrl,
@@ -71,5 +72,17 @@ describe('formatPreviewAge', () => {
     expect(formatPreviewAge('2026-11-27T07:00:00Z', now)).toBe('3 h ago');
     expect(formatPreviewAge('2026-11-25T10:00:00Z', now)).toBe('2 d ago');
     expect(formatPreviewAge('bad', now)).toBe('unknown');
+  });
+});
+
+describe('isReplayedLaunchLink', () => {
+  it('treats a launch link right after an in-app reload as a replay', () => {
+    expect(isReplayedLaunchLink(1_000, 6_000)).toBe(true);
+  });
+
+  it('handles the link when no reload happened or the reload is old', () => {
+    expect(isReplayedLaunchLink(undefined, 6_000)).toBe(false);
+    expect(isReplayedLaunchLink(1_000, 120_000)).toBe(false);
+    expect(isReplayedLaunchLink(9_000, 6_000)).toBe(false);
   });
 });
