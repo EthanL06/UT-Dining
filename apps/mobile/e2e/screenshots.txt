@@ -1,11 +1,11 @@
 home
-home-status-degraded e2e-setup?serviceStatus=degraded
-map map
-notifications notifications
-settings settings
-favorites favorites
-meal-plan meal-plan
-changelog changelog
-j2-dining location/J2%20Dining
-error-screen qa-error?kind=crash
-migration-error qa-error?kind=migration
+home-status-degraded e2e-setup?serviceStatus=degraded .*Some things aren.t working right.*
+map map .*Search campus dining.*
+notifications notifications .*Read All.*
+settings settings .*Dark Mode.*
+favorites favorites .*No Favorites Yet.*
+meal-plan meal-plan .*Each day keeps its own plan.*
+changelog changelog .*Changelog.*
+j2-dining location/J2%20Dining .*Search this menu.*
+error-screen qa-error?kind=crash .*Something went wrong.*
+migration-error qa-error?kind=migration .*Couldn.t open the menu cache.*

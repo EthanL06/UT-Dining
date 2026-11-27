@@ -85,9 +85,8 @@ jobs:
 
       - name: Install the app once the simulator has booted
         run: |
-          xcrun simctl bootstatus "$SIM" -b
+          xcrun simctl bootstatus "$SIM" -b >/dev/null
           xcrun simctl install "$SIM" .context/app/*.app
-          xcrun simctl status_bar "$SIM" override --time 9:41 --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3
 
       - name: Take screenshots
         run: ./scripts/qa/mobile-screenshots.sh --sim "$SIM" --release --fixture-server --out "$RUNNER_TEMP/screenshots"
