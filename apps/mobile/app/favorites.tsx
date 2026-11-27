@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FoodComponent, { type RowPosition } from '~/components/FoodComponent';
+import { SkeletonRows } from '~/components/map/SkeletonRows';
 import { UndoToast } from '~/components/mealPlan/UndoToast';
 import { pushedScreenHeaderOptions } from '~/components/TabStack';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
@@ -18,6 +19,7 @@ import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useFavoriteOverridesStore } from '~/store/useFavoriteOverridesStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { favoriteKey, shownFavorite } from '~/utils/favoriteOverride';
+import { favoritesView } from '~/utils/favoritesView';
 import { restoreFavorite, setFavoriteForFood } from '~/utils/foodActions';
 import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
@@ -125,7 +127,7 @@ const Favorites = () => {
   const theme = useTheme();
   const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
   const insets = useSafeAreaInsets();
-  const { data: favorites } = useLiveQuery(db.select().from(schema.favorites));
+  const { data: favorites, updatedAt } = useLiveQuery(db.select().from(schema.favorites));
   const overrides = useFavoriteOverridesStore((state) => state.overrides);
   const [undo, setUndo] = useState<Undo>({ status: 'idle' });
 
@@ -171,6 +173,7 @@ const Favorites = () => {
       ),
     [db, sorted, lastSyncedAt],
   );
+  const view = favoritesView(updatedAt, sorted.length);
   const onToday = sorted.filter((item) => matches.has(matchKey(item.name, item.location_name)));
   const notToday = sorted.filter((item) => !matches.has(matchKey(item.name, item.location_name)));
 
@@ -184,13 +187,17 @@ const Favorites = () => {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ paddingBottom: 32 }}
       >
-        {sorted.length > 0 && (
+        {view === 'list' && (
           <Text variant="subheadline" tone="secondary" className="px-5 pt-1 pb-4">
             Press and hold a favorite to remove it.
           </Text>
         )}
 
-        {sorted.length === 0 ? (
+        {view === 'loading' ? (
+          <View className="mx-4">
+            <SkeletonRows count={4} testID="favorites-loading" />
+          </View>
+        ) : view === 'empty' ? (
           <View className="mx-8 mt-12 items-center gap-y-2">
             <Heart size={36} color={theme.tertiaryLabel} />
             <Text variant="headline">No Favorites Yet!</Text>

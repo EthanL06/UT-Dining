@@ -153,7 +153,7 @@ const LocationHeader = React.memo(
             )}
 
             <Link.AppleZoomTarget>
-              <View>
+              <View collapsable={false}>
                 <Text variant="largeTitle">{displayName}</Text>
                 {status !== '' && (
                   <Text variant="subheadline" tone="secondary">
