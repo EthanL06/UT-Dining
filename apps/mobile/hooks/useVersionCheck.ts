@@ -13,6 +13,7 @@ import {
 } from '~/store/useChangelogStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { isDevVariant } from '~/utils/appVariant';
+import { log } from '~/utils/log';
 import { isNewerVersion } from '~/utils/version';
 import { useDatabase } from './useDatabase';
 
@@ -77,7 +78,7 @@ export const useVersionCheck = () => {
       });
       return true;
     } catch (error) {
-      console.warn('App Store version check failed:', error);
+      log.warn('App Store version check failed', { error });
       return false;
     }
   }, [db, posthog]);

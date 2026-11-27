@@ -42,6 +42,7 @@ import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { showQaTools } from '~/utils/appVariant';
 import { haptics } from '~/utils/haptics';
+import { log } from '~/utils/log';
 import { SERVICE_STATUS_COLORS, STATUS_PAGE_URL } from '~/utils/serviceStatus';
 import { useTheme } from '~/utils/theme';
 import { formatTimeSinceSync } from '~/utils/time';
@@ -167,7 +168,7 @@ const SyncDataRow = () => {
     } catch (error) {
       setSyncStatus('failed');
       haptics.error();
-      console.warn('Sync failed:', error);
+      log.warn('Sync failed', { error });
     }
   };
 

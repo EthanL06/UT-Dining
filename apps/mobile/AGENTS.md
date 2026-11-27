@@ -33,6 +33,8 @@ The app works offline from the cache. Never make a screen query Supabase directl
 - Haptics go through `utils/haptics.ts` (selection, tap, remove, success, warning, error). Biome rejects a direct `expo-haptics` import anywhere else. Fire `selection` only when a choice actually changes, `success` when an add commits, `remove` when a removal commits, `error` when a refresh or sync fails; plain navigation taps have none.
 - Only `services/` (and `utils/supabase.ts` itself) may import Supabase. Biome rejects `~/utils/supabase` and `@supabase/supabase-js` in screens, components, hooks and stores, which keeps the app offline-first.
 - Text: every raw string sits inside a `<Text>` (`noReactNativeRawText`). Use the shared typography components rather than React Native's `Text` once they exist; a Biome rule banning raw `Text` outside the typography module comes with them.
+- Logging goes through `log` in `utils/log.ts`, never `console` (Biome's `noConsole` is an error here). `log.debug` and `log.warn` print only in dev builds; use `warn` for expected failures such as being offline. `log.error` also sends the error to PostHog error tracking in release builds, so keep it for real bugs.
+- Errors: `app/_layout.tsx` exports the Expo Router `ErrorBoundary`, which shows `components/AppErrorScreen.tsx` with Try again. A failed SQLite migration shows the same screen with Restart app instead of opening a broken cache. PostHog also captures uncaught exceptions and unhandled rejections (`services/analytics/posthog.ts`).
 - Pure helpers that do not import React Native, Expo or MMKV get a Vitest test next to them (`utils/*.test.ts`); `pnpm --filter @ut-dining/mobile test` runs them in about 1 s with `TZ=America/Chicago`.
 
 ## Verifying

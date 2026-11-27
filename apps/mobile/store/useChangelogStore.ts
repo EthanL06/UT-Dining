@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { fetchChangelog } from '~/services/changelog/changelog';
 import type { ChangelogEntry } from '~/services/changelog/types';
+import { log } from '~/utils/log';
 import { zustandStorage } from './rnmmkv-storage';
 
 interface ChangelogState {
@@ -65,7 +66,7 @@ export const refreshChangelog = () => {
         return true;
       })
       .catch((error) => {
-        console.warn('Changelog fetch failed:', error);
+        log.warn('Changelog fetch failed', { error });
         return false;
       })
       .finally(() => {
