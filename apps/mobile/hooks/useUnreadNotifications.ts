@@ -6,13 +6,15 @@ import { useDatabase } from '~/hooks/useDatabase';
 import * as schema from '~/services/database/schema';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useNotificationsStore } from '~/store/useNotificationsStore';
+import { isNotificationVisible } from '~/utils/notificationVisibility';
 
 export function useUnreadNotifications() {
   const db = useDatabase();
   const lastSyncTime = useDataSyncStore((state) => state.lastSupabaseQueryTime);
   const lastVisited = useNotificationsStore((state) => state.lastVisited);
+  const visibleSince = useNotificationsStore((state) => state.visibleSince);
 
-  const { data: dbNotifications = [] } = useLiveQuery(
+  const { data: allNotifications = [] } = useLiveQuery(
     db
       ?.select({
         id: schema.notifications.id,
@@ -24,6 +26,9 @@ export function useUnreadNotifications() {
   );
 
   const unreadCount = useMemo(() => {
+    const dbNotifications = allNotifications.filter((notification) =>
+      isNotificationVisible(notification.sent_at, visibleSince),
+    );
     if (lastVisited === null) {
       return dbNotifications.length;
     }
@@ -33,7 +38,7 @@ export function useUnreadNotifications() {
       const sentTime = new Date(notification.sent_at).getTime();
       return sentTime > lastVisited;
     }).length;
-  }, [dbNotifications, lastVisited]);
+  }, [allNotifications, lastVisited, visibleSince]);
 
   return {
     unreadCount,

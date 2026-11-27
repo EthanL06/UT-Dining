@@ -11,6 +11,7 @@ import * as schema from '~/services/database/schema';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useNotificationsStore } from '~/store/useNotificationsStore';
 import { haptics } from '~/utils/haptics';
+import { isNotificationVisible } from '~/utils/notificationVisibility';
 import { useTheme } from '~/utils/theme';
 
 export interface Notification {
@@ -121,7 +122,7 @@ const NotificationRow = ({
 const Notifications = () => {
   const theme = useTheme();
   const db = useDatabase();
-  const { lastVisited, setLastVisited } = useNotificationsStore();
+  const { lastVisited, setLastVisited, visibleSince } = useNotificationsStore();
 
   useFocusEffect(
     useCallback(() => {
@@ -156,6 +157,7 @@ const Notifications = () => {
     const today = new Date();
     const grouped = new Map<string, Notification[]>();
     for (const notification of dbNotifications) {
+      if (!isNotificationVisible(notification.sent_at, visibleSince)) continue;
       const isRead =
         lastVisited !== null &&
         notification.sent_at !== null &&
@@ -170,7 +172,7 @@ const Notifications = () => {
       const items = grouped.get(name);
       return items ? [{ name, items }] : [];
     });
-  }, [dbNotifications, lastVisited]);
+  }, [dbNotifications, lastVisited, visibleSince]);
 
   const hasUnread = groups.some((group) => group.items.some((item) => !item.isRead));
 
