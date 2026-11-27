@@ -8,11 +8,7 @@ const toText = (detail: unknown): string => {
   }
 };
 
-const line = (details: unknown[]) =>
-  details
-    .map(toText)
-    .join(' ')
-    .replace(/[\r\n]+/g, ' | ');
+const line = (details: unknown[]) => details.map(toText).join(' ').replace(/\n|\r/g, ' ');
 
 export const log = {
   info: (...details: unknown[]) => console.log(line(details)),
