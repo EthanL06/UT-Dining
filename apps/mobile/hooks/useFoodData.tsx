@@ -10,7 +10,6 @@ import {
 import type { Favorite } from '~/services/database/schema';
 import { useDatabase } from './useDatabase';
 
-// Helper function to format nutrition keys
 const formatNutritionKey = (key: string) =>
   key
     .split('_')
@@ -29,10 +28,8 @@ export function useFoodData(
 
   const [foodItem, setFoodItem] = useState<FoodItem | null>(null);
 
-  // Use refs to track if this is the first render
   const isFirstRender = useRef(true);
 
-  // Add refs to track previous values
   const prevFood = useRef<string>('');
   const prevLocation = useRef<string>('');
   const prevIsFavorite = useRef<boolean | undefined>(undefined);
@@ -69,7 +66,6 @@ export function useFoodData(
               date,
             )) ?? convertFavoriteItemToFoodItem(favoriteItem);
         } else {
-          // Fetch from regular food items table
           item = await getFoodItem(db, locString, menuString, categoryString, foodString, date);
         }
 
@@ -84,7 +80,6 @@ export function useFoodData(
       }
     };
 
-    // Only fetch on first render or when parameters change
     if (
       isFirstRender.current ||
       (Array.isArray(food) ? food[0] : food) !== prevFood.current ||
@@ -96,14 +91,12 @@ export function useFoodData(
       isFirstRender.current = false;
     }
 
-    // Store current values for comparison
     prevFood.current = Array.isArray(food) ? food[0] : food;
     prevLocation.current = Array.isArray(location) ? location[0] : location;
     prevIsFavorite.current = isFavorite;
     prevDate.current = date;
   }, [location, menu, category, food, isFavorite, date, db]);
 
-  // Process nutrition data
   const nutritionData = useMemo(() => {
     if (!foodItem?.nutrition) return [];
 
@@ -116,7 +109,6 @@ export function useFoodData(
       .sort((a, b) => NUTRITION_ORDER.indexOf(a.key) - NUTRITION_ORDER.indexOf(b.key));
   }, [foodItem]);
 
-  // Process allergen data
   const allergenData = useMemo(() => {
     const allergenEntries = foodItem?.allergens ? Object.entries(foodItem.allergens) : [];
     const hasAllergens = allergenEntries.some(([, value]) => value);

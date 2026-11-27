@@ -51,7 +51,7 @@ make dashboard    # http://localhost:3000
 
 ## Deployment
 
-Vercel, with the project's root directory set to `apps/dashboard`.
+Vercel, with the project's root directory set to `apps/dashboard`. Production builds from `main`, and previews build only for `staging` and branches with an open PR. `vercel.json` runs `scripts/vercel-ignore.mjs`, which skips the build when nothing the dashboard depends on changed (see the root `AGENTS.md`), and it never builds `assets/*` branches.
 
 ## Key Files & Directories
 

@@ -112,7 +112,7 @@ const QuickLink = ({
           style={{ backgroundColor: pressed ? theme.fill : 'transparent' }}
         >
           {icon}
-          <Text className="font-semibold text-[15px]" style={{ color: theme.label }}>
+          <Text className="text-[15px] font-semibold" style={{ color: theme.label }}>
             {title}
           </Text>
         </View>
@@ -143,7 +143,7 @@ const TypeChip = ({
     style={{ backgroundColor: selected ? theme.tint : theme.fill }}
   >
     <Text
-      className={selected ? 'font-semibold text-[14px]' : 'font-medium text-[14px]'}
+      className={selected ? 'text-[14px] font-semibold' : 'text-[14px] font-medium'}
       style={{ color: selected ? '#FFFFFF' : theme.label }}
     >
       {title}
@@ -264,7 +264,7 @@ export default function Home() {
   if (isError) {
     return (
       <CenteredMessage>
-        <Text className="font-bold text-lg" style={{ color: theme.label }}>
+        <Text className="text-lg font-bold" style={{ color: theme.label }}>
           Failed to load data!
         </Text>
         <Text className="mb-4 max-w-64 text-center" style={{ color: theme.secondaryLabel }}>
@@ -309,7 +309,7 @@ export default function Home() {
         </CenteredMessage>
       ) : locations.length === 0 && syncUnavailable ? (
         <CenteredMessage>
-          <Text className="mb-1 font-bold text-lg" style={{ color: theme.label }}>
+          <Text className="mb-1 text-lg font-bold" style={{ color: theme.label }}>
             Can't load menus yet
           </Text>
           <Text className="mb-4 text-center" style={{ color: theme.secondaryLabel }}>
@@ -344,7 +344,7 @@ export default function Home() {
           />
           <Text
             accessibilityRole="header"
-            className="mx-5 font-bold text-[32px]"
+            className="mx-5 text-[32px] font-bold"
             style={{ color: theme.label }}
           >
             {greeting(currentTime)}

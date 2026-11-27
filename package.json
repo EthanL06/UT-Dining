@@ -19,7 +19,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "build": "turbo run build",
-    "check": "biome check && turbo run typecheck test",
+    "check": "biome check && scripts/dev/check-comments.sh --all && turbo run typecheck test",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
@@ -30,7 +30,7 @@
     "admin": "node apps/cli/src/index.ts"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.1.2",
+    "@biomejs/biome": "2.6.9",
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
     "@types/node": "catalog:",

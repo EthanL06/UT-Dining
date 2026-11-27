@@ -10,7 +10,6 @@ import { usePushNotificationsStore } from '~/store/usePushNotificationsStore';
 import { supabase } from '~/utils/supabase';
 import { insertNotification } from '../database/database';
 
-// Global handler (still needed)
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: true,
@@ -74,14 +73,12 @@ export function PushNotificationsInitializer() {
       const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
       setExpoPushToken(token);
 
-      // Sync to Supabase
       const { data } = await supabase
         .from('user_devices')
         .select('push_token')
         .eq('device_id', deviceId)
         .single();
 
-      // If the device is not in the database, insert it
       if (!data) {
         const { error } = await supabase.from('user_devices').insert({
           device_id: deviceId,
@@ -95,7 +92,6 @@ export function PushNotificationsInitializer() {
           console.log('✅ Push token registered:', token);
         }
       } else if (data.push_token !== token) {
-        // If the push token is different, update it
         const { error } = await supabase.from('user_devices').upsert({
           device_id: deviceId,
           push_token: token,
@@ -114,7 +110,6 @@ export function PushNotificationsInitializer() {
 
     registerAndSync();
 
-    // Triggered when the app is in the foreground (when the app is open)
     const notificationListener = Notifications.addNotificationReceivedListener(
       async (notification) => {
         console.log('📱 Notification foreground received:', JSON.stringify(notification, null, 2));
@@ -137,7 +132,6 @@ export function PushNotificationsInitializer() {
       },
     );
 
-    // Triggered when the app is in the background (when the app is closed and the notification is tapped)
     const responseListener = Notifications.addNotificationResponseReceivedListener(
       async (response) => {
         console.log('📱 Notification background response:', JSON.stringify(response, null, 2));
@@ -161,7 +155,6 @@ export function PushNotificationsInitializer() {
           }
         }
 
-        // If there is a redirect url, navigate to it. If not, navigate to the notifications screen.
         const redirectUrl = notification.request.content.data?.redirect_url as Href | undefined;
         if (redirectUrl) {
           router.push(redirectUrl);

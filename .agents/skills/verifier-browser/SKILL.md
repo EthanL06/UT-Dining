@@ -10,7 +10,7 @@ Drives the dashboard and the website with agent-browser against the dev servers 
 | App | Start | URL | Needs |
 |---|---|---|---|
 | Dashboard | `pnpm --filter @ut-dining/dashboard dev --port <port>` (default 3000) | `http://localhost:<port>/login` | Local Supabase and a local user |
-| Website | `pnpm --filter @ut-dining/website dev --port <port>` (default 3001) | `http://localhost:<port>/ut-dining-website/` | Nothing |
+| Website | `pnpm --filter @ut-dining/website dev --port <port>` (default 3001) | `http://localhost:<port>/` | Nothing |
 
 ## Setup
 
@@ -33,7 +33,7 @@ For each claim that touches the UI:
 3. Check the result on the page (`get text`, `is visible`), not only that no error appeared. For a dashboard change that writes data, read it back after a reload, or with `docker exec -i supabase_db_ut-dining psql -U postgres -At -c "<query>"`.
 4. `agent-browser screenshot "$run/<claim>-<state>.png"` for each state the claim names. Use absolute paths; a relative path saves into agent-browser's own temp folder. For UI work, take the same states and viewports as the approved mockup (`set viewport 390 844` for mobile, `set media dark` for dark mode; the website has a "Toggle theme" button too).
 5. `agent-browser errors` and `agent-browser console`: a new error or warning from this change is a FAIL. HMR, Fast Refresh and React DevTools lines are normal in dev.
-6. Website links must keep the `/ut-dining-website` base path. A link or asset that drops it is a FAIL.
+6. Website links and assets must go through the base path so the `WEBSITE_STATIC_EXPORT=1` copy under `/ut-dining-website` still works. A hard-coded root link is a FAIL.
 
 Adjacent probes: reload the page and check the state survives when it should; go back and forward once.
 

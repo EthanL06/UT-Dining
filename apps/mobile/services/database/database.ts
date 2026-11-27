@@ -14,7 +14,6 @@ import { supabase } from '~/utils/supabase';
 import * as schema from './schema';
 import { allergens, food_item, location, menu, menu_category, nutrition } from './schema';
 
-// Type mapping for table names to their corresponding schema types
 export type DrizzleDB = ExpoSQLiteDatabase<typeof schema> & {
   $client: SQLiteDatabase;
 };
@@ -178,11 +177,6 @@ interface MenuSyncOptions {
   onCacheChange: () => void | Promise<void>;
 }
 
-/**
- * Updates the local cache from Supabase. The small tables are replaced on every run, then only the
- * menu days that changed are downloaded, today first. Each write is one transaction, so a failure
- * keeps what the cache had and a later run continues from the days that are left.
- */
 export const syncCacheWithSupabase = async (
   db: DrizzleDB,
   { force, syncedVersions, onVersionsChange, onCacheChange }: MenuSyncOptions,
@@ -226,14 +220,6 @@ export const syncCacheWithSupabase = async (
   }
 };
 
-/**
- * Retrieves a list of menu names for a given location.
- *
- * @param db - The Expo SQLite database instance.
- * @param locationName - The name of the location to query.
- * @param date - Optional date string in YYYY-MM-DD format. Defaults to today in Central Time.
- * @returns A Promise resolving to an array of menu names.
- */
 export const getLocationMenuNames = async (
   db: ExpoSQLiteDatabase<typeof schema>,
   locationName: string,
@@ -251,17 +237,6 @@ export const getLocationMenuNames = async (
   return data.map((row) => row.menu?.name).filter((name) => name !== undefined);
 };
 
-/**
- * Retrieves structured menu and food data for a specific location and menu name.
- *
- * If an error occurs during fetching, attempts to return only basic location info.
- *
- * @param db - The Expo SQLite database instance.
- * @param locationName - The name of the location to query.
- * @param menuName - The name of the menu to query.
- * @param date - Optional date string in YYYY-MM-DD format. Defaults to today in Central Time.
- * @returns A Promise resolving to a `Location` object or null if not found.
- */
 export const getLocationMenuData = async (
   db: ExpoSQLiteDatabase<typeof schema>,
   locationName: string,
@@ -273,7 +248,6 @@ export const getLocationMenuData = async (
 
     const data = await db
       .select({
-        // Complete location information
         location_id: schema.location.id,
         location_name: schema.location.name,
         location_colloquial_name: schema.location.colloquial_name,
@@ -293,7 +267,6 @@ export const getLocationMenuData = async (
         location_display_order: schema.location.display_order,
         location_latitude: schema.location.latitude,
         location_longitude: schema.location.longitude,
-        // Menu and food data
         menu_id: schema.menu.id,
         menu_name: schema.menu.name,
         category_id: schema.menu_category.id,
@@ -335,12 +308,10 @@ export const getLocationMenuData = async (
       .leftJoin(schema.nutrition, eq(schema.nutrition.id, schema.food_item.nutrition_id))
       .leftJoin(schema.location_type, eq(schema.location_type.id, schema.location.type_id))
       .where(
-        // Filter by location name, menu name, and date
         sql`${schema.location.name} = ${locationName} AND ${schema.menu.name} = ${menuName} AND ${schema.menu.date} = ${targetDate}`,
       )
       .execute();
 
-    // Create structured data from query result
     const structuredData: Location = {
       location_name: locationName,
       menus: [],
@@ -366,25 +337,21 @@ export const getLocationMenuData = async (
       longitude: data[0]?.location_longitude || null,
     };
 
-    // Create a menu entry for the selected menu
     const menuEntry: Menu = {
       menu_name: menuName,
       menu_categories: [],
     };
     structuredData.menus.push(menuEntry);
 
-    // Group food items by category
     const categoryMap = new Map<string, FoodItem[]>();
 
     for (const row of data) {
       if (!row.category_title) continue;
 
-      // Get or create array for this category
       if (!categoryMap.has(row.category_title)) {
         categoryMap.set(row.category_title, []);
       }
 
-      // Add food item to the category if it exists
       if (row.food_name) {
         const foodItems = categoryMap.get(row.category_title);
 
@@ -392,7 +359,6 @@ export const getLocationMenuData = async (
           throw new Error(`Food items array not found for category: ${row.category_title}`);
         }
 
-        // Check if food item already exists to avoid duplicates
         const existingItem = foodItems.find((item) => item.name === row.food_name);
         if (!existingItem) {
           foodItems.push({
@@ -405,7 +371,6 @@ export const getLocationMenuData = async (
       }
     }
 
-    // Convert the map to array of categories
     for (const [categoryTitle, foodItems] of categoryMap.entries()) {
       menuEntry.menu_categories.push({
         category_title: categoryTitle,
@@ -416,7 +381,6 @@ export const getLocationMenuData = async (
     return structuredData;
   } catch (e) {
     console.warn('⚠️ Error fetching location menu data:', e);
-    // Try to fetch just the location info as a fallback
     try {
       const locationOnly = await db
         .select({
@@ -448,7 +412,6 @@ export const getLocationMenuData = async (
         return null;
       }
 
-      // Return basic location info with empty menus array
       return {
         location_name: locationName,
         menus: [],
@@ -553,17 +516,6 @@ const toFoodItem = (row: Awaited<ReturnType<typeof findFoodItems>>[number]): Foo
   nutrition: (row.nutrition ?? undefined) as schema.Nutrition | undefined,
 });
 
-/**
- * Retrieves a single food item by its location, menu, category, and item name.
- *
- * @param db - The Expo SQLite database instance.
- * @param locationName - The location containing the item.
- * @param menuName - The menu containing the item.
- * @param categoryName - The category containing the item.
- * @param itemName - The name of the food item.
- * @param date - Optional date string in YYYY-MM-DD format. Defaults to today in Central Time.
- * @returns A Promise resolving to a `FoodItem` or null if not found.
- */
 export const getFoodItem = async (
   db: ExpoSQLiteDatabase<typeof schema>,
   locationName: string,
@@ -597,12 +549,6 @@ export const findServedFoodItem = async (
   return best ? toFoodItem(best) : null;
 };
 
-/**
- * Retrieves all favorite food items stored in the local database.
- *
- * @param db - The Expo SQLite database instance.
- * @returns A Promise resolving to an array of favorite items.
- */
 export const getFavorites = async (db: ExpoSQLiteDatabase<typeof schema>) => {
   const data = await db.select().from(schema.favorites).execute();
 
@@ -612,14 +558,6 @@ export const getFavorites = async (db: ExpoSQLiteDatabase<typeof schema>) => {
 const favoriteMatch = (foodName: string, locationName: string) =>
   and(eq(schema.favorites.name, foodName), eq(schema.favorites.location_name, locationName));
 
-/**
- * Checks whether a food item is a favorite at a location.
- *
- * @param db - The Expo SQLite database instance.
- * @param foodName - The name of the food item.
- * @param locationName - The location the item is served at.
- * @returns A boolean indicating if the item is a favorite.
- */
 export const isFavoriteItem = (
   db: ExpoSQLiteDatabase<typeof schema>,
   foodName: string,
@@ -634,14 +572,6 @@ export const isFavoriteItem = (
   return favorite !== null && favorite !== undefined;
 };
 
-/**
- * Retrieves a favorite food item by its name and location.
- *
- * @param db - The Expo SQLite database instance.
- * @param foodName - The name of the food item.
- * @param locationName - The location the item was saved from.
- * @returns The favorite item, or undefined.
- */
 export const getFavoriteItem = (
   db: ExpoSQLiteDatabase<typeof schema>,
   foodName: string,
@@ -650,20 +580,6 @@ export const getFavoriteItem = (
   return db.select().from(schema.favorites).where(favoriteMatch(foodName, locationName)).get();
 };
 
-/**
- * Toggles a food item's favorite status at a location:
- * - Adds it to favorites if not present.
- * - Removes it if already marked as favorite.
- *
- * Also copies nutrition and allergens data into the favorites table.
- *
- * @param db - The Expo SQLite database instance.
- * @param foodItem - The food item to toggle.
- * @param locationName - The location name associated with the item.
- * @param menuName - The menu name associated with the item.
- * @param categoryName - The category name associated with the item.
- * @returns A Promise resolving to true if added, or false if removed.
- */
 export const toggleFavorites = async (
   db: ExpoSQLiteDatabase<typeof schema>,
   foodItem: FoodItem,
@@ -680,7 +596,6 @@ export const toggleFavorites = async (
     return false;
   }
 
-  // Get nutrition and allergens data
   const nutrition =
     (foodItem.nutrition?.id
       ? db
@@ -699,7 +614,6 @@ export const toggleFavorites = async (
           .get()
       : undefined) ?? foodItem.allergens;
 
-  // Insert into favorites table
   await db
     .insert(schema.favorites)
     .values({
@@ -710,7 +624,6 @@ export const toggleFavorites = async (
       date_added: new Date().toISOString(),
       link: foodItem.link,
 
-      // Copy nutrition data
       serving_size: nutrition?.serving_size,
       calories: nutrition?.calories,
       total_fat: nutrition?.total_fat,
@@ -728,7 +641,6 @@ export const toggleFavorites = async (
       potassium: nutrition?.potassium,
       ingredients: nutrition?.ingredients,
 
-      // Copy allergens data
       beef: allergens?.beef,
       egg: allergens?.egg,
       fish: allergens?.fish,
@@ -749,13 +661,6 @@ export const toggleFavorites = async (
   return true;
 };
 
-/**
- * Retrieves detailed information about a specific location.
- *
- * @param db - The Expo SQLite database instance.
- * @param locationName - The name of the location to query.
- * @returns A Promise resolving to a `LocationWithType` object or null if not found.
- */
 export const getLocationDetails = async (
   db: ExpoSQLiteDatabase<typeof schema>,
   locationName: string,
@@ -804,13 +709,6 @@ export const getLocationDetails = async (
   }
 };
 
-/**
- * Retrieves complete location data including menus, categories, and food items.
- *
- * @param db - The Expo SQLite database instance.
- * @param locationName - The name of the location.
- * @returns A Promise resolving to a structured `Location` object or null.
- */
 export const getCompleteLocationData = async (
   db: ExpoSQLiteDatabase<typeof schema>,
   locationName: string,
@@ -818,7 +716,6 @@ export const getCompleteLocationData = async (
   try {
     const data = await db
       .select({
-        // Complete location information
         location_id: schema.location.id,
         location_name: schema.location.name,
         location_colloquial_name: schema.location.colloquial_name,
@@ -838,7 +735,6 @@ export const getCompleteLocationData = async (
         location_display_order: schema.location.display_order,
         location_latitude: schema.location.latitude,
         location_longitude: schema.location.longitude,
-        // Menu and food data (optional)
         menu_id: schema.menu.id,
         menu_name: schema.menu.name,
         category_id: schema.menu_category.id,
@@ -886,7 +782,6 @@ export const getCompleteLocationData = async (
       return null;
     }
 
-    // Create structured data from query result
     const structuredData: Location = {
       location_name: locationName,
       menus: [],
@@ -912,13 +807,11 @@ export const getCompleteLocationData = async (
       longitude: data[0]?.location_longitude || null,
     };
 
-    // Group menus and their categories
     const menuMap = new Map<string, Menu>();
 
     for (const row of data) {
       if (!row.menu_name) continue;
 
-      // Get or create menu
       if (!menuMap.has(row.menu_name)) {
         menuMap.set(row.menu_name, {
           menu_name: row.menu_name,
@@ -930,7 +823,6 @@ export const getCompleteLocationData = async (
 
       if (!menu) continue;
 
-      // Group food items by category within this menu
       if (row.category_title) {
         let category = menu.menu_categories.find(
           (cat) => cat.category_title === row.category_title,
@@ -944,7 +836,6 @@ export const getCompleteLocationData = async (
           menu.menu_categories.push(category);
         }
 
-        // Add food item to the category if it exists and isn't already added
         if (row.food_name) {
           const existingItem = category.food_items.find((item) => item.name === row.food_name);
           if (!existingItem) {
@@ -959,7 +850,6 @@ export const getCompleteLocationData = async (
       }
     }
 
-    // Convert the map to array of menus
     structuredData.menus = Array.from(menuMap.values());
 
     return structuredData;
@@ -969,12 +859,6 @@ export const getCompleteLocationData = async (
   }
 };
 
-/**
- * Retrieves app-wide information (e.g., configuration or metadata).
- *
- * @param db - The Expo SQLite database instance.
- * @returns A Promise resolving to the `AppInformation` object or null.
- */
 export const getAppInformation = async (
   db: ExpoSQLiteDatabase<typeof schema>,
 ): Promise<schema.AppInformation | null> => {
@@ -992,12 +876,6 @@ export const getAppInformation = async (
   }
 };
 
-/**
- * Retrieves all locations that have geographic coordinates.
- *
- * @param db - The Expo SQLite database instance.
- * @returns A Promise resolving to an array of locations with latitude and longitude.
- */
 export const getAllLocationsWithCoordinates = async (
   db: ExpoSQLiteDatabase<typeof schema>,
 ): Promise<
@@ -1032,12 +910,6 @@ export const getAllLocationsWithCoordinates = async (
   }));
 };
 
-/**
- * Retrieves all available notification types.
- *
- * @param db - The Expo SQLite database instance.
- * @returns A Promise resolving to an array of notification types.
- */
 export const getNotificationTypes = async (
   db: ExpoSQLiteDatabase<typeof schema>,
 ): Promise<schema.NotificationType[]> => {
@@ -1045,12 +917,6 @@ export const getNotificationTypes = async (
   return data;
 };
 
-/**
- * Retrieves all notifications, ordered by the most recent.
- *
- * @param db - The Expo SQLite database instance.
- * @returns A Promise resolving to an array of notifications with their type names.
- */
 export const getNotifications = async (
   db: ExpoSQLiteDatabase<typeof schema>,
 ): Promise<(schema.Notification & { type_name: string })[]> => {
@@ -1083,13 +949,6 @@ export const getNotifications = async (
   }));
 };
 
-/**
- * Inserts a notification into the local SQLite database if it doesn't already exist.
- *
- * @param db - The Expo SQLite database instance.
- * @param notificationData - The notification data to insert.
- * @returns A Promise resolving when the insert is complete.
- */
 export const insertNotification = async (
   db: ExpoSQLiteDatabase<typeof schema>,
   notificationData: {
@@ -1105,7 +964,6 @@ export const insertNotification = async (
     const notificationId =
       notificationData.id || `notif_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
-    // Check if notification with this ID already exists
     const existingNotification = await db
       .select({ id: schema.notifications.id })
       .from(schema.notifications)

@@ -4,10 +4,12 @@ import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams } from 'expo-router';
+import { ChefHat, Heart } from 'lucide-react-native';
 import { usePostHog } from 'posthog-react-native';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
-import { Container } from '~/components/Container';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { RowPosition } from '~/components/FoodComponent';
 import type { ListItem } from '~/hooks/useCategoryExpansion';
 import { useCategoryExpansion } from '~/hooks/useCategoryExpansion';
 import { useDatabase } from '~/hooks/useDatabase';
@@ -18,19 +20,18 @@ import { useScrollToTop } from '~/hooks/useScrollToTop';
 import * as schema from '~/services/database/schema';
 import { type FiltersState, useFiltersStore } from '~/store/useFiltersStore';
 import { mealPlanItemId, useMealPlanItems } from '~/store/useMealPlanStore';
-import { useSettingsStore } from '~/store/useSettingsStore';
+import { useMealStripStore } from '~/store/useMealStripStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { filterFoodItems } from '~/utils/filter';
-import { cn } from '~/utils/utils';
+import { addFoodsToMealPlan, favoriteFoods } from '~/utils/foodActions';
+import { useTheme } from '~/utils/theme';
+import { displayNutrient } from '~/utils/utils';
 import CategoryHeader from './components/CategoryHeader';
 import FoodItemRow from './components/FoodItemRow';
 import LocationHeader from './components/LocationHeader';
 import ScrollToTopButton from './components/ScrollToTopButton';
 import SkeletonItem from './components/SkeletonItem';
 
-/**
- * Filter items based on search query and user-selected filters
- */
 const useFilteredItems = (
   flattenedItems: ListItem[],
   debouncedSearchQuery: string,
@@ -42,7 +43,6 @@ const useFilteredItems = (
   return React.useMemo(() => {
     const mealPlanIds = new Set(mealPlanItems.map((planItem) => planItem.id));
 
-    // First, filter by search query
     let result = flattenedItems;
 
     if (debouncedSearchQuery.trim()) {
@@ -59,13 +59,11 @@ const useFilteredItems = (
 
           if (foodName.includes(query)) {
             if (currentCategory && !processedCategoryIds.has(currentCategory.id)) {
-              // Respect the actual expansion state of categories in search results
               result.push({
                 ...currentCategory,
               });
               processedCategoryIds.add(currentCategory.id);
             }
-            // Respect the category's expansion state for hiding items
             result.push({
               ...item,
               hidden: currentCategory ? !currentCategory.isExpanded : false,
@@ -75,7 +73,6 @@ const useFilteredItems = (
       }
     }
 
-    // Then, apply additional filters (favorites, allergens, dietary)
     if (
       Object.values(filters).some(
         (val) =>
@@ -89,13 +86,10 @@ const useFilteredItems = (
 
       for (const item of result) {
         if (item.type === 'category_header') {
-          // Don't add category headers yet, we'll add them if they have matching items
           currentCategory = item;
         } else if (item.type === 'food_item') {
-          // Apply additional filters to food items
           const foodItem = item.data;
 
-          // Use our utility function to check if this item passes all filters
           const categoryName = item.categoryId;
           const isInMealPlan = (food: typeof foodItem) =>
             mealPlanIds.has(
@@ -107,16 +101,13 @@ const useFilteredItems = (
               }),
             );
           if (filterFoodItems([foodItem], filters, favorites, isInMealPlan).length > 0) {
-            // Item passed all filters, so add its category header if not already added
             if (currentCategory && !filteredCategories.has(currentCategory.id)) {
               filteredResult.push(currentCategory);
               filteredCategories.add(currentCategory.id);
             }
-            // Then add the item itself
             filteredResult.push(item);
           }
         } else {
-          // Pass through any other item types
           filteredResult.push(item);
         }
       }
@@ -136,26 +127,41 @@ const useFilteredItems = (
   ]);
 };
 
-/**
- * Generate skeleton items for loading state
- */
+const SKELETON_SECTIONS = [4, 3];
+
 const useSkeletonItems = (): ListItem[] => {
   return React.useMemo(() => {
     const items: ListItem[] = [];
-    for (let i = 0; i < 2; i++) {
+    for (const [i, itemCount] of SKELETON_SECTIONS.entries()) {
       items.push({ type: 'skeleton_header', id: `skeleton-header-${i}` } as const);
-      const itemCount = Math.floor(Math.random() * 2) + 3;
       for (let j = 0; j < itemCount; j++) {
-        items.push({ type: 'skeleton_item', id: `skeleton-item-${i}-${j}` } as const);
+        const position = j === 0 ? 'first' : j === itemCount - 1 ? 'last' : 'middle';
+        items.push({ type: 'skeleton_item', id: `skeleton-item-${i}-${j}-${position}` } as const);
       }
     }
     return items;
   }, []);
 };
 
+const positionsFor = (items: ListItem[]) => {
+  const visible = items.filter((item) => !(item.type === 'food_item' && item.hidden));
+  const positions = new Map<string, RowPosition>();
+  visible.forEach((item, index) => {
+    if (item.type !== 'food_item') return;
+    const startsGroup = visible[index - 1]?.type !== 'food_item';
+    const endsGroup = visible[index + 1]?.type !== 'food_item';
+    positions.set(
+      item.id,
+      startsGroup && endsGroup ? 'single' : startsGroup ? 'first' : endsGroup ? 'last' : 'middle',
+    );
+  });
+  return positions;
+};
+
 const Location = () => {
-  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
-  // Core state and data
+  const theme = useTheme();
+  const insets = useSafeAreaInsets();
+  const setLastOpenedLocation = useMealStripStore((state) => state.setLastOpenedLocation);
   const { location } = useLocalSearchParams<{ location: string }>();
   const [selectedDate, setSelectedDate] = useState(getTodayInCentralTime());
   const {
@@ -169,22 +175,44 @@ const Location = () => {
   const isSyncing = useIsFetching({ queryKey: MENU_SYNC_QUERY_KEY }) > 0;
   const { toggleCategory, flattenedItems, resetExpandedCategories } = useCategoryExpansion(data);
   const db = useDatabase();
+  const [selecting, setSelecting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const posthog = usePostHog();
+
+  useEffect(() => {
+    if (location) setLastOpenedLocation(location);
+  }, [location, setLastOpenedLocation]);
+
+  const toggleSelected = useCallback((id: string) => {
+    setSelectedIds((previous) => {
+      const next = new Set(previous);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const startSelecting = useCallback((id: string) => {
+    setSelecting(true);
+    setSelectedIds(new Set([id]));
+  }, []);
+
+  const stopSelecting = useCallback(() => {
+    setSelecting(false);
+    setSelectedIds(new Set());
+  }, []);
 
   const { data: favorites } = useLiveQuery(
     db.select().from(schema.favorites).where(eq(schema.favorites.location_name, location)),
     [location],
   );
 
-  // Get active filters from filters store
   const activeFilters = useFiltersStore((state) => state.filters);
 
-  // Search state
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  // Custom hooks for UI elements
   const filteredItems = useFilteredItems(
     flattenedItems,
     debouncedSearchQuery,
@@ -194,17 +222,14 @@ const Location = () => {
   );
   const skeletonItems = useSkeletonItems();
 
-  // Scroll to top functionality
   const listRef = useRef<FlashListRef<ListItem>>(null);
   const { showScrollToTop, scrollButtonAnimation, handleScroll, scrollToTop } =
     useScrollToTop(listRef);
 
-  // Date change handler
   const handleDateChange = (date: string) => {
     setSelectedDate(date);
   };
 
-  // Reset search and expanded categories when menu or date changes
   useEffect(() => {
     try {
       setSearchQuery('');
@@ -222,10 +247,9 @@ const Location = () => {
     }
   }, [location, posthog]);
 
-  // Memoize the displayed items to prevent unnecessary recalculations
   const displayedItems = useMemo(() => {
     if (loading) return skeletonItems;
-    if (error) return []; // Return empty array on error, EmptyState will handle the display
+    if (error) return [];
     return debouncedSearchQuery ||
       Object.values(activeFilters).some(
         (val) => val === true || (typeof val === 'object' && Object.values(val).some((v) => v)),
@@ -242,26 +266,38 @@ const Location = () => {
     activeFilters,
   ]);
 
-  // In your renderItem function in [location].tsx
+  const positions = useMemo(() => positionsFor(displayedItems), [displayedItems]);
+
+  const selectedEntries = useMemo(
+    () =>
+      flattenedItems.flatMap((item) =>
+        item.type === 'food_item' && selectedIds.has(item.id)
+          ? [{ food: item.data, category: item.categoryId }]
+          : [],
+      ),
+    [flattenedItems, selectedIds],
+  );
+  const selectedCalories = selectedEntries.reduce(
+    (total, { food }) => total + (Number.parseFloat(food.nutrition?.calories ?? '') || 0),
+    0,
+  );
+
   const renderItem = useCallback(
     ({ item }: { item: ListItem }) => {
       switch (item.type) {
         case 'category_header':
           return (
-            <View className="mt-4 px-6">
-              <CategoryHeader
-                title={item.title}
-                isExpanded={item.isExpanded}
-                onToggle={async () => {
-                  toggleCategory(item.id);
-                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }}
-              />
-            </View>
+            <CategoryHeader
+              title={item.title}
+              isExpanded={item.isExpanded}
+              onToggle={async () => {
+                toggleCategory(item.id);
+                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }}
+            />
           );
 
         case 'food_item': {
-          // Don't render if marked as hidden
           if (item.hidden) {
             return null;
           }
@@ -274,6 +310,11 @@ const Location = () => {
               date={selectedDate}
               db={db}
               favorites={favorites}
+              position={positions.get(item.id) ?? 'single'}
+              selecting={selecting}
+              selected={selectedIds.has(item.id)}
+              onToggleSelect={toggleSelected}
+              onSelectMultiple={startSelecting}
             />
           );
         }
@@ -282,16 +323,27 @@ const Location = () => {
           return <SkeletonItem isHeader />;
 
         case 'skeleton_item':
-          return <SkeletonItem />;
+          return <SkeletonItem position={item.id.split('-').pop() as RowPosition} />;
 
         default:
           return null;
       }
     },
-    [selectedMenu, location, selectedDate, toggleCategory, favorites, db],
+    [
+      selectedMenu,
+      location,
+      selectedDate,
+      toggleCategory,
+      favorites,
+      db,
+      positions,
+      selecting,
+      selectedIds,
+      toggleSelected,
+      startSelecting,
+    ],
   );
 
-  // Empty state component
   const EmptyState = useCallback(() => {
     if (loading) return null;
     if (isSyncing) {
@@ -322,45 +374,111 @@ const Location = () => {
 
     return (
       <View className="mt-12 flex-1 items-center justify-center">
-        <Text className="font-bold text-ut-burnt-orange text-xl">{title}</Text>
-        <Text className={cn('text-sm', isDarkMode ? 'text-gray-300' : 'text-gray-600')}>
+        <Text className="text-[17px] font-semibold" style={{ color: theme.label }}>
+          {title}
+        </Text>
+        <Text className="mt-1 text-[15px]" style={{ color: theme.secondaryLabel }}>
           {subtitle()}
         </Text>
       </View>
     );
-  }, [loading, isSyncing, error, debouncedSearchQuery, activeFilters, isDarkMode]);
+  }, [loading, isSyncing, error, debouncedSearchQuery, activeFilters, theme]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: isDarkMode ? '#171717' : '#fff' }}>
+    <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: insets.top }}>
       <Stack.Screen options={{ title: 'Location' }} />
-      <Container className="relative mx-0 w-full flex-1">
-        <FlashList
-          extraData={favorites}
-          ref={listRef}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-          showsVerticalScrollIndicator
-          data={displayedItems}
-          removeClippedSubviews
-          ListHeaderComponent=<LocationHeader
-            location={location}
-            selectedMenu={selectedMenu ?? null}
-            setSelectedMenu={setSelectedMenu}
-            filters={menuFilters}
-            query={searchQuery}
-            setQuery={(query) => {
-              resetExpandedCategories();
-              setSearchQuery(query);
-            }}
-            selectedDate={selectedDate}
-            onDateChange={handleDateChange}
-          />
-          ListEmptyComponent={<EmptyState />}
-          renderItem={renderItem}
-          getItemType={(item) => ('type' in item ? item.type : 'unknown')}
-          keyboardShouldPersistTaps="always"
+      <FlashList
+        extraData={[favorites, positions, selecting, selectedIds]}
+        ref={listRef}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator
+        data={displayedItems}
+        removeClippedSubviews
+        contentContainerStyle={{ paddingBottom: insets.bottom + (selecting ? 96 : 32) }}
+        ListHeaderComponent=<LocationHeader
+          location={location}
+          selectedMenu={selectedMenu ?? null}
+          setSelectedMenu={setSelectedMenu}
+          filters={menuFilters}
+          query={searchQuery}
+          setQuery={(query) => {
+            resetExpandedCategories();
+            setSearchQuery(query);
+          }}
+          selectedDate={selectedDate}
+          onDateChange={handleDateChange}
+          selecting={selecting}
+          onDoneSelecting={stopSelecting}
         />
+        ListEmptyComponent={<EmptyState />}
+        renderItem={renderItem}
+        getItemType={(item) => ('type' in item ? item.type : 'unknown')}
+        keyboardShouldPersistTaps="always"
+      />
 
+      {selecting ? (
+        <View
+          className="absolute right-4 left-4 flex-row items-center gap-x-2 rounded-full p-2"
+          style={{
+            bottom: insets.bottom + 8,
+            backgroundColor: theme.card,
+            shadowColor: '#000',
+            shadowOpacity: 0.15,
+            shadowRadius: 16,
+            shadowOffset: { width: 0, height: 6 },
+          }}
+        >
+          <Pressable
+            testID="select-favorite-button"
+            accessibilityLabel="Add selected to favorites"
+            accessibilityRole="button"
+            disabled={selectedEntries.length === 0}
+            onPress={async () => {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              await favoriteFoods(
+                db,
+                selectedEntries.map((entry) => ({
+                  ...entry,
+                  isFavorite: favorites.some((favorite) => favorite.name === entry.food.name),
+                })),
+                { location, menu: selectedMenu ?? '' },
+              );
+              stopSelecting();
+            }}
+            className="size-11 items-center justify-center rounded-full"
+            style={{ backgroundColor: theme.fill }}
+          >
+            <Heart size={20} color={theme.label} />
+          </Pressable>
+          <Pressable
+            testID="select-add-meal-plan-button"
+            accessibilityRole="button"
+            disabled={selectedEntries.length === 0}
+            onPress={() => {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              addFoodsToMealPlan(selectedEntries, {
+                location,
+                menu: selectedMenu ?? '',
+                date: selectedDate,
+              });
+              stopSelecting();
+            }}
+            className="h-11 flex-1 flex-row items-center justify-center gap-x-2 rounded-full"
+            style={{
+              backgroundColor: theme.tint,
+              opacity: selectedEntries.length === 0 ? 0.5 : 1,
+            }}
+          >
+            <ChefHat size={18} color="#FFFFFF" />
+            <Text className="text-[15px] font-semibold text-white">
+              {selectedEntries.length === 0
+                ? 'Select items'
+                : `Add ${selectedEntries.length} to Meal Plan · ${displayNutrient(String(Math.round(selectedCalories)))} kcal`}
+            </Text>
+          </Pressable>
+        </View>
+      ) : (
         <ScrollToTopButton
           visible={showScrollToTop}
           animationValue={scrollButtonAnimation}
@@ -369,7 +487,7 @@ const Location = () => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           }}
         />
-      </Container>
+      )}
     </View>
   );
 };

@@ -42,11 +42,15 @@ It refuses to run unless `supabase status` reports a `http://127.0.0.1:` API URL
 | `onboarding.yaml` | Onboarding steps, Finish lands on Home, a relaunch skips onboarding |
 | `location-menu.yaml` | J2 menu shows categories and items, a category collapses and expands |
 | `menu-search.yaml` | Search narrows the menu, a miss shows the empty state, Cancel clears it |
-| `menu-meals-and-dates.yaml` | Meal chips switch menus, the date arrows load tomorrow's menu |
+| `menu-meals-and-dates.yaml` | The meal picker switches menus, and the week strip (`menu-day-<offset>`) loads tomorrow's menu |
 | `food-details.yaml` | A food opens nutrition and allergens |
+| `save-hold-and-select.yaml` | Press and hold on a food adds it to the meal plan, Select Multiple adds several foods at once, and Reset empties the plan |
 | `favorites.yaml` | Heart on a food and a left swipe add favorites, left swipes remove them |
 | `meal-plan.yaml` | A right swipe and the chef hat add to the meal plan, right swipes remove |
 | `settings.yaml` | Dark mode switch, Sync Data, Favorites quick link |
+| `filters.yaml` | Hiding soy removes the soy foods from the J2 menu, and Reset brings them back |
+| `no-menu-location.yaml` | Search opens a place without a menu, which shows Directions and Hours |
+| `map.yaml` | The map sheet filters to dining halls, opens J2's place card and its menu, and closes the card |
 | `tabs.yaml` | Every tab by its `testID` (`home-tab`, `map-tab`, `notifications-tab`, `settings-tab`, `search-tab`), with the search tab last because opening it collapses the other tabs |
 | `search.yaml` | The search tab finds a food on today's menus and opens it, and a miss shows the empty state |
 | `meal-strip.yaml` | When a dining hall is serving a meal, the strip opens its menu, and its x hides it after a relaunch. Skipped when no meal is being served at run time |
@@ -55,7 +59,7 @@ Every flow except `onboarding.yaml` starts from a clean install on Home (`subflo
 
 ## Writing flows
 
-- Match on visible text when it is stable. For icon buttons, use the `testID` on the component (`back-button`, `location-favorites-button`, `food-favorite-button`, `food-meal-plan-button`, `date-next-button`, `menu-search-input`, `settings-dark-mode-switch` and others).
+- Match on visible text when it is stable. For icon buttons, use the `testID` on the component (`back-button`, `location-favorites-button`, `food-favorite-button`, `food-meal-plan-button`, `menu-day-1`, `select-done-button`, `select-add-meal-plan-button`, `menu-search-input`, `settings-dark-mode-switch` and others).
 - Use the fixture items, never scraped menus, so a flow does not depend on what UT serves that day.
 - Run one flow with `maestro test <file>` while you write it, and `maestro studio` to inspect the screen.
 
@@ -64,3 +68,11 @@ Every flow except `onboarding.yaml` starts from a clean install on Home (`subflo
 `.github/workflows/mobile-e2e.yml` runs the suite on GitHub macOS runners: one job builds the release simulator app (or finds it in the cache), then three jobs split the flows, and a `Maestro on iOS` job reports the combined result. It runs only on pull requests from `staging` into `main`, and can be started by hand from the Actions tab. macOS runners have no Docker, so the app points at `scripts/qa/e2e-fixture-server.ts` and each job runs `mobile-e2e.sh --release --fixture-server --retry-failed <its flows>`, which runs any failed flows once more in a fresh Maestro session. The runner is slow and its XCTest driver sometimes dies, so one retry keeps those from failing the check; a flow that fails twice is a real failure. A flow that passes only on the retry shows up as a "Flaky" warning on the run, so fix it instead of letting the retry hide it. The shards are balanced by how long each flow takes: `SHARD_1_FLOWS` and `SHARD_2_FLOWS` in the workflow name theirs, and shard 3 runs every other flow, so a new flow lands there until you move it. The fixture server answers the Supabase REST reads the app makes (`select`, `eq`, `in`, `order`, `offset`, `limit`) from `base.json` and `menus.json`, with the same rows and columns local Supabase returns. If the app starts using another table or filter, add it to the server, or the CI run fails with a 400 or 404 from it.
 
 To run the same thing on a Mac without Docker, build the app with `EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:54331` and pass `--fixture-server`.
+
+The release app build lives in `.github/actions/ios-sim-app`, shared by this workflow and the screenshots workflow. A cache hit on the app skips the build. On a miss, the build restores ccache and the CocoaPods download cache, so a rebuild after a small native change compiles only what changed.
+
+## Screenshots
+
+`apps/mobile/e2e/screenshots.txt` lists the screens to capture, one per line: a name, then the deep link path opened as `ut-dining://<path>` (no path means Home). `scripts/qa/mobile-screenshots.sh` (or `make screenshots SIM=<UDID>`) generates a Maestro flow that opens `ut-dining://e2e-setup?theme=light|dark` to skip onboarding and pick the theme, then screenshots each screen in both themes into `.context/screenshots/<name>-<theme>.png`.
+
+No Mac is needed: add the `screenshots` label to a pull request and `.github/workflows/mobile-screenshots.yml` runs the same script on a GitHub macOS runner against the fixture server. It runs again on each push while the label stays on. It force-pushes the images to the orphan branch `assets/pr-<number>` (with both `vercel.json` files) and writes `index.md` there: a light and dark table to paste into the PR body, also in the run summary. Read it from `https://raw.githubusercontent.com/EthanL06/UT-Dining/assets/pr-<number>/index.md`. Add a line to `screenshots.txt` for each screen a PR changes. Screens that need taps first (the food screen, sheets) are not covered; add a Maestro flow with `takeScreenshot` for those.

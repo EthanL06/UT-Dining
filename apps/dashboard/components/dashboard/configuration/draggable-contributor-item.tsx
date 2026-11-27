@@ -69,7 +69,6 @@ export function DraggableContributorItem(props: DraggableContributorItemProps) {
   }, []);
 
   if (!isClient) {
-    // Return a non-interactive version for SSR
     return (
       <Paper p="sm" withBorder>
         <Group gap="sm" align="center">

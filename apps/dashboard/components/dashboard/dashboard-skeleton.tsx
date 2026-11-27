@@ -5,13 +5,11 @@ import { Flex, Group, Paper, Skeleton, Stack, Table } from '@mantine/core';
 export default function DashboardSkeleton() {
   return (
     <Stack component="main" py="md" px="lg">
-      {/* Header skeleton */}
       <Flex justify="space-between" align="center" mb="md">
         <Skeleton height={32} width={120} />
         <Skeleton height={36} width={140} />
       </Flex>
 
-      {/* Table skeleton */}
       <Paper p="md" withBorder>
         <Table striped highlightOnHover withRowBorders={false}>
           <Table.Thead>
@@ -37,10 +35,8 @@ export default function DashboardSkeleton() {
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {/* Generate 5 skeleton rows */}
             {Array.from({ length: 5 }, (_, index) => `skeleton-row-${index}`).map((rowKey) => (
               <Table.Tr key={rowKey}>
-                {/* Name column with avatar and text */}
                 <Table.Td>
                   <Group gap="sm">
                     <Skeleton height={32} width={32} radius="xl" />
@@ -50,18 +46,15 @@ export default function DashboardSkeleton() {
                     </div>
                   </Group>
                 </Table.Td>
-                {/* Address column */}
                 <Table.Td>
                   <Skeleton height={16} width={150} />
                 </Table.Td>
-                {/* Description column */}
                 <Table.Td>
                   <div>
                     <Skeleton height={14} width={180} mb={2} />
                     <Skeleton height={14} width={120} />
                   </div>
                 </Table.Td>
-                {/* Payment methods column with avatars */}
                 <Table.Td>
                   <Group gap="xs">
                     <Skeleton height={32} width={32} radius="xl" />
@@ -69,11 +62,9 @@ export default function DashboardSkeleton() {
                     <Skeleton height={32} width={32} radius="xl" />
                   </Group>
                 </Table.Td>
-                {/* Status column */}
                 <Table.Td>
                   <Skeleton height={20} width={60} radius="md" />
                 </Table.Td>
-                {/* Actions column */}
                 <Table.Td>
                   <Group gap="xs">
                     <Skeleton height={28} width={28} radius="sm" />

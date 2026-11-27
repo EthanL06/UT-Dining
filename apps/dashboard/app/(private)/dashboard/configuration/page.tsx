@@ -9,7 +9,6 @@ import type { AppConfig, CreditsConfig, HelpSupportConfig } from '@/types/config
 import { getAppConfig, getCreditsConfig, getHelpSupportConfig } from './action';
 
 function ConfigurationContent() {
-  // Fetch all configuration data
   const appConfigPromise = getAppConfig();
   const creditsConfigPromise = getCreditsConfig();
   const helpSupportConfigPromise = getHelpSupportConfig();
@@ -42,7 +41,6 @@ async function ConfigurationSections({
   creditsConfigPromise: Promise<CreditsConfig>;
   helpSupportConfigPromise: Promise<HelpSupportConfig>;
 }) {
-  // Wait for all data to load
   const [appConfig, creditsConfig, helpSupportConfig] = await Promise.all([
     appConfigPromise,
     creditsConfigPromise,

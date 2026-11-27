@@ -121,7 +121,7 @@ export async function checkLocationHasMenus(locationId: string): Promise<boolean
 
   if (error) {
     console.error('❌ Menu check error:', error.message);
-    return false; // Assume no menus if error occurs
+    return false;
   }
 
   const hasMenus = data && data.length > 0;

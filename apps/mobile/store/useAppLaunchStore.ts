@@ -4,17 +4,14 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { zustandStorage } from './rnmmkv-storage';
 
 interface AppLaunchState {
-  // Launch tracking
   launchCount: number;
   firstLaunchTimestamp: number | null;
   hasShownRatingPrompt: boolean;
 
-  // Actions
   incrementLaunchCount: () => void;
   markRatingPromptShown: () => void;
   resetRatingPrompt: () => void;
 
-  // Helpers
   shouldShowRatingPrompt: () => boolean;
   isSecondLaunch: () => boolean;
 }

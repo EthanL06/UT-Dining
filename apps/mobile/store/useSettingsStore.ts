@@ -14,7 +14,6 @@ interface SettingsState {
   toggleColorBlindMode: () => void;
 }
 
-// Get the initial color scheme from device
 const devicePrefersDarkMode = Appearance.getColorScheme() === 'dark';
 
 export const useSettingsStore = create<SettingsState>()(

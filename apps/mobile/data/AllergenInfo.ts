@@ -48,7 +48,6 @@ const ALLERGEN_ICONS: Record<AllergenKey, ImageSourcePropType> = {
   halal: HalalIcon,
 };
 
-// Constants
 const NUTRITION_ORDER = [
   'Calories',
   'Total Fat',
@@ -84,4 +83,4 @@ const DAILY_VALUES: Record<string, number> = {
 const INDENTED_NUTRITION = new Set(['Saturated Fat', 'Trans Fat', 'Dietary Fiber', 'Total Sugars']);
 const ALLERGEN_EXCEPTIONS = new Set(['halal', 'vegan', 'vegetarian']);
 
-export { ALLERGEN_ICONS, NUTRITION_ORDER, DAILY_VALUES, INDENTED_NUTRITION, ALLERGEN_EXCEPTIONS };
+export { ALLERGEN_EXCEPTIONS, ALLERGEN_ICONS, DAILY_VALUES, INDENTED_NUTRITION, NUTRITION_ORDER };

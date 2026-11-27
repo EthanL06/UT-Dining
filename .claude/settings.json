@@ -1,4 +1,37 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(make help)",
+      "Bash(make verify:*)",
+      "Bash(make check)",
+      "Bash(make lint)",
+      "Bash(make typecheck)",
+      "Bash(make test)",
+      "Bash(make fix)",
+      "Bash(make check-comments:*)",
+      "Bash(make doctor)",
+      "Bash(make db-status)",
+      "Bash(make sims)",
+      "Bash(pnpm check)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm fix)",
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm test)",
+      "Bash(pnpm --filter @ut-dining/* typecheck)",
+      "Bash(pnpm --filter @ut-dining/* test:*)",
+      "Bash(pnpm exec vitest:*)",
+      "Bash(pnpm exec biome:*)",
+      "Bash(pnpm biome:*)",
+      "Bash(scripts/dev/verify.sh)",
+      "Bash(scripts/dev/check-comments.sh:*)",
+      "Bash(xcrun simctl list:*)",
+      "Bash(xcrun simctl io:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
