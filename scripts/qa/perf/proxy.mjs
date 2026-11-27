@@ -9,6 +9,18 @@ let traffic = { req: 0, bytes: 0, first: 0, last: 0 };
 const profiles = { pass: { lat: 0, bps: 0 }, slow: { lat: 150, bps: 200000 } };
 let bucketFree = 0;
 const log = (o) => fs.appendFileSync(OUT, `${JSON.stringify(o)}\n`);
+const imageHosts = new Set(
+  [new URL(UP).host, ...(process.env.IMG_HOSTS ?? '').split(',')].filter(Boolean),
+);
+const imageTarget = (encoded) => {
+  let url;
+  try {
+    url = new URL(decodeURIComponent(encoded));
+  } catch {
+    return null;
+  }
+  return url.protocol === 'https:' && imageHosts.has(url.host) ? url.href : null;
+};
 const agent = new https.Agent({ keepAlive: true, maxSockets: 16 });
 http
   .createServer((req, res) => {
@@ -58,9 +70,11 @@ http
       return;
     }
     const target = u.pathname.startsWith('/img/')
-      ? decodeURIComponent(u.pathname.slice(5))
-      : UP + req.url.slice(3);
-    if (!u.pathname.startsWith('/sb/') && !u.pathname.startsWith('/img/')) {
+      ? imageTarget(u.pathname.slice(5))
+      : u.pathname.startsWith('/sb/')
+        ? UP + req.url.slice(3)
+        : null;
+    if (!target) {
       res.statusCode = 404;
       return res.end();
     }
@@ -113,4 +127,4 @@ http
       }, lat),
     );
   })
-  .listen(9199, () => console.log('up'));
+  .listen(9199, '127.0.0.1', () => console.log('up'));

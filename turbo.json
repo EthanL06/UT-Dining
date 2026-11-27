@@ -13,7 +13,8 @@
     "EXPO_ACCESS_TOKEN",
     "FIXTURE_PORT",
     "UP",
-    "OUT"
+    "OUT",
+    "IMG_HOSTS"
   ],
   "tasks": {
     "typecheck": {

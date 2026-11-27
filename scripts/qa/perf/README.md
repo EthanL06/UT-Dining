@@ -51,7 +51,7 @@ The `prime` run records the data size (food items per day) and the SQLite indexe
    python3 scripts/qa/perf/analyze.py .context/perf/marks.jsonl
    ```
 
-   Apps built with `PERF_PROXY=1` also need `UP=<dev project URL>` on the proxy.
+   Apps built with `PERF_PROXY=1` also need `UP=<dev project URL>` on the proxy. The proxy listens on 127.0.0.1 only and forwards `/img/` requests only over HTTPS to the dev project's host and any hosts listed in `IMG_HOSTS` (comma separated, for place photos stored elsewhere); other image URLs get a 404.
 
 5. Stop the proxy and delete the simulator with `xcrun simctl delete <udid>`.
 
