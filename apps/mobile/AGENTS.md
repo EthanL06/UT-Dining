@@ -17,7 +17,7 @@ The app works offline from the cache. Never make a screen query Supabase directl
 | Path | What |
 |---|---|
 | `app/` | Expo Router routes. `(tabs)/` is Home (`index`), Map, Notifications, Settings. `location/[location].tsx` is a dining hall menu, `location_generic/` a place with no menu, `food/[food].tsx` one item, plus `favorites`, `meal-plan`, `changelog` |
-| `app/e2e-setup.tsx` | Dev-build-only deep link `ut-dining://e2e-setup` that skips onboarding for Maestro |
+| `app/e2e-setup.tsx` | Dev-build-only deep link `ut-dining://e2e-setup` that skips onboarding for Maestro. `?theme=dark` sets the theme and `?serviceStatus=degraded` (or `outage`) fakes the live status so the Home banner shows |
 | `components/` | Shared UI. `components/sheets/` are react-native-actions-sheet sheets registered in `Sheets.tsx` |
 | `services/` | Side effects: database, PostHog analytics, push notifications, App Store version check, rating prompt, changelog (read from the Supabase `changelog` table) |
 | `utils/` | Helpers. `time.ts` and `date.ts` wrap `@ut-dining/core` for screens; `filter.ts` is the menu filters |

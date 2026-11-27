@@ -20,6 +20,7 @@ jobs:
     env:
       APP_VARIANT: development
       EXPO_PUBLIC_SUPABASE_URL: http://127.0.0.1:54331
+      EXPO_PUBLIC_STATUS_API_URL: http://127.0.0.1:54331/api/status
       EXPO_PUBLIC_SUPABASE_ANON_KEY: fixture
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
