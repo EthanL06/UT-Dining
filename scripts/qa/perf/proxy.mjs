@@ -4,11 +4,23 @@ import https from 'node:https';
 
 const UP = process.env.UP;
 const OUT = process.env.OUT;
-const state = { profile: 'pass', control: {}, scenario: 'init', run: 0 };
+const state = { profile: 'pass', control: {}, scenario: 'init', run: 0, ref: '' };
 let traffic = { req: 0, bytes: 0, first: 0, last: 0 };
 const profiles = { pass: { lat: 0, bps: 0 }, slow: { lat: 150, bps: 200000 } };
 let bucketFree = 0;
 const log = (o) => fs.appendFileSync(OUT, `${JSON.stringify(o)}\n`);
+const upstream = new URL(UP);
+const imageHosts = [upstream.host, ...(process.env.IMG_HOSTS ?? '').split(',')].filter(Boolean);
+const imageTarget = (encoded) => {
+  let url;
+  try {
+    url = new URL(decodeURIComponent(encoded));
+  } catch {
+    return null;
+  }
+  const host = imageHosts.find((allowed) => allowed === url.host);
+  return url.protocol === 'https:' && host ? { host, path: `${url.pathname}${url.search}` } : null;
+};
 const agent = new https.Agent({ keepAlive: true, maxSockets: 16 });
 http
   .createServer((req, res) => {
@@ -21,7 +33,13 @@ http
       req.on('end', () => {
         const o = JSON.parse(b);
         if (o.traffic)
-          log({ name: 'traffic', scenario: state.scenario, run: state.run, ...traffic });
+          log({
+            name: 'traffic',
+            ref: state.ref,
+            scenario: state.scenario,
+            run: state.run,
+            ...traffic,
+          });
         Object.assign(state, o);
         delete state.traffic;
         traffic = { req: 0, bytes: 0, first: 0, last: 0 };
@@ -40,12 +58,26 @@ http
       });
       req.on('end', () => {
         for (const m of JSON.parse(b))
-          log({ ...m, scenario: state.scenario, run: state.run, profile: state.profile });
+          log({
+            ...m,
+            ref: state.ref,
+            scenario: state.scenario,
+            run: state.run,
+            profile: state.profile,
+          });
         res.end('ok');
       });
       return;
     }
-    if (!u.pathname.startsWith('/sb/')) {
+    const target = u.pathname.startsWith('/img/')
+      ? imageTarget(u.pathname.slice(5))
+      : u.pathname.startsWith('/sb/')
+        ? {
+            host: upstream.host,
+            path: `${upstream.pathname.replace(/\/$/, '')}${req.url.slice(3)}`,
+          }
+        : null;
+    if (!target) {
       res.statusCode = 404;
       return res.end();
     }
@@ -67,8 +99,14 @@ http
         delete h.host;
         delete h.connection;
         const up = https.request(
-          UP + req.url.slice(3),
-          { method: req.method, headers: h, agent },
+          {
+            hostname: new URL(`https://${target.host}`).hostname,
+            port: new URL(`https://${target.host}`).port || 443,
+            path: target.path,
+            method: req.method,
+            headers: h,
+            agent,
+          },
           (r) => {
             const rh = { ...r.headers };
             delete rh.connection;
@@ -102,4 +140,4 @@ http
       }, lat),
     );
   })
-  .listen(9199, () => console.log('up'));
+  .listen(9199, '127.0.0.1', () => console.log('up'));
