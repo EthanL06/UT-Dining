@@ -1,10 +1,11 @@
 import { Stack } from 'expo-router';
 import { Wrench } from 'lucide-react-native';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { BuildInfoSection } from '~/components/qa/BuildInfoSection';
 import { DataSection } from '~/components/qa/DataSection';
 import { PromptsSection } from '~/components/qa/PromptsSection';
 import { PushSection } from '~/components/qa/PushSection';
+import { Text } from '~/components/ui/Text';
 import { useTheme } from '~/utils/theme';
 
 const QAScreen = () => {
@@ -24,7 +25,7 @@ const QAScreen = () => {
           style={{ backgroundColor: theme.tintSoft }}
         >
           <Wrench size={18} color={theme.tint} />
-          <Text className="flex-1 text-[14px] leading-5" style={{ color: theme.label }}>
+          <Text variant="subheadline" paragraph className="flex-1">
             Only in UT Dining (Dev). These tools change data on this phone only.
           </Text>
         </View>

@@ -1,8 +1,8 @@
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 import ActionSheet, { ScrollView, type SheetProps, useSheetRef } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 import PlaceDetails from '~/components/PlaceDetails';
+import { Text } from '~/components/ui/Text';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { useLocationName } from '~/utils/locations';
@@ -32,11 +32,7 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
       useBottomSafeAreaPadding
     >
       <View className="flex-row items-center justify-between gap-x-3 px-4 pt-1 pb-3">
-        <Text
-          numberOfLines={1}
-          className="flex-1 pl-1 text-[22px] font-bold"
-          style={{ color: theme.label }}
-        >
+        <Text variant="title2" numberOfLines={1} className="flex-1 pl-1">
           {displayName}
         </Text>
         <Pressable
@@ -46,7 +42,7 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
           className="h-9 justify-center rounded-full px-3.5"
           style={{ backgroundColor: theme.card }}
         >
-          <Text className="text-[15px] font-semibold" style={{ color: theme.tint }}>
+          <Text variant="subheadline" emphasized tone="tint">
             Done
           </Text>
         </Pressable>
@@ -57,10 +53,7 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
             <ActivityIndicator size="small" />
           </View>
         ) : error || !locationData ? (
-          <Text
-            className="px-5 py-10 text-center text-[15px]"
-            style={{ color: theme.secondaryLabel }}
-          >
+          <Text variant="subheadline" tone="secondary" className="px-5 py-10 text-center">
             Unable to load details for this place.
           </Text>
         ) : (

@@ -2,9 +2,9 @@ import * as Application from 'expo-application';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Updates from 'expo-updates';
-import { Text, View } from 'react-native';
-
+import { View } from 'react-native';
 import { GroupedRow, GroupedSection } from '~/components/ui/Grouped';
+import { Text } from '~/components/ui/Text';
 import { useServiceStatus } from '~/hooks/useServiceStatus';
 import { getOrCreateDeviceId } from '~/services/device/deviceId';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
@@ -84,7 +84,7 @@ export const BuildInfoSection = () => {
                 style={{ backgroundColor: SERVICE_STATUS_COLORS[status.health] }}
               />
             )}
-            <Text className="text-[15px]" style={{ color: theme.secondaryLabel }}>
+            <Text variant="subheadline" tone="secondary">
               {status?.label ?? 'Unavailable'}
             </Text>
           </View>

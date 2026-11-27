@@ -1,6 +1,7 @@
 import { ChevronRight, type LucideIcon } from 'lucide-react-native';
 import type { ReactNode } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '~/components/ui/Text';
 
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getColor } from '~/utils/colors';
@@ -21,7 +22,7 @@ export const GroupedSection = ({
     <View className="mb-5">
       {header !== undefined &&
         (typeof header === 'string' ? (
-          <Text className="mx-9 mb-1.5 text-[13px]" style={{ color: theme.secondaryLabel }}>
+          <Text variant="footnote" tone="secondary" className="mx-9 mb-1.5">
             {header}
           </Text>
         ) : (
@@ -35,7 +36,7 @@ export const GroupedSection = ({
       </View>
       {footer !== undefined &&
         (typeof footer === 'string' ? (
-          <Text className="mx-9 mt-1.5 text-[13px]" style={{ color: theme.secondaryLabel }}>
+          <Text variant="footnote" tone="secondary" className="mx-9 mt-1.5">
             {footer}
           </Text>
         ) : (
@@ -107,11 +108,7 @@ export const GroupedRow = ({
             {leading}
             <View className="flex-1">
               {typeof title === 'string' ? (
-                <Text
-                  numberOfLines={1}
-                  className="text-[17px]"
-                  style={{ color: titleColor ?? theme.label }}
-                >
+                <Text numberOfLines={1} color={titleColor}>
                   {title}
                 </Text>
               ) : (
@@ -120,9 +117,10 @@ export const GroupedRow = ({
               {subtitle !== undefined &&
                 (typeof subtitle === 'string' ? (
                   <Text
+                    variant="subheadline"
+                    tone="secondary"
                     numberOfLines={multilineSubtitle ? undefined : 1}
-                    className="mt-0.5 text-[14px]"
-                    style={{ color: theme.secondaryLabel }}
+                    className="mt-0.5"
                   >
                     {subtitle}
                   </Text>
@@ -131,11 +129,7 @@ export const GroupedRow = ({
                 ))}
             </View>
             {detail !== undefined && (
-              <Text
-                testID={detailTestID}
-                className="text-[15px]"
-                style={{ color: theme.secondaryLabel }}
-              >
+              <Text variant="subheadline" tone="secondary" testID={detailTestID}>
                 {detail}
               </Text>
             )}

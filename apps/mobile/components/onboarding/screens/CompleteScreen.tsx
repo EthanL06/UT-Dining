@@ -1,6 +1,7 @@
 import LottieView from 'lottie-react-native';
 import { useEffect, useRef } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '~/components/ui/Text';
 
 import { useTheme } from '~/utils/theme';
 
@@ -33,16 +34,10 @@ const CompleteScreen = ({ width, isCurrentScreen }: Props) => {
         style={{ width: 300, height: 300 }}
         resizeMode="cover"
       />
-      <Text
-        style={{ marginTop: -48, color: theme.label }}
-        className="text-center text-[28px] leading-[33px] font-bold"
-      >
+      <Text variant="title1" style={{ marginTop: -48 }} className="text-center">
         You're all set 🤘
       </Text>
-      <Text
-        className="mx-auto mt-2 max-w-[300px] text-center text-[17px] leading-[23px]"
-        style={{ color: theme.secondaryLabel }}
-      >
+      <Text paragraph tone="secondary" className="mx-auto mt-2 max-w-[300px] text-center">
         Thanks for setting things up. Now it's time to find your next meal.
       </Text>
     </View>

@@ -3,9 +3,9 @@ import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { type Href, router, Stack, useFocusEffect } from 'expo-router';
 import { Bell, ChefHat, type LucideIcon, MapPin, Megaphone, Star } from 'lucide-react-native';
 import { useCallback, useMemo } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
-
+import { Pressable, ScrollView, View } from 'react-native';
 import { GroupedSection } from '~/components/ui/Grouped';
+import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import * as schema from '~/services/database/schema';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
@@ -100,21 +100,14 @@ const NotificationRow = ({
             </View>
             <View className="flex-1 gap-y-1">
               <View className="flex-row items-baseline justify-between gap-x-2">
-                <Text
-                  className={
-                    notification.isRead
-                      ? 'flex-1 text-[16px] font-semibold'
-                      : 'flex-1 text-[16px] font-bold'
-                  }
-                  style={{ color: theme.label }}
-                >
+                <Text variant="callout" emphasized className="flex-1">
                   {notification.title}
                 </Text>
-                <Text className="text-[13px]" style={{ color: theme.secondaryLabel }}>
+                <Text variant="footnote" tone="secondary">
                   {formatSentAt(notification.sent_at, group)}
                 </Text>
               </View>
-              <Text className="text-[15px] leading-[22px]" style={{ color: theme.secondaryLabel }}>
+              <Text variant="subheadline" paragraph tone="secondary">
                 {notification.body}
               </Text>
             </View>
@@ -203,7 +196,7 @@ const Notifications = () => {
                   hitSlop={8}
                   className="px-1.5"
                 >
-                  <Text className="text-[16px] font-semibold" style={{ color: theme.tint }}>
+                  <Text variant="callout" emphasized tone="tint">
                     Read All
                   </Text>
                 </Pressable>
@@ -217,13 +210,8 @@ const Notifications = () => {
       >
         {groups.length === 0 ? (
           <View className="mt-16 items-center px-10">
-            <Text className="text-[17px] font-semibold" style={{ color: theme.label }}>
-              No Notifications Yet
-            </Text>
-            <Text
-              className="mt-1.5 text-center text-[15px]"
-              style={{ color: theme.secondaryLabel }}
-            >
+            <Text variant="headline">No Notifications Yet</Text>
+            <Text variant="subheadline" tone="secondary" className="mt-1.5 text-center">
               We'll notify you about your favorite foods and dining location updates.
             </Text>
           </View>

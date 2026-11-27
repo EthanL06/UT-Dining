@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
-import { Modal, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Pressable, ScrollView, TouchableOpacity, View } from 'react-native';
+import { Text } from '~/components/ui/Text';
 import { useChangelogPromptStore, useChangelogStore } from '~/store/useChangelogStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { isDevVariant } from '~/utils/appVariant';
@@ -32,14 +33,8 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
   const previewChanges = changes.slice(0, PREVIEW_COUNT);
   const hiddenCount = changes.length - previewChanges.length;
 
-  const titleClass = cn(
-    'text-2xl font-extrabold tracking-[-0.3px]',
-    isDarkMode ? 'text-white' : 'text-[#111111]',
-  );
-  const bodyClass = cn(
-    'text-[15px] leading-[22px]',
-    isDarkMode ? 'text-gray-300' : 'text-[#3A3F48]',
-  );
+  const titleColor = isDarkMode ? '#FFFFFF' : '#111111';
+  const bodyColor = isDarkMode ? '#D1D5DB' : '#3A3F48';
 
   const handleClose = () => {
     if (!canDismiss) return;
@@ -56,7 +51,11 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
     if (entry) {
       return (
         <>
-          {entry.summary && <Text className={cn('mt-1.5', bodyClass)}>{entry.summary}</Text>}
+          {entry.summary && (
+            <Text variant="subheadline" paragraph color={bodyColor} className="mt-1.5">
+              {entry.summary}
+            </Text>
+          )}
           <View className="mt-4 gap-y-3">
             {previewChanges.map((change) => (
               <ChangelogChangeRow key={change.title} change={change} compact />
@@ -66,7 +65,7 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
       );
     }
     return (
-      <Text className={cn('mt-1.5', bodyClass)}>
+      <Text variant="subheadline" paragraph color={bodyColor} className="mt-1.5">
         {prompt.kind === 'update' && prompt.releaseNotes
           ? prompt.releaseNotes
           : 'Bug fixes and improvements.'}
@@ -107,18 +106,21 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
                 <View className="flex-row">
                   <VersionBadge version={prompt.version} isLatest />
                 </View>
-                <Text className={cn('mt-2.5', titleClass)}>
+                <Text variant="title2" color={titleColor} className="mt-2.5">
                   {isRequired ? 'Update required' : 'A new version is ready'}
                 </Text>
                 {isRequired && (
-                  <Text className={cn('mt-1.5', bodyClass)}>
+                  <Text variant="subheadline" paragraph color={bodyColor} className="mt-1.5">
                     This version of UT Dining is no longer supported. Update to keep using the app.
                   </Text>
                 )}
                 {isRequired && isDevVariant && (
                   <Text
+                    variant="footnote"
+                    emphasized
                     testID="changelog-dev-dismiss-note"
-                    className="text-ut-burnt-orange mt-1.5 text-[13px] font-semibold"
+                    color={COLORS['ut-burnt-orange']}
+                    className="mt-1.5"
                   >
                     Dev build: you can dismiss this. The App Store build can't.
                   </Text>
@@ -127,17 +129,21 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
               </>
             ) : (
               <>
-                <Text className="text-ut-burnt-orange text-[13px] font-bold tracking-[0.5px]">
+                <Text variant="eyebrow" color={COLORS['ut-burnt-orange']}>
                   VERSION {prompt.version}
                 </Text>
-                <Text className={cn('mt-0.5', titleClass)}>What's new</Text>
+                <Text variant="title2" color={titleColor} className="mt-0.5">
+                  What's new
+                </Text>
                 <View className="mt-5 gap-y-4">
                   {previewChanges.length > 0 ? (
                     previewChanges.map((change) => (
                       <ChangelogChangeRow key={change.title} change={change} />
                     ))
                   ) : (
-                    <Text className={bodyClass}>Bug fixes and improvements.</Text>
+                    <Text variant="subheadline" paragraph color={bodyColor}>
+                      Bug fixes and improvements.
+                    </Text>
                   )}
                 </View>
               </>
@@ -156,12 +162,7 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
                   )}
                   onPress={() => onIgnore(prompt.version)}
                 >
-                  <Text
-                    className={cn(
-                      'text-base font-semibold',
-                      isDarkMode ? 'text-gray-200' : 'text-[#3A3F48]',
-                    )}
-                  >
+                  <Text variant="headline" color={isDarkMode ? '#E5E7EB' : '#3A3F48'}>
                     Not now
                   </Text>
                 </TouchableOpacity>
@@ -171,7 +172,9 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
                   className="bg-ut-burnt-orange h-[52px] flex-1 items-center justify-center rounded-full"
                   onPress={() => onUpdate(prompt.version)}
                 >
-                  <Text className="text-base font-bold text-white">Update</Text>
+                  <Text variant="headline" tone="onTint">
+                    Update
+                  </Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -181,7 +184,9 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
                 className="bg-ut-burnt-orange mt-[22px] h-[52px] items-center justify-center rounded-full"
                 onPress={() => onUpdate(prompt.version)}
               >
-                <Text className="text-base font-bold text-white">Update</Text>
+                <Text variant="headline" tone="onTint">
+                  Update
+                </Text>
               </TouchableOpacity>
             )
           ) : (
@@ -192,7 +197,7 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
                 className="mt-2.5 min-h-11 flex-row items-center gap-x-1"
                 onPress={openChangelog}
               >
-                <Text className="text-ut-burnt-orange text-[15px] font-semibold">
+                <Text variant="subheadline" emphasized color={COLORS['ut-burnt-orange']}>
                   {hiddenCount > 0 ? `Show all ${changes.length} changes` : 'See full changelog'}
                 </Text>
                 <ChevronRight size={16} color={COLORS['ut-burnt-orange']} strokeWidth={2.4} />
@@ -203,7 +208,9 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
                 className="bg-ut-burnt-orange mt-2 h-[54px] items-center justify-center rounded-full"
                 onPress={() => onDismissWhatsNew(prompt.version)}
               >
-                <Text className="text-[17px] font-bold text-white">Continue</Text>
+                <Text variant="headline" tone="onTint">
+                  Continue
+                </Text>
               </TouchableOpacity>
             </>
           )}

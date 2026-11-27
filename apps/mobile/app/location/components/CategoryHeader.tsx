@@ -1,6 +1,7 @@
 import { ChevronDown } from 'lucide-react-native';
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '~/components/ui/Text';
 
 import { useTheme } from '~/utils/theme';
 
@@ -20,7 +21,7 @@ const CategoryHeader = React.memo(({ title, isExpanded, onToggle }: CategoryHead
       onPress={onToggle}
       className="mx-4 mt-5 mb-2 flex-row items-center justify-between px-1"
     >
-      <Text className="flex-1 text-[20px] font-bold" style={{ color: theme.label }}>
+      <Text variant="title3" className="flex-1">
         {title}
       </Text>
       <View style={{ transform: [{ rotate: isExpanded ? '180deg' : '0deg' }] }}>

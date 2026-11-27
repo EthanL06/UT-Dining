@@ -1,6 +1,7 @@
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 import ActionSheet, { ScrollView, type SheetProps, useSheetRef } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text } from '~/components/ui/Text';
 
 import { ALLERGEN_EXCEPTIONS, ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import { useTheme } from '~/utils/theme';
@@ -27,10 +28,8 @@ const Section = ({
   const theme = useTheme();
   return (
     <View className="mt-4">
-      <Text className="text-[18px] font-bold" style={{ color: theme.label }}>
-        {title}
-      </Text>
-      <Text className="mb-2.5 text-[13.5px]" style={{ color: theme.secondaryLabel }}>
+      <Text variant="title3">{title}</Text>
+      <Text variant="footnote" tone="secondary" className="mb-2.5">
         {subtitle}
       </Text>
       <View className="flex-row flex-wrap gap-2">
@@ -41,9 +40,7 @@ const Section = ({
             style={{ backgroundColor: theme.card }}
           >
             <Image source={icon} className="size-7 rounded-full" resizeMode="contain" />
-            <Text className="text-[14px] font-medium" style={{ color: theme.label }}>
-              {displayName(key)}
-            </Text>
+            <Text variant="subheadline">{displayName(key)}</Text>
           </View>
         ))}
       </View>
@@ -72,9 +69,7 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
     >
       <View className="flex-row items-center justify-between px-4 pt-1 pb-2">
         <View className="w-[68px]" />
-        <Text className="text-[17px] font-semibold" style={{ color: theme.label }}>
-          Food Legend
-        </Text>
+        <Text variant="headline">Food Legend</Text>
         <Pressable
           testID="food-info-done-button"
           accessibilityRole="button"
@@ -82,7 +77,7 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
           className="h-9 w-[68px] items-center justify-center rounded-full"
           style={{ backgroundColor: theme.card }}
         >
-          <Text className="text-[15px] font-semibold" style={{ color: theme.tint }}>
+          <Text variant="subheadline" emphasized tone="tint">
             Done
           </Text>
         </Pressable>
@@ -99,10 +94,7 @@ const FoodInfoSheet = ({ sheetId }: SheetProps<'food-info'>) => {
             subtitle="Foods that meet these preferences show this icon."
             items={DIETARY}
           />
-          <Text
-            className="mt-6 text-[12.5px] leading-[17px]"
-            style={{ color: theme.secondaryLabel }}
-          >
+          <Text variant="caption" paragraph tone="secondary" className="mt-6">
             Allergen and dietary data comes from University Housing and Dining and may not always be
             accurate. Use discretion when making dietary choices.
           </Text>
