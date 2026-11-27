@@ -14,10 +14,20 @@ const BATCH_SIZE = 100;
 
 console.log('🔍 Starting manual push notification function...');
 
+const isProjectSecretKey = async (key: string) => {
+  const client = createClient(supabaseUrl, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { error } = await client.auth.admin.listUsers({ page: 1, perPage: 1 });
+  return !error;
+};
+
 const isAllowedCaller = async (req: Request) => {
   const authorization = req.headers.get('Authorization');
   if (!authorization) return false;
-  if (authorization === `Bearer ${serviceRoleKey}`) return true;
+  const token = authorization.replace(/^Bearer\s+/i, '').trim();
+  if (token === serviceRoleKey) return true;
+  if (token.startsWith('sb_secret_')) return isProjectSecretKey(token);
   const caller = createClient(supabaseUrl, anonKey, {
     global: { headers: { Authorization: authorization } },
   });
