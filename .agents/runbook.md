@@ -46,6 +46,12 @@ Decide with one question: did the iOS fingerprint change? It changes with native
 - Dev (hosted `ut-dining-dev`, ref `bdnlfwyfgvaployvrivk`): Ethan has given standing permission to apply migrations here without asking. `supabase link --project-ref bdnlfwyfgvaployvrivk`, then `supabase db push --dry-run`, read the list, then `supabase db push`. It needs `SUPABASE_ACCESS_TOKEN` or the database password; if the cloud environment has neither, run it through a Remote Control session on Ethan's Mac.
 - Production (ref `yrmylgizphirqqkzgbth`): needs Ethan's OK for each change. Show him `supabase db push --dry-run` against the prod link (the exact list of migrations), wait for his yes, apply in timestamp order, then check the app and dashboard still load. Prod migrations go in before the code that needs them reaches `main`; pending ones are listed in PR #25.
 
+## Database size and menu retention
+
+- Free plan limit is 500 MB. Almost all of it is menu history (`nutrition`, `food_item`, `allergens`). Check the size in the Supabase SQL editor with `select pg_size_pretty(pg_database_size(current_database()))`.
+- The scraper deletes menus older than the `MENU_RETENTION_DAYS` repo variable (90, Ethan's choice on 2026-11-27) after each run; `DEV_MENU_RETENTION_DAYS` does the same for `scraper-dev.yml`. Unset means no pruning. Set the prod variable only once the open data export has the full history in the repo.
+- Deleted rows free space for reuse but do not shrink the reported size. After a large one-time prune, run `VACUUM FULL nutrition, food_item, allergens, menu_category, menu;` in the SQL editor (prod needs Ethan's OK). It locks those tables for a few seconds, so run it outside meal times.
+
 ## Production data changes
 
 1. Do it on dev first: `pnpm -s admin <group> <command> --dev`, check the result in the app or dashboard.

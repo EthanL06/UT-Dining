@@ -11,14 +11,15 @@ Node runs the TypeScript directly. Environment variables come from `.env` or `.e
 
 ## Configuration
 
-| Variable          | Default | Purpose                                                       |
-| ----------------- | ------- | ------------------------------------------------------------- |
-| `DAYS_TO_SCRAPE`  | `1`     | Days to scrape, starting today in Central time                |
-| `ENABLE_SUPABASE` | unset   | `true` uploads to Supabase; anything else is a dry run        |
-| `SUPABASE_URL`    |         | Required when uploading                                       |
-| `SUPABASE_KEY`    |         | Service role key, required when uploading                     |
-| `CONCURRENCY`     | `32`    | Requests in flight to FoodPro at once                         |
-| `START_DATE`      | today   | First day to scrape as `YYYY-MM-DD`, for testing and backfill |
+| Variable              | Default | Purpose                                                            |
+| --------------------- | ------- | ------------------------------------------------------------------ |
+| `DAYS_TO_SCRAPE`      | `1`     | Days to scrape, starting today in Central time                     |
+| `ENABLE_SUPABASE`     | unset   | `true` uploads to Supabase; anything else is a dry run             |
+| `SUPABASE_URL`        |         | Required when uploading                                            |
+| `SUPABASE_KEY`        |         | Service role key, required when uploading                          |
+| `CONCURRENCY`         | `32`    | Requests in flight to FoodPro at once                              |
+| `START_DATE`          | today   | First day to scrape as `YYYY-MM-DD`, for testing and backfill      |
+| `MENU_RETENTION_DAYS` | unset   | When uploading, delete menus older than this many days (minimum 7) |
 
 Every run also writes the scraped data to `data/ut_menus_<timestamp>.json`.
 
@@ -31,6 +32,8 @@ Every run also writes the scraped data to `data/ut_menus_<timestamp>.json`.
    When a station lists the same name for more than one recipe, one item is kept with the first recipe's nutrition, every recipe's allergens, and only the dietary flags that all recipes share.
    A nutrient that the label leaves blank is stored as null, not zero.
 5. Upload each location-day as its own transaction, two at a time, so a slow or failed day never blocks the rest. The database function replaces a menu's stations and items when it already exists, so every day in the range is refreshed on every run.
+
+6. With `MENU_RETENTION_DAYS` set, delete menus older than that many days through `prune_old_menus`, 200 menus per call until none are left. Deleting a menu cascades to its stations, items, nutrition and allergens. The app only reads menus from 2 days back, and the daily open data export keeps the history.
 
 All requests share one pool of `CONCURRENCY` connections with retries and backoff. If a meal's page or any of its labels still fails after retries, that meal is left out of the upload so the previous data stays, and the run exits non-zero.
 
