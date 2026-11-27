@@ -263,6 +263,7 @@ const PlaceRow = ({
 type Detent = 'collapsed' | 'half' | 'full';
 
 const SHEET_TOP_GAP = 12;
+export const SHEET_HALF_FRACTION = 0.42;
 
 const SPRING = { damping: 22, stiffness: 220, mass: 0.6 };
 
@@ -296,7 +297,7 @@ export const MapSheet = ({
   const { top: topInset } = useSafeAreaInsets();
   const heights: Record<Detent, number> = {
     collapsed: 178,
-    half: Math.round(windowHeight * 0.42),
+    half: Math.round(windowHeight * SHEET_HALF_FRACTION),
     full: Math.min(
       Math.round(windowHeight * 0.78),
       windowHeight - topInset - SHEET_TOP_GAP - bottomOffset,
