@@ -1,6 +1,7 @@
 'use client';
 
 import { Box, Flex, Text } from '@mantine/core';
+import { formatCentral } from '@ut-dining/core';
 import Image from 'next/image';
 import type { NotificationData } from '@/app/(private)/dashboard/notifications/action';
 
@@ -9,10 +10,7 @@ interface IPhoneNotificationPreviewProps {
 }
 
 export function IPhoneNotificationPreview({ data }: IPhoneNotificationPreviewProps) {
-  const currentTime = new Date().toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const currentTime = formatCentral(Date.now(), { hour: '2-digit', minute: '2-digit' });
 
   return (
     <Box

@@ -3,14 +3,19 @@ import * as Location from 'expo-location';
 import { useFocusEffect } from 'expo-router';
 import { LocateFixed } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Keyboard, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import type { Region } from 'react-native-maps';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { type MapFilterId, MapSheet, PLACE_ICONS, usePlaceColor } from '~/components/map/MapSheet';
-import { Text } from '~/components/ui/Text';
+import { BrowseList } from '~/components/map/BrowseList';
+import { ClosedDot, ClusterPin, IconPin, LabelPin } from '~/components/map/MapPins';
+import { MapSheet, type MapSheetHandle, SHEET_HALF_FRACTION } from '~/components/map/MapSheet';
+import { PlaceCard } from '~/components/map/PlaceCard';
+import type { MapFilterId } from '~/components/map/placeStyle';
+import { SearchPanel } from '~/components/map/SearchPanel';
 import { MICROWAVE_LOCATIONS } from '~/data/MicrowaveLocations';
 import { useDatabase } from '~/hooks/useDatabase';
+import { useMapSearch } from '~/hooks/useMapSearch';
 import { useNow } from '~/hooks/useNow';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -18,14 +23,17 @@ import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
 import { displayLocationName } from '~/utils/locationName';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
+import { log } from '~/utils/log';
 import {
-  type Cluster,
   type Coordinates,
   clusterPlaces,
+  isPinned,
+  type PinnedPlace,
   type Place,
   regionAround,
   zoomLevelFor,
 } from '~/utils/mapPlaces';
+import { searchPlaces } from '~/utils/mapSearch';
 import { readCachedMenuData } from '~/utils/queries';
 import { useTheme } from '~/utils/theme';
 import { getLocationStatusText } from '~/utils/time';
@@ -41,102 +49,10 @@ const TAB_BAR_CLEARANCE = 92;
 const MAP_ATTRIBUTION_GAP = 10;
 const MAP_ATTRIBUTION_INSET = 4;
 
-const coordinatesMatch = (a: Coordinates, b: Coordinates) =>
-  Math.abs(a.latitude - b.latitude) < 1e-6 && Math.abs(a.longitude - b.longitude) < 1e-6;
-
-const shortCloseTime = (status: string) =>
-  status.match(/until (\d+)(?::(\d+))? (AM|PM)/)
-    ? status.replace(/^Open until (\d+)(?::00)? (AM|PM)$/, '$1 $2').replace(/^Open until /, '')
-    : '';
-
-const IconPin = ({ place, selected }: { place: Place; selected: boolean }) => {
-  const Icon = PLACE_ICONS[place.type];
-  const color = usePlaceColor(place.type);
-  const size = selected ? 44 : 30;
-  return (
-    <View
-      className="items-center justify-center rounded-full"
-      style={{
-        width: size,
-        height: size,
-        backgroundColor: color,
-        borderWidth: 2,
-        borderColor: '#FFFFFF',
-        shadowColor: '#000',
-        shadowOpacity: 0.3,
-        shadowRadius: 3,
-        shadowOffset: { width: 0, height: 2 },
-      }}
-    >
-      {Icon && <Icon size={size * 0.5} color="#FFFFFF" />}
-    </View>
-  );
-};
-
-const ClosedDot = () => (
-  <View
-    className="size-3 rounded-full"
-    style={{ backgroundColor: '#8E8E93', borderWidth: 2, borderColor: '#FFFFFF' }}
-  />
-);
-
-const LabelPin = ({ place }: { place: Place }) => {
-  const theme = useTheme();
-  const Icon = PLACE_ICONS[place.type];
-  const color = usePlaceColor(place.type);
-  const closes = shortCloseTime(place.status);
-  return (
-    <View
-      className="h-9 flex-row items-center gap-x-1.5 rounded-full pr-3 pl-1"
-      style={{
-        backgroundColor: theme.card,
-        shadowColor: '#000',
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        shadowOffset: { width: 0, height: 2 },
-      }}
-    >
-      <View
-        className="size-[28px] items-center justify-center rounded-full"
-        style={{ backgroundColor: color }}
-      >
-        {Icon && <Icon size={15} color="#FFFFFF" />}
-      </View>
-      <Text variant="footnote" emphasized numberOfLines={1} className="max-w-40">
-        {place.name}
-      </Text>
-      {closes !== '' && (
-        <Text variant="footnote" tone="secondary">
-          {closes}
-        </Text>
-      )}
-    </View>
-  );
-};
-
-const ClusterPin = ({ cluster }: { cluster: Cluster }) => {
-  const size = Math.min(42, 32 + cluster.places.length);
-  return (
-    <View
-      className="items-center justify-center rounded-full"
-      style={{
-        width: size,
-        height: size,
-        backgroundColor: '#BF5700',
-        borderWidth: 3,
-        borderColor: '#FFFFFF',
-        shadowColor: '#000',
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        shadowOffset: { width: 0, height: 2 },
-      }}
-    >
-      <Text variant="subheadline" emphasized tone="onTint">
-        {cluster.places.length}
-      </Text>
-    </View>
-  );
-};
+const coordinatesMatch = (a: Coordinates | null, b: Coordinates) =>
+  a !== null &&
+  Math.abs(a.latitude - b.latitude) < 1e-6 &&
+  Math.abs(a.longitude - b.longitude) < 1e-6;
 
 type LocationAccess =
   | { status: 'unknown' }
@@ -160,9 +76,7 @@ const MapPage = () => {
   const [locationAccess, setLocationAccess] = useState<LocationAccess>({ status: 'unknown' });
   const hasLocationPermission = locationAccess.status === 'granted';
   const userCoordinates = locationAccess.status === 'granted' ? locationAccess.coordinates : null;
-  const [query, setQuery] = useState('');
   const [filters, setFilters] = useState<Set<MapFilterId>>(new Set());
-  const [selectedName, setSelectedName] = useState<string | null>(null);
   const [sheetHeight, setSheetHeight] = useState(0);
   const [mapSafeAreaBottom, setMapSafeAreaBottom] = useState(0);
   const bottomOffset = TAB_BAR_CLEARANCE + insets.bottom - 34;
@@ -197,7 +111,7 @@ const MapPage = () => {
         );
         if (cancelled) sub.remove();
         else subscription = sub;
-      })();
+      })().catch((error) => log.warn('Location watch failed', { error }));
       return () => {
         cancelled = true;
         subscription?.remove();
@@ -208,25 +122,23 @@ const MapPage = () => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: recompute open status after each sync and every minute
   const places: Place[] = useMemo(() => {
     const withMenus = getLocationIdsWithMenus(db, getTodayInCentralTime());
-    const dining = (data?.locations ?? [])
-      .filter((location) => location.latitude !== null && location.longitude !== null)
-      .map((location) => {
-        const isOpen = isLocationOpenNow(location, withMenus, now);
-        return {
-          name: displayLocationName(location, useColloquialNames),
-          locationName: location.name ?? '',
-          address: location.address,
-          description: location.description,
-          coordinates: {
-            latitude: Number(location.latitude),
-            longitude: Number(location.longitude),
-          },
-          type: location.type,
-          hasMenu: location.has_menus,
-          isOpen,
-          status: getLocationStatusText(location, isOpen, now),
-        };
-      });
+    const dining = (data?.locations ?? []).map((location): Place => {
+      const isOpen = isLocationOpenNow(location, withMenus, now);
+      return {
+        name: displayLocationName(location, useColloquialNames),
+        locationName: location.name ?? '',
+        address: location.address,
+        description: location.description,
+        coordinates:
+          location.latitude !== null && location.longitude !== null
+            ? { latitude: Number(location.latitude), longitude: Number(location.longitude) }
+            : null,
+        type: location.type,
+        hasMenu: location.has_menus,
+        isOpen,
+        status: getLocationStatusText(location, isOpen, now),
+      };
+    });
     const microwaves = MICROWAVE_LOCATIONS.filter(
       (microwave) =>
         !dining.some((place) => coordinatesMatch(place.coordinates, microwave.coordinates)),
@@ -240,25 +152,37 @@ const MapPage = () => {
     return [...dining, ...microwaves];
   }, [data, db, useColloquialNames, lastSyncedAt, now]);
 
-  const selectedPlace = places.find((place) => place.name === selectedName) ?? null;
+  const isLoaded = data !== undefined && (data.locations.length > 0 || lastSyncedAt !== null);
+  const mapSearch = useMapSearch(places);
+  const { search, selectedPlace } = mapSearch;
 
   const filteredPlaces = useMemo(() => {
     const typeFilters: string[] = [...filters].filter((id) => id !== 'open');
-    const needle = query.trim().toLowerCase();
     return places.filter(
       (place) =>
         (!filters.has('open') || place.isOpen) &&
-        (typeFilters.length === 0 || typeFilters.includes(place.type)) &&
-        (needle === '' ||
-          place.name.toLowerCase().includes(needle) ||
-          (place.locationName?.toLowerCase().includes(needle) ?? false)),
+        (typeFilters.length === 0 || typeFilters.includes(place.type)),
     );
-  }, [places, filters, query]);
+  }, [places, filters]);
+
+  const searchQuery = search.status === 'place' ? search.query : mapSearch.query.trim() || null;
+  const pinnedPlaces = useMemo(() => {
+    const shown =
+      searchQuery === null
+        ? filteredPlaces
+        : [
+            ...mapSearch.results.map((match) => match.place),
+            ...mapSearch.menuMatches.map((match) => match.place),
+          ];
+    const withSelected =
+      selectedPlace && !shown.includes(selectedPlace) ? [...shown, selectedPlace] : shown;
+    return [...new Set(withSelected)].filter(isPinned);
+  }, [searchQuery, filteredPlaces, mapSearch.results, mapSearch.menuMatches, selectedPlace]);
 
   const hasFitCampus = useRef(false);
   useEffect(() => {
     if (hasFitCampus.current || sheetHeight === 0) return;
-    const dining = places.filter((place) => place.type !== 'microwave');
+    const dining = places.filter((place) => place.type !== 'microwave').filter(isPinned);
     if (dining.length === 0) return;
     hasFitCampus.current = true;
     mapRef.current?.fitToCoordinates(
@@ -283,19 +207,52 @@ const MapPage = () => {
 
   const zoom = zoomLevelFor(region);
   const screen = useWindowDimensions();
+  const halfSheetHeight = Math.round(screen.height * SHEET_HALF_FRACTION);
+  const mapControlsHeight = Math.min(sheetHeight, halfSheetHeight);
+  const isSheetAboveHalf = sheetHeight > halfSheetHeight;
   const clusters = useMemo(
-    () => (zoom === 'labels' ? [] : clusterPlaces(filteredPlaces, region, screen.width)),
-    [zoom, filteredPlaces, region, screen.width],
+    () => (zoom === 'labels' ? [] : clusterPlaces(pinnedPlaces, region, screen.width)),
+    [zoom, pinnedPlaces, region, screen.width],
   );
 
-  const focusPlace = useCallback((place: Place) => {
+  const sheetRef = useRef<MapSheetHandle>(null);
+
+  const focusPlace = (place: Place, foods?: string[]) => {
     haptics.tap();
-    setSelectedName(place.name);
-    mapRef.current?.animateToRegion(
-      { ...place.coordinates, latitudeDelta: 0.003, longitudeDelta: 0.003 },
-      450,
+    Keyboard.dismiss();
+    mapSearch.pick(place, foods);
+    if (place.coordinates) {
+      mapRef.current?.animateToRegion(
+        { ...place.coordinates, latitudeDelta: 0.003, longitudeDelta: 0.003 },
+        450,
+      );
+    }
+  };
+
+  const fitTo = (targets: PinnedPlace[]) => {
+    if (targets.length === 1) {
+      mapRef.current?.animateToRegion(
+        { ...targets[0].coordinates, latitudeDelta: 0.004, longitudeDelta: 0.004 },
+        450,
+      );
+    } else if (targets.length > 1) {
+      mapRef.current?.fitToCoordinates(
+        targets.map((place) => place.coordinates),
+        { edgePadding: { top: 48, right: 48, bottom: 48, left: 48 }, animated: true },
+      );
+    }
+  };
+
+  const runQuery = (next: string) => {
+    Keyboard.dismiss();
+    sheetRef.current?.snapTo('half');
+    mapSearch.submit(next);
+    fitTo(
+      searchPlaces(places, next)
+        .map((match) => match.place)
+        .filter(isPinned),
     );
-  }, []);
+  };
 
   const toggleFilter = useCallback((id: MapFilterId) => {
     setFilters((previous) => {
@@ -306,7 +263,7 @@ const MapPage = () => {
     });
   }, []);
 
-  const renderPlace = (place: Place) => {
+  const renderPlace = (place: PinnedPlace) => {
     const selected = selectedPlace?.name === place.name;
     const showLabel = zoom === 'labels' && place.isOpen && place.type !== 'microwave';
     const showDot = !place.isOpen && !selected;
@@ -347,7 +304,10 @@ const MapPage = () => {
         mapPadding={{
           top: insets.top,
           right: 0,
-          bottom: Math.max(0, sheetHeight + bottomOffset + MAP_ATTRIBUTION_GAP - mapSafeAreaBottom),
+          bottom: Math.max(
+            0,
+            mapControlsHeight + bottomOffset + MAP_ATTRIBUTION_GAP - mapSafeAreaBottom,
+          ),
           left: MAP_ATTRIBUTION_INSET,
         }}
         loadingEnabled
@@ -372,10 +332,10 @@ const MapPage = () => {
                 </Marker>
               ),
             )
-          : filteredPlaces.map(renderPlace)}
+          : pinnedPlaces.map(renderPlace)}
       </MapView>
 
-      {hasLocationPermission && userCoordinates && (
+      {hasLocationPermission && userCoordinates && !isSheetAboveHalf && (
         <Pressable
           testID="map-locate-button"
           accessibilityLabel="Show my location"
@@ -389,7 +349,7 @@ const MapPage = () => {
           }}
           className="absolute right-4 size-11 items-center justify-center rounded-full"
           style={{
-            bottom: bottomOffset + sheetHeight + 12,
+            bottom: bottomOffset + mapControlsHeight + 12,
             backgroundColor: theme.card,
             shadowColor: '#000',
             shadowOpacity: 0.18,
@@ -402,18 +362,55 @@ const MapPage = () => {
       )}
 
       <MapSheet
-        places={filteredPlaces}
-        query={query}
-        onQueryChange={setQuery}
-        filters={filters}
-        onToggleFilter={toggleFilter}
-        selectedPlace={selectedPlace}
-        onSelectPlace={focusPlace}
-        onClosePlace={() => setSelectedName(null)}
-        userCoordinates={userCoordinates}
+        ref={sheetRef}
+        mode={selectedPlace ? 'place' : search.status === 'searching' ? 'search' : 'browse'}
+        placeKey={selectedPlace?.name ?? null}
+        query={mapSearch.query}
+        onQueryChange={mapSearch.setQuery}
+        onFocusSearch={mapSearch.focus}
+        onCancelSearch={mapSearch.cancel}
+        onSubmitSearch={() => runQuery(mapSearch.query)}
         bottomOffset={bottomOffset}
         onHeightChange={setSheetHeight}
-      />
+      >
+        {selectedPlace ? (
+          <View style={{ flex: 1 }}>
+            <PlaceCard
+              place={selectedPlace}
+              userCoordinates={userCoordinates}
+              backQuery={search.status === 'place' ? search.query : null}
+              foods={mapSearch.selectedFoods}
+              onBack={mapSearch.back}
+              onClose={mapSearch.close}
+            />
+          </View>
+        ) : search.status === 'searching' ? (
+          <SearchPanel
+            query={mapSearch.query}
+            searchedQuery={mapSearch.searchedQuery}
+            isLoaded={isLoaded}
+            results={mapSearch.results}
+            buildings={mapSearch.buildings}
+            menuMatches={mapSearch.menuMatches}
+            recents={mapSearch.recents}
+            userCoordinates={userCoordinates}
+            onPickPlace={focusPlace}
+            onRunQuery={runQuery}
+            onClearQuery={() => mapSearch.setQuery('')}
+            onClearRecents={mapSearch.clearRecents}
+          />
+        ) : (
+          <BrowseList
+            places={filteredPlaces}
+            isLoaded={isLoaded}
+            filters={filters}
+            userCoordinates={userCoordinates}
+            onToggleFilter={toggleFilter}
+            onClearFilters={() => setFilters(new Set())}
+            onSelectPlace={focusPlace}
+          />
+        )}
+      </MapSheet>
     </View>
   );
 };

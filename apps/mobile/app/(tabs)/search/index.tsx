@@ -1,8 +1,8 @@
 import { and, asc, eq, or, type SQLWrapper, sql } from 'drizzle-orm';
 import { router, Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ScrollView } from 'react-native';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { useDatabase } from '~/hooks/useDatabase';
 import { useDebounce } from '~/hooks/useDebounce';
@@ -94,7 +94,8 @@ export default function Search() {
           },
         }}
       />
-      <ScrollView
+      <OverflowScrollView
+        divider={false}
         contentInsetAdjustmentBehavior="automatic"
         keyboardDismissMode="on-drag"
         style={{ flex: 1, backgroundColor: theme.background }}
@@ -173,7 +174,7 @@ export default function Search() {
             )}
           </>
         )}
-      </ScrollView>
+      </OverflowScrollView>
     </>
   );
 }

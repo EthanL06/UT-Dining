@@ -1,12 +1,13 @@
 import { Link, router } from 'expo-router';
 import { Check, ChevronRight, Heart } from 'lucide-react-native';
 import { useRef } from 'react';
-import { Image, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import ReanimatedSwipeable, {
   type SwipeableMethods,
   SwipeDirection,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
+import { Image } from '~/components/ui/Image';
 import { Text } from '~/components/ui/Text';
 import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import type { FoodItem } from '~/services/database/database';
@@ -150,7 +151,7 @@ const FoodComponent = ({
                     key={key}
                     source={ALLERGEN_ICONS[key as keyof typeof ALLERGEN_ICONS]}
                     className="size-[15px] rounded-full"
-                    resizeMode="contain"
+                    contentFit="contain"
                   />
                 ) : null,
               )}
@@ -279,7 +280,7 @@ const FoodComponent = ({
             onAccessibilityAction={({ nativeEvent }) => {
               if (nativeEvent.actionName === 'activate') router.push(href);
               if (nativeEvent.actionName === 'mealPlan') toggleMealPlanForFood(food, context);
-              if (nativeEvent.actionName === 'favorite') onFavorite(food);
+              if (nativeEvent.actionName === 'favorite') void onFavorite(food);
             }}
           >
             {content}

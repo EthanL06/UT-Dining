@@ -1,3 +1,4 @@
+import { formatCentralDateKey } from '@ut-dining/core';
 import { ChevronDown, ChevronUp } from 'lucide-react-native';
 import { LayoutAnimation, Pressable, View } from 'react-native';
 import { Text } from '~/components/ui/Text';
@@ -6,13 +7,11 @@ import { useSettingsStore } from '~/store/useSettingsStore';
 import { cn } from '~/utils/utils';
 import { ChangelogIconTile } from './ChangelogIcon';
 
-const parseDate = (date: string) => new Date(`${date}T12:00:00`);
-
 const formatMonthYear = (date: string) =>
-  parseDate(date).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+  formatCentralDateKey(date, { month: 'long', year: 'numeric' }).toUpperCase();
 
 const formatShortDate = (date: string) =>
-  parseDate(date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  formatCentralDateKey(date, { month: 'short', year: 'numeric' });
 
 export const entryTitle = (entry: ChangelogEntry) =>
   entry.summary ?? entry.changes[0]?.title ?? `Version ${entry.version}`;
