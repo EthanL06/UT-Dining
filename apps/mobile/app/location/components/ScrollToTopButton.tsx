@@ -1,6 +1,7 @@
 import { ArrowUp } from 'lucide-react-native';
 import { Animated, TouchableOpacity } from 'react-native';
 
+import { SCROLL_TO_TOP_POSITION } from '~/hooks/useScrollToTop';
 import { useTheme } from '~/utils/theme';
 
 interface ScrollToTopButtonProps {
@@ -22,7 +23,7 @@ const ScrollToTopButton = ({ visible, animationValue, onPress }: ScrollToTopButt
         opacity: animationValue,
         transform: [{ scale: scaleAnim }],
         position: 'absolute',
-        bottom: 40,
+        bottom: SCROLL_TO_TOP_POSITION.bottom,
         right: 20,
         pointerEvents: visible ? 'auto' : 'none',
       }}
@@ -31,8 +32,10 @@ const ScrollToTopButton = ({ visible, animationValue, onPress }: ScrollToTopButt
         accessibilityLabel="Scroll to top"
         accessibilityRole="button"
         onPress={onPress}
-        className="size-12 items-center justify-center rounded-full"
+        className="items-center justify-center rounded-full"
         style={{
+          width: SCROLL_TO_TOP_POSITION.size,
+          height: SCROLL_TO_TOP_POSITION.size,
           backgroundColor: theme.card,
           shadowColor: '#000',
           shadowOpacity: 0.15,

@@ -7,6 +7,7 @@ import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useSt
 import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RowPosition } from '~/components/FoodComponent';
+import { pushedScreenHeaderOptions } from '~/components/TabStack';
 import { Text } from '~/components/ui/Text';
 import type { ListItem } from '~/hooks/useCategoryExpansion';
 import { useCategoryExpansion } from '~/hooks/useCategoryExpansion';
@@ -16,24 +17,26 @@ import { useMenuData } from '~/hooks/useMenuData';
 import { MENU_SYNC_QUERY_KEY } from '~/hooks/useMenuSync';
 import { useMultiSelect } from '~/hooks/useMultiSelect';
 import { useRatingPromptOnMenuView } from '~/hooks/useRatingPromptOnMenuView';
-import { useScrollToTop } from '~/hooks/useScrollToTop';
+import { SCROLL_TO_TOP_CLEARANCE, useScrollToTop } from '~/hooks/useScrollToTop';
 import { analytics } from '~/services/analytics/posthog';
 import type { FoodItem } from '~/services/database/database';
 import * as schema from '~/services/database/schema';
 import { useFiltersStore } from '~/store/useFiltersStore';
 import { mealPlanItemId, useMealPlanItems } from '~/store/useMealPlanStore';
 import { useMealStripStore } from '~/store/useMealStripStore';
+import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { hasActiveFilters } from '~/utils/filter';
 import { addFoodsToMealPlan, favoriteFoods } from '~/utils/foodActions';
 import { haptics } from '~/utils/haptics';
+import { useLocationName } from '~/utils/locations';
 import { log } from '~/utils/log';
 import { menuEmptyState } from '~/utils/menuList';
 import { buildMenuRows, foodMatcher } from '~/utils/menuRows';
 import { useTheme } from '~/utils/theme';
 import CategoryHeader from './components/CategoryHeader';
 import FoodItemRow from './components/FoodItemRow';
-import LocationHeader from './components/LocationHeader';
+import LocationHeader, { LocationHeaderButtons } from './components/LocationHeader';
 import ScrollToTopButton from './components/ScrollToTopButton';
 import SelectionBar from './components/SelectionBar';
 import SkeletonItem from './components/SkeletonItem';
@@ -103,6 +106,9 @@ const Location = () => {
   const activeFilters = useDeferredValue(useFiltersStore((state) => state.filters));
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [searching, setSearching] = useState(false);
+  const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
+  const displayName = useLocationName(location, useColloquialNames);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   const favoriteNames = useMemo(
@@ -131,8 +137,13 @@ const Location = () => {
   const skeletonItems = useSkeletonItems();
 
   const listRef = useRef<FlashListRef<ListItem>>(null);
-  const { showScrollToTop, scrollButtonAnimation, handleScroll, scrollToTop } =
-    useScrollToTop(listRef);
+  const {
+    showScrollToTop,
+    scrollButtonAnimation,
+    handleScroll,
+    handleScrollBeginDrag,
+    scrollToTop,
+  } = useScrollToTop(listRef);
 
   const handleDateChange = (date: string) => {
     stopSelecting();
@@ -277,30 +288,60 @@ const Location = () => {
   }, [menuStatus, isSyncing, debouncedSearchQuery, activeFilters]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: insets.top }}>
-      <Stack.Screen options={{ title: 'Location' }} />
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
+      <Stack.Screen
+        options={{
+          title: displayName,
+          ...pushedScreenHeaderOptions(theme),
+          headerRight: () => (
+            <LocationHeaderButtons
+              location={location}
+              selecting={selecting}
+              onDoneSelecting={stopSelecting}
+            />
+          ),
+          headerSearchBarOptions: {
+            placeholder: 'Search this menu',
+            placement: 'stacked',
+            autoCapitalize: 'none',
+            obscureBackground: false,
+            hideWhenScrolling: true,
+            onChangeText: (event) => handleQueryChange(event.nativeEvent.text),
+            onFocus: () => {
+              stopSelecting();
+              setSearching(true);
+            },
+            onCancelButtonPress: () => {
+              setSearching(false);
+              handleQueryChange('');
+            },
+          },
+        }}
+      />
       <FlashList
         alwaysBounceVertical={false}
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardDismissMode="on-drag"
         extraData={[favoriteNames, canMealPlan, selecting, selectedIds]}
         ref={listRef}
         onScroll={handleScroll}
+        onScrollBeginDrag={handleScrollBeginDrag}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator
         data={displayedItems}
         keyExtractor={(item) => `${item.type}|${item.id}`}
         removeClippedSubviews
-        contentContainerStyle={{ paddingBottom: insets.bottom + (selecting ? 96 : 32) }}
+        contentContainerStyle={{
+          paddingBottom: insets.bottom + (selecting ? 96 : SCROLL_TO_TOP_CLEARANCE),
+        }}
         ListHeaderComponent=<LocationHeader
           location={location}
           selectedMenu={selectedMenu ?? null}
           setSelectedMenu={handleMenuChange}
           filters={menuFilters}
-          query={searchQuery}
-          setQuery={handleQueryChange}
           selectedDate={selectedDate}
           onDateChange={handleDateChange}
-          selecting={selecting}
-          onDoneSelecting={stopSelecting}
+          searching={searching}
         />
         ListEmptyComponent={<EmptyState />}
         renderItem={renderItem}
