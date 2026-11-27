@@ -3,6 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect } from 'react';
 import { SERVICE_STATUS_QUERY_KEY } from '~/hooks/useServiceStatus';
 
+import { currentAppVersion } from '~/services/rating/rating';
 import { useAppLaunchStore } from '~/store/useAppLaunchStore';
 import { useNotificationsStore } from '~/store/useNotificationsStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
@@ -32,7 +33,7 @@ export default function E2ESetup() {
       if (clockRequest.kind === 'set') setQaClock(clockRequest.at);
       if (clockRequest.kind === 'off') setQaClock(null);
       skipOnboarding();
-      if (rating !== 'on') markRatingPromptShown();
+      if (rating !== 'on') markRatingPromptShown(currentAppVersion());
       setVisibleSince(0);
       if (theme === 'dark' || theme === 'light') setDarkMode(theme === 'dark');
       const status = parseServiceStatus({ status: serviceStatus });

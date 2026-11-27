@@ -6,19 +6,20 @@ import { Text } from '~/components/ui/Text';
 import { useTheme } from '~/utils/theme';
 
 interface CategoryHeaderProps {
+  id: string;
   title: string;
   isExpanded: boolean;
-  onToggle: () => void;
+  onToggle: (id: string) => void;
 }
 
-const CategoryHeader = React.memo(({ title, isExpanded, onToggle }: CategoryHeaderProps) => {
+const CategoryHeader = React.memo(({ id, title, isExpanded, onToggle }: CategoryHeaderProps) => {
   const theme = useTheme();
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ expanded: isExpanded }}
-      onPress={onToggle}
+      onPress={() => onToggle(id)}
       className="mx-4 mt-5 mb-2 flex-row items-center justify-between px-1"
     >
       <Text variant="title3" className="flex-1">

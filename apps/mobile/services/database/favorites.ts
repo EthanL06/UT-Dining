@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, count, eq } from 'drizzle-orm';
 import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import * as schema from './schema';
 import type { FoodItem } from './types';
@@ -108,3 +108,6 @@ export const toggleFavorites = async (
 
   return true;
 };
+
+export const countFavorites = (db: ExpoSQLiteDatabase<typeof schema>) =>
+  db.select({ value: count() }).from(schema.favorites).get()?.value ?? 0;

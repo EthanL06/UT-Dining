@@ -7,6 +7,11 @@ DEV := scripts/dev
 ARGS ?=
 NAME ?=
 SIM ?=
+PR ?=
+SCREENS ?=
+OWNER ?=
+TITLE ?=
+BODY_FILE ?=
 DAYS ?= 3
 export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 
@@ -15,7 +20,8 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-sample db-fresh db-psql db-studio \
 	env-local env-dev \
 	check verify pre-push check-staged check-comments check-size check-state check-unused functions fix lint typecheck test build \
-	sim sims e2e e2e-fixtures qa screenshots ios-app perf-build size-report \
+	sim sims sim-lease sim-release sim-leases sims-idle sim-sweeper e2e e2e-fixtures qa screenshots pr-screenshots ios-app perf-build size-report \
+	merge-pr agent-permissions \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
 
@@ -78,14 +84,25 @@ help:
 	'iOS and E2E (macOS)' \
 	'  sim             Boot a simulator (SIM=<name or UDID>, else one with the dev build) and open it' \
 	'  sims            List simulators and which have the development build' \
+	'  sim-lease       Your own simulator clone for this session, prints "<UDID> <slot>". OWNER=<thread> ARGS="--wait 300"' \
+	'  sim-release     Delete a leased clone. SIM=<UDID>' \
+	'  sim-leases      Who holds which simulator slot' \
+	'  sims-idle       Shut down booted simulators no lease or running process uses, then quit Simulator' \
+	'  sim-sweeper     Install the launchd job that shuts down simulators idle for 20 min (every 5 min). ARGS=uninstall|status' \
 	'  e2e             Maestro flows against local Supabase. ARGS="--shards 3 --retry-failed"' \
 	'  e2e-fixtures    Maestro flows against the fixture server, no Docker needed' \
 	'  qa              Regression flows in apps/mobile/e2e/qa on the sample data at fixed Central times' \
 	'  screenshots     Every screen in apps/mobile/e2e/screenshots.txt, light and dark, into .context/screenshots' \
+	'  pr-screenshots  Light and dark shots on a leased simulator, pushed and embedded in the PR body. Falls back' \
+	'                  to the CI workflow when every slot is busy or not on a Mac. PR=<n> SCREENS="home map" ARGS=--ci' \
 	'  ios-app         Release simulator app into .context/app; reuses the native build unless native code changed' \
 	'  perf-build      Timing-harness test apps from a release .app. APP=<base .app> OUT=<dir> PERF_DEV_REF=<ref>' \
 	'                  The rest of the timing run is in scripts/qa/perf/README.md' \
 	'  mobile-preview  Dev app build (only if native code changed) + EAS Update. ARGS="staging" or ARGS="pr <n>"' \
+	'' \
+	'Agents' \
+	'  merge-pr        Squash-merge a staging PR once Ethan said yes. PR=<n> TITLE="fix: ..." BODY_FILE=<file>' \
+	'  agent-permissions  Merge .agents/agent-permissions.json into ~/.claude/settings.json. Ethan runs it himself' \
 	'' \
 	'Worktrees' \
 	'  worktree        New worktree in .worktrees/ from origin/staging, env files and deps included. NAME=feat-x' \
@@ -129,7 +146,7 @@ mobile:
 	@pnpm --filter @ut-dining/mobile start $(ARGS)
 
 ios:
-	@pnpm --filter @ut-dining/mobile ios $(if $(SIM),--device "$(SIM)") $(ARGS)
+	@LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 pnpm --filter @ut-dining/mobile ios $(if $(SIM),--device "$(SIM)") $(ARGS)
 
 android:
 	@pnpm --filter @ut-dining/mobile android $(ARGS)
@@ -256,6 +273,30 @@ qa:
 
 screenshots:
 	@scripts/qa/mobile-screenshots.sh $(if $(SIM),--sim "$$($(DEV)/sim.sh pick)") $(ARGS)
+
+sim-lease:
+	@$(DEV)/sim-lease.sh acquire $(if $(OWNER),--owner "$(OWNER)") $(ARGS)
+
+sim-release:
+	@$(DEV)/sim-lease.sh release "$(SIM)"
+
+sim-leases:
+	@$(DEV)/sim-lease.sh list
+
+sims-idle:
+	@$(DEV)/sim-lease.sh idle --shutdown
+
+sim-sweeper:
+	@$(DEV)/sim-lease.sh sweeper $(if $(ARGS),$(ARGS),install)
+
+pr-screenshots:
+	@scripts/qa/pr-screenshots.sh $(PR) $(SCREENS) $(ARGS)
+
+merge-pr:
+	@$(DEV)/merge-pr.sh $(PR) --title "$(TITLE)" --body-file "$(BODY_FILE)"
+
+agent-permissions:
+	@node $(DEV)/agent-permissions.ts $(ARGS)
 
 ios-app:
 	@scripts/qa/ios-sim-app.sh $(ARGS)

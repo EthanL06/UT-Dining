@@ -118,7 +118,7 @@ else
   } > "$FLOWS/screenshots.yaml"
 fi
 
-RUN_DIR="$ROOT/.context/maestro/screenshots-$(date +%Y%m%d-%H%M%S)"
+RUN_DIR="$ROOT/.context/maestro/screenshots-$(date +%Y%m%d-%H%M%S)-$$"
 E2E_OUT="$RUN_DIR" "$ROOT/scripts/qa/mobile-e2e.sh" --status-bar ${PASS[@]+"${PASS[@]}"} "$FLOWS"
 find "$RUN_DIR" -name '*.png' | while read -r png; do
   base="$(basename "$png")"

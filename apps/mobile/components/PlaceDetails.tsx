@@ -52,9 +52,13 @@ const PlaceDetails = ({ place }: { place: PlaceData }) => {
               isFirst={index === 0}
               title={entry.dayRange}
               trailing={
-                <Text variant="subheadline" tone="secondary" className="text-right">
-                  {entry.time.replace(/, /g, '\n')}
-                </Text>
+                <View className="items-end gap-1">
+                  {entry.time.split(/, |\n/).map((range) => (
+                    <Text key={range} variant="subheadline" tone="secondary" className="text-right">
+                      {range}
+                    </Text>
+                  ))}
+                </View>
               }
             />
           ))}

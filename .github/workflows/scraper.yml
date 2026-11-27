@@ -52,6 +52,7 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           ENABLE_SUPABASE: 'true'
           DAYS_TO_SCRAPE: ${{ inputs.days_to_scrape || vars.DAYS_TO_SCRAPE }}
+          MENU_RETENTION_DAYS: ${{ vars.MENU_RETENTION_DAYS }}
           TZ: America/Chicago
         run: pnpm --filter @ut-dining/scraper start
 
@@ -62,6 +63,7 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           ENABLE_SUPABASE: 'true'
           DAYS_TO_SCRAPE: ${{ inputs.days_to_scrape || vars.DAYS_TO_SCRAPE }}
+          MENU_RETENTION_DAYS: ${{ vars.MENU_RETENTION_DAYS }}
           TZ: America/Chicago
         run: |
           sleep 600
