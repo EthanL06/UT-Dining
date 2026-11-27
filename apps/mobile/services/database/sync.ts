@@ -3,12 +3,15 @@ import {
   fetchAllPages,
   flattenMenuTree,
   getMenuDayVersions,
+  getTablesVersion,
   type MenuDayVersions,
   planMenuDays,
 } from '@ut-dining/core';
 import type { SQLiteBindValue } from 'expo-sqlite';
+import migrations from '~/drizzle/migrations';
 import { getTodayInCentralTime } from '~/utils/date';
 import { supabase } from '~/utils/supabase';
+import { writerDb } from './connection';
 import * as schema from './schema';
 import { allergens, food_item, location, menu, menu_category, nutrition } from './schema';
 import type { DrizzleDB } from './types';
@@ -19,11 +22,11 @@ const MENU_TREE_SELECT =
 const fetchSharedTables = async () => {
   const [locationResult, locationTypeResult, appInformationResult, notificationResult, typeResult] =
     await Promise.all([
-      supabase.from('location').select('*'),
-      supabase.from('location_type').select('*'),
-      supabase.from('app_information').select('*'),
-      supabase.from('notifications').select('*'),
-      supabase.from('notification_types').select('*'),
+      supabase.from('location').select('*').order('id'),
+      supabase.from('location_type').select('*').order('id'),
+      supabase.from('app_information').select('*').order('id'),
+      supabase.from('notifications').select('*').order('id'),
+      supabase.from('notification_types').select('*').order('id'),
     ]);
 
   for (const result of [
@@ -145,22 +148,38 @@ function* menuDayStatements(db: DrizzleDB, date: string, rows: ReturnType<typeof
 interface MenuSyncOptions {
   force: boolean;
   syncedVersions: MenuDayVersions;
+  syncedSharedVersion: string | null;
   onVersionsChange: (versions: MenuDayVersions) => void;
+  onSharedVersionChange: (version: string) => void;
   onCacheChange: () => void | Promise<void>;
 }
 
-export const syncCacheWithSupabase = async (
-  db: DrizzleDB,
-  { force, syncedVersions, onVersionsChange, onCacheChange }: MenuSyncOptions,
-) => {
+const hasCachedLocations = async (db: DrizzleDB) =>
+  (await db.select({ id: location.id }).from(location).limit(1)).length > 0;
+
+export const syncCacheWithSupabase = async ({
+  force,
+  syncedVersions,
+  syncedSharedVersion,
+  onVersionsChange,
+  onSharedVersionChange,
+  onCacheChange,
+}: MenuSyncOptions): Promise<boolean> => {
+  const db = writerDb;
   const [shared, remote] = await Promise.all([fetchSharedTables(), fetchMenuVersions()]);
 
   if (shared.location.length === 0) {
     throw new Error('Supabase returned no locations');
   }
 
-  await runStatements(db, sharedTableStatements(db, shared));
-  await onCacheChange();
+  let changed = false;
+  const sharedVersion = `${migrations.journal.entries.length}:${getTablesVersion(shared)}`;
+  if (force || sharedVersion !== syncedSharedVersion || !(await hasCachedLocations(db))) {
+    await runStatements(db, sharedTableStatements(db, shared));
+    onSharedVersionChange(sharedVersion);
+    changed = true;
+    await onCacheChange();
+  }
 
   const cachedDates = (await db.selectDistinct({ date: menu.date }).from(menu)).map(
     (row) => row.date,
@@ -181,6 +200,8 @@ export const syncCacheWithSupabase = async (
       Object.entries(versions).filter(([date]) => !plan.remove.includes(date)),
     );
     onVersionsChange(versions);
+    changed = true;
+    await onCacheChange();
   }
 
   for (const date of plan.fetch) {
@@ -188,6 +209,9 @@ export const syncCacheWithSupabase = async (
     await runStatements(db, menuDayStatements(db, date, rows));
     versions = { ...versions, [date]: remote[date] };
     onVersionsChange(versions);
+    changed = true;
     await onCacheChange();
   }
+
+  return changed;
 };

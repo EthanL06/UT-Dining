@@ -7,8 +7,10 @@ import { zustandStorage } from './rnmmkv-storage';
 interface DataSyncState {
   lastSupabaseQueryTime: number | null;
   menuDayVersions: MenuDayVersions;
+  sharedTablesVersion: string | null;
   setLastSupabaseQueryTime: (timestamp: number) => void;
   setMenuDayVersions: (versions: MenuDayVersions) => void;
+  setSharedTablesVersion: (version: string | null) => void;
 }
 
 export const useDataSyncStore = create<DataSyncState>()(
@@ -16,6 +18,7 @@ export const useDataSyncStore = create<DataSyncState>()(
     (set) => ({
       lastSupabaseQueryTime: null,
       menuDayVersions: {},
+      sharedTablesVersion: null,
 
       setLastSupabaseQueryTime: (timestamp: number) => {
         set({ lastSupabaseQueryTime: timestamp });
@@ -23,6 +26,10 @@ export const useDataSyncStore = create<DataSyncState>()(
 
       setMenuDayVersions: (versions: MenuDayVersions) => {
         set({ menuDayVersions: versions });
+      },
+
+      setSharedTablesVersion: (version: string | null) => {
+        set({ sharedTablesVersion: version });
       },
     }),
     {
