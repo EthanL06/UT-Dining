@@ -5,6 +5,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import type { SearchBarCommands } from 'react-native-screens';
 import type { RowPosition } from '~/components/FoodComponent';
 import { pushedScreenHeaderOptions } from '~/components/TabStack';
 import { Text } from '~/components/ui/Text';
@@ -34,9 +35,9 @@ import { menuEmptyState } from '~/utils/menuList';
 import { buildMenuRows, foodMatcher } from '~/utils/menuRows';
 import { useTheme } from '~/utils/theme';
 import CategoryHeader from './components/CategoryHeader';
+import FloatingButtons from './components/FloatingButtons';
 import FoodItemRow from './components/FoodItemRow';
 import LocationHeader, { LocationHeaderButtons } from './components/LocationHeader';
-import ScrollToTopButton from './components/ScrollToTopButton';
 import SelectionBar from './components/SelectionBar';
 import SkeletonItem from './components/SkeletonItem';
 
@@ -106,6 +107,7 @@ const Location = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
+  const searchBarRef = useRef<SearchBarCommands>(null);
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
   const displayName = useLocationName(location, useColloquialNames);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -301,6 +303,7 @@ const Location = () => {
             />
           ),
           headerSearchBarOptions: {
+            ref: searchBarRef,
             placeholder: 'Search this menu',
             placement: 'stacked',
             autoCapitalize: 'none',
@@ -382,12 +385,16 @@ const Location = () => {
           }}
         />
       ) : (
-        <ScrollToTopButton
+        <FloatingButtons
           visible={showScrollToTop}
           animationValue={scrollButtonAnimation}
-          onPress={() => {
+          onScrollToTop={() => {
             scrollToTop();
             haptics.tap();
+          }}
+          onSearch={() => {
+            scrollToTop();
+            searchBarRef.current?.focus();
           }}
         />
       )}
