@@ -10,6 +10,7 @@ import { UndoToast } from '~/components/mealPlan/UndoToast';
 import { CountUpText } from '~/components/motion/CountUpText';
 import { pushedScreenHeaderOptions } from '~/components/TabStack';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import {
   type MealPlanItem,
@@ -76,7 +77,7 @@ const DayArrow = ({
 }) => {
   const theme = useTheme();
   return (
-    <Pressable
+    <PressableScale
       testID={testID}
       accessibilityLabel={label}
       accessibilityRole="button"
@@ -88,7 +89,7 @@ const DayArrow = ({
       style={{ backgroundColor: theme.card, opacity: target ? 1 : 0.4 }}
     >
       {children}
-    </Pressable>
+    </PressableScale>
   );
 };
 

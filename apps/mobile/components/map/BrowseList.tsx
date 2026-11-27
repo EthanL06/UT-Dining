@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import { haptics } from '~/utils/haptics';
 import { type Coordinates, type Place, walkFrom } from '~/utils/mapPlaces';
@@ -56,7 +57,7 @@ export const BrowseList = ({
         {MAP_FILTERS.map((filter) => {
           const isOn = filters.has(filter.id);
           return (
-            <Pressable
+            <PressableScale
               key={filter.id}
               testID={`map-filter-${filter.id}`}
               accessibilityRole="button"
@@ -71,7 +72,7 @@ export const BrowseList = ({
               <Text variant="subheadline" emphasized tone={isOn ? 'onTint' : 'primary'}>
                 {filter.label}
               </Text>
-            </Pressable>
+            </PressableScale>
           );
         })}
       </ScrollView>
@@ -82,7 +83,7 @@ export const BrowseList = ({
           <Text variant="headline" className="text-center">
             {filters.has('open') ? 'Nothing open matches these filters' : 'No places match'}
           </Text>
-          <Pressable
+          <PressableScale
             testID="map-filters-clear"
             accessibilityRole="button"
             onPress={onClearFilters}
@@ -92,7 +93,7 @@ export const BrowseList = ({
             <Text variant="subheadline" emphasized>
               Clear filters
             </Text>
-          </Pressable>
+          </PressableScale>
         </View>
       ) : (
         <RowGroup>

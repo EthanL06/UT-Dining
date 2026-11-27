@@ -3,7 +3,7 @@ import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Flame, Info, X } from 'lucide-react-native';
 import { useEffect, useEffectEvent } from 'react';
-import { ActivityIndicator, Pressable, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
@@ -11,6 +11,7 @@ import { HeartPop } from '~/components/motion/HeartPop';
 import { GroupedRow, GroupedSection } from '~/components/ui/Grouped';
 import { Image } from '~/components/ui/Image';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
+import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
 import {
   ALLERGEN_ICONS,
@@ -126,7 +127,7 @@ export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
             className="flex-row items-center justify-between px-4 pb-2"
             style={{ paddingTop: pushed ? insets.top + 8 : 16 }}
           >
-            <Pressable
+            <PressableScale
               testID="back-button"
               accessibilityLabel="Close"
               accessibilityRole="button"
@@ -137,8 +138,8 @@ export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
               style={{ backgroundColor: theme.card }}
             >
               <X size={20} color={theme.label} />
-            </Pressable>
-            <Pressable
+            </PressableScale>
+            <PressableScale
               testID="food-info-button"
               accessibilityLabel="About nutrition info"
               accessibilityRole="button"
@@ -149,7 +150,7 @@ export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
               style={{ backgroundColor: theme.card }}
             >
               <Info size={20} color={theme.label} />
-            </Pressable>
+            </PressableScale>
           </View>
 
           {status === 'loading' && (
@@ -289,7 +290,7 @@ export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
               shadowOffset: { width: 0, height: 6 },
             }}
           >
-            <Pressable
+            <PressableScale
               testID="food-favorite-button"
               accessibilityLabel={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
               accessibilityRole="button"
@@ -298,7 +299,8 @@ export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
                 else haptics.success();
                 await toggleFavoriteForFood(db, foodItem, context);
               }}
-              className="h-12 flex-1 flex-row items-center justify-center gap-x-2 rounded-full"
+              containerStyle={{ flex: 1 }}
+              className="h-12 flex-row items-center justify-center gap-x-2 rounded-full"
               style={{ backgroundColor: theme.fill }}
             >
               <HeartPop
@@ -310,9 +312,9 @@ export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
               <Text variant="callout" emphasized>
                 {isFavorite ? 'Favorited' : 'Favorite'}
               </Text>
-            </Pressable>
+            </PressableScale>
             {canMealPlan && (
-              <Pressable
+              <PressableScale
                 testID="food-meal-plan-button"
                 accessibilityLabel={isMealPlan ? 'Remove from meal plan' : 'Add to meal plan'}
                 accessibilityRole="button"
@@ -321,7 +323,8 @@ export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
                   else haptics.success();
                   toggleMealPlanForFood(foodItem, context);
                 }}
-                className="h-12 flex-[1.4] flex-row items-center justify-center gap-x-2 rounded-full"
+                containerStyle={{ flex: 1.4 }}
+                className="h-12 flex-row items-center justify-center gap-x-2 rounded-full"
                 style={{ backgroundColor: isMealPlan ? theme.tintSoft : theme.tint }}
               >
                 <MealPlanIcon
@@ -332,7 +335,7 @@ export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
                 <Text variant="callout" emphasized color={isMealPlan ? theme.tint : '#FFFFFF'}>
                   {isMealPlan ? 'In Meal Plan' : 'Add to Meal Plan'}
                 </Text>
-              </Pressable>
+              </PressableScale>
             )}
           </View>
         )}
