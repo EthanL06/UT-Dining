@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatAgo, formatBytes, runLabel, toQueryView } from './adminView';
+import { describeDownloads, formatAgo, formatBytes, runLabel, toQueryView } from './adminView';
 
 describe('toQueryView', () => {
   it('keeps loading apart from an error and from data', () => {
@@ -53,5 +53,32 @@ describe('formatBytes', () => {
     expect(formatBytes(null)).toBe('Unknown');
     expect(formatBytes(4_200)).toBe('4 KB');
     expect(formatBytes(80_400_000)).toBe('80 MB');
+  });
+});
+
+describe('describeDownloads', () => {
+  const now = Date.parse('2026-11-27T21:00:00Z');
+
+  it('shows the total with thousands separators', () => {
+    expect(
+      describeDownloads({ status: 'ready', total: 12345, checkedAt: '2026-11-27T20:30:00Z' }, now),
+    ).toEqual({
+      value: '12,345',
+      footer:
+        'First-time downloads of all versions. Apple updates this once a day. Checked 30 min ago.',
+    });
+  });
+
+  it('names the missing settings', () => {
+    expect(
+      describeDownloads({ status: 'not_configured', missing: ['ADMIN_ASC_VENDOR_NUMBER'] }),
+    ).toEqual({ value: 'Not set up', footer: 'Still missing: ADMIN_ASC_VENDOR_NUMBER.' });
+  });
+
+  it('passes on what Apple said', () => {
+    expect(describeDownloads({ status: 'failed', detail: 'Apple answered 401' })).toEqual({
+      value: "Couldn't load",
+      footer: 'Apple answered 401',
+    });
   });
 });

@@ -23,6 +23,8 @@ export type CrashHealth =
 
 export type DownloadsHealth =
   | { status: 'ready'; total: number; checkedAt: string }
+  | { status: 'not_configured'; missing: string[] }
+  | { status: 'failed'; detail: string }
   | { status: 'unavailable' };
 
 export interface HallFreshness {
