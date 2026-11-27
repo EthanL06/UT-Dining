@@ -5,6 +5,7 @@ import { type Href, router, Stack, useFocusEffect } from 'expo-router';
 import { Bell, ChefHat, type LucideIcon, MapPin, Megaphone, Star } from 'lucide-react-native';
 import { useCallback, useMemo } from 'react';
 import { Pressable, View } from 'react-native';
+import { TabSwipe } from '~/components/TabSwipe';
 import { GroupedSection } from '~/components/ui/Grouped';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
@@ -201,36 +202,38 @@ const Notifications = () => {
             : undefined,
         }}
       />
-      <OverflowScrollView
-        divider={false}
-        contentInsetAdjustmentBehavior="automatic"
-        style={{ flex: 1, backgroundColor: theme.background }}
-        contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
-      >
-        {groups.length === 0 ? (
-          <View className="mx-8 mt-12 items-center gap-y-2">
-            <Bell size={36} color={theme.tertiaryLabel} />
-            <Text variant="headline">No Notifications Yet</Text>
-            <Text variant="subheadline" tone="secondary" className="text-center">
-              We'll notify you about your favorite foods and dining location updates.
-            </Text>
-          </View>
-        ) : (
-          groups.map((group) => (
-            <GroupedSection key={group.name} header={group.name}>
-              {group.items.map((notification, index) => (
-                <NotificationRow
-                  key={notification.id}
-                  notification={notification}
-                  group={group.name}
-                  isFirst={index === 0}
-                  onPress={handleNotificationPress}
-                />
-              ))}
-            </GroupedSection>
-          ))
-        )}
-      </OverflowScrollView>
+      <TabSwipe tab="notifications">
+        <OverflowScrollView
+          divider={false}
+          contentInsetAdjustmentBehavior="automatic"
+          style={{ flex: 1, backgroundColor: theme.background }}
+          contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
+        >
+          {groups.length === 0 ? (
+            <View className="mx-8 mt-12 items-center gap-y-2">
+              <Bell size={36} color={theme.tertiaryLabel} />
+              <Text variant="headline">No Notifications Yet</Text>
+              <Text variant="subheadline" tone="secondary" className="text-center">
+                We'll notify you about your favorite foods and dining location updates.
+              </Text>
+            </View>
+          ) : (
+            groups.map((group) => (
+              <GroupedSection key={group.name} header={group.name}>
+                {group.items.map((notification, index) => (
+                  <NotificationRow
+                    key={notification.id}
+                    notification={notification}
+                    group={group.name}
+                    isFirst={index === 0}
+                    onPress={handleNotificationPress}
+                  />
+                ))}
+              </GroupedSection>
+            ))
+          )}
+        </OverflowScrollView>
+      </TabSwipe>
     </>
   );
 };
