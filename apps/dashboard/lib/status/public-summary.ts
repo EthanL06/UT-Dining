@@ -34,15 +34,15 @@ const describeMenus = (menus: MenuStatus) => {
   if (!menus.ok) return 'Menu data could not be checked.';
   if (menus.freshnessDetail) return menus.freshnessDetail;
   if (!today || today.expected === 0) return 'No dining halls with menus are open today.';
-  if (today.complete) return `Today's menus are posted for all ${today.expected} dining halls.`;
-  if (today.loaded === 0) return "Menus are up to date. UT hasn't posted any menus for today.";
-  return `Menus are up to date. UT has posted today's menus for ${today.loaded} of ${today.expected} dining halls.`;
+  if (today.complete) return `All ${today.expected} dining halls have menus today.`;
+  if (today.loaded === 0) return 'No dining halls have menus today.';
+  return `${today.loaded} of ${today.expected} dining halls have menus today.`;
 };
 
 export const notPostedNote = (missing: string[]) =>
   missing.length === 0
     ? null
-    : `UT hasn't posted a menu for ${missing.join(', ')}. That usually means it's closed, like on a holiday or break, not a problem with UT Dining.`;
+    : `No menu today: ${missing.join(', ')}. ${missing.length === 1 ? "It's" : "They're"} likely closed for a break or holiday.`;
 
 export const getPublicSummary = async (): Promise<PublicSummary> => {
   const scraper = await getLatestWorkflowRun(SCRAPER_WORKFLOW, 'Scraper');

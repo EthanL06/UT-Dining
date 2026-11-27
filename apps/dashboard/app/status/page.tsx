@@ -46,7 +46,7 @@ const BANNER_TEXT: Record<Health, string> = {
 const dayTooltip = (day: DayHealth) => {
   if (day.expected === 0) return `${formatDay(day.date)}: no dining halls scheduled`;
   if (day.missing.length === 0) return `${formatDay(day.date)}: all ${day.expected} menus posted`;
-  return `${formatDay(day.date)}: UT posted ${day.loaded} of ${day.expected} menus`;
+  return `${formatDay(day.date)}: ${day.loaded} of ${day.expected} menus posted`;
 };
 
 const dayColor = (day: DayHealth) => {
@@ -121,7 +121,7 @@ export default async function PublicStatusPage() {
                 <Group justify="space-between">
                   <Text fw={600}>Menus, last 14 days</Text>
                   <Text fz="sm" c="dimmed">
-                    UT posted every menu on{' '}
+                    Every menu posted on{' '}
                     {menus.history.filter((day) => day.health !== 'unknown' && day.complete).length}{' '}
                     of {menus.history.filter((day) => day.health !== 'unknown').length} days
                   </Text>
@@ -153,14 +153,13 @@ export default async function PublicStatusPage() {
           )}
 
           <Stack gap="sm">
-            <Text fw={600}>Days UT didn't post every menu</Text>
+            <Text fw={600}>Days with closed dining halls</Text>
             <Text fz="sm" c="dimmed">
-              A missing menu usually means that dining hall was closed, like on a holiday or break.
-              It isn't a problem with UT Dining.
+              When UT doesn't post a menu, the dining hall is usually closed for a break or holiday.
             </Text>
             {notes.length === 0 ? (
               <Text fz="sm" c="dimmed">
-                UT posted every menu in the last 14 days.
+                Every dining hall had a menu in the last 14 days.
               </Text>
             ) : (
               notes
@@ -170,16 +169,16 @@ export default async function PublicStatusPage() {
                   <Paper key={day.date} radius="md" withBorder p="md">
                     <Group gap={8} mb={4}>
                       <Text fw={600} fz="sm">
-                        {day.loaded === 0 ? 'No menus posted by UT' : 'Some menus not posted by UT'}
+                        {day.loaded === 0
+                          ? 'No menus'
+                          : `No menu for ${day.missing.length} of ${day.expected}`}
                       </Text>
                       <Text fz="sm" c="dimmed">
                         {formatDay(day.date)}
                       </Text>
                     </Group>
                     <Text fz="sm" c="dimmed">
-                      {day.loaded === 0
-                        ? `UT didn't post menus for any of the ${day.expected} dining halls that day.`
-                        : `UT didn't post a menu for ${day.missing.join(', ')}.`}
+                      {day.loaded === 0 ? 'No dining hall had a menu.' : day.missing.join(', ')}
                     </Text>
                   </Paper>
                 ))

@@ -340,13 +340,13 @@ export default async function StatusPage() {
               : `${daysAhead} day${daysAhead === 1 ? '' : 's'} ahead. Last write ${formatRelative(menus.lastMenuWrite ?? status?.menu_dates.newest_updated_at ?? null)}.`)}
         </StatCard>
         <StatCard
-          title="Menus posted today"
+          title="Menus today"
           health={today?.health ?? 'unknown'}
           value={today ? `${today.loaded} / ${today.expected}` : '—'}
         >
           {today && today.missing.length > 0
-            ? `UT hasn't posted: ${today.missing.join(', ')}. Usually a closure, not a problem.`
-            : 'Locations with menus that UT posted today.'}
+            ? `No menu: ${today.missing.join(', ')}. Likely closed.`
+            : 'Every dining hall open today has a menu.'}
         </StatCard>
         <StatCard
           title="Open right now"
@@ -407,7 +407,7 @@ export default async function StatusPage() {
                           {entry
                             ? entry.names.join(', ')
                             : expected
-                              ? 'Not posted by UT'
+                              ? 'No menu (likely closed)'
                               : 'None expected'}
                         </TableTd>
                         <TableTd c="dimmed">{formatRelative(entry?.updatedAt ?? null)}</TableTd>
