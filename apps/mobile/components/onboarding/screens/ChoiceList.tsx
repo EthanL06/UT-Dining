@@ -1,7 +1,7 @@
 import { Check, type LucideIcon } from 'lucide-react-native';
-import { ScrollView } from 'react-native';
 
 import { GroupedRow, GroupedSection } from '~/components/ui/Grouped';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
 
@@ -21,7 +21,7 @@ const ChoiceList = ({
   const theme = useTheme();
 
   return (
-    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+    <OverflowScrollView containerClassName="flex-1" showsVerticalScrollIndicator={false}>
       <GroupedSection footer={footer}>
         {choices.map(({ id, label, icon: Icon }, index) => {
           const selected = isSelected(id);
@@ -46,7 +46,7 @@ const ChoiceList = ({
           );
         })}
       </GroupedSection>
-    </ScrollView>
+    </OverflowScrollView>
   );
 };
 

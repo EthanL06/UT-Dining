@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import DashboardSkeleton from '@/components/dashboard/dashboard-skeleton';
 import DashboardLocationsClient from '@/components/dashboard/locations/dashboard-locations-client';
+import { log } from '@/lib/log';
 import { createClient } from '@/lib/supabase/server';
 import type { Location, LocationType } from '@/types/location';
 
@@ -10,9 +11,9 @@ async function getLocations(): Promise<Location[]> {
     ascending: true,
   });
 
-  console.log('📍 Locations fetched');
+  log.info('📍 Locations fetched');
   if (error) {
-    console.error(error.message);
+    log.error(error.message);
     return [];
   }
 
@@ -23,7 +24,7 @@ async function getLocationTypes() {
   const supabase = await createClient();
   const { data, error } = await supabase.from('location_type').select('*');
   if (error) {
-    console.error('❌ Failed to fetch location types:', error.message);
+    log.error('❌ Failed to fetch location types:', error.message);
     return [];
   }
   return (data as unknown as LocationType[]) || [];
@@ -46,7 +47,7 @@ async function getLocationMenuStatus(locations: Location[]): Promise<Record<stri
       .in('location_id', locationIds);
 
     if (error) {
-      console.error('❌ Menu check error:', error.message);
+      log.error('❌ Menu check error:', error.message);
       locationIds.forEach((id) => {
         menuStatus[id] = false;
       });
@@ -58,13 +59,13 @@ async function getLocationMenuStatus(locations: Location[]): Promise<Record<stri
       });
     }
   } catch (error) {
-    console.error('❌ Failed to check menus for locations:', error);
+    log.error('❌ Failed to check menus for locations:', error);
     locationIds.forEach((id) => {
       menuStatus[id] = false;
     });
   }
 
-  console.log('🍽️  Menu status loaded for all locations');
+  log.info('🍽️  Menu status loaded for all locations');
   return menuStatus;
 }
 

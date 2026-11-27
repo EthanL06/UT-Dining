@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { ChevronRight } from 'lucide-react-native';
-import { Modal, Pressable, ScrollView, TouchableOpacity, View } from 'react-native';
+import { Modal, Pressable, TouchableOpacity, View } from 'react-native';
+import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { useChangelogPromptStore, useChangelogStore } from '~/store/useChangelogStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -96,11 +97,7 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
               isDarkMode ? 'bg-neutral-600' : 'bg-[#D6D3CE]',
             )}
           />
-          <ScrollView
-            className="mt-[18px] flex-grow-0"
-            showsVerticalScrollIndicator={false}
-            bounces={false}
-          >
+          <OverflowScrollView containerClassName="mt-[18px]" showsVerticalScrollIndicator={false}>
             {isUpdate ? (
               <>
                 <View className="flex-row">
@@ -148,7 +145,7 @@ export const ChangelogModal = ({ onUpdate, onIgnore, onDismissWhatsNew }: Change
                 </View>
               </>
             )}
-          </ScrollView>
+          </OverflowScrollView>
 
           {isUpdate ? (
             canDismiss ? (

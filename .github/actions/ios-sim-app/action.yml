@@ -1,5 +1,5 @@
 name: iOS simulator app
-description: Builds the release simulator app of the development bundle id into .context/app. A cache hit on the app sources skips everything; otherwise the native build is reused by its Expo fingerprint and only the JavaScript is rebuilt, and a full Xcode build runs only when native code changed.
+description: Builds the release simulator app of the development bundle id into .context/app. A cache hit on the app sources skips everything; otherwise the native build is reused by a hash of its inputs and only the JavaScript is rebuilt with a cached Metro transform cache, and a full Xcode build runs only when native code changed.
 
 outputs:
   key:
@@ -47,6 +47,16 @@ runs:
         path: .context/ios-shell
         key: ${{ steps.native.outputs.key }}
 
+    - name: Restore the Metro cache
+      id: metro
+      if: steps.app-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+      with:
+        path: .context/metro-cache
+        key: ios-metro-${{ hashFiles('pnpm-lock.yaml', 'apps/mobile/babel.config.*', 'apps/mobile/metro.config.cjs', 'apps/mobile/babel-plugin-*') }}-${{ github.sha }}
+        restore-keys: |
+          ios-metro-${{ hashFiles('pnpm-lock.yaml', 'apps/mobile/babel.config.*', 'apps/mobile/metro.config.cjs', 'apps/mobile/babel-plugin-*') }}-
+
     - name: Install ccache
       if: steps.app-cache.outputs.cache-hit != 'true' && steps.shell.outputs.cache-hit != 'true'
       shell: bash
@@ -86,6 +96,13 @@ runs:
       with:
         path: .context/ios-shell
         key: ${{ steps.native.outputs.key }}
+
+    - name: Save the Metro cache
+      if: steps.app-cache.outputs.cache-hit != 'true' && steps.metro.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+      with:
+        path: .context/metro-cache
+        key: ${{ steps.metro.outputs.cache-primary-key }}
 
     - name: Save the built app
       if: steps.app-cache.outputs.cache-hit != 'true'

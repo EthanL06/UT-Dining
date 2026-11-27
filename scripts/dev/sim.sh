@@ -22,7 +22,7 @@ has_app() {
 device_name() { xcrun simctl list devices | grep "$1" | head -1 | sed -E 's/^ *(.*) \([0-9A-F-]{36}\).*/\1/'; }
 
 ios_devices() {
-  xcrun simctl list devices available | awk '/^-- /{ios = ($0 ~ /-- iOS /)} ios && /\([0-9A-F-]{36}\)/'
+  xcrun simctl list devices available | awk '/^-- /{ios = ($0 ~ /-- iOS /)} ios && /\([0-9A-F-]{36}\)/' | grep -vE 'UT Dining (golden|lease)' || true
 }
 
 list() {
@@ -48,7 +48,7 @@ pick() {
     echo "$udid"
     return
   fi
-  udid="$(xcrun simctl list devices booted | grep -oE "$UDID_RE" | head -1 || true)"
+  udid="$(xcrun simctl list devices booted | grep -vE 'UT Dining (golden|lease)' | grep -oE "$UDID_RE" | head -1 || true)"
   if [[ -n "$udid" ]]; then
     echo "$udid"
     return

@@ -56,3 +56,8 @@ export const formatPreviewAge = (updatedAt: string, now: number): string => {
   if (hours < 24) return `${hours} h ago`;
   return `${Math.round(hours / 24)} d ago`;
 };
+
+export const RELOAD_REPLAY_WINDOW_MS = 60_000;
+
+export const isReplayedLaunchLink = (reloadedAt: number | undefined, now: number) =>
+  reloadedAt !== undefined && now >= reloadedAt && now - reloadedAt < RELOAD_REPLAY_WINDOW_MS;

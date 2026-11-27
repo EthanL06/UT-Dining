@@ -2,6 +2,7 @@
 
 import { Box, Button, Divider, Grid, Group, Modal, Stack, Text } from '@mantine/core';
 import { IconSend } from '@tabler/icons-react';
+import { formatCentral } from '@ut-dining/core';
 import type { NotificationData } from '@/app/(private)/dashboard/notifications/action';
 import { IPhoneNotificationPreview } from './iphone-notification-preview';
 
@@ -77,7 +78,7 @@ export function ConfirmationModal({
                   </Text>
                 </Grid.Col>
                 <Grid.Col span={9}>
-                  <Text size="sm">{data.scheduledAt.toLocaleString()}</Text>
+                  <Text size="sm">{formatCentral(data.scheduledAt)}</Text>
                 </Grid.Col>
               </>
             )}

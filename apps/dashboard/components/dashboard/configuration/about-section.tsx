@@ -5,6 +5,7 @@ import { notifications } from '@mantine/notifications';
 import { IconDeviceFloppy } from '@tabler/icons-react';
 import { useState } from 'react';
 import { updateAppConfig } from '@/app/(private)/dashboard/configuration/action';
+import { log } from '@/lib/log';
 import type { AppConfig } from '@/types/config';
 
 interface AboutSectionProps {
@@ -29,7 +30,7 @@ export function AboutSection({ initialConfig }: AboutSectionProps) {
         autoClose: 3000,
       });
     } catch (error) {
-      console.error('Failed to update about section:', error);
+      log.error('Failed to update about section:', error);
 
       notifications.show({
         title: 'Error',

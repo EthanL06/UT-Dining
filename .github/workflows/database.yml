@@ -22,16 +22,31 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Scope
+        id: scope
+        run: |
+          if [[ "$EVENT" == pull_request ]] && git diff --name-only "$BASE" HEAD | scripts/ci/docs-only.sh; then
+            echo "docs_only=true" >> "$GITHUB_OUTPUT"
+            echo "Docs-only change: skipping the migration check." >> "$GITHUB_STEP_SUMMARY"
+          fi
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
+        if: steps.scope.outputs.docs_only != 'true'
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        if: steps.scope.outputs.docs_only != 'true'
         with:
           node-version-file: .node-version
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+        if: steps.scope.outputs.docs_only != 'true'
 
       - name: Check migrations and generated types
+        if: steps.scope.outputs.docs_only != 'true'
         run: scripts/dev/db-check.sh
         env:
           BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}

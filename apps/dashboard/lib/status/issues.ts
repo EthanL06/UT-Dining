@@ -191,5 +191,3 @@ export const buildIssues = (input: IssueInput): Issue[] => {
 
   return issues.sort((a, b) => SEVERITY[a.health] - SEVERITY[b.health]);
 };
-
-export const overallHealth = (issues: Issue[]): Health => issues[0]?.health ?? 'operational';

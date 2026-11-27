@@ -1,4 +1,4 @@
-import { type Hhmm, WEEKDAYS, type Weekday } from './hours.ts';
+import type { Hhmm, Weekday } from './hours.ts';
 
 export const CENTRAL_TIME_ZONE = 'America/Chicago';
 
@@ -30,7 +30,17 @@ export const toCentralTime = (instant: Date = new Date()): ZonedNow => {
   };
 };
 
-export const toLocalTime = (date: Date): Omit<ZonedNow, 'date'> => ({
-  day: WEEKDAYS[date.getDay()],
-  time: date.getHours() * 100 + date.getMinutes(),
-});
+const DAY_MS = 86_400_000;
+
+export const formatCentral = (
+  instant: Date | string | number,
+  options: Intl.DateTimeFormatOptions = { dateStyle: 'medium', timeStyle: 'short' },
+): string => new Date(instant).toLocaleString('en-US', { ...options, timeZone: CENTRAL_TIME_ZONE });
+
+export const formatCentralDateKey = (
+  dateKey: string,
+  options: Intl.DateTimeFormatOptions,
+): string => formatCentral(`${dateKey}T12:00:00Z`, options);
+
+export const daysBetweenDateKeys = (from: string, to: string): number =>
+  Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / DAY_MS);
