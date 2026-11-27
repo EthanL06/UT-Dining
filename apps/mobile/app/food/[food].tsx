@@ -53,7 +53,7 @@ const percentOfDailyValue = (key: string, value: unknown) => {
   return `${Math.round((Number.parseFloat(String(value)) / dailyValue) * 100)}%`;
 };
 
-const FoodScreen = () => {
+export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
   const params = useLocalSearchParams<{
     food: string;
     menu: string;
@@ -120,7 +120,10 @@ const FoodScreen = () => {
           divider={false}
           contentContainerStyle={{ paddingBottom: insets.bottom + 110 }}
         >
-          <View className="flex-row items-center justify-between px-4 pt-4 pb-2">
+          <View
+            className="flex-row items-center justify-between px-4 pb-2"
+            style={{ paddingTop: pushed ? insets.top + 8 : 16 }}
+          >
             <Pressable
               testID="back-button"
               accessibilityLabel="Close"
@@ -334,5 +337,7 @@ const FoodScreen = () => {
     </SheetProvider>
   );
 };
+
+const FoodScreen = () => <FoodDetail />;
 
 export default FoodScreen;

@@ -72,7 +72,7 @@ const FoodComponent = ({
   const theme = useTheme();
   const context = { location, menu: selectedMenu, category: categoryName, date: planDate };
   const href = {
-    pathname: '/food/[food]' as const,
+    pathname: '/dish/[food]' as const,
     params: {
       food: food.name as string,
       menu: selectedMenu,
