@@ -1,10 +1,11 @@
 import { formatCentralDateKey } from '@ut-dining/core';
-import { Stack, usePreventZoomTransitionDismissal } from 'expo-router';
+import { Stack } from 'expo-router';
 import { ChefHat, Flame } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { AppState, Alert as NativeAlert, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DayStrip } from '~/components/DayStrip';
+import { EdgeSwipeDismissal } from '~/components/EdgeSwipeDismissal';
 import { formatGrams, formatNumber } from '~/components/mealPlan/format';
 import { PlanRow } from '~/components/mealPlan/PlanRow';
 import { UndoToast } from '~/components/mealPlan/UndoToast';
@@ -73,10 +74,7 @@ type Undo =
 
 const UNDO_MS = 4000;
 
-const LEFT_EDGE_DISMISSAL = { unstable_dismissalBoundsRect: { maxX: 24 } };
-
 const MealPlan = () => {
-  usePreventZoomTransitionDismissal(LEFT_EDGE_DISMISSAL);
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const today = useToday();
@@ -148,6 +146,7 @@ const MealPlan = () => {
 
   return (
     <>
+      <EdgeSwipeDismissal />
       <Stack.Screen
         options={{
           title: 'Meal Plan',
