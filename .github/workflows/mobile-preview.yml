@@ -100,7 +100,9 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: read
+      pull-requests: read
     env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       SUPABASE_DEV_URL: ${{ secrets.SUPABASE_DEV_URL }}
       SUPABASE_DEV_SERVICE_KEY: ${{ secrets.SUPABASE_DEV_SERVICE_KEY }}
     steps:

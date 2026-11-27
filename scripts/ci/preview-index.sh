@@ -10,6 +10,7 @@ usage() {
     '' \
     'add reads PREVIEW_TITLE, PREVIEW_SHA, PREVIEW_RUNTIME, PREVIEW_BUILD_URL and PREVIEW_UPDATE_URL,' \
     'and prints the public URL of the QR code. remove drops the PR from the list.' \
+    'With GH_TOKEN set, both also drop every PR that is no longer open, so a lost write heals itself.' \
     '' \
     'Needs SUPABASE_DEV_URL and SUPABASE_DEV_SERVICE_KEY. Refuses the production project.'
 }
@@ -97,6 +98,23 @@ else
     '.updatedAt = $now | .previews = [.previews[] | select(.pr != $pr)]' \
     "$work/current.json" >"$work/next.json"
   api -o /dev/null -X DELETE "$url/storage/v1/object/$BUCKET/qr/pr-$pr.png" 2>/dev/null || true
+fi
+
+repo="${GITHUB_REPOSITORY:-EthanL06/UT-Dining}"
+if [[ -n "${GH_TOKEN:-}" ]] &&
+  gh api --paginate "repos/$repo/pulls?state=open&per_page=100" --jq '.[].number' >"$work/open.txt" 2>/dev/null; then
+  jq --slurpfile open <(jq -s . "$work/open.txt") --argjson pr "$pr" --arg mode "$mode" \
+    '.previews as $all
+     | .previews = [$all[] | select((.pr as $n | $open[0] | index($n)) or ($mode == "add" and .pr == $pr))]
+     | ([$all[].pr] - [.previews[].pr]) as $gone
+     | if ($gone | length) > 0 then .pruned = $gone else . end' \
+    "$work/next.json" >"$work/pruned.json"
+  for gone in $(jq -r '.pruned // [] | .[]' "$work/pruned.json"); do
+    [[ "$gone" == "$pr" ]] && continue
+    api -o /dev/null -X DELETE "$url/storage/v1/object/$BUCKET/qr/pr-$gone.png" 2>/dev/null || true
+    echo "preview-index: dropped closed PR #$gone" >&2
+  done
+  jq 'del(.pruned)' "$work/pruned.json" >"$work/next.json"
 fi
 
 upload "$INDEX" application/json "$work/next.json"
