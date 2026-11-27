@@ -12,9 +12,9 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 
 .PHONY: help setup install doctor \
 	dev mobile ios android dashboard website scrape admin mobile-preview \
-	db-up db-down db-status db-reset db-migrate db-new db-types db-seed db-fixtures db-psql db-studio \
+	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-psql db-studio \
 	env-local env-dev \
-	check verify check-comments fix lint typecheck test build \
+	check verify check-comments functions fix lint typecheck test build \
 	sim sims e2e e2e-fixtures screenshots perf-build \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
@@ -47,6 +47,8 @@ help:
 	'  db-migrate      Apply new migrations, keeping data' \
 	'  db-new          New migration. NAME=add_meal_notes' \
 	'  db-types        Regenerate packages/supabase types from the local schema' \
+	'  db-check        Throwaway Postgres check of new migrations: backwards compatible, seed, types.' \
+	'                  BASE=origin/staging. Leaves the local stack alone' \
 	'  db-seed         Scrape real UT menus into the local database. DAYS=3' \
 	'  db-fixtures     Load the fixed E2E test menus' \
 	'  db-psql         psql on the local database. ARGS="-c \"select count(*) from menu\""' \
@@ -59,6 +61,7 @@ help:
 	'                  comment check, typecheck and tests of affected packages, then what else to verify' \
 	'  check           Biome, typecheck and tests of everything (run before pushing)' \
 	'  check-comments  Fail on added code comments. ARGS="--base origin/staging" (default: staged diff)' \
+	'  functions       Typecheck and test the Supabase edge functions with Deno (CI runs it too)' \
 	'  fix             Biome safe fixes' \
 	'  lint | typecheck | test | build' \
 	'' \
@@ -138,6 +141,9 @@ db-new:
 db-types:
 	@$(DEV)/db.sh types
 
+db-check:
+	@$(DEV)/db-check.sh
+
 db-seed:
 	@$(DEV)/db.sh seed "$(DAYS)"
 
@@ -176,6 +182,9 @@ typecheck:
 
 test:
 	@pnpm test
+
+functions:
+	@$(DEV)/functions-check.sh
 
 build:
 	@pnpm build

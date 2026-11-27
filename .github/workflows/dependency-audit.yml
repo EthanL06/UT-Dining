@@ -1,0 +1,84 @@
+name: Dependency audit
+
+on:
+  pull_request:
+    paths:
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - '**/package.json'
+      - .github/workflows/dependency-audit.yml
+  schedule:
+    - cron: '23 9 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: dependency-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: No new vulnerable dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          path: head
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        if: github.event_name == 'pull_request'
+        with:
+          ref: ${{ github.base_ref }}
+          path: base
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
+        with:
+          package_json_file: head/package.json
+
+      - name: Audit the lockfiles
+        run: |
+          audit() {
+            (cd "$1" && pnpm audit --json > ../"$1".json) || true
+            if ! jq -e 'has("advisories")' "$1.json" > /dev/null; then
+              echo "::error::pnpm audit failed for $1"
+              cat "$1.json"
+              exit 1
+            fi
+          }
+          audit head
+          if [ -d base ]; then
+            audit base
+          else
+            echo '{"advisories":{}}' > base.json
+          fi
+
+      - name: Compare with the base branch
+        run: |
+          jq -r --slurpfile base base.json '
+            [$base[0].advisories[] | .github_advisory_id] as $known
+            | [.advisories[] | select(.severity == "high" or .severity == "critical")]
+            | map(. + {new: (.github_advisory_id as $id | $known | index($id) | not)})
+          ' head.json > high.json
+          new=$(jq '[.[] | select(.new)] | length' high.json)
+          total=$(jq 'length' high.json)
+          {
+            echo "## Dependency audit"
+            echo
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              echo "$new new high or critical advisories in this PR ($total in the lockfile overall)."
+            else
+              echo "$total high or critical advisories in the lockfile."
+            fi
+            echo
+            if [ "$total" -gt 0 ]; then
+              echo '| | Severity | Package | Vulnerable | Patched | Advisory |'
+              echo '|---|---|---|---|---|---|'
+              jq -r 'sort_by(.new | not) | .[] | "| \(if .new then "new" else "" end) | \(.severity) | \(.module_name) | `\(.vulnerable_versions)` | `\(.patched_versions)` | \(.url) |"' high.json
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "$new" -gt 0 ]; then
+            jq -r '.[] | select(.new) | "::error::\(.severity): \(.module_name) \(.vulnerable_versions) (\(.url)), patched in \(.patched_versions)"' high.json
+            exit 1
+          fi
