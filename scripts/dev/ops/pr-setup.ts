@@ -3,7 +3,7 @@ import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSyn
 import { tmpdir } from 'node:os';
 import { basename, extname, join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { ETHAN, env, getPr, gh, prNumber, REPO, say, tryGh } from './github.ts';
+import { ETHAN, env, getPr, gh, prFiles, prNumber, REPO, say, tryGh } from './github.ts';
 
 const USAGE = `Usage: make pr-setup PR=<n> [THREAD=<project thread URL>] [LABELS="mobile tooling"] [IMAGES=<dir>]
        node scripts/dev/ops/pr-setup.ts <n> [--thread <url>] [--requested-by <name>] [--login <github login>]
@@ -14,7 +14,8 @@ Finishes a PR the way the project expects, idempotently:
   - Puts the two attribution lines at the top of the body when --thread (or CLAUDE_PROJECT_THREAD_URL)
     is given and the body does not start with them yet.
   - Assigns ${ETHAN} and requests his review (skipped when he opened the PR).
-  - Adds the given labels (they must already exist in the repo).
+  - Adds the given labels (they must already exist in the repo), plus "migration" when the PR
+    changes supabase/migrations/.
   - Uploads every PNG, JPG or GIF in --images to the orphan branch assets/pr-<n> (with the two
     vercel.json files) and embeds each one inline in a "screenshots" section of the body, replacing
     the previous set. Files named <screen>-light.png and <screen>-dark.png are shown side by side.`;
@@ -39,6 +40,8 @@ if (values.help) {
 const number = prNumber(positionals[0], USAGE);
 const login = values.login;
 const START = '<!-- pr-images:start -->';
+const MIGRATIONS = /^supabase\/migrations\//;
+const MIGRATION_LABEL = 'migration';
 const END = '<!-- pr-images:end -->';
 const ATTRIBUTION = '<!-- claude-projects-attribution:';
 
@@ -173,6 +176,7 @@ const main = () => {
   }
 
   const labels = values.label.flatMap((label) => label.split(/[\s,]+/)).filter(Boolean);
+  if (prFiles(number).some((file) => MIGRATIONS.test(file))) labels.push(MIGRATION_LABEL);
   if (labels.length > 0) {
     const known = new Set(
       gh<{ name: string }[]>('labels?per_page=100').map((label) => label.name.toLowerCase()),
