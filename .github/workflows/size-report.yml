@@ -39,19 +39,49 @@ env:
   HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
 jobs:
+  changes:
+    name: Pick what to measure
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      kinds: ${{ steps.pick.outputs.kinds }}
+    steps:
+      - name: Pick the parts this change can affect
+        id: pick
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -z "$PR_NUMBER" ]; then
+            echo 'kinds=["mobile","website"]' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" --paginate --jq '.[].filename')
+          shared='^(packages/core/|package\.json$|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|\.github/perf-budgets\.json$|\.github/workflows/size-report\.yml$|scripts/qa/size-report\.)'
+          kinds=()
+          if grep -Eq "$shared|^apps/mobile/" <<< "$files"; then kinds+=('"mobile"'); fi
+          if grep -Eq "$shared|^apps/website/" <<< "$files"; then kinds+=('"website"'); fi
+          list=$(IFS=,; echo "${kinds[*]}")
+          echo "kinds=[$list]" >> "$GITHUB_OUTPUT"
+          echo "Measuring: [$list]" >> "$GITHUB_STEP_SUMMARY"
+
   measure:
     name: Measure ${{ matrix.kind }}
+    needs: changes
+    if: needs.changes.outputs.kinds != '[]'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        kind: [mobile, website]
+        kind: ${{ fromJSON(needs.changes.outputs.kinds) }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: .node-version
           cache: pnpm
@@ -68,7 +98,7 @@ jobs:
           cp "$RUNNER_TEMP/report/head.json" .size-report/${{ matrix.kind }}.json
 
       - if: github.event_name == 'push'
-        uses: actions/cache/save@v6
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: .size-report
           key: size-report-${{ env.REPORT_VERSION }}-${{ matrix.kind }}-${{ github.sha }}
@@ -76,7 +106,7 @@ jobs:
       - name: Restore the staging report
         if: github.event_name == 'pull_request'
         id: base-cache
-        uses: actions/cache/restore@v6
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: .size-report
           key: size-report-${{ env.REPORT_VERSION }}-${{ matrix.kind }}-${{ env.BASE_SHA }}
@@ -91,7 +121,7 @@ jobs:
           scripts/qa/size-report.sh measure ${{ matrix.kind }} "$RUNNER_TEMP/base" .size-report/${{ matrix.kind }}.json
 
       - if: github.event_name == 'pull_request' && steps.base-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v6
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: .size-report
           key: size-report-${{ env.REPORT_VERSION }}-${{ matrix.kind }}-${{ env.BASE_SHA }}
@@ -105,7 +135,7 @@ jobs:
             --out "$RUNNER_TEMP/report/${{ matrix.kind }}.json"
 
       - if: github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: size-report-${{ matrix.kind }}
           path: ${{ runner.temp }}/report/${{ matrix.kind }}.json
@@ -113,14 +143,14 @@ jobs:
 
   comment:
     name: Post the report
-    needs: measure
-    if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    needs: [changes, measure]
+    if: always() && needs.changes.outputs.kinds != '[]' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           sparse-checkout: |
             .node-version
@@ -128,11 +158,11 @@ jobs:
             scripts/qa/size-report.ts
           sparse-checkout-cone-mode: false
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: .node-version
 
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           pattern: size-report-*
           merge-multiple: true
