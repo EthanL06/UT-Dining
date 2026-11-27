@@ -90,3 +90,18 @@ How a run works:
 `scraper-dev.yml` turns that report into one issue labeled `places-health`, assigned to the repo owner, through `scripts/ci/health-issue.sh`. It comments only when the report changed and closes the issue on the first clean run. New, missing and dropped places open the issue without failing the job.
 
 To stop syncing a place, remove its line from `sources.ts`; its hours then stay as they are and can be edited in the dashboard again. Edits in the dashboard to a synced place are overwritten on the next run.
+
+## Open data export
+
+`pnpm --filter @ut-dining/scraper export` writes every menu, dish and location to plain JSON and CSV files for the public [EthanL06/ut-dining-data](https://github.com/EthanL06/ut-dining-data) repository. `open-data/README.md` is that repository's README and documents the schema; the workflow copies it over on every run, so change the schema and its docs in the same PR.
+
+| Variable       | Default        | Purpose                                                                 |
+| -------------- | -------------- | ----------------------------------------------------------------------- |
+| `EXPORT_DIR`   |                | Required. A checkout of `ut-dining-data`, or any folder                 |
+| `EXPORT_FROM`  | two days ago   | First menu date as `YYYY-MM-DD`, or `all`                               |
+| `SUPABASE_URL` |                | Required                                                                |
+| `SUPABASE_KEY` |                | The anon key is enough for the last two days; older menus need the service key because RLS hides them from anon |
+
+It only reads. Each day goes to `menus/YYYY/YYYY-MM-DD.json` and `.csv`. Dishes are stored once in `dishes.json`, keyed by a hash of name, recipe, nutrition and allergens, and the export merges new dishes into the existing file instead of rewriting it, so dishes from menus the database has pruned stay. Output is deterministic: a run with no data changes leaves every file byte for byte the same.
+
+`.github/workflows/open-data.yml` runs it after every `Scrape menus` run with the anon key and pushes a commit when anything changed. It needs the `DATA_REPO_DEPLOY_KEY` secret, a deploy key with write access to `ut-dining-data`. Run it by hand with `from` set to `all` to backfill the full history; a manual run with `from` uses the service key, still read-only.
