@@ -57,3 +57,19 @@ export const toCrashCounts = (body: unknown): CrashCounts | null => {
   const [lastDay, lastWeek] = row.map(Number);
   return Number.isFinite(lastDay) && Number.isFinite(lastWeek) ? { lastDay, lastWeek } : null;
 };
+
+const SCRAPER_TARGETS: Record<string, { workflow: string; ref: string }> = {
+  bdnlfwyfgvaployvrivk: { workflow: 'scraper-dev.yml', ref: 'staging' },
+  yrmylgizphirqqkzgbth: { workflow: 'scraper.yml', ref: 'main' },
+};
+
+export const scraperTarget = (
+  supabaseUrl: string,
+  overrides: { workflow?: string; ref?: string },
+): { workflow: string; ref: string } | null => {
+  const ref = new URL(supabaseUrl).hostname.split('.')[0];
+  const fallback = SCRAPER_TARGETS[ref];
+  const workflow = overrides.workflow || fallback?.workflow;
+  const branch = overrides.ref || fallback?.ref;
+  return workflow && branch ? { workflow, ref: branch } : null;
+};

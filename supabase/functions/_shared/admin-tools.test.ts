@@ -3,6 +3,7 @@ import {
   isRunActive,
   lastSuccessfulRun,
   parseAdminRequest,
+  scraperTarget,
   toCrashCounts,
   toScraperRuns,
 } from './admin-tools.ts';
@@ -46,4 +47,20 @@ Deno.test('toCrashCounts reads the HogQL row', () => {
   assertEquals(toCrashCounts({ results: [[2, 9]] }), { lastDay: 2, lastWeek: 9 });
   assertEquals(toCrashCounts({ results: [] }), null);
   assertEquals(toCrashCounts({ error: 'nope' }), null);
+});
+
+Deno.test('scraperTarget picks the workflow from the project and allows overrides', () => {
+  assertEquals(scraperTarget('https://bdnlfwyfgvaployvrivk.supabase.co', {}), {
+    workflow: 'scraper-dev.yml',
+    ref: 'staging',
+  });
+  assertEquals(scraperTarget('https://yrmylgizphirqqkzgbth.supabase.co', {}), {
+    workflow: 'scraper.yml',
+    ref: 'main',
+  });
+  assertEquals(scraperTarget('http://127.0.0.1:54321', {}), null);
+  assertEquals(
+    scraperTarget('http://127.0.0.1:54321', { workflow: 'scraper-dev.yml', ref: 'feat-x' }),
+    { workflow: 'scraper-dev.yml', ref: 'feat-x' },
+  );
 });

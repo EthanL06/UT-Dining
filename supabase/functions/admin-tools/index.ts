@@ -6,6 +6,7 @@ import {
   lastSuccessfulRun,
   parseAdminRequest,
   type ScraperRun,
+  scraperTarget,
   toCrashCounts,
   toScraperRuns,
 } from '../_shared/admin-tools.ts';
@@ -19,11 +20,16 @@ if (!supabaseUrl || !serviceRoleKey || !anonKey) {
   throw new Error('SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and SUPABASE_ANON_KEY must be set');
 }
 
+const target = scraperTarget(supabaseUrl, {
+  workflow: Deno.env.get('ADMIN_SCRAPER_WORKFLOW'),
+  ref: Deno.env.get('ADMIN_SCRAPER_REF'),
+});
+
 const github = {
   token: Deno.env.get('ADMIN_GITHUB_TOKEN'),
   repo: Deno.env.get('ADMIN_GITHUB_REPO') ?? 'EthanL06/UT-Dining',
-  workflow: Deno.env.get('ADMIN_SCRAPER_WORKFLOW'),
-  ref: Deno.env.get('ADMIN_SCRAPER_REF'),
+  workflow: target?.workflow,
+  ref: target?.ref,
 };
 
 const posthog = {
