@@ -22,10 +22,11 @@ import { type FiltersState, useFiltersStore } from '~/store/useFiltersStore';
 import { mealPlanItemId, useMealPlanItems } from '~/store/useMealPlanStore';
 import { useMealStripStore } from '~/store/useMealStripStore';
 import { getTodayInCentralTime } from '~/utils/date';
-import { filterFoodItems } from '~/utils/filter';
+import { filterFoodItems, hasActiveFilters } from '~/utils/filter';
 import { addFoodsToMealPlan, favoriteFoods } from '~/utils/foodActions';
 import { haptics } from '~/utils/haptics';
 import { log } from '~/utils/log';
+import { menuEmptyState } from '~/utils/menuList';
 import { useTheme } from '~/utils/theme';
 import CategoryHeader from './components/CategoryHeader';
 import FoodItemRow from './components/FoodItemRow';
@@ -75,13 +76,7 @@ const useFilteredItems = (
       }
     }
 
-    if (
-      Object.values(filters).some(
-        (val) =>
-          val === true ||
-          (typeof val === 'object' && val !== null && Object.values(val).some((v) => v)),
-      )
-    ) {
+    if (hasActiveFilters(filters)) {
       const filteredCategories = new Set();
       const filteredResult = [];
       let currentCategory = null;
@@ -168,8 +163,7 @@ const Location = () => {
   const [selectedDate, setSelectedDate] = useState(getTodayInCentralTime());
   const {
     menuData: data,
-    loading,
-    error,
+    status: menuStatus,
     selectedMenu,
     setSelectedMenu,
     filters: menuFilters,
@@ -246,17 +240,11 @@ const Location = () => {
   }, [location, posthog]);
 
   const displayedItems = useMemo(() => {
-    if (loading) return skeletonItems;
-    if (error) return [];
-    return debouncedSearchQuery ||
-      Object.values(activeFilters).some(
-        (val) => val === true || (typeof val === 'object' && Object.values(val).some((v) => v)),
-      )
-      ? filteredItems
-      : flattenedItems;
+    if (menuStatus === 'loading') return skeletonItems;
+    if (menuStatus === 'error') return [];
+    return debouncedSearchQuery || hasActiveFilters(activeFilters) ? filteredItems : flattenedItems;
   }, [
-    loading,
-    error,
+    menuStatus,
     debouncedSearchQuery,
     filteredItems,
     flattenedItems,
@@ -345,44 +333,29 @@ const Location = () => {
   );
 
   const EmptyState = useCallback(() => {
-    if (loading) return null;
-    if (isSyncing) {
+    const empty = menuEmptyState({
+      menu: menuStatus,
+      syncing: isSyncing,
+      searching: debouncedSearchQuery !== '',
+      filtering: hasActiveFilters(activeFilters),
+    });
+    if (empty.kind === 'skeleton') return null;
+    if (empty.kind === 'syncing') {
       return (
         <View className="mt-12 flex-1 items-center justify-center">
           <ActivityIndicator size="small" />
         </View>
       );
     }
-
-    const subtitle = () => {
-      if (error) {
-        return 'There was an error loading the menu. Please try again.';
-      }
-      if (debouncedSearchQuery) {
-        return 'Try a different search term.';
-      }
-      if (
-        Object.values(activeFilters).some(
-          (val) => val === true || (typeof val === 'object' && Object.values(val).some((v) => v)),
-        )
-      ) {
-        return 'Try adjusting your filters.';
-      }
-
-      return 'Please try again later.';
-    };
-
-    const title = error ? 'Error Loading Menu' : 'No items found.';
-
     return (
       <View className="mt-12 flex-1 items-center justify-center">
-        <Text variant="headline">{title}</Text>
+        <Text variant="headline">{empty.title}</Text>
         <Text variant="subheadline" tone="secondary" className="mt-1">
-          {subtitle()}
+          {empty.subtitle}
         </Text>
       </View>
     );
-  }, [loading, isSyncing, error, debouncedSearchQuery, activeFilters]);
+  }, [menuStatus, isSyncing, debouncedSearchQuery, activeFilters]);
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: insets.top }}>

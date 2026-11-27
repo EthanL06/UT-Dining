@@ -1,4 +1,4 @@
-import { onlineManager, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { drizzle } from 'drizzle-orm/expo-sqlite';
 import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
 import * as Network from 'expo-network';
@@ -29,6 +29,7 @@ import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
+import { homeView, toSyncStatus } from '~/utils/homeView';
 import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
 import { getLocationName } from '~/utils/locations';
 import { log } from '~/utils/log';
@@ -209,13 +210,21 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  const { data, isLoading, isError } = useQuery({
+  const menuData = useQuery({
     queryKey: ['menuData'],
     queryFn: () => readCachedMenuData(drizzleDb),
     staleTime: Infinity,
     retry: false,
   });
+  const { data } = menuData;
   const menuSync = useMenuSync(drizzleDb);
+  const locations = data?.locations || [];
+  const locationTypes = data?.locationTypes || [];
+  const view = homeView({
+    cache: menuData.status,
+    locationCount: locations.length,
+    sync: toSyncStatus(menuSync),
+  });
   const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
 
   const handleRefresh = async () => {
@@ -242,12 +251,13 @@ export default function Home() {
     }
   };
 
+  const cacheLoading = view.kind === 'loading';
   useEffect(() => {
-    if (isLoading) return;
+    if (cacheLoading) return;
     requestAnimationFrame(() => SplashScreen.hide());
-  }, [isLoading]);
+  }, [cacheLoading]);
 
-  if (isLoading) {
+  if (view.kind === 'loading') {
     return (
       <CenteredMessage>
         <ActivityIndicator size="small" />
@@ -255,7 +265,7 @@ export default function Home() {
     );
   }
 
-  if (isError) {
+  if (view.kind === 'cache-error') {
     return (
       <CenteredMessage>
         <Text variant="title3">Failed to load data!</Text>
@@ -275,9 +285,6 @@ export default function Home() {
     );
   }
 
-  const locations = data?.locations || [];
-  const locationTypes = data?.locationTypes || [];
-  const syncUnavailable = menuSync.isError || menuSync.fetchStatus === 'paused';
   const { open, closed } = sortLocationsByStatus(
     locations,
     locationTypes,
@@ -297,11 +304,11 @@ export default function Home() {
       <Stack.Screen options={{ title: 'Home', headerShown: false }} />
       <OnboardingScreen isOnboardingComplete={isOnboardingComplete} />
 
-      {locations.length === 0 && menuSync.isFetching ? (
+      {view.kind === 'first-sync' ? (
         <CenteredMessage>
           <ActivityIndicator size="small" />
         </CenteredMessage>
-      ) : locations.length === 0 && syncUnavailable ? (
+      ) : view.kind === 'first-sync-failed' ? (
         <CenteredMessage>
           <Text variant="title3" className="mb-1">
             Can't load menus yet
@@ -343,8 +350,8 @@ export default function Home() {
           </Text>
           <Text variant="subheadline" tone="secondary" className="mx-5 mb-4">
             {MEAL_MESSAGE[timeOfDay(currentTime)]}
-            {syncUnavailable &&
-              ` · ${onlineManager.isOnline() ? "Couldn't update" : 'Offline'}${
+            {view.syncProblem &&
+              ` · ${view.syncProblem === 'failed' ? "Couldn't update" : 'Offline'}${
                 lastSyncedAt !== null
                   ? `, menus from ${formatTimeSinceSync(Date.now() - lastSyncedAt).toLowerCase()}`
                   : ''

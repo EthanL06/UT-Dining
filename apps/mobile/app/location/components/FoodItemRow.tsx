@@ -1,5 +1,5 @@
 import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
-import { memo, useEffect, useState } from 'react';
+import { memo } from 'react';
 
 import FoodComponent, { type RowPosition } from '~/components/FoodComponent';
 import type { DrizzleDB, FoodItem } from '~/services/database/database';
@@ -42,12 +42,7 @@ const FoodItemRow = ({
   onToggleSelect,
   onSelectMultiple,
 }: FoodItemRowProps) => {
-  const foodName = item.data.name;
-  const [isFavorite, setIsFavorite] = useState(favorites.some((f) => f.name === foodName));
-
-  useEffect(() => {
-    setIsFavorite(favorites.some((f) => f.name === foodName));
-  }, [favorites, foodName]);
+  const isFavorite = favorites.some((favorite) => favorite.name === item.data.name);
 
   return (
     <FoodComponent
@@ -65,7 +60,6 @@ const FoodItemRow = ({
         onSelectMultiple: () => onSelectMultiple(item.id),
       }}
       onFavorite={async (food) => {
-        setIsFavorite(!isFavorite);
         await toggleFavoriteForFood(db as DrizzleDB, food, {
           location,
           menu: selectedMenu,
