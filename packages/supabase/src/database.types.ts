@@ -546,6 +546,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      dashboard_status: { Args: Record<PropertyKey, never>; Returns: Json };
       insert_location_and_menus: { Args: { arg_data: Json }; Returns: boolean };
       insert_multiple_locations_and_menus: { Args: { arg_data_array: Json[] }; Returns: boolean };
       is_dashboard_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
@@ -553,6 +554,7 @@ export type Database = {
         Args: { arg_date: string; arg_location_name: string; arg_menu_names: string[] };
         Returns: number;
       };
+      public_status: { Args: Record<PropertyKey, never>; Returns: Json };
     };
     Enums: {
       payment_method: 'Bevo Pay' | 'Cash' | 'Credit/Debit' | 'Dine In Dollars';
