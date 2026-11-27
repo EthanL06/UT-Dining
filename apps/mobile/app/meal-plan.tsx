@@ -1,17 +1,14 @@
 import { formatCentralDateKey } from '@ut-dining/core';
 import { router, Stack } from 'expo-router';
-import { ChefHat, ChevronLeft, ChevronRight, Flame, Minus, Plus } from 'lucide-react-native';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { ChefHat, ChevronLeft, ChevronRight, Flame } from 'lucide-react-native';
+import { useEffect, useMemo, useState } from 'react';
 import { AppState, Alert as NativeAlert, Pressable, View } from 'react-native';
-import ReanimatedSwipeable, {
-  type SwipeableMethods,
-} from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { RemoveAction } from '~/components/AnimatedActions';
-import { Image } from '~/components/ui/Image';
+import { formatGrams, formatNumber } from '~/components/mealPlan/format';
+import { PlanRow } from '~/components/mealPlan/PlanRow';
+import { UndoToast } from '~/components/mealPlan/UndoToast';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
-import { ALLERGEN_ICONS } from '~/data/AllergenInfo';
 import {
   type MealPlanItem,
   sumNutrient,
@@ -25,16 +22,6 @@ import { haptics } from '~/utils/haptics';
 import { type Theme, useTheme } from '~/utils/theme';
 
 const MEAL_ORDER = ['Breakfast', 'Lunch', 'Dinner'];
-
-type NutrientKey = 'calories' | 'protein' | 'total_carbohydrates' | 'total_fat';
-
-const amount = (item: MealPlanItem, key: NutrientKey) =>
-  (Number.parseFloat(String(item.nutrition?.[key] ?? 0)) || 0) * (item.quantity || 1);
-
-const formatNumber = (value: number, digits = 0) =>
-  value.toLocaleString('en-US', { maximumFractionDigits: digits });
-
-const formatGrams = (value: number) => `${formatNumber(value, 1)}g`;
 
 const useToday = () => {
   const [today, setToday] = useState(todayKey());
@@ -103,170 +90,13 @@ const DayArrow = ({
   );
 };
 
-const PlanRow = ({
-  item,
-  date,
-  editable,
-  isFirst,
-}: {
-  item: MealPlanItem;
-  date: string;
-  editable: boolean;
-  isFirst: boolean;
-}) => {
-  const theme = useTheme();
-  const swipeableRef = useRef<SwipeableMethods>(null);
-  const updateQuantity = useMealPlanStore((state) => state.updateMealPlanItemQuantity);
-  const removeItem = useMealPlanStore((state) => state.removeMealPlanItem);
-  const quantity = item.quantity || 1;
-  const allergens = Object.entries(item.allergens || {}).filter(([, value]) => value);
-
-  const step = (delta: number) => {
-    haptics.selection();
-    const next = Math.round((quantity + delta) * 100) / 100;
-    if (next <= 0) removeItem(item.id, date);
-    else updateQuantity(item.id, Math.min(next, 99), date);
-  };
-
-  const openFood = () => {
-    router.push({
-      pathname: '/food/[food]',
-      params: {
-        food: item.name,
-        menu: item.menuName,
-        category: item.categoryName,
-        location: item.locationName,
-        favorite: 'false',
-        date,
-      },
-    });
-  };
-
-  return (
-    <ReanimatedSwipeable
-      ref={swipeableRef}
-      enabled={editable}
-      containerStyle={{ backgroundColor: theme.card }}
-      overshootLeft={false}
-      overshootRight={false}
-      leftThreshold={50}
-      rightThreshold={0}
-      renderRightActions={() => null}
-      renderLeftActions={(progress) => <RemoveAction progress={progress} />}
-      onSwipeableWillOpen={() => {
-        haptics.remove();
-      }}
-      onSwipeableOpen={() => {
-        swipeableRef.current?.close();
-        removeItem(item.id, date);
-      }}
-    >
-      <Pressable
-        testID="meal-plan-item"
-        accessibilityRole="button"
-        accessibilityLabel={`${item.name}, ${formatNumber(amount(item, 'calories'))} kcal${
-          quantity !== 1 ? `, ${quantity} servings` : ''
-        }`}
-        accessibilityActions={[
-          { name: 'activate' },
-          ...(editable
-            ? [
-                { name: 'increment', label: 'Add one serving' },
-                { name: 'decrement', label: 'Remove one serving' },
-              ]
-            : []),
-        ]}
-        onAccessibilityAction={({ nativeEvent }) => {
-          if (nativeEvent.actionName === 'activate') openFood();
-          if (nativeEvent.actionName === 'increment') step(1);
-          if (nativeEvent.actionName === 'decrement') step(-1);
-        }}
-        onPress={openFood}
-      >
-        {({ pressed }) => (
-          <View
-            className="min-h-[64px] flex-row items-center gap-x-3 px-4 py-2.5"
-            style={{ backgroundColor: pressed ? theme.fill : theme.card }}
-          >
-            {!isFirst && (
-              <View
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  right: 0,
-                  left: 16,
-                  height: 0.5,
-                  backgroundColor: theme.separator,
-                }}
-              />
-            )}
-            <View className="flex-1 gap-y-0.5">
-              <Text variant="callout" numberOfLines={2}>
-                {item.name}
-              </Text>
-              <View className="flex-row flex-wrap items-center gap-x-1.5">
-                <Text variant="footnote" tone="secondary">
-                  {item.locationName} · {formatGrams(amount(item, 'protein'))} protein ·{' '}
-                  {formatGrams(amount(item, 'total_carbohydrates'))} carbs
-                </Text>
-                {allergens.map(([key]) => (
-                  <Image
-                    key={key}
-                    source={ALLERGEN_ICONS[key as keyof typeof ALLERGEN_ICONS]}
-                    className="size-[15px] rounded-full"
-                    contentFit="contain"
-                  />
-                ))}
-              </View>
-            </View>
-            <View className="items-end gap-y-1">
-              <Text variant="subheadline" emphasized>
-                {formatNumber(amount(item, 'calories'))}
-              </Text>
-              {editable ? (
-                <View
-                  className="h-8 flex-row items-center rounded-full"
-                  style={{ backgroundColor: theme.fill }}
-                >
-                  <Pressable
-                    accessibilityLabel="Remove one serving"
-                    hitSlop={6}
-                    onPress={() => step(-1)}
-                    className="h-8 w-8 items-center justify-center"
-                  >
-                    <Minus size={14} color={theme.label} />
-                  </Pressable>
-                  <Text
-                    variant="subheadline"
-                    emphasized
-                    testID="meal-plan-quantity"
-                    className="min-w-5 text-center"
-                  >
-                    {quantity}
-                  </Text>
-                  <Pressable
-                    accessibilityLabel="Add one serving"
-                    hitSlop={6}
-                    onPress={() => step(1)}
-                    className="h-8 w-8 items-center justify-center"
-                  >
-                    <Plus size={14} color={theme.label} />
-                  </Pressable>
-                </View>
-              ) : (
-                <Text variant="footnote" tone="secondary" testID="meal-plan-quantity">
-                  {quantity === 1 ? '1 serving' : `${quantity} servings`}
-                </Text>
-              )}
-            </View>
-          </View>
-        )}
-      </Pressable>
-    </ReanimatedSwipeable>
-  );
-};
-
 type ViewedDay = { kind: 'today' } | { kind: 'date'; date: string };
+
+type Undo =
+  | { status: 'idle' }
+  | { status: 'removed'; item: MealPlanItem; index: number; date: string };
+
+const UNDO_MS = 4000;
 
 const MealPlan = () => {
   const theme = useTheme();
@@ -278,6 +108,29 @@ const MealPlan = () => {
   const items = useMealPlanItems(selectedDate);
   const planDates = useMealPlanDates();
   const clearMealPlan = useMealPlanStore((state) => state.clearMealPlan);
+  const removeItem = useMealPlanStore((state) => state.removeMealPlanItem);
+  const restoreItem = useMealPlanStore((state) => state.restoreMealPlanItem);
+  const [undo, setUndo] = useState<Undo>({ status: 'idle' });
+
+  useEffect(() => {
+    if (undo.status !== 'removed') return;
+    const timer = setTimeout(() => setUndo({ status: 'idle' }), UNDO_MS);
+    return () => clearTimeout(timer);
+  }, [undo]);
+
+  const removeFromPlan = (item: MealPlanItem) => {
+    const index = items.findIndex((existing) => existing.id === item.id);
+    removeItem(item.id, selectedDate);
+    haptics.remove();
+    setUndo({ status: 'removed', item, index: Math.max(index, 0), date: selectedDate });
+  };
+
+  const undoRemove = () => {
+    if (undo.status !== 'removed') return;
+    restoreItem(undo.item, undo.index, undo.date);
+    haptics.success();
+    setUndo({ status: 'idle' });
+  };
   const days = useMemo(
     () => Array.from(new Set([...planDates, today, selectedDate])).sort(),
     [planDates, today, selectedDate],
@@ -389,7 +242,7 @@ const MealPlan = () => {
             <Text variant="headline">{editable ? 'Empty Meal Plan!' : 'Nothing logged'}</Text>
             <Text variant="subheadline" paragraph tone="secondary" className="text-center">
               {editable
-                ? 'Press and hold a food on any menu, or swipe right on it, to add it here.'
+                ? 'Press and hold a food on any menu to add it here.'
                 : 'You had nothing in your meal plan this day.'}
             </Text>
           </View>
@@ -456,6 +309,7 @@ const MealPlan = () => {
                         date={selectedDate}
                         editable={editable}
                         isFirst={index === 0}
+                        onRemove={removeFromPlan}
                       />
                     ))}
                   </View>
@@ -465,6 +319,14 @@ const MealPlan = () => {
           </>
         )}
       </OverflowScrollView>
+      {undo.status === 'removed' && (
+        <UndoToast
+          key={`${undo.date}-${undo.item.id}`}
+          message={`Removed ${undo.item.name}`}
+          bottom={insets.bottom + 16}
+          onUndo={undoRemove}
+        />
+      )}
     </View>
   );
 };

@@ -167,7 +167,7 @@ const Favorites = () => {
         </Text>
         {sorted.length > 0 && (
           <Text variant="subheadline" tone="secondary" className="px-5 pb-4">
-            Swipe left on a favorite to remove it.
+            Press and hold a favorite to remove it.
           </Text>
         )}
 
@@ -176,7 +176,7 @@ const Favorites = () => {
             <Heart size={36} color={theme.tertiaryLabel} />
             <Text variant="headline">No Favorites Yet!</Text>
             <Text variant="subheadline" tone="secondary" className="text-center">
-              Press and hold a food on any menu, or swipe left on it, to save it here.
+              Press and hold a food on any menu to save it here.
             </Text>
             <Pressable
               accessibilityRole="button"
