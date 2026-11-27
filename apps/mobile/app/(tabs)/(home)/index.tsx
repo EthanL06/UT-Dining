@@ -136,6 +136,7 @@ const QuickLink = ({
     <Link.Trigger withAppleZoom>
       <Pressable
         accessibilityRole="button"
+        accessibilityLabel={title}
         className="flex-1 overflow-hidden"
         style={{ backgroundColor: theme.card, borderRadius: 22, borderCurve: 'continuous' }}
       >
@@ -204,6 +205,7 @@ const LocationRow = memo(
         <Link.Trigger withAppleZoom>
           <GroupedRow
             accessibilityRole="button"
+            accessibilityLabel={`${displayLocationName(location, useColloquialNames)}, ${subtitle}`}
             isFirst={isFirst}
             separatorInset={37}
             leading={<StatusDot open={isOpen} closesInMinutes={closingInMinutes} />}

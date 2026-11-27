@@ -1,6 +1,6 @@
 import { and, eq, inArray } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
-import { router, Stack } from 'expo-router';
+import { router, Stack, usePreventZoomTransitionDismissal } from 'expo-router';
 import { Heart } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
@@ -122,7 +122,10 @@ const FavoriteSection = ({
   );
 };
 
+const LEFT_EDGE_DISMISSAL = { unstable_dismissalBoundsRect: { maxX: 24 } };
+
 const Favorites = () => {
+  usePreventZoomTransitionDismissal(LEFT_EDGE_DISMISSAL);
   const db = useDatabase();
   const theme = useTheme();
   const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);

@@ -1,5 +1,5 @@
 import { formatCentralDateKey } from '@ut-dining/core';
-import { Stack } from 'expo-router';
+import { Stack, usePreventZoomTransitionDismissal } from 'expo-router';
 import { ChefHat, Flame } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { AppState, Alert as NativeAlert, Pressable, View } from 'react-native';
@@ -73,7 +73,10 @@ type Undo =
 
 const UNDO_MS = 4000;
 
+const LEFT_EDGE_DISMISSAL = { unstable_dismissalBoundsRect: { maxX: 24 } };
+
 const MealPlan = () => {
+  usePreventZoomTransitionDismissal(LEFT_EDGE_DISMISSAL);
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const today = useToday();

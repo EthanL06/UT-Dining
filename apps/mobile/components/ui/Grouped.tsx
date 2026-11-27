@@ -74,6 +74,7 @@ export const GroupedRow = ({
   detailTestID,
   selected,
   accessibilityRole,
+  accessibilityLabel,
 }: {
   title: ReactNode;
   subtitle?: ReactNode;
@@ -92,6 +93,7 @@ export const GroupedRow = ({
   detailTestID?: string;
   selected?: boolean;
   accessibilityRole?: 'button' | 'link';
+  accessibilityLabel?: string;
 }) => {
   const theme = useTheme();
 
@@ -100,6 +102,7 @@ export const GroupedRow = ({
       testID={testID}
       accessible={!!onPress || !!accessibilityRole}
       accessibilityRole={accessibilityRole ?? (onPress ? 'button' : undefined)}
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={selected === undefined ? undefined : { selected }}
       onPress={onPress}
       onLongPress={onLongPress}
