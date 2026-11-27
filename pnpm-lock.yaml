@@ -428,6 +428,9 @@ importers:
 
   apps/website:
     dependencies:
+      '@ut-dining/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       lucide-react:
         specifier: ^0.475.0
         version: 0.475.0(react@19.3.1)

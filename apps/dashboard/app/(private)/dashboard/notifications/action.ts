@@ -1,5 +1,6 @@
 'use server';
 
+import { checkNotification } from '@ut-dining/core';
 import { createClient } from '@/lib/supabase/server';
 
 export interface NotificationData {
@@ -12,14 +13,20 @@ export interface NotificationData {
 }
 
 export async function sendNotification(data: NotificationData) {
-  console.log('⏳ Sending notification...');
+  const checked = checkNotification({
+    title: data.title,
+    body: data.body,
+    redirectUrl: data.redirectLink,
+  });
+  if (!checked.ok) return { success: false, message: checked.error };
+
   const supabase = await createClient();
 
   const { data: response, error } = await supabase.functions.invoke('manual-push-notification', {
     body: {
-      title: data.title,
-      body: data.body,
-      redirect_url: data.redirectLink,
+      title: checked.value.title,
+      body: checked.value.body,
+      redirect_url: checked.value.redirectUrl,
       type: data.notification_type_id,
     },
   });
@@ -48,24 +55,21 @@ export async function scheduleNotification(data: NotificationData) {
     };
   }
 
-  console.log('⏳ Scheduling notification...');
+  const checked = checkNotification({
+    title: data.title,
+    body: data.body,
+    redirectUrl: data.redirectLink,
+    scheduledAt: data.scheduledAt,
+  });
+  if (!checked.ok) return { success: false, message: checked.error };
+  const scheduledAt = checked.value.scheduledAt ?? new Date(data.scheduledAt);
 
   const supabase = await createClient();
 
-  const scheduledAt =
-    data.scheduledAt instanceof Date ? data.scheduledAt : new Date(data.scheduledAt);
-
-  if (Number.isNaN(scheduledAt.getTime())) {
-    return {
-      success: false,
-      message: 'Invalid scheduled time provided',
-    };
-  }
-
   const { error } = await supabase.from('notifications').insert({
-    title: data.title,
-    body: data.body,
-    redirect_url: data.redirectLink,
+    title: checked.value.title,
+    body: checked.value.body,
+    redirect_url: checked.value.redirectUrl,
     scheduled_at: scheduledAt.toISOString(),
     type: data.notification_type_id,
   });

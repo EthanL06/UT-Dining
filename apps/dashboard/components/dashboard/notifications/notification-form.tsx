@@ -22,6 +22,7 @@ import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IconBell, IconInfoCircle, IconMoodSmile, IconSend } from '@tabler/icons-react';
+import { checkNotification, NOTIFICATION_BODY_MAX, NOTIFICATION_TITLE_MAX } from '@ut-dining/core';
 import type { Tables } from '@ut-dining/supabase';
 import EmojiPicker, { type EmojiClickData } from 'emoji-picker-react';
 import { useState } from 'react';
@@ -52,22 +53,22 @@ export function NotificationForm({
       notification_type_id: '',
     },
     validate: {
-      title: (value) => (value.length < 1 ? 'Title is required' : null),
-      body: (value) => (value.length < 1 ? 'Body is required' : null),
+      title: (value) => {
+        if (!value.trim()) return 'Title is required';
+        return value.trim().length > NOTIFICATION_TITLE_MAX
+          ? `Keep the title under ${NOTIFICATION_TITLE_MAX} characters`
+          : null;
+      },
+      body: (value) => {
+        if (!value.trim()) return 'Body is required';
+        return value.trim().length > NOTIFICATION_BODY_MAX
+          ? `Keep the body under ${NOTIFICATION_BODY_MAX} characters`
+          : null;
+      },
       redirectLink: (value) => {
-        if (value && value.length > 0) {
-          const urlPattern = new RegExp(
-            '^(https?:\\/\\/)?' +
-              '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' +
-              '((\\d{1,3}\\.){3}\\d{1,3}))' +
-              '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' +
-              '(\\?[;&a-z\\d%_.~+=-]*)?' +
-              '(\\#[-a-z\\d_]*)?$',
-            'i',
-          );
-          return !urlPattern.test(value) ? 'Please enter a valid URL' : null;
-        }
-        return null;
+        if (!value) return null;
+        const checked = checkNotification({ title: 'x', body: 'x', redirectUrl: value });
+        return checked.ok ? null : checked.error;
       },
       scheduledAt: (value, values) => {
         if (values.isScheduled && !value) {
@@ -237,8 +238,8 @@ export function NotificationForm({
 
               <TextInput
                 label="Redirect Link (Optional)"
-                placeholder="https://example.com"
-                description="Link to open when notification is tapped"
+                placeholder="/location/J2 Dining or https://utdining.app"
+                description="App screen or web page to open when the notification is tapped"
                 {...form.getInputProps('redirectLink')}
               />
 
