@@ -151,4 +151,5 @@ jobs:
         if: steps.secrets.outputs.ready == 'true'
         env:
           URL: ${{ steps.target.outputs.url }}
-        run: echo "Website preview: $URL/" >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          echo "Website preview: $URL/" >> "$GITHUB_STEP_SUMMARY"
