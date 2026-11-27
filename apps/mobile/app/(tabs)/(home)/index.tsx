@@ -20,6 +20,7 @@ import {
 import type { FilterType } from '~/components/FilterBar';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
 import OnboardingScreen from '~/components/onboarding/OnboardingScreen';
+import { ServiceStatusBanner } from '~/components/ServiceStatusBanner';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
 import { forceMenuSync, useMenuSync } from '~/hooks/useMenuSync';
 import type { DrizzleDB } from '~/services/database/database';
@@ -353,6 +354,8 @@ export default function Home() {
                   : ''
               }`}
           </Text>
+
+          <ServiceStatusBanner />
 
           <View className="mx-4 mb-3 flex-row gap-x-2">
             <QuickLink
