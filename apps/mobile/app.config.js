@@ -3,7 +3,7 @@ import { execSync } from 'node:child_process';
 const VARIANT = process.env.APP_VARIANT ?? 'production';
 const IS_DEV = VARIANT !== 'production';
 const STAGING_CHANNEL = 'staging';
-const DEV_UPDATES_ENABLED = process.env.EAS_BUILD === 'true' || process.env.DEV_UPDATES === '1';
+const DEV_UPDATES_ENABLED = process.env.DEV_UPDATES === '1';
 
 const updatesConfig = () => {
   const url = 'https://u.expo.dev/005ee5ea-5ec3-4d96-af00-5d6203694b74';

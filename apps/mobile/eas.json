@@ -21,6 +21,7 @@
       "autoIncrement": true,
       "env": {
         "APP_VARIANT": "preview",
+        "DEV_UPDATES": "1",
         "EAS_USE_CACHE": "1"
       }
     },

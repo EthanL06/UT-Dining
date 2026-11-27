@@ -50,12 +50,14 @@ command -v jq >/dev/null || die "jq is not installed"
 
 cd "$ROOT/apps/mobile"
 export APP_VARIANT=preview
+export DEV_UPDATES=1
 
 config="$(npx expo config --json --type public)"
 bundle="$(jq -r '.ios.bundleIdentifier' <<<"$config")"
 policy="$(jq -r '.runtimeVersion.policy // empty' <<<"$config")"
 [[ "$bundle" == com.ethanl06.ut-dining.dev ]] || die "preview resolved to bundle $bundle, expected the dev bundle"
 [[ "$policy" == fingerprint ]] || die "preview runtime policy is '$policy', expected fingerprint"
+[[ "$(jq -r '.updates.enabled' <<<"$config")" == true ]] || die "preview resolved with updates off"
 
 sha="$(git rev-parse --short HEAD)"
 fingerprint="$(npx expo-updates fingerprint:generate --platform ios | jq -r '.hash')"
