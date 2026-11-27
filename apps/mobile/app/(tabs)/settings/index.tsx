@@ -62,7 +62,6 @@ const ICON_COLORS = {
 
 const SUPPORT_ICONS: Record<string, { Icon: LucideIcon; color: string }> = {
   'Contact Support': { Icon: Mail, color: ICON_COLORS.blue },
-  FAQ: { Icon: HelpCircle, color: ICON_COLORS.purple },
   'Privacy Policy': { Icon: Shield, color: ICON_COLORS.gray },
   'Source Code': { Icon: Code, color: ICON_COLORS.indigo },
 };
