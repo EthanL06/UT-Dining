@@ -19,7 +19,7 @@ export default {
   expo: {
     name: IS_DEV ? 'UT Dining (Dev)' : 'UT Dining',
     slug: 'ut-dining',
-    version: '1.2.4',
+    version: '2.0.0',
     scheme: 'ut-dining',
     web: {
       bundler: 'metro',
