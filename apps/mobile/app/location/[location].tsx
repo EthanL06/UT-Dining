@@ -141,6 +141,7 @@ const Location = () => {
     scrollButtonAnimation,
     handleScroll,
     handleScrollBeginDrag,
+    handleMomentumScrollEnd,
     scrollToTop,
   } = useScrollToTop(listRef);
 
@@ -304,7 +305,11 @@ const Location = () => {
             placement: 'stacked',
             autoCapitalize: 'none',
             obscureBackground: false,
-            hideWhenScrolling: true,
+            hideWhenScrolling: false,
+            textColor: theme.label,
+            hintTextColor: theme.secondaryLabel,
+            headerIconColor: theme.secondaryLabel,
+            tintColor: theme.tint,
             onChangeText: (event) => handleQueryChange(event.nativeEvent.text),
             onFocus: () => {
               stopSelecting();
@@ -325,6 +330,7 @@ const Location = () => {
         ref={listRef}
         onScroll={handleScroll}
         onScrollBeginDrag={handleScrollBeginDrag}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator
         data={displayedItems}

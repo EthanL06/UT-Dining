@@ -19,8 +19,13 @@ export const useScrollToTop = <T,>(listRef: React.RefObject<FlatList<T> | null>)
   const restingTopOffset = useRef<number | null>(null);
 
   const handleScrollBeginDrag = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (restingTopOffset.current !== null) return;
+    restingTopOffset.current = Math.min(event.nativeEvent.contentOffset.y, 0);
+  }, []);
+
+  const handleMomentumScrollEnd = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offset = event.nativeEvent.contentOffset.y;
-    if (restingTopOffset.current === null) {
+    if (restingTopOffset.current === null || offset < restingTopOffset.current) {
       restingTopOffset.current = Math.min(offset, 0);
     }
   }, []);
@@ -49,6 +54,7 @@ export const useScrollToTop = <T,>(listRef: React.RefObject<FlatList<T> | null>)
     scrollButtonAnimation,
     handleScroll,
     handleScrollBeginDrag,
+    handleMomentumScrollEnd,
     scrollToTop,
   };
 };

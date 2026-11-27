@@ -17,7 +17,7 @@ name: Search filters the menu by food name
     visible: No items found.
     timeout: 5000
 - assertVisible: Try a different search term.
-- tapOn: Cancel
+- tapOn: 'Close|Cancel'
 - extendedWaitUntil:
     visible: 'Maestro Veggie Burger(,.*)?'
     timeout: 5000
