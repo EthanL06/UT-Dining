@@ -10,34 +10,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build the iOS app
+  screenshots:
+    name: Take screenshots
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (contains(github.event.pull_request.labels.*.name, 'screenshots') &&
       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: macos-26
-    timeout-minutes: 90
-    outputs:
-      key: ${{ steps.app.outputs.key }}
+    timeout-minutes: 120
+    permissions:
+      contents: write
     env:
       APP_VARIANT: development
       EXPO_PUBLIC_SUPABASE_URL: http://127.0.0.1:54331
       EXPO_PUBLIC_SUPABASE_ANON_KEY: fixture
-    steps:
-      - uses: actions/checkout@v7
-
-      - id: app
-        uses: ./.github/actions/ios-sim-app
-
-  screenshots:
-    name: Take screenshots
-    needs: build
-    runs-on: macos-26
-    timeout-minutes: 45
-    permissions:
-      contents: write
-    env:
       MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000
       MAESTRO_VERSION: 2.12.1
       TOPIC: ${{ github.event.pull_request.number && format('pr-{0}', github.event.pull_request.number) || format('run-{0}', github.run_id) }}
@@ -53,6 +39,9 @@ jobs:
           SIM="$(xcrun simctl create screenshots "$DEVICE_TYPE" "$RUNTIME")"
           xcrun simctl boot "$SIM"
           echo "SIM=$SIM" >> "$GITHUB_ENV"
+
+      - id: app
+        uses: ./.github/actions/ios-sim-app
 
       - uses: actions/setup-node@v7
         with:
@@ -72,10 +61,11 @@ jobs:
       - run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
 
       - name: Restore the built app
+        if: steps.app.outputs.cached == 'true'
         uses: actions/cache/restore@v6
         with:
           path: .context/app
-          key: ${{ needs.build.outputs.key }}
+          key: ${{ steps.app.outputs.key }}
           fail-on-cache-miss: true
 
       - name: Install the app once the simulator has booted

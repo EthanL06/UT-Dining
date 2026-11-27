@@ -69,7 +69,7 @@ Every flow except `onboarding.yaml` starts from a clean install on Home (`subflo
 
 To run the same thing on a Mac without Docker, build the app with `EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:54331` and pass `--fixture-server`.
 
-The release app build lives in `.github/actions/ios-sim-app`, shared by this workflow and the screenshots workflow. A cache hit on the app skips the build. On a miss, the build restores ccache and the CocoaPods download cache, so a rebuild after a small native change compiles only what changed.
+The release app build is `scripts/qa/ios-sim-app.sh` (`make ios-app`), wrapped with caches in `.github/actions/ios-sim-app` for this workflow and the screenshots workflow. It builds arm64 only and keeps the native build in `.context/ios-shell/<native key>/`, where the key is the Expo fingerprint of `apps/mobile` (`npx fingerprint fingerprint:generate --platform ios`) plus the Xcode version. When native code, a native dependency or `app.config.js` changes, the key changes and Xcode builds everything (about 20 minutes on a runner). Otherwise the script copies the saved build and rebuilds only the JavaScript: `expo export:embed`, `hermesc` from the saved build, and the `EXUpdates.bundle` and `EXConstants.bundle` files, the same steps Xcode runs (about 3 minutes). In CI the native build is cached by that key, and a cache hit on the app sources skips both. On a Mac, `IOS_SHELL_DIR` can point every worktree at one folder of native builds, and `scripts/qa/ios-sim-app.sh --swap <app>` rebuilds the JavaScript of any release `.app` in place. EXPO_PUBLIC_* values are read at bundle time, so build with the same ones the run needs.
 
 ## Screenshots
 
