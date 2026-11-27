@@ -96,7 +96,7 @@ const PermissionsScreen = ({ width, isCurrentScreen, onPermissionsChange }: Prop
         title="Enable Permissions"
         subtitle="All optional, and each one makes UT Dining more useful."
       />
-      <GroupedSection footer="Nearby Menus runs entirely on your phone, and your location is never sent anywhere. You can change all of these in Settings.">
+      <GroupedSection footer="Nearby Menus works entirely on your phone. Your location is never sent anywhere.">
         <GroupedRow
           isFirst
           separatorInset={58}
