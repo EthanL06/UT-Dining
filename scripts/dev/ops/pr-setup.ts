@@ -1,4 +1,6 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { basename, extname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { ETHAN, env, getPr, gh, prNumber, REPO, say, tryGh } from './github.ts';
@@ -54,7 +56,7 @@ const withAttribution = (body: string): string => {
 };
 
 const IMAGE = /\.(png|jpe?g|gif)$/i;
-const VERCEL_JSON = `${JSON.stringify({ git: { deploymentEnabled: false } }, null, 2)}\n`;
+const VERCEL_JSON = '{ "git": { "deploymentEnabled": false } }\n';
 
 const uploadImages = (dir: string): { name: string; url: string }[] => {
   const files = readdirSync(dir)
@@ -62,42 +64,47 @@ const uploadImages = (dir: string): { name: string; url: string }[] => {
     .sort();
   if (files.length === 0) say.die(`no PNG, JPG or GIF files in ${dir}`);
   const branch = `assets/pr-${number}`;
-  const existing = tryGh<{ object: { sha: string } }>(`git/ref/heads/${branch}`);
-  const parent = existing.ok ? existing.data.object.sha : null;
-  const baseTree = parent ? gh<{ tree: { sha: string } }>(`git/commits/${parent}`).tree.sha : null;
-  const blob = (content: string, encoding: 'base64' | 'utf-8') =>
-    gh<{ sha: string }>('git/blobs', 'POST', { content, encoding }).sha;
-  const folder = `pr-setup/${new Date().toISOString().replace(/[:.]/g, '-')}`;
-  const tree = [
-    ...files.map((file) => ({
-      path: `${folder}/${file}`,
-      mode: '100644',
-      type: 'blob',
-      sha: blob(readFileSync(join(dir, file)).toString('base64'), 'base64'),
-    })),
-    ...['apps/dashboard/vercel.json', 'apps/website/vercel.json'].map((path) => ({
-      path,
-      mode: '100644',
-      type: 'blob',
-      sha: blob(VERCEL_JSON, 'utf-8'),
-    })),
-  ];
-  const treeSha = gh<{ sha: string }>('git/trees', 'POST', {
-    tree,
-    ...(baseTree ? { base_tree: baseTree } : {}),
-  }).sha;
-  const commit = gh<{ sha: string }>('git/commits', 'POST', {
-    message: `PR #${number} images`,
-    tree: treeSha,
-    parents: parent ? [parent] : [],
-  }).sha;
-  if (parent) gh(`git/refs/heads/${branch}`, 'PATCH', { sha: commit, force: false });
-  else gh('git/refs', 'POST', { ref: `refs/heads/${branch}`, sha: commit });
-  say.ok(`uploaded ${files.length} image(s) to ${branch}`);
-  return files.map((file) => ({
-    name: basename(file, extname(file)),
-    url: `https://raw.githubusercontent.com/${REPO}/${commit}/${folder}/${encodeURIComponent(file)}`,
-  }));
+  const remote = `https://github.com/${REPO}.git`;
+  const work = mkdtempSync(join(tmpdir(), 'pr-setup-'));
+  const git = (...args: string[]) =>
+    execFileSync('git', ['-c', 'core.hooksPath=/dev/null', ...args], {
+      cwd: work,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    }).trim();
+  try {
+    git('init', '-q');
+    const exists = spawnSync('git', ['fetch', '-q', '--depth', '1', remote, branch], { cwd: work });
+    if (exists.status === 0) git('checkout', '-q', 'FETCH_HEAD');
+    else git('checkout', '-q', '--orphan', 'assets');
+    const folder = `pr-setup/${new Date().toISOString().replace(/[:.]/g, '-')}`;
+    mkdirSync(join(work, folder), { recursive: true });
+    for (const file of files) copyFileSync(join(dir, file), join(work, folder, file));
+    for (const app of ['dashboard', 'website']) {
+      mkdirSync(join(work, 'apps', app), { recursive: true });
+      writeFileSync(join(work, 'apps', app, 'vercel.json'), VERCEL_JSON);
+    }
+    git('add', '-A');
+    git(
+      '-c',
+      'user.name=UT Dining agent',
+      '-c',
+      'user.email=agent@users.noreply.github.com',
+      'commit',
+      '-q',
+      '-m',
+      `chore: images for #${number}`,
+    );
+    const commit = git('rev-parse', 'HEAD');
+    git('push', '-q', '--no-verify', remote, `HEAD:refs/heads/${branch}`);
+    say.ok(`uploaded ${files.length} image(s) to ${branch}`);
+    return files.map((file) => ({
+      name: basename(file, extname(file)),
+      url: `https://raw.githubusercontent.com/${REPO}/${commit}/${folder}/${encodeURIComponent(file)}`,
+    }));
+  } finally {
+    rmSync(work, { recursive: true, force: true });
+  }
 };
 
 const imageSection = (images: { name: string; url: string }[]): string => {
@@ -109,6 +116,8 @@ const imageSection = (images: { name: string; url: string }[]): string => {
   const rows: string[] = [];
   for (const image of images) {
     if (used.has(image.name)) continue;
+    const darkOf = /^(.*)([-_])dark$/.exec(image.name);
+    if (darkOf && byName.has(`${darkOf[1]}${darkOf[2]}light`)) continue;
     const pair = /^(.*)[-_]light$/.exec(image.name);
     const dark = pair
       ? (byName.get(`${pair[1]}-dark`) ?? byName.get(`${pair[1]}_dark`))
