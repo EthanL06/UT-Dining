@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RowPosition } from '~/components/FoodComponent';
@@ -102,7 +102,7 @@ const Location = () => {
   );
   useRatingPromptOnMenuView(menuStatus === 'ready', foodNames, favorites);
 
-  const activeFilters = useFiltersStore((state) => state.filters);
+  const activeFilters = useDeferredValue(useFiltersStore((state) => state.filters));
 
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -183,18 +183,32 @@ const Location = () => {
     0,
   );
 
+  const handleToggleCategory = useCallback(
+    (id: string) => {
+      toggleCategory(id);
+      haptics.tap();
+    },
+    [toggleCategory],
+  );
+
+  const handleQueryChange = useCallback(
+    (query: string) => {
+      resetExpandedCategories();
+      setSearchQuery(query);
+    },
+    [resetExpandedCategories],
+  );
+
   const renderItem = useCallback(
     ({ item }: { item: ListItem }) => {
       switch (item.type) {
         case 'category_header':
           return (
             <CategoryHeader
+              id={item.id}
               title={item.title}
               isExpanded={item.isExpanded}
-              onToggle={() => {
-                toggleCategory(item.id);
-                haptics.tap();
-              }}
+              onToggle={handleToggleCategory}
             />
           );
 
@@ -230,7 +244,7 @@ const Location = () => {
       selectedMenu,
       location,
       selectedDate,
-      toggleCategory,
+      handleToggleCategory,
       favoriteNames,
       db,
       canMealPlan,
@@ -277,6 +291,7 @@ const Location = () => {
         scrollEventThrottle={16}
         showsVerticalScrollIndicator
         data={displayedItems}
+        keyExtractor={(item) => `${item.type}|${item.id}`}
         removeClippedSubviews
         contentContainerStyle={{ paddingBottom: insets.bottom + (selecting ? 96 : 32) }}
         ListHeaderComponent=<LocationHeader
@@ -285,10 +300,7 @@ const Location = () => {
           setSelectedMenu={handleMenuChange}
           filters={menuFilters}
           query={searchQuery}
-          setQuery={(query) => {
-            resetExpandedCategories();
-            setSearchQuery(query);
-          }}
+          setQuery={handleQueryChange}
           selectedDate={selectedDate}
           onDateChange={handleDateChange}
           selecting={selecting}

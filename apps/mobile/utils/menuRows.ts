@@ -2,7 +2,7 @@ import type { RowPosition } from '~/components/FoodComponent';
 import type * as schema from '~/services/database/schema';
 import type { FoodItem, MenuCategory } from '~/services/database/types';
 import type { FiltersState } from '~/store/useFiltersStore';
-import { filterFoodItems, hasActiveFilters } from './filter';
+import { foodFilter, hasActiveFilters } from './filter';
 
 export type HeaderRow = { type: 'category_header'; id: string; title: string; isExpanded: boolean };
 export type FoodRow = {
@@ -106,12 +106,9 @@ export const foodMatcher = ({
   const needle = query.trim().toLowerCase();
   const filtering = hasActiveFilters(filters);
   if (!needle && !filtering) return undefined;
+  const passesFilters = filtering ? foodFilter(filters, favorites, isInMealPlan) : null;
   return (food, categoryId) => {
     if (needle && !(food.name ?? '').toLowerCase().includes(needle)) return false;
-    if (!filtering) return true;
-    return (
-      filterFoodItems([food], filters, favorites, (item) => isInMealPlan(item, categoryId)).length >
-      0
-    );
+    return passesFilters === null || passesFilters(food, categoryId);
   };
 };
