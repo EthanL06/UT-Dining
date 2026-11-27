@@ -37,7 +37,12 @@ import { getLocationName } from '~/utils/locations';
 import { log } from '~/utils/log';
 import { readCachedMenuData } from '~/utils/queries';
 import { type Theme, useTheme } from '~/utils/theme';
-import { formatTimeSinceSync, getLocationStatusText, timeOfDay } from '~/utils/time';
+import {
+  formatTimeSinceSync,
+  getLocationStatusText,
+  getMinutesUntilClose,
+  timeOfDay,
+} from '~/utils/time';
 import * as schema from '../../../services/database/schema';
 
 const SPLASH_SCREEN_DURATION = 200;
@@ -167,7 +172,9 @@ const LocationRows = ({
         key={location.id}
         isFirst={index === 0}
         separatorInset={37}
-        leading={<StatusDot open={isOpen} />}
+        leading={
+          <StatusDot open={isOpen} closesInMinutes={getMinutesUntilClose(location, currentTime)} />
+        }
         title={getLocationName(db, name, useColloquialNames)}
         titleColor={isOpen ? theme.label : theme.secondaryLabel}
         subtitle={getLocationStatusText(location, isOpen, currentTime)}
