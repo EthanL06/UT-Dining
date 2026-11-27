@@ -17,10 +17,11 @@ The app works offline from the cache. Never make a screen query Supabase directl
 | Path | What |
 |---|---|
 | `app/` | Expo Router routes. `(tabs)/` is Home (`index`), Map, Notifications, Settings. `location/[location].tsx` is a dining hall menu, `location_generic/` a place with no menu, `food/[food].tsx` one item, plus `favorites`, `meal-plan`, `changelog` |
-| `app/e2e-setup.tsx` | Dev-build-only deep link `ut-dining://e2e-setup` that skips onboarding for Maestro. `?theme=dark` sets the theme and `?serviceStatus=degraded` (or `outage`) fakes the live status so the Home banner shows |
+| `app/e2e-setup.tsx` | Dev-build-only deep link `ut-dining://e2e-setup` that skips onboarding for Maestro. `?theme=dark` sets the theme and `?serviceStatus=degraded` (or `outage`) fakes the live status so the Home banner shows. Against local Supabase only, `?adminAccessToken=…&adminRefreshToken=…` signs the admin tools in, for screenshots (the server still checks the token) |
 | `components/` | Shared UI. `components/sheets/` are react-native-actions-sheet sheets registered in `Sheets.tsx` |
 | `services/database/` | SQLite cache: `sync.ts` (Supabase to SQLite), `menus.ts`, `locations.ts`, `favorites.ts`, `notifications.ts` (reads and writes), `types.ts`, `schema.ts`. `database.ts` re-exports them all, so existing `~/services/database/database` imports keep working |
 | `components/qa/` | Sections of the dev-only QA menu (`app/(tabs)/settings/qa.tsx`) |
+| `app/(tabs)/settings/admin/`, `components/admin/`, `services/admin/` | Hidden admin tools (long-press the version in Settings). Uses its own Supabase client (`services/admin/client.ts`, session in the `admin-auth` MMKV instance) so the rest of the app stays anonymous; every screen is wrapped in `AdminGate`, which asks the server and redirects non-admins. These screens read Supabase live instead of the SQLite cache. See "In-app admin tools" in `.agents/runbook.md` |
 | `services/` | Side effects: database, PostHog analytics, push notifications, App Store version check, rating prompt, changelog (read from the Supabase `changelog` table) |
 | `utils/` | Helpers. `time.ts` and `date.ts` wrap `@ut-dining/core` for screens; `filter.ts` is the menu filters |
 | `drizzle/` | Generated SQLite migrations for the cache. Change `services/database/schema.ts`, then run `npx drizzle-kit generate` here; it also rewrites `drizzle/migrations.js`. Never edit these by hand |

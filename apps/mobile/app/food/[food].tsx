@@ -8,6 +8,7 @@ import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
 import { HeartPop } from '~/components/motion/HeartPop';
+import { GlassButton } from '~/components/ui/Glass';
 import { GroupedRow, GroupedSection } from '~/components/ui/Grouped';
 import { Image } from '~/components/ui/Image';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
@@ -127,30 +128,28 @@ export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
             className="flex-row items-center justify-between px-4 pb-2"
             style={{ paddingTop: pushed ? insets.top + 8 : 16 }}
           >
-            <PressableScale
+            <GlassButton
               testID="back-button"
               accessibilityLabel="Close"
-              accessibilityRole="button"
+              size={44}
+              fallbackColor={theme.card}
               onPress={() => {
                 router.back();
               }}
-              className="size-11 items-center justify-center rounded-full"
-              style={{ backgroundColor: theme.card }}
             >
               <X size={20} color={theme.label} />
-            </PressableScale>
-            <PressableScale
+            </GlassButton>
+            <GlassButton
               testID="food-info-button"
               accessibilityLabel="About nutrition info"
-              accessibilityRole="button"
+              size={44}
+              fallbackColor={theme.card}
               onPress={() => {
                 void SheetManager.show('food-info', { context: 'food' });
               }}
-              className="size-11 items-center justify-center rounded-full"
-              style={{ backgroundColor: theme.card }}
             >
               <Info size={20} color={theme.label} />
-            </PressableScale>
+            </GlassButton>
           </View>
 
           {status === 'loading' && (
