@@ -107,11 +107,11 @@ export const PlanRow = ({
                   }}
                 />
               )}
-              <View className="flex-1 gap-y-0.5">
+              <View className="flex-1">
                 <Text variant="callout" numberOfLines={2}>
                   {item.name}
                 </Text>
-                <View className="flex-row flex-wrap items-center gap-x-1.5">
+                <View className="flex-row flex-wrap items-center gap-x-1.5 gap-y-[3px]">
                   <Text variant="footnote" tone="secondary">
                     {formatGrams(amount(item, 'protein'))} protein ·{' '}
                     {formatGrams(amount(item, 'total_carbohydrates'))} carbs ·{' '}
