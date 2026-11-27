@@ -79,7 +79,7 @@ How a run works:
 3. Payment methods come from the UHD page of each place. Bevo Pay is gone since August 2026, so it drops out of every synced place.
 4. Only rows that changed are written, with `ENABLE_SUPABASE=true`. Without it the run only prints what would change.
 5. `data/places.json` has the computed week for every place, and `data/places-health.json` and `places-health.md` list what needs a person:
-   - **New on UT's sites**: a place on a UHD list, the Unions truck list or the hours table that `sources.ts` does not know. Add it with `pnpm -s admin locations add`, then a line in `sources.ts`.
+   - **New on UT's sites**: a place on a UHD list, the Unions truck list or the hours table that `sources.ts` does not know. Add it with `pnpm -s admin locations create --file <place.json>`, then a line in `sources.ts`.
    - **No longer listed by UT**: a place in `sources.ts` that UT dropped. Check whether it closed.
    - **Missing from the app**: a name in `sources.ts` with no `location` row of that name. `sources.ts` matches rows by name, so renaming a place in the dashboard needs the same change there.
    - **Pages the scraper could not read** and **pages that failed to load**: these make the run exit 1, and nothing is written for the place they belong to.
