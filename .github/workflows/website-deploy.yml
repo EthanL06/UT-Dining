@@ -7,6 +7,8 @@ on:
       - apps/website/**
       - pnpm-lock.yaml
       - .github/workflows/website-deploy.yml
+  schedule:
+    - cron: '30 12 * * *'
   workflow_dispatch:
 
 concurrency:
@@ -33,6 +35,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm turbo run build --filter=@ut-dining/website
+        env:
+          WEBSITE_STATIC_EXPORT: '1'
+          WEBSITE_SITE_URL: https://longhorn-developers.github.io
+          WEBSITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          WEBSITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
       - name: Publish to Longhorn-Developers/ut-dining-website gh-pages
         if: ${{ env.HAS_DEPLOY_KEY == 'true' }}

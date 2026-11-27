@@ -1,12 +1,14 @@
 import type { NextConfig } from 'next';
 
-const basePath = process.env.WEBSITE_BASE_PATH ?? '/ut-dining-website';
+const staticExport = process.env.WEBSITE_STATIC_EXPORT === '1';
+const basePath = process.env.WEBSITE_BASE_PATH ?? (staticExport ? '/ut-dining-website' : '');
 
 const nextConfig: NextConfig = {
-  output: 'export',
+  ...(staticExport ? { output: 'export' as const, images: { unoptimized: true } } : {}),
   basePath,
-  images: { unoptimized: true },
   trailingSlash: true,
+  poweredByHeader: false,
+  env: { NEXT_PUBLIC_BASE_PATH: basePath },
 };
 
 export default nextConfig;

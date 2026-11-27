@@ -35,7 +35,7 @@ help:
 	'  ios             Build and install the development build on a simulator. SIM=<name or UDID>' \
 	'  android         Build and install the development build on Android' \
 	'  dashboard       Dashboard on http://localhost:3000' \
-	'  website         Website on http://localhost:3001/ut-dining-website' \
+	'  website         Website on http://localhost:3001' \
 	'  scrape          Run the scraper once with apps/scraper/.env.local' \
 	'  admin           Dashboard data CLI (dev by default). ARGS="locations list --local". See apps/cli/README.md' \
 	'' \
