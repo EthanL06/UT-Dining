@@ -3,6 +3,7 @@ import { useEffect, useMemo } from 'react';
 import { Platform, ScrollView, View } from 'react-native';
 import { SheetManager } from 'react-native-actions-sheet';
 import { NativeSegmentedControl } from '~/components/NativeSegmentedControl';
+import { GlassButton } from '~/components/ui/Glass';
 import { Text } from '~/components/ui/Text';
 
 export type FilterType = 'all' | string;
@@ -164,16 +165,16 @@ const FilterButton = () => {
   const hasFilters = hasActiveFilters(filters);
 
   return (
-    <PressableScale
+    <GlassButton
       testID="menu-filters-button"
       accessibilityLabel={hasFilters ? 'Filters, on' : 'Filters'}
-      accessibilityRole="button"
-      onPress={() => SheetManager.show('filters')}
-      className="size-9 items-center justify-center rounded-full"
-      style={{ backgroundColor: hasFilters ? theme.tint : theme.fill }}
+      size={36}
+      fallbackColor={hasFilters ? theme.tint : theme.fill}
+      tintColor={hasFilters ? theme.tint : undefined}
+      onPress={() => void SheetManager.show('filters')}
     >
       <SlidersHorizontal size={17} color={hasFilters ? '#FFFFFF' : theme.label} />
-    </PressableScale>
+    </GlassButton>
   );
 };
 export default FilterBar;
