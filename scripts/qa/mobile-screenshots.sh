@@ -8,7 +8,7 @@ Usage: scripts/qa/mobile-screenshots.sh [--out <dir>] [--list <file>] [--themes 
 
 Screenshots every screen in apps/mobile/e2e/screenshots.txt, once per theme, on an iOS Simulator.
 Each line of the list is "<name> [deep link path] [text to wait for]". The path is opened as
-ut-dining://<path>; no path means Home. The text is a Maestro regex that only that screen shows; the
+ut-dining://<path> once Home has mounted (the splash only hides then); no path means Home. The text is a Maestro regex that only that screen shows; the
 screenshot waits for it, so a deep link that lands late never captures the previous screen. Files are <out>/<name>-<theme>.png. Default out: .context/screenshots.
 With --sim <UDID>,<UDID> each theme is its own flow, so the themes run on two simulators at once
 (worth it on a Mac with spare cores; a 3-core CI runner gets slower).
@@ -84,15 +84,14 @@ YAML
     [[ -z "$name" || "$name" == \#* ]] && continue
     echo "- stopApp"
     open_app false
-    if [[ -n "${path:-}" ]]; then
-      echo "- openLink: ut-dining://$path"
-    elif [[ -z "${wait:-}" ]]; then
-      cat <<YAML
+    cat <<YAML
 - extendedWaitUntil:
     visible:
       id: home-scroll
     timeout: 60000
 YAML
+    if [[ -n "${path:-}" ]]; then
+      echo "- openLink: ut-dining://$path"
     fi
     if [[ -n "${wait:-}" ]]; then
       cat <<YAML
