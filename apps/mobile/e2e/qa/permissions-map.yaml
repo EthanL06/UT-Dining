@@ -1,0 +1,27 @@
+appId: com.ethanl06.ut-dining.dev
+name: Home never asks for permissions, and the Map tab asks for location when it opens
+tags:
+  - qa
+---
+- runFlow:
+    file: subflows/start-at.yaml
+    env:
+      PERMISSIONS: unset
+- tapOn:
+    id: settings-tab
+- waitForAnimationToEnd
+- tapOn:
+    id: home-tab
+- waitForAnimationToEnd
+- assertNotVisible: '.*Would Like to Send You Notifications.*|.*to use your location.*'
+- tapOn:
+    id: map-tab
+- extendedWaitUntil:
+    visible: .*to use your location.*
+    timeout: 10000
+- assertNotVisible: .*Would Like to Send You Notifications.*
+- tapOn: Allow While Using App
+- extendedWaitUntil:
+    visible:
+      id: map-search-input
+    timeout: 10000

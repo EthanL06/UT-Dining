@@ -1,8 +1,30 @@
 import { createServer } from 'node:http';
-import { buildRestTables } from './e2e-fixtures.ts';
+import { buildRestTables, type FixtureData } from './e2e-fixtures.ts';
 
 const port = Number(process.argv[2] ?? process.env.FIXTURE_PORT ?? 54331);
-const tables = buildRestTables();
+const data: FixtureData = process.argv[3] === 'sample' ? 'sample' : 'e2e';
+const idleMinutes = Number(process.argv[4] ?? 0);
+const centralDay = () =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago' }).format(new Date());
+let day = centralDay();
+let tables = buildRestTables(undefined, data);
+const currentTables = () => {
+  const today = centralDay();
+  if (today !== day) {
+    day = today;
+    tables = buildRestTables(undefined, data);
+  }
+  return tables;
+};
+let idleTimer: ReturnType<typeof setTimeout> | undefined;
+const resetIdle = () => {
+  if (idleMinutes <= 0) return;
+  if (idleTimer) clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+    console.log(`No requests for ${idleMinutes} min, exiting`);
+    process.exit(0);
+  }, idleMinutes * 60_000);
+};
 
 type Row = Record<string, unknown>;
 
@@ -105,8 +127,9 @@ const server = createServer((req, res) => {
   const url = new URL(req.url ?? '/', `http://127.0.0.1:${port}`);
   const match = url.pathname.match(/^\/rest\/v1\/([a-z_]+)$/);
   console.log(`${req.method} ${url.pathname}${url.search}`);
+  resetIdle();
 
-  if (url.pathname === '/health') return send(res, 200, { ok: true });
+  if (url.pathname === '/health') return send(res, 200, { ok: true, data });
   if (url.pathname === '/api/status') {
     return send(res, 200, { status: 'operational', label: 'Operational', components: [] });
   }
@@ -120,7 +143,7 @@ const server = createServer((req, res) => {
     return send(res, 405, { message: 'The fixture server is read-only' });
   }
 
-  const source = tables[table];
+  const source = currentTables()[table];
   if (!source) return send(res, 404, { message: `relation "public.${table}" does not exist` });
 
   try {
@@ -146,8 +169,9 @@ const server = createServer((req, res) => {
 });
 
 server.listen(port, '127.0.0.1', () => {
+  resetIdle();
   const counts = Object.entries(tables)
     .map(([name, rows]) => `${name}=${rows.length}`)
     .join(' ');
-  console.log(`Fixture server on http://127.0.0.1:${port} (${counts})`);
+  console.log(`Fixture server on http://127.0.0.1:${port}, ${data} data (${counts})`);
 });

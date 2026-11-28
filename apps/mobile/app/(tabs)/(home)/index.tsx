@@ -132,23 +132,25 @@ const QuickLink = ({
   theme: Theme;
 }) => (
   <Link href={href} asChild>
-    <Link.Trigger withAppleZoom>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={title}
-        className="flex-1 overflow-hidden"
-        style={{ backgroundColor: theme.card, borderRadius: 22, borderCurve: 'continuous' }}
-      >
+    <Link.Trigger>
+      <Pressable accessibilityRole="button" className="flex-1">
         {({ pressed }) => (
-          <View
-            className="flex-row items-center gap-x-2.5 px-4 py-3.5"
-            style={{ backgroundColor: pressed ? theme.fill : 'transparent' }}
-          >
-            {icon}
-            <Text variant="subheadline" emphasized>
-              {title}
-            </Text>
-          </View>
+          <Link.AppleZoom>
+            <View
+              className="overflow-hidden"
+              style={{ backgroundColor: theme.card, borderRadius: 22, borderCurve: 'continuous' }}
+            >
+              <View
+                className="flex-row items-center gap-x-2.5 px-4 py-3.5"
+                style={{ backgroundColor: pressed ? theme.fill : 'transparent' }}
+              >
+                {icon}
+                <Text variant="subheadline" emphasized>
+                  {title}
+                </Text>
+              </View>
+            </View>
+          </Link.AppleZoom>
         )}
       </Pressable>
     </Link.Trigger>
@@ -201,18 +203,23 @@ const LocationRow = memo(
         }}
         asChild
       >
-        <Link.Trigger withAppleZoom>
-          <GroupedRow
-            accessibilityRole="button"
-            accessibilityLabel={`${displayLocationName(location, useColloquialNames)}, ${subtitle}`}
-            isFirst={isFirst}
-            separatorInset={37}
-            leading={<StatusDot open={isOpen} closesInMinutes={closingInMinutes} />}
-            title={displayLocationName(location, useColloquialNames)}
-            titleColor={isOpen ? theme.label : theme.secondaryLabel}
-            subtitle={subtitle}
-            showChevron
-          />
+        <Link.Trigger>
+          <Pressable accessibilityRole="button">
+            {({ pressed }) => (
+              <Link.AppleZoom>
+                <GroupedRow
+                  pressed={pressed}
+                  isFirst={isFirst}
+                  separatorInset={37}
+                  leading={<StatusDot open={isOpen} closesInMinutes={closingInMinutes} />}
+                  title={displayLocationName(location, useColloquialNames)}
+                  titleColor={isOpen ? theme.label : theme.secondaryLabel}
+                  subtitle={subtitle}
+                  showChevron
+                />
+              </Link.AppleZoom>
+            )}
+          </Pressable>
         </Link.Trigger>
       </Link>
     );

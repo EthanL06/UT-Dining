@@ -1,0 +1,51 @@
+appId: com.ethanl06.ut-dining.dev
+name: Onboarding asks for notifications and location only on its Permissions page
+tags:
+  - qa
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: unset
+- runFlow:
+    when:
+      true: ${DEV_CLIENT == 'true'}
+    commands:
+      - runFlow:
+          file: subflows/dev-client.yaml
+          env:
+            METRO_URL: ${METRO_URL}
+- extendedWaitUntil:
+    visible:
+      id: onboarding-welcome-title
+    timeout: 60000
+- repeat:
+    while:
+      notVisible: 'Enable Permissions|.*Would Like to Send You Notifications.*|.*to use your location.*'
+    times: 8
+    commands:
+      - assertNotVisible: '.*Would Like to Send You Notifications.*|.*to use your location.*'
+      - tapOn:
+          id: onboarding-next-button
+      - waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: '.*to use your location.*|.*Would Like to Send You Notifications.*'
+    timeout: 10000
+- takeScreenshot: permissions-prompt
+- runFlow: ../subflows/dismiss-alerts.yaml
+- assertVisible: Enable Permissions
+- tapOn:
+    id: onboarding-next-button
+- extendedWaitUntil:
+    visible: You're all set.*
+    timeout: 5000
+- repeat:
+    while:
+      visible: Finish
+    times: 3
+    commands:
+      - tapOn: Finish
+      - waitForAnimationToEnd
+- extendedWaitUntil:
+    visible: Good (Morning|Afternoon|Evening).*
+    timeout: 60000

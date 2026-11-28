@@ -1,0 +1,22 @@
+appId: com.ethanl06.ut-dining.dev
+name: A missing place or food shows a message instead of a blank screen or an endless spinner
+tags:
+  - qa
+---
+- runFlow: subflows/start-at.yaml
+- openLink: ut-dining://location_generic/Nowhere%20Cafe
+- runFlow: ../subflows/dismiss-alerts.yaml
+- extendedWaitUntil:
+    visible:
+      id: place-unavailable
+    timeout: 10000
+- takeScreenshot: missing-place
+- tapOn:
+    id: back-button
+- openLink: ut-dining://food/No%20Such%20Dish?menu=Lunch&category=Grill&location=J2%20Dining
+- runFlow: ../subflows/dismiss-alerts.yaml
+- extendedWaitUntil:
+    visible:
+      id: food-unavailable
+    timeout: 10000
+- takeScreenshot: missing-food
