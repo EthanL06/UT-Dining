@@ -5,7 +5,7 @@ usage() {
   cat <<'EOF'
 Usage: scripts/qa/mobile-e2e.sh [--sim <UDID>] [--release] [--port <metro port>]
                                 [--fixture-server [port]] [--shards <n>] [--retry-failed]
-                                [--status-bar]
+                                [--status-bar] [--build-app] [--suite e2e|qa] [--affected[=<base>]]
                                 [maestro test args...]
 
 Runs the Maestro flows in apps/mobile/e2e on an iOS Simulator against local Supabase.
@@ -22,9 +22,20 @@ Runs the Maestro flows in apps/mobile/e2e on an iOS Simulator against local Supa
   --shards <n>             Split the flows across n simulators that run at the same time. The
                            extra simulators are clones of --sim (app included) and are deleted
                            afterwards. Each one needs about 2 GB of RAM.
+  --build-app              Build a release app of the current worktree (scripts/qa/ios-sim-app.sh,
+                           which reuses the native build and the Metro cache, so only the JS is
+                           rebuilt) pointed at the fixture server, install it and skip Metro and
+                           the dev client. Implies --release and --fixture-server on port 54339
+                           (qa) or 54338 (e2e), shared by every run of the same suite on this Mac.
   --status-bar             Set a clean status bar (9:41, full battery) on every simulator used.
   --retry-failed           Run the flows that failed once more, in a fresh Maestro session. The
                            exit code comes from the retry. Reports go to <output>/retry.
+  --suite qa               Run the regression flows in apps/mobile/e2e/qa against the sample data
+                           of scripts/dev/sample (make db-sample, or the fixture server's sample
+                           set) instead of the e2e flows and their fixture menus.
+  --affected[=<base>]      With --suite qa, run only the flows that cover the files changed since
+                           <base> (default origin/staging), as scripts/qa/qa-affected.ts maps them.
+                           Exits 0 without a simulator when no flow covers the diff.
 
 Anything else goes to `maestro test`, for example a single flow file or `--include-tags smoke`.
 Output goes to .context/maestro/<timestamp>, or to $E2E_OUT when it is set.
@@ -40,6 +51,9 @@ DEV_CLIENT=true
 METRO_PORT=8081
 SHARDS=1
 RETRIES=0
+SUITE=e2e
+BUILD_APP=false
+AFFECTED_BASE=""
 STATUS_BAR=false
 EXTRA_SIMS=()
 MAESTRO_ARGS=()
@@ -48,9 +62,13 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --sim) SIM="$2"; shift 2 ;;
     --release) DEV_CLIENT=false; shift ;;
+    --build-app) BUILD_APP=true; DEV_CLIENT=false; shift ;;
     --port) METRO_PORT="$2"; shift 2 ;;
     --shards) SHARDS="$2"; shift 2 ;;
     --retry-failed) RETRIES=1; shift ;;
+    --suite) SUITE="$2"; shift 2 ;;
+    --affected) AFFECTED_BASE="origin/staging"; shift ;;
+    --affected=*) AFFECTED_BASE="${1#--affected=}"; shift ;;
     --status-bar) STATUS_BAR=true; shift ;;
     --fixture-server)
       if [[ "${2:-}" =~ ^[0-9]+$ ]]; then FIXTURE_PORT="$2"; shift 2; else FIXTURE_PORT=54331; shift; fi ;;
@@ -60,8 +78,26 @@ while [[ $# -gt 0 ]]; do
 done
 
 fail() { echo "mobile-e2e: $*" >&2; exit 1; }
-[[ "$SHARDS" =~ ^[1-9][0-9]*$ ]] || { echo "mobile-e2e: --shards needs a whole number." >&2; exit 1; }
 step() { echo "==> $*"; }
+[[ "$SUITE" == e2e || "$SUITE" == qa ]] || fail "--suite is e2e or qa."
+FLOW_DIR="$E2E_DIR"
+if [[ "$SUITE" == qa ]]; then FLOW_DIR="$E2E_DIR/qa"; fi
+if [[ ${#MAESTRO_ARGS[@]} -eq 0 && -n "$AFFECTED_BASE" ]]; then
+  [[ "$SUITE" == qa ]] || fail "--affected works with --suite qa only"
+  while IFS= read -r flow; do
+    [[ -n "$flow" ]] && MAESTRO_ARGS+=("$ROOT/$flow")
+  done < <(cd "$ROOT" && node scripts/qa/qa-affected.ts "$AFFECTED_BASE" apps/mobile/e2e/qa)
+  if [[ ${#MAESTRO_ARGS[@]} -eq 0 ]]; then
+    step "No QA flow covers the files changed since $AFFECTED_BASE"
+    exit 0
+  fi
+  step "Flows for this diff: ${MAESTRO_ARGS[*]##*/}"
+fi
+if [[ "$BUILD_APP" == true && -z "$FIXTURE_PORT" ]]; then
+  FIXTURE_PORT=54338
+  if [[ "$SUITE" == qa ]]; then FIXTURE_PORT=54339; fi
+fi
+[[ "$SHARDS" =~ ^[1-9][0-9]*$ ]] || { echo "mobile-e2e: --shards needs a whole number." >&2; exit 1; }
 
 [[ "$(uname)" == "Darwin" ]] || fail "needs macOS with Xcode and the iOS Simulator."
 command -v xcrun >/dev/null || fail "xcrun not found. Install Xcode."
@@ -71,6 +107,8 @@ OUT="${E2E_OUT:-$ROOT/.context/maestro/$(date +%Y%m%d-%H%M%S)}"
 mkdir -p "$OUT"
 
 STARTED_METRO=false
+ENV_OVERRIDE="$ROOT/apps/mobile/.env.development.local"
+WROTE_ENV_OVERRIDE=false
 FIXTURE_PID=""
 WAS_BOOTED=true
 CLONES=()
@@ -81,6 +119,9 @@ cleanup() {
   done
   if [[ "$STARTED_METRO" == true ]]; then
     kill $(lsof -tiTCP:"$METRO_PORT" -sTCP:LISTEN) 2>/dev/null || true
+  fi
+  if [[ "$WROTE_ENV_OVERRIDE" == true ]]; then
+    rm -f "$ENV_OVERRIDE"
   fi
   if [[ -n "$FIXTURE_PID" ]]; then
     kill "$FIXTURE_PID" 2>/dev/null || true
@@ -95,9 +136,23 @@ cleanup() {
 trap cleanup EXIT
 
 if [[ -n "$FIXTURE_PORT" ]]; then
-  step "Starting the fixture server on port $FIXTURE_PORT"
-  node "$ROOT/scripts/qa/e2e-fixture-server.ts" "$FIXTURE_PORT" > "$OUT/fixture-server.log" 2>&1 &
-  FIXTURE_PID=$!
+  FIXTURE_DATA=e2e
+  if [[ "$SUITE" == qa ]]; then FIXTURE_DATA=sample; fi
+  RUNNING="$(curl -sf "http://127.0.0.1:$FIXTURE_PORT/health" 2>/dev/null || true)"
+  if [[ "$RUNNING" == *"\"data\":\"$FIXTURE_DATA\""* ]]; then
+    step "Reusing the $FIXTURE_DATA fixture server already on port $FIXTURE_PORT"
+  elif [[ -n "$RUNNING" ]] || lsof -tiTCP:"$FIXTURE_PORT" -sTCP:LISTEN >/dev/null 2>&1; then
+    fail "port $FIXTURE_PORT is taken by something other than the $FIXTURE_DATA fixture server."
+  elif [[ "$BUILD_APP" == true ]]; then
+    mkdir -p "$ROOT/.context"
+    step "Starting the shared $FIXTURE_DATA fixture server on port $FIXTURE_PORT (exits after 20 idle min)"
+    (nohup node "$ROOT/scripts/qa/e2e-fixture-server.ts" "$FIXTURE_PORT" "$FIXTURE_DATA" 20 \
+      > "$ROOT/.context/fixture-server-$FIXTURE_PORT.log" 2>&1 &)
+  else
+    step "Starting the fixture server on port $FIXTURE_PORT"
+    node "$ROOT/scripts/qa/e2e-fixture-server.ts" "$FIXTURE_PORT" "$FIXTURE_DATA" > "$OUT/fixture-server.log" 2>&1 &
+    FIXTURE_PID=$!
+  fi
   for _ in $(seq 1 20); do
     curl -sf "http://127.0.0.1:$FIXTURE_PORT/health" >/dev/null && break
     sleep 0.5
@@ -109,8 +164,13 @@ else
   API_URL="$(sed -n 's/^API_URL="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' <<<"$STATUS")"
   [[ "$API_URL" == http://127.0.0.1:* ]] || fail "API_URL is '$API_URL', not a local address. Refusing to write fixtures."
 
-  step "Loading fixture menus into J2 Dining"
-  (cd "$ROOT" && node scripts/qa/e2e-load-fixtures.ts)
+  if [[ "$SUITE" == qa ]]; then
+    step "Loading the sample menus and places"
+    (cd "$ROOT" && node scripts/dev/sample/load.ts)
+  else
+    step "Loading fixture menus into J2 Dining"
+    (cd "$ROOT" && node scripts/qa/e2e-load-fixtures.ts)
+  fi
 
   ENV_FILE="$ROOT/apps/mobile/.env.local"
   if ! grep -q "^EXPO_PUBLIC_SUPABASE_URL=\"\{0,1\}$API_URL" "$ENV_FILE" 2>/dev/null; then
@@ -123,6 +183,26 @@ if [[ -z "$SIM" ]]; then
   BOOTED="$(xcrun simctl list devices booted | grep -oE '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}' || true)"
   [[ "$(wc -w <<<"$BOOTED")" -eq 1 ]] || fail "pass --sim <UDID> or set SIM. Simulators: xcrun simctl list devices available"
   SIM="$BOOTED"
+fi
+
+if [[ "$BUILD_APP" == true ]]; then
+  [[ -n "$FIXTURE_PORT" ]] || fail "--build-app needs the fixture server."
+  APP_OUT="$ROOT/.context/app-$SUITE"
+  step "Building the release app for the fixture server on port $FIXTURE_PORT into $APP_OUT"
+  (cd "$ROOT" && APP_VARIANT=development \
+    EXPO_PUBLIC_SUPABASE_URL="http://127.0.0.1:$FIXTURE_PORT" \
+    EXPO_PUBLIC_STATUS_API_URL="http://127.0.0.1:$FIXTURE_PORT/api/status" \
+    EXPO_PUBLIC_SUPABASE_ANON_KEY=fixture \
+    scripts/qa/ios-sim-app.sh --out "$APP_OUT") > "$OUT/build-app.log" 2>&1 \
+    || fail "the app build failed. See $OUT/build-app.log"
+  BUILT_APP="$(ls -d "$APP_OUT"/*.app | head -1)"
+  IFS=, read -r -a INSTALL_ON <<<"$SIM"
+  for device in "${INSTALL_ON[@]}"; do
+    step "Installing the release app on $device"
+    xcrun simctl boot "$device" 2>/dev/null || true
+    xcrun simctl bootstatus "$device" -b >/dev/null
+    xcrun simctl install "$device" "$BUILT_APP"
+  done
 fi
 
 if [[ "$SIM" == *,* ]]; then
@@ -155,6 +235,7 @@ done
 for device in "${DEVICES[@]}"; do
   xcrun simctl bootstatus "$device" -b >/dev/null
   xcrun simctl ui "$device" appearance light
+  xcrun simctl spawn "$device" defaults write com.apple.Accessibility ReduceMotionEnabled -bool true
   if [[ "$STATUS_BAR" == true ]]; then
     xcrun simctl status_bar "$device" override --time 9:41 --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3
   fi
@@ -168,9 +249,23 @@ fi
 if [[ "$DEV_CLIENT" == true ]]; then
   if curl -sf "http://localhost:$METRO_PORT/status" | grep -q packager-status:running; then
     step "Using the Metro already on port $METRO_PORT. Restart it if .env.local changed."
+    if [[ -n "$FIXTURE_PORT" ]]; then
+      echo "  warn  that Metro keeps its own EXPO_PUBLIC_SUPABASE_URL; stop it or pass another --port so the app reads the fixture server"
+    fi
   else
     step "Starting Metro on port $METRO_PORT"
-    (cd "$ROOT" && pnpm --filter @ut-dining/mobile start --port "$METRO_PORT" > "$OUT/metro.log" 2>&1 &)
+    METRO_ENV=()
+    if [[ -n "$FIXTURE_PORT" ]]; then
+      METRO_ENV=(
+        "EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:$FIXTURE_PORT"
+        "EXPO_PUBLIC_STATUS_API_URL=http://127.0.0.1:$FIXTURE_PORT/api/status"
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY=fixture"
+      )
+      [[ ! -e "$ENV_OVERRIDE" ]] || fail "$ENV_OVERRIDE exists. Move it away: a development bundle reads it over the fixture server."
+      printf '%s\n' "${METRO_ENV[@]}" > "$ENV_OVERRIDE"
+      WROTE_ENV_OVERRIDE=true
+    fi
+    (cd "$ROOT" && env ${METRO_ENV[@]+"${METRO_ENV[@]}"} pnpm --filter @ut-dining/mobile start --port "$METRO_PORT" --clear > "$OUT/metro.log" 2>&1 &)
     STARTED_METRO=true
     for _ in $(seq 1 60); do
       curl -sf "http://localhost:$METRO_PORT/status" | grep -q packager-status:running && break
@@ -180,7 +275,7 @@ if [[ "$DEV_CLIENT" == true ]]; then
   fi
 fi
 
-[[ ${#MAESTRO_ARGS[@]} -gt 0 ]] || MAESTRO_ARGS=("$E2E_DIR")
+[[ ${#MAESTRO_ARGS[@]} -gt 0 ]] || MAESTRO_ARGS=("$FLOW_DIR")
 for i in "${!MAESTRO_ARGS[@]}"; do
   arg="${MAESTRO_ARGS[$i]}"
   if [[ -e "$arg" && "$arg" != /* ]]; then MAESTRO_ARGS[$i]="$PWD/$arg"; fi

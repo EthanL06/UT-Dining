@@ -1,0 +1,63 @@
+appId: com.ethanl06.ut-dining.dev
+name: At 8:30 PM Central (already tomorrow in UTC) status, greeting and day labels follow Central time
+tags:
+  - qa
+---
+- runFlow:
+    file: subflows/start-at.yaml
+    env:
+      CLOCK: '20:30'
+- assertVisible: Good Evening.*
+- tapOn: 'Dining Hall(,.*)?'
+- scrollUntilVisible:
+    element: 'Kins Dining, Temporarily closed'
+    direction: DOWN
+    timeout: 30000
+- assertVisible: 'J2 Dining, Open until 9:00 PM'
+- assertVisible: 'JCL Dining, Opens tomorrow at 11:00 AM'
+- takeScreenshot: central-evening-home
+- runFlow:
+    file: subflows/open-place.yaml
+    env:
+      PLACE: J2 Dining
+      READY: '(Comfort|Grill)(,.*)?'
+- tapOn: Dinner
+- extendedWaitUntil:
+    visible:
+      id: selected-date
+      text: Today
+    timeout: 5000
+- scrollUntilVisible:
+    element: 'Central Today Special(,.*)?'
+    direction: DOWN
+    timeout: 20000
+- assertNotVisible: 'Central Tomorrow Special(,.*)?'
+- scrollUntilVisible:
+    element:
+      id: menu-day-1
+    direction: UP
+    timeout: 20000
+- tapOn:
+    id: menu-day-1
+- extendedWaitUntil:
+    visible:
+      id: selected-date
+      text: Tomorrow
+    timeout: 5000
+- scrollUntilVisible:
+    element: 'Central Tomorrow Special(,.*)?'
+    direction: DOWN
+    timeout: 20000
+- assertNotVisible: 'Central Today Special(,.*)?'
+- scrollUntilVisible:
+    element:
+      id: menu-day--1
+    direction: UP
+    timeout: 20000
+- tapOn:
+    id: menu-day--1
+- extendedWaitUntil:
+    visible:
+      id: selected-date
+      text: Yesterday
+    timeout: 5000

@@ -1,0 +1,27 @@
+appId: com.ethanl06.ut-dining.dev
+env:
+  DEV_CLIENT: ${DEV_CLIENT || 'true'}
+  METRO_URL: ${METRO_URL || 'http://localhost:8081'}
+  CLOCK: ${CLOCK || '12:30'}
+  DAYS: ${DAYS || '0'}
+  RATING: ${RATING || 'off'}
+  PERMISSIONS: ${PERMISSIONS || 'allow'}
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: ${PERMISSIONS}
+- runFlow:
+    when:
+      true: ${DEV_CLIENT == 'true'}
+    commands:
+      - runFlow:
+          file: dev-client.yaml
+          env:
+            METRO_URL: ${METRO_URL}
+- runFlow:
+    file: set-clock.yaml
+    env:
+      CLOCK: ${CLOCK}
+      DAYS: ${DAYS}
+      RATING: ${RATING}

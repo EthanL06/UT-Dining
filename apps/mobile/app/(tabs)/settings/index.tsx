@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import {
   Accessibility,
@@ -28,14 +28,14 @@ import { Linking, Switch, View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 import { VersionLabel } from '~/components/admin/VersionLabel';
 import { NearbyAlertsRow } from '~/components/nearby/NearbyAlertsRow';
+import { TabSwipe } from '~/components/TabSwipe';
 import { GroupedRow, GroupedSection, IconSquare } from '~/components/ui/Grouped';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
-import { useDatabase } from '~/hooks/useDatabase';
+import { useAppInformation } from '~/hooks/useAppInformation';
 import { forceMenuSync } from '~/hooks/useMenuSync';
 import { type PermissionState, usePermission } from '~/hooks/usePermission';
 import { openStatusPage, useServiceStatus } from '~/hooks/useServiceStatus';
-import { getAppInformation } from '~/services/database/database';
 import type { AppInformation } from '~/services/database/schema';
 import { getOrCreateDeviceId } from '~/services/device/deviceId';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
@@ -141,7 +141,6 @@ const ToggleRow = ({
 
 const SyncDataRow = () => {
   const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
-  const db = useDatabase();
   const queryClient = useQueryClient();
   const [syncStatus, setSyncStatus] = React.useState<'idle' | 'syncing' | 'failed'>('idle');
   const [currentTime, setCurrentTime] = React.useState(Date.now());
@@ -157,7 +156,7 @@ const SyncDataRow = () => {
   const timeSinceSync = lastSyncedAt === null ? Infinity : Math.max(0, currentTime - lastSyncedAt);
 
   const handleSync = async () => {
-    if (!db || isSyncing) return;
+    if (isSyncing) return;
     setSyncStatus('syncing');
     try {
       await forceMenuSync(queryClient);
@@ -328,137 +327,135 @@ const SettingsPage = () => {
     isColorBlindMode,
     toggleColorBlindMode,
   } = useSettingsStore();
-  const db = useDatabase();
-  const { data: appInfo } = useQuery({
-    queryKey: ['appInformation'],
-    queryFn: () => getAppInformation(db),
-  });
+  const { data: appInfo } = useAppInformation();
   const deviceId = getOrCreateDeviceId();
 
   return (
     <SheetProvider context="settings">
-      <Stack.Screen options={{ title: 'Settings' }} />
-      <OverflowScrollView
-        divider={false}
-        contentInsetAdjustmentBehavior="automatic"
-        style={{ flex: 1, backgroundColor: theme.background }}
-        contentContainerStyle={{ paddingTop: 8, paddingBottom: 40 }}
-      >
-        <GroupedSection header="Quick Links">
-          <LinkRow
-            isFirst
-            title="Favorites"
-            testID="settings-favorites"
-            Icon={Heart}
-            color={ICON_COLORS.red}
-            onPress={() => router.push('/favorites')}
-          />
-          <LinkRow
-            title="Meal Plan"
-            testID="settings-meal-plan"
-            Icon={ChefHat}
-            color={ICON_COLORS.orange}
-            onPress={() => router.push('/meal-plan')}
-          />
-          <LinkRow
-            title="Filters"
-            testID="settings-filters"
-            Icon={Filter}
-            color={ICON_COLORS.blue}
-            onPress={() => SheetManager.show('filters', { context: 'settings' })}
-          />
-        </GroupedSection>
-
-        <GroupedSection header="Display">
-          <ToggleRow
-            isFirst
-            title="Dark Mode"
-            testID="settings-dark-mode-switch"
-            Icon={Moon}
-            color={ICON_COLORS.indigo}
-            value={isDarkMode}
-            onToggle={toggleDarkMode}
-          />
-          <ToggleRow
-            title="Colorblind Mode"
-            testID="settings-colorblind-switch"
-            Icon={Accessibility}
-            color={ICON_COLORS.purple}
-            value={isColorBlindMode}
-            onToggle={toggleColorBlindMode}
-          />
-          <ToggleRow
-            title="Use Colloquial Names"
-            testID="settings-colloquial-names-switch"
-            Icon={Type}
-            color={ICON_COLORS.gray}
-            value={useColloquialNames}
-            onToggle={toggleColloquialNames}
-          />
-        </GroupedSection>
-
-        <GroupedSection header="Data">
-          <SyncDataRow />
-        </GroupedSection>
-
-        <GroupedSection header="App Permissions">
-          <PermissionRows />
-        </GroupedSection>
-
-        <GroupedSection header="Feedback">
-          <LinkRow
-            isFirst
-            title="Submit Suggestions"
-            subtitle="Suggest a feature or report a bug"
-            Icon={MessageSquare}
-            color={ICON_COLORS.blue}
-            onPress={() => Linking.openURL('https://utdining.userjot.com')}
-          />
-          <LinkRow
-            title="Enjoying the app?"
-            subtitle="Leave a quick review. It means a lot!"
-            Icon={Star}
-            color={ICON_COLORS.yellow}
-            onPress={() =>
-              Linking.openURL(
-                `itms-apps://itunes.apple.com/app/viewContentsUserReviews/id${ITUNES_ITEM_ID}?action=write-review`,
-              )
-            }
-          />
-          <LinkRow
-            title="Changelog"
-            subtitle="See what's new in each update"
-            Icon={History}
-            color={ICON_COLORS.gray}
-            onPress={() => router.push('/changelog')}
-          />
-        </GroupedSection>
-
-        {showQaTools && (
-          <GroupedSection header="Developer">
+      <TabSwipe tab="settings">
+        <Stack.Screen options={{ title: 'Settings' }} />
+        <OverflowScrollView
+          divider={false}
+          contentInsetAdjustmentBehavior="automatic"
+          style={{ flex: 1, backgroundColor: theme.background }}
+          contentContainerStyle={{ paddingTop: 8, paddingBottom: 40 }}
+        >
+          <GroupedSection header="Quick Links">
             <LinkRow
               isFirst
-              title="QA Menu"
-              subtitle="Replay prompts, reset data, test pushes"
-              testID="settings-qa-menu"
-              Icon={Wrench}
+              title="Favorites"
+              testID="settings-favorites"
+              Icon={Heart}
+              color={ICON_COLORS.red}
+              onPress={() => router.push('/favorites')}
+            />
+            <LinkRow
+              title="Meal Plan"
+              testID="settings-meal-plan"
+              Icon={ChefHat}
               color={ICON_COLORS.orange}
-              onPress={() => router.push('/settings/qa')}
+              onPress={() => router.push('/meal-plan')}
+            />
+            <LinkRow
+              title="Filters"
+              testID="settings-filters"
+              Icon={Filter}
+              color={ICON_COLORS.blue}
+              onPress={() => SheetManager.show('filters', { context: 'settings' })}
             />
           </GroupedSection>
-        )}
 
-        {appInfo && <InformationSection appInfo={appInfo} />}
+          <GroupedSection header="Display">
+            <ToggleRow
+              isFirst
+              title="Dark Mode"
+              testID="settings-dark-mode-switch"
+              Icon={Moon}
+              color={ICON_COLORS.indigo}
+              value={isDarkMode}
+              onToggle={toggleDarkMode}
+            />
+            <ToggleRow
+              title="Colorblind Mode"
+              testID="settings-colorblind-switch"
+              Icon={Accessibility}
+              color={ICON_COLORS.purple}
+              value={isColorBlindMode}
+              onToggle={toggleColorBlindMode}
+            />
+            <ToggleRow
+              title="Use Colloquial Names"
+              testID="settings-colloquial-names-switch"
+              Icon={Type}
+              color={ICON_COLORS.gray}
+              value={useColloquialNames}
+              onToggle={toggleColloquialNames}
+            />
+          </GroupedSection>
 
-        <View className="mt-1 items-center">
-          <VersionLabel />
-          {deviceId && (
-            <Text variant="caption2" tone="tertiary" className="mt-1">
-              {deviceId}
-            </Text>
+          <GroupedSection header="Data">
+            <SyncDataRow />
+          </GroupedSection>
+
+          <GroupedSection header="App Permissions">
+            <PermissionRows />
+          </GroupedSection>
+
+          <GroupedSection header="Feedback">
+            <LinkRow
+              isFirst
+              title="Submit Suggestions"
+              subtitle="Suggest a feature or report a bug"
+              Icon={MessageSquare}
+              color={ICON_COLORS.blue}
+              onPress={() => Linking.openURL('https://utdining.userjot.com')}
+            />
+            <LinkRow
+              title="Enjoying the app?"
+              subtitle="Leave a quick review. It means a lot!"
+              Icon={Star}
+              color={ICON_COLORS.yellow}
+              onPress={() =>
+                Linking.openURL(
+                  `itms-apps://itunes.apple.com/app/viewContentsUserReviews/id${ITUNES_ITEM_ID}?action=write-review`,
+                )
+              }
+            />
+            <LinkRow
+              title="Changelog"
+              subtitle="See what's new in each update"
+              Icon={History}
+              color={ICON_COLORS.gray}
+              onPress={() => router.push('/changelog')}
+            />
+          </GroupedSection>
+
+          {showQaTools && (
+            <GroupedSection header="Developer">
+              <LinkRow
+                isFirst
+                title="QA Menu"
+                subtitle="Replay prompts, reset data, test pushes"
+                testID="settings-qa-menu"
+                Icon={Wrench}
+                color={ICON_COLORS.orange}
+                onPress={() => router.push('/settings/qa')}
+              />
+            </GroupedSection>
           )}
-        </View>
-      </OverflowScrollView>
+
+          {appInfo && <InformationSection appInfo={appInfo} />}
+
+          <View className="mt-1 items-center">
+            <VersionLabel />
+            {deviceId && (
+              <Text variant="caption2" tone="tertiary" className="mt-1">
+                {deviceId}
+              </Text>
+            )}
+          </View>
+        </OverflowScrollView>
+      </TabSwipe>
     </SheetProvider>
   );
 };

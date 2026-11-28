@@ -21,7 +21,7 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-sample db-fresh db-psql db-studio \
 	env-local env-dev \
 	check verify pre-push check-staged check-comments check-size check-state check-unused functions fix lint typecheck test build \
-	sim sims sim-lease sim-release sim-leases sims-idle sim-sweep sim-sweeper test-sims e2e e2e-fixtures screenshots pr-screenshots ios-app perf-build size-report \
+	sim sims sim-lease sim-release sim-leases sims-idle sim-sweep sim-sweeper test-sims e2e e2e-fixtures qa screenshots pr-screenshots ios-app perf-build size-report \
 	merge-pr agent-permissions \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
@@ -95,6 +95,7 @@ help:
 	'  test-sims       Tests of sim-lease.sh, sim-sweep.sh and merge-pr.sh against stubbed simctl (any OS, boots nothing)' \
 	'  e2e             Maestro flows against local Supabase. ARGS="--shards 3 --retry-failed"' \
 	'  e2e-fixtures    Maestro flows against the fixture server, no Docker needed' \
+	'  qa              Regression flows in apps/mobile/e2e/qa on the sample data at fixed Central times' \
 	'  screenshots     Every screen in apps/mobile/e2e/screenshots.txt, light and dark, into .context/screenshots' \
 	'  pr-screenshots  Light and dark shots on a leased simulator, pushed and embedded in the PR body. Falls back' \
 	'                  to the CI workflow when every slot is busy or not on a Mac. PR=<n> SCREENS="home map" ARGS=--ci' \
@@ -271,6 +272,9 @@ e2e:
 
 e2e-fixtures:
 	@scripts/qa/mobile-e2e.sh --fixture-server $(if $(SIM),--sim "$$($(DEV)/sim.sh pick)") $(ARGS)
+
+qa:
+	@scripts/qa/mobile-e2e.sh --suite qa $(if $(SIM),--sim "$$($(DEV)/sim.sh pick)") $(ARGS)
 
 screenshots:
 	@scripts/qa/mobile-screenshots.sh $(if $(SIM),--sim "$$($(DEV)/sim.sh pick)") $(ARGS)

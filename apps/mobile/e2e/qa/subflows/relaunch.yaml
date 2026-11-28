@@ -1,0 +1,23 @@
+appId: com.ethanl06.ut-dining.dev
+env:
+  DEV_CLIENT: ${DEV_CLIENT || 'true'}
+  METRO_URL: ${METRO_URL || 'http://localhost:8081'}
+---
+- stopApp
+- launchApp:
+    clearState: false
+- runFlow:
+    when:
+      true: ${DEV_CLIENT == 'true'}
+    commands:
+      - runFlow:
+          file: dev-client.yaml
+          env:
+            METRO_URL: ${METRO_URL}
+- extendedWaitUntil:
+    visible: 'Good (Morning|Afternoon|Evening).*|Enjoying.*'
+    timeout: 60000
+- extendedWaitUntil:
+    visible: Enjoying.*
+    timeout: 8000
+    optional: true

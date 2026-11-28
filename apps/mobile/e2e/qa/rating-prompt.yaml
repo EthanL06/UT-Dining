@@ -1,0 +1,45 @@
+appId: com.ethanl06.ut-dining.dev
+name: The rating prompt waits for a third launch three days in, then asks on a menu with a favorite
+tags:
+  - qa
+---
+- runFlow:
+    file: subflows/start-at.yaml
+    env:
+      RATING: 'on'
+- runFlow:
+    file: subflows/open-place.yaml
+    env:
+      PLACE: J2 Dining
+      READY: '(Comfort|Grill)(,.*)?'
+- tapOn: Lunch
+- longPressOn: 'Chicken Tikka Masala(,.*)?'
+- tapOn: Add to Favorites
+- extendedWaitUntil:
+    visible: Enjoying.*
+    timeout: 5000
+    optional: true
+- assertNotVisible: Enjoying.*
+- runFlow: subflows/relaunch.yaml
+- assertNotVisible: Enjoying.*
+- runFlow: subflows/relaunch.yaml
+- assertNotVisible: Enjoying.*
+- runFlow:
+    file: subflows/set-clock.yaml
+    env:
+      CLOCK: '12:30'
+      DAYS: '4'
+      RATING: 'on'
+- runFlow: subflows/relaunch.yaml
+- assertNotVisible: Enjoying.*
+- runFlow:
+    file: subflows/open-place.yaml
+    env:
+      PLACE: J2 Dining
+      READY: '(Comfort|Grill)(,.*)?'
+- tapOn: Lunch
+- extendedWaitUntil:
+    visible: Enjoying.*
+    timeout: 15000
+- takeScreenshot: rating-prompt
+- tapOn: Not Now

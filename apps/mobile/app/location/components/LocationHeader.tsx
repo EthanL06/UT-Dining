@@ -4,11 +4,11 @@ import { Pressable, View } from 'react-native';
 import { SheetManager } from 'react-native-actions-sheet';
 import FilterBar from '~/components/FilterBar';
 import { Text } from '~/components/ui/Text';
-import { useDatabase } from '~/hooks/useDatabase';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
+import { useLocationIdsWithMenus } from '~/hooks/useLocationIdsWithMenus';
 import { useNow } from '~/hooks/useNow';
 import { getTodayInCentralTime } from '~/utils/date';
-import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
+import { isLocationOpenNow } from '~/utils/locationStatus';
 import { useMealTimes } from '~/utils/locations';
 import { useTheme } from '~/utils/theme';
 import { getLocationStatusText } from '~/utils/time';
@@ -81,15 +81,13 @@ const LocationHeader = React.memo(
     onDateChange,
     searching,
   }: LocationHeaderProps) => {
-    const db = useDatabase();
     const theme = useTheme();
     const { locationData } = useLocationDetails(location);
     const mealTimes = useMealTimes(location);
 
     const now = useNow();
-    const isOpen = locationData
-      ? isLocationOpenNow(locationData, getLocationIdsWithMenus(db, getTodayInCentralTime()), now)
-      : false;
+    const withMenus = useLocationIdsWithMenus(getTodayInCentralTime());
+    const isOpen = locationData ? isLocationOpenNow(locationData, withMenus, now) : false;
     const status = locationData ? getLocationStatusText(locationData, isOpen, now) : '';
 
     if (searching) return <View className="h-2" />;
