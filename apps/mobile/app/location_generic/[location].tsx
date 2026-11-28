@@ -2,7 +2,7 @@ import * as Device from 'expo-device';
 import { Link, router, useLocalSearchParams } from 'expo-router';
 import { MapPin, Navigation, X } from 'lucide-react-native';
 import { useEffect, useEffectEvent, useState } from 'react';
-import { ActivityIndicator, useWindowDimensions, View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 import Animated, {
   useAnimatedScrollHandler,
   useAnimatedStyle,
@@ -11,9 +11,11 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PLACE_ICONS, usePlaceColor } from '~/components/map/MapSheet';
 import PlaceDetails, { openPlaceDirections } from '~/components/PlaceDetails';
+import { PlaceDetailsSkeleton } from '~/components/PlaceDetailsSkeleton';
 import { GlassButton, useLiquidGlass } from '~/components/ui/Glass';
 import { Image } from '~/components/ui/Image';
 import { PressableScale } from '~/components/ui/PressableScale';
+import { SkeletonBar, SkeletonPulse } from '~/components/ui/Skeleton';
 import { Text } from '~/components/ui/Text';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { analytics } from '~/services/analytics/posthog';
@@ -58,32 +60,57 @@ export default function LocationGenericScreen() {
     trackScreen();
   }, []);
 
+  if (!locationData && lookup === 'loading') {
+    return (
+      <View style={{ flex: 1, backgroundColor: theme.background }}>
+        <SkeletonPulse testID="place-loading" label="Loading place">
+          <View style={{ height: COVER_HEIGHT, backgroundColor: theme.fill }} />
+          <View className="gap-y-2.5 px-5 pt-4 pb-4">
+            <SkeletonBar width="64%" height={26} radius={9} />
+            <SkeletonBar width="42%" height={13} />
+          </View>
+          <SkeletonBar
+            width="auto"
+            height={48}
+            style={{ marginHorizontal: 16, marginBottom: 20 }}
+          />
+          <PlaceDetailsSkeleton />
+        </SkeletonPulse>
+        <View className="absolute top-4 left-4">
+          <GlassButton
+            testID="back-button"
+            accessibilityLabel="Close"
+            size={44}
+            fallbackColor="rgba(0,0,0,0.35)"
+            onPress={() => router.back()}
+          >
+            <X size={20} color={hasGlass ? theme.label : '#FFFFFF'} />
+          </GlassButton>
+        </View>
+      </View>
+    );
+  }
+
   if (!locationData) {
     return (
       <View
         className="flex-1 items-center justify-center gap-y-4 px-8"
         style={{ backgroundColor: theme.background }}
       >
-        {lookup === 'loading' ? (
-          <ActivityIndicator size="small" />
-        ) : (
-          <>
-            <Text variant="headline" className="text-center" testID="place-unavailable">
-              {lookup === 'error' ? "Couldn't load this place" : "This place isn't listed anymore"}
-            </Text>
-            <PressableScale
-              testID="back-button"
-              accessibilityRole="button"
-              onPress={() => router.back()}
-              className="h-11 justify-center rounded-full px-5"
-              style={{ backgroundColor: theme.fill }}
-            >
-              <Text variant="callout" emphasized>
-                Close
-              </Text>
-            </PressableScale>
-          </>
-        )}
+        <Text variant="headline" className="text-center" testID="place-unavailable">
+          {lookup === 'error' ? "Couldn't load this place" : "This place isn't listed anymore"}
+        </Text>
+        <PressableScale
+          testID="back-button"
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          className="h-11 justify-center rounded-full px-5"
+          style={{ backgroundColor: theme.fill }}
+        >
+          <Text variant="callout" emphasized>
+            Close
+          </Text>
+        </PressableScale>
       </View>
     );
   }

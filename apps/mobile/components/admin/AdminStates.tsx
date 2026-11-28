@@ -1,15 +1,13 @@
-import { ActivityIndicator, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { SkeletonGroupedSection, SkeletonPulse } from '~/components/ui/Skeleton';
 import { Text } from '~/components/ui/Text';
 import { useTheme } from '~/utils/theme';
 
-export const AdminLoading = () => {
-  const theme = useTheme();
-  return (
-    <View testID="admin-loading" className="flex-1 items-center justify-center">
-      <ActivityIndicator color={theme.secondaryLabel} />
-    </View>
-  );
-};
+export const AdminLoading = ({ rows = 4 }: { rows?: number }) => (
+  <SkeletonPulse testID="admin-loading" label="Loading">
+    <SkeletonGroupedSection rows={rows} trailing />
+  </SkeletonPulse>
+);
 
 export const AdminError = ({ onRetry }: { onRetry: () => void }) => {
   const theme = useTheme();

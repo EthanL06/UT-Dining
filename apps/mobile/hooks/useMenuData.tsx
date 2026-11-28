@@ -6,6 +6,7 @@ import {
   getLocationMenuNames,
   type Location,
 } from '~/services/database/database';
+import { useForcedSkeletons } from '~/store/useQaSkeletonStore';
 import {
   addDaysToDate,
   createDateFromString,
@@ -30,6 +31,7 @@ const pickDefaultMenu = (
 const ADJACENT_DAY_PREFETCH_DELAY_MS = 300;
 
 export function useMenuData(location: string, date?: string) {
+  const forced = useForcedSkeletons();
   const db = useDatabase();
   const queryClient = useQueryClient();
   const [selectedMenu, setSelectedMenu] = useState<string | null>(null);
@@ -119,7 +121,7 @@ export function useMenuData(location: string, date?: string) {
   );
 
   const status: MenuStatus =
-    isLoadingMenuNames || isLoadingMenuData
+    forced || isLoadingMenuNames || isLoadingMenuData
       ? 'loading'
       : menuNamesError || menuDataError
         ? 'error'
