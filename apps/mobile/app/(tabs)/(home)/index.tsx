@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toCentralTime } from '@ut-dining/core';
 import * as Network from 'expo-network';
 import { Link, Stack } from 'expo-router';
+import { useHeaderHeight } from 'expo-router/react-navigation';
 import * as SplashScreen from 'expo-splash-screen';
 import { Heart } from 'lucide-react-native';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -202,11 +203,19 @@ const CenteredMessage = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+const HOME_HEADER_OPTIONS = {
+  title: 'Home',
+  headerTitle: '',
+  headerLargeTitle: false,
+  scrollEdgeEffects: { top: 'hidden', bottom: 'automatic', left: 'automatic', right: 'automatic' },
+} as const;
+
 export default function Home() {
   const currentTime = useNow();
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const [refreshStatus, setRefreshStatus] = useState<RefreshStatus>({ kind: 'idle' });
   const { top: safeTop } = useSafeAreaInsets();
+  const headerHeight = useHeaderHeight();
   const pull = useSharedValue(0);
   const dragging = useSharedValue(false);
   const refreshInFlight = useRef(false);
@@ -273,7 +282,7 @@ export default function Home() {
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
-      pull.value = Math.max(0, -event.contentOffset.y - safeTop);
+      pull.value = Math.max(0, -event.contentOffset.y - headerHeight);
     },
     onBeginDrag: () => {
       dragging.value = true;
@@ -342,7 +351,7 @@ export default function Home() {
   return (
     <TabSwipe tab="(home)" blockedBy={swipeBlockers}>
       <View style={{ flex: 1, backgroundColor: theme.background }}>
-        <Stack.Screen options={{ title: 'Home', headerShown: false }} />
+        <Stack.Screen options={HOME_HEADER_OPTIONS} />
         <OnboardingScreen isOnboardingComplete={isOnboardingComplete} />
 
         {view.kind === 'first-sync-failed' ? (
@@ -383,6 +392,7 @@ export default function Home() {
               source={appIcon}
               accessibilityLabel="UT Dining"
               className="mx-4 mb-4 size-12"
+              style={{ marginTop: safeTop - headerHeight }}
               contentFit="contain"
             />
             <Text variant="largeTitle" accessibilityRole="header" className="mx-5">
