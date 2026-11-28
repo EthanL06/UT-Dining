@@ -7,7 +7,7 @@ export const stackContainerProps = {
   nativeContainerStyle: { backgroundColor: PlatformColor('systemGroupedBackground') },
 };
 
-type TabStackProps = { title: string };
+type TabStackProps = { title: string; headerShown?: boolean };
 
 export const largeTitleHeaderOptions = (theme: Theme) => ({
   headerShown: true,
@@ -27,7 +27,7 @@ export const pushedScreenHeaderOptions = (theme: Theme) => ({
   headerBackButtonDisplayMode: 'minimal' as const,
 });
 
-export const TabStack = ({ title }: TabStackProps) => {
+export const TabStack = ({ title, headerShown = true }: TabStackProps) => {
   const theme = useTheme();
 
   return (
@@ -38,7 +38,7 @@ export const TabStack = ({ title }: TabStackProps) => {
         contentStyle: { backgroundColor: theme.background },
       }}
     >
-      <Stack.Screen name="index" options={{ title }} />
+      <Stack.Screen name="index" options={{ title, headerShown }} />
     </Stack>
   );
 };
