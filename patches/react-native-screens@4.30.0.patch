@@ -1,8 +1,43 @@
+diff --git a/ios/RNSNavigationBar.h b/ios/RNSNavigationBar.h
+index 9ed1119b9e1d8b5106e7c082db17ce306edd970f..df99257546302813d684134e330a58b87b637e28 100644
+--- a/ios/RNSNavigationBar.h
++++ b/ios/RNSNavigationBar.h
+@@ -11,6 +11,9 @@ NS_ASSUME_NONNULL_BEGIN
+ 
+ - (void)navigationBarDidLayoutSubviews:(UINavigationBar *)navigationBar;
+ 
++@optional
++- (BOOL)navigationBarShouldStayVisible:(UINavigationBar *)navigationBar;
++
+ @end
+ 
+ /**
+diff --git a/ios/RNSNavigationBar.mm b/ios/RNSNavigationBar.mm
+index 088deb8e77a6a3eb10f73ccf218b8c8d7d2c7273..75dde7c08a92015394eddb43f12eb115336fe81e 100644
+--- a/ios/RNSNavigationBar.mm
++++ b/ios/RNSNavigationBar.mm
+@@ -4,6 +4,16 @@
+ 
+ @implementation RNSNavigationBar
+ 
++- (void)setAlpha:(CGFloat)alpha
++{
++  if (alpha < 1.0 && [_layoutDelegate respondsToSelector:@selector(navigationBarShouldStayVisible:)] &&
++      [_layoutDelegate navigationBarShouldStayVisible:self]) {
++    [super setAlpha:1.0];
++    return;
++  }
++  [super setAlpha:alpha];
++}
++
+ - (void)layoutSubviews
+ {
+   [super layoutSubviews];
 diff --git a/ios/RNSScreen.mm b/ios/RNSScreen.mm
-index 049fd22427b2bde17fd7ca59b8de65d0ee07b4b5..56985dac2d2be3a55c46fe2d2ad0e2facfa9f4f2 100644
+index 049fd22427b2bde17fd7ca59b8de65d0ee07b4b5..3cdc7a9df563174ef1f9d7d2521069451e59bcc9 100644
 --- a/ios/RNSScreen.mm
 +++ b/ios/RNSScreen.mm
-@@ -1546,6 +1546,48 @@ Class<RCTComponentViewProtocol> RNSScreenCls(void)
+@@ -1546,6 +1546,51 @@ Class<RCTComponentViewProtocol> RNSScreenCls(void)
    }
  }
  
@@ -35,6 +70,9 @@ index 049fd22427b2bde17fd7ca59b8de65d0ee07b4b5..56985dac2d2be3a55c46fe2d2ad0e2fa
 +- (void)scheduleNavigationBarRestoreAfterCancelledTransition
 +{
 +#if !TARGET_OS_TV
++  if ([self.navigationController isKindOfClass:[RNSNavigationController class]]) {
++    [(RNSNavigationController *)self.navigationController keepNavigationBarVisibleAfterCancelledTransition];
++  }
 +  __weak RNSScreen *weakSelf = self;
 +  dispatch_async(dispatch_get_main_queue(), ^{
 +    [weakSelf restoreNavigationBarAfterCancelledTransition];
@@ -51,7 +89,7 @@ index 049fd22427b2bde17fd7ca59b8de65d0ee07b4b5..56985dac2d2be3a55c46fe2d2ad0e2fa
  - (void)viewDidAppear:(BOOL)animated
  {
    [super viewDidAppear:animated];
-@@ -1555,6 +1597,7 @@ Class<RCTComponentViewProtocol> RNSScreenCls(void)
+@@ -1555,6 +1600,7 @@ Class<RCTComponentViewProtocol> RNSScreenCls(void)
      [self.screenView notifyAppear];
      [self notifyTransitionProgress:1.0 closing:NO goingForward:_goingForward];
    } else {
@@ -59,3 +97,83 @@ index 049fd22427b2bde17fd7ca59b8de65d0ee07b4b5..56985dac2d2be3a55c46fe2d2ad0e2fa
      [self.screenView notifyGestureCancel];
    }
  
+diff --git a/ios/RNSScreenStack.h b/ios/RNSScreenStack.h
+index 9ae11c30f6aecae89b437d475c0d510e6b63b8c6..f268886bb0b696024eee8e49a934e13bade3722a 100644
+--- a/ios/RNSScreenStack.h
++++ b/ios/RNSScreenStack.h
+@@ -18,6 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
+ #endif // !TARGET_OS_TV
+                                                              >
+ 
++- (void)keepNavigationBarVisibleAfterCancelledTransition;
++
+ @end
+ 
+ @interface RNSScreenStackView : RNSReactBaseView <RNSScreenContainerDelegate>
+diff --git a/ios/RNSScreenStack.mm b/ios/RNSScreenStack.mm
+index 5da11964f5932cb44e1131c44a2480803c0a62b5..cd02fec5f29e739eeeda752a7edebdad8271cb11 100644
+--- a/ios/RNSScreenStack.mm
++++ b/ios/RNSScreenStack.mm
+@@ -48,6 +48,50 @@ namespace react = facebook::react;
+ #if RNS_IPHONE_OS_VERSION_AVAILABLE(26_0) && !TARGET_OS_TV
+   CGRect _lastNavigationBarFrame;
+ #endif // RNS_IPHONE_OS_VERSION_AVAILABLE(26_0) && !TARGET_OS_TV
++  CFTimeInterval _keepNavigationBarVisibleUntil;
++}
++
++- (void)keepNavigationBarVisibleAfterCancelledTransition
++{
++  _keepNavigationBarVisibleUntil = CACurrentMediaTime() + 2.0;
++}
++
++- (BOOL)shouldKeepNavigationBarVisible
++{
++#if !TARGET_OS_TV
++  if (CACurrentMediaTime() > _keepNavigationBarVisibleUntil || self.transitionCoordinator != nil) {
++    return NO;
++  }
++  UIViewController *topViewController = self.topViewController;
++  if (![topViewController isKindOfClass:[RNSScreen class]]) {
++    return NO;
++  }
++  RNSScreenStackHeaderConfig *config = [((RNSScreen *)topViewController).screenView findHeaderConfig];
++  return config != nil && config.shouldHeaderBeVisible;
++#else
++  return NO;
++#endif
++}
++
++- (void)setNavigationBarHidden:(BOOL)hidden animated:(BOOL)animated
++{
++  if (hidden && [self shouldKeepNavigationBarVisible]) {
++    return;
++  }
++  [super setNavigationBarHidden:hidden animated:animated];
++}
++
++- (void)viewWillLayoutSubviews
++{
++  if ([self shouldKeepNavigationBarVisible]) {
++    if (self.navigationBarHidden) {
++      [super setNavigationBarHidden:NO animated:NO];
++    }
++    if (self.navigationBar.alpha < 1.0) {
++      self.navigationBar.alpha = 1.0;
++    }
++  }
++  [super viewWillLayoutSubviews];
+ }
+ 
+ - (instancetype)init
+@@ -171,6 +215,11 @@ namespace react = facebook::react;
+ 
+ #pragma mark - RNSNavigationBarLayoutDelegate
+ 
++- (BOOL)navigationBarShouldStayVisible:(UINavigationBar *)navigationBar
++{
++  return [self shouldKeepNavigationBarVisible];
++}
++
+ - (void)navigationBarDidLayoutSubviews:(UINavigationBar *)navigationBar
+ {
+   // On iOS 26+ UIKit can position the content of the navigation bar after `viewDidLayoutSubviews`, in a layout pass
