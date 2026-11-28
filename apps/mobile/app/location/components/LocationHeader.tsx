@@ -1,9 +1,9 @@
 import { Info } from 'lucide-react-native';
-import React from 'react';
+import React, { type Ref } from 'react';
 import { Pressable, View } from 'react-native';
 import { SheetManager } from 'react-native-actions-sheet';
 import FilterBar from '~/components/FilterBar';
-import { Text } from '~/components/ui/Text';
+import { Text, type TextInputHandle } from '~/components/ui/Text';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { useLocationIdsWithMenus } from '~/hooks/useLocationIdsWithMenus';
 import { useNow } from '~/hooks/useNow';
@@ -12,6 +12,7 @@ import { isLocationOpenNow } from '~/utils/locationStatus';
 import { useMealTimes } from '~/utils/locations';
 import { useTheme } from '~/utils/theme';
 import { getLocationStatusText } from '~/utils/time';
+import MenuSearchField from './MenuSearchField';
 import WeekStrip from './WeekStrip';
 
 interface LocationHeaderProps {
@@ -22,6 +23,11 @@ interface LocationHeaderProps {
   selectedDate: string;
   onDateChange: (date: string) => void;
   searching: boolean;
+  searchInputRef: Ref<TextInputHandle>;
+  query: string;
+  onQueryChange: (query: string) => void;
+  onSearchFocus: () => void;
+  onSearchCancel: () => void;
 }
 
 export const LocationHeaderButtons = ({
@@ -80,6 +86,11 @@ const LocationHeader = React.memo(
     selectedDate,
     onDateChange,
     searching,
+    searchInputRef,
+    query,
+    onQueryChange,
+    onSearchFocus,
+    onSearchCancel,
   }: LocationHeaderProps) => {
     const theme = useTheme();
     const { locationData } = useLocationDetails(location);
@@ -90,10 +101,22 @@ const LocationHeader = React.memo(
     const isOpen = locationData ? isLocationOpenNow(locationData, withMenus, now) : false;
     const status = locationData ? getLocationStatusText(locationData, isOpen, now) : '';
 
-    if (searching) return <View className="h-2" />;
+    const searchField = (
+      <MenuSearchField
+        inputRef={searchInputRef}
+        query={query}
+        onQueryChange={onQueryChange}
+        searching={searching}
+        onFocus={onSearchFocus}
+        onCancel={onSearchCancel}
+      />
+    );
+
+    if (searching) return <View className="mx-4 mt-1 mb-3">{searchField}</View>;
 
     return (
-      <View className="mx-4 mb-3 gap-y-4">
+      <View className="mx-4 mt-1 mb-3 gap-y-4">
+        {searchField}
         <View className="gap-y-4">
           {(status !== '' || locationData?.force_close) && (
             <View className="mx-1 gap-y-3">

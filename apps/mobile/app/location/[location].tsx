@@ -3,11 +3,10 @@ import { Stack, useLocalSearchParams, usePreventZoomTransitionDismissal } from '
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { SearchBarCommands } from 'react-native-screens';
 import type { RowPosition } from '~/components/FoodComponent';
 import { StaggerIn } from '~/components/motion/StaggerIn';
 import { pushedScreenHeaderOptions } from '~/components/TabStack';
-import { Text } from '~/components/ui/Text';
+import { Text, type TextInputHandle } from '~/components/ui/Text';
 import type { ListItem } from '~/hooks/useCategoryExpansion';
 import { useCategoryExpansion } from '~/hooks/useCategoryExpansion';
 import { useDebounce } from '~/hooks/useDebounce';
@@ -60,8 +59,6 @@ const useSkeletonItems = (): ListItem[] => {
     return items;
   }, []);
 };
-
-const DARK_SEARCH_FIELD = '#2C2C2E';
 
 const EDGE_SWIPE_DISMISSAL = { unstable_dismissalBoundsRect: { maxX: 24 } };
 
@@ -118,9 +115,8 @@ const Location = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
-  const searchBarRef = useRef<SearchBarCommands>(null);
+  const searchInputRef = useRef<TextInputHandle>(null);
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
-  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
   const headerBackTitle = useRestoreHeaderOnSwipeCancel();
   const displayName = useLocationName(location, useColloquialNames);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -221,6 +217,17 @@ const Location = () => {
     [resetExpandedCategories],
   );
 
+  const handleSearchFocus = useCallback(() => {
+    stopSelecting();
+    setSearching(true);
+  }, [stopSelecting]);
+
+  const handleSearchCancel = useCallback(() => {
+    searchInputRef.current?.blur();
+    setSearching(false);
+    handleQueryChange('');
+  }, [handleQueryChange]);
+
   const renderItem = useCallback(
     ({ item, index }: { item: ListItem; index: number }) => {
       const menuKey = `${selectedMenu ?? ''}|${selectedDate}`;
@@ -320,27 +327,6 @@ const Location = () => {
               onDoneSelecting={stopSelecting}
             />
           ),
-          headerSearchBarOptions: {
-            ref: searchBarRef,
-            placeholder: 'Search this menu',
-            placement: 'stacked',
-            autoCapitalize: 'none',
-            obscureBackground: false,
-            hideNavigationBar: false,
-            hideWhenScrolling: false,
-            barTintColor: isDarkMode ? DARK_SEARCH_FIELD : undefined,
-            textColor: theme.label,
-            tintColor: theme.tint,
-            onChangeText: (event) => handleQueryChange(event.nativeEvent.text),
-            onFocus: () => {
-              stopSelecting();
-              setSearching(true);
-            },
-            onCancelButtonPress: () => {
-              setSearching(false);
-              handleQueryChange('');
-            },
-          },
         }}
       />
       <FlatList
@@ -369,6 +355,11 @@ const Location = () => {
           selectedDate={selectedDate}
           onDateChange={handleDateChange}
           searching={searching}
+          searchInputRef={searchInputRef}
+          query={searchQuery}
+          onQueryChange={handleQueryChange}
+          onSearchFocus={handleSearchFocus}
+          onSearchCancel={handleSearchCancel}
         />
         ListEmptyComponent={<EmptyState />}
         renderItem={renderItem}
@@ -412,7 +403,7 @@ const Location = () => {
           }}
           onSearch={() => {
             scrollToTop();
-            searchBarRef.current?.focus();
+            searchInputRef.current?.focus();
           }}
         />
       )}

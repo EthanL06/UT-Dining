@@ -3,7 +3,8 @@ name: Search filters the menu by food name
 ---
 - runFlow: ../subflows/start.yaml
 - runFlow: ../subflows/open-j2.yaml
-- tapOn: Search this menu
+- tapOn:
+    id: menu-search-input
 - inputText: tofu
 - extendedWaitUntil:
     visible: 'Maestro Tofu Bowl(,.*)?'
