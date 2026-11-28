@@ -72,7 +72,7 @@ const FloatingButtons = ({
     >
       <Animated.View style={animatedStyle}>
         <FloatingButton testID="scroll-to-top-button" label="Scroll to top" onPress={onScrollToTop}>
-          <ArrowUp size={22} color={theme.tint} />
+          <ArrowUp size={22} color={theme.label} />
         </FloatingButton>
       </Animated.View>
       <Animated.View style={[animatedStyle, { position: 'absolute', right: 20 }]}>
