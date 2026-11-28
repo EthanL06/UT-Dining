@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import * as Location from 'expo-location';
 import { useFocusEffect } from 'expo-router';
 import { LocateFixed } from 'lucide-react-native';
@@ -16,7 +15,8 @@ import { SearchPanel } from '~/components/map/SearchPanel';
 import { TabSwipe } from '~/components/TabSwipe';
 import { GlassButton, useLiquidGlass } from '~/components/ui/Glass';
 import { MICROWAVE_LOCATIONS } from '~/data/MicrowaveLocations';
-import { useDatabase } from '~/hooks/useDatabase';
+import { useCachedMenuData } from '~/hooks/useCachedMenuData';
+import { useLocationIdsWithMenus } from '~/hooks/useLocationIdsWithMenus';
 import { useMapSearch } from '~/hooks/useMapSearch';
 import { useNow } from '~/hooks/useNow';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
@@ -24,7 +24,7 @@ import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
 import { displayLocationName } from '~/utils/locationName';
-import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
+import { isLocationOpenNow } from '~/utils/locationStatus';
 import { log } from '~/utils/log';
 import {
   CLUSTER_ZOOM_DELTA,
@@ -38,7 +38,6 @@ import {
   zoomLevelFor,
 } from '~/utils/mapPlaces';
 import { searchPlaces } from '~/utils/mapSearch';
-import { readCachedMenuData } from '~/utils/queries';
 import { useTheme } from '~/utils/theme';
 import { getLocationStatusText } from '~/utils/time';
 
@@ -75,7 +74,6 @@ const MapPage = () => {
   const insets = useSafeAreaInsets();
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
-  const db = useDatabase();
   const mapRef = useRef<MapView>(null);
   const [region, setRegion] = useState<Region>(INITIAL_REGION);
   const [locationAccess, setLocationAccess] = useState<LocationAccess>({ status: 'unknown' });
@@ -89,12 +87,8 @@ const MapPage = () => {
   const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
   const now = useNow();
 
-  const { data } = useQuery({
-    queryKey: ['menuData'],
-    queryFn: () => readCachedMenuData(db),
-    staleTime: Number.POSITIVE_INFINITY,
-    retry: false,
-  });
+  const { data } = useCachedMenuData();
+  const withMenus = useLocationIdsWithMenus(getTodayInCentralTime());
 
   useFocusEffect(
     useCallback(() => {
@@ -124,9 +118,7 @@ const MapPage = () => {
     }, []),
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: recompute open status after each sync and every minute
   const places: Place[] = useMemo(() => {
-    const withMenus = getLocationIdsWithMenus(db, getTodayInCentralTime());
     const dining = (data?.locations ?? []).map((location): Place => {
       const isOpen = isLocationOpenNow(location, withMenus, now);
       return {
@@ -155,7 +147,7 @@ const MapPage = () => {
       status: 'Microwave',
     }));
     return [...dining, ...microwaves];
-  }, [data, db, useColloquialNames, lastSyncedAt, now]);
+  }, [data, withMenus, useColloquialNames, now]);
 
   const isLoaded = data !== undefined && (data.locations.length > 0 || lastSyncedAt !== null);
   const mapSearch = useMapSearch(places);

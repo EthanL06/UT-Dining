@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { router, Stack } from 'expo-router';
 import {
   Accessibility,
@@ -32,11 +32,10 @@ import { TabSwipe } from '~/components/TabSwipe';
 import { GroupedRow, GroupedSection, IconSquare } from '~/components/ui/Grouped';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
-import { useDatabase } from '~/hooks/useDatabase';
+import { useAppInformation } from '~/hooks/useAppInformation';
 import { forceMenuSync } from '~/hooks/useMenuSync';
 import { type PermissionState, usePermission } from '~/hooks/usePermission';
 import { openStatusPage, useServiceStatus } from '~/hooks/useServiceStatus';
-import { getAppInformation } from '~/services/database/database';
 import type { AppInformation } from '~/services/database/schema';
 import { getOrCreateDeviceId } from '~/services/device/deviceId';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
@@ -142,7 +141,6 @@ const ToggleRow = ({
 
 const SyncDataRow = () => {
   const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
-  const db = useDatabase();
   const queryClient = useQueryClient();
   const [syncStatus, setSyncStatus] = React.useState<'idle' | 'syncing' | 'failed'>('idle');
   const [currentTime, setCurrentTime] = React.useState(Date.now());
@@ -158,7 +156,7 @@ const SyncDataRow = () => {
   const timeSinceSync = lastSyncedAt === null ? Infinity : Math.max(0, currentTime - lastSyncedAt);
 
   const handleSync = async () => {
-    if (!db || isSyncing) return;
+    if (isSyncing) return;
     setSyncStatus('syncing');
     try {
       await forceMenuSync(queryClient);
@@ -329,11 +327,7 @@ const SettingsPage = () => {
     isColorBlindMode,
     toggleColorBlindMode,
   } = useSettingsStore();
-  const db = useDatabase();
-  const { data: appInfo } = useQuery({
-    queryKey: ['appInformation'],
-    queryFn: () => getAppInformation(db),
-  });
+  const { data: appInfo } = useAppInformation();
   const deviceId = getOrCreateDeviceId();
 
   return (

@@ -1,31 +1,25 @@
-import { useQuery } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
 import { Text } from '~/components/ui/Text';
-import { useDatabase } from '~/hooks/useDatabase';
+import { useCachedMenuData } from '~/hooks/useCachedMenuData';
+import { useLocationIdsWithMenus } from '~/hooks/useLocationIdsWithMenus';
 import { useNow } from '~/hooks/useNow';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
-import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
-import { getLocationName } from '~/utils/locations';
+import { displayLocationName } from '~/utils/locationName';
+import { isLocationOpenNow } from '~/utils/locationStatus';
 import { nearbyPickerView, parseNearbyRoute } from '~/utils/nearbyAlerts';
-import { readCachedMenuData } from '~/utils/queries';
 import { useTheme } from '~/utils/theme';
 import { getLocationStatusText } from '~/utils/time';
 
 export default function NearbyScreen() {
   const { halls } = useLocalSearchParams<{ halls?: string }>();
   const theme = useTheme();
-  const db = useDatabase();
   const now = useNow();
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
-  const { data } = useQuery({
-    queryKey: ['menuData'],
-    queryFn: () => readCachedMenuData(db),
-    staleTime: Number.POSITIVE_INFINITY,
-    retry: false,
-  });
+  const { data } = useCachedMenuData();
+  const withMenus = useLocationIdsWithMenus(getTodayInCentralTime());
   const view = nearbyPickerView(data?.locations, parseNearbyRoute(halls));
 
   const openMenu = (name: string) => {
@@ -47,8 +41,7 @@ export default function NearbyScreen() {
             These dining halls aren't in the app right now. Check Home for what's open.
           </Text>
         );
-      case 'ready': {
-        const withMenus = getLocationIdsWithMenus(db, getTodayInCentralTime());
+      case 'ready':
         return (
           <GroupedSection>
             {view.halls.map((location, index) => {
@@ -65,7 +58,7 @@ export default function NearbyScreen() {
                       <StatusDot open={isOpen} />
                     </View>
                   }
-                  title={getLocationName(db, name, useColloquialNames)}
+                  title={displayLocationName(location, useColloquialNames)}
                   subtitle={getLocationStatusText(location, isOpen, now)}
                   showChevron
                   onPress={() => openMenu(name)}
@@ -74,7 +67,6 @@ export default function NearbyScreen() {
             })}
           </GroupedSection>
         );
-      }
       default:
         return view satisfies never;
     }

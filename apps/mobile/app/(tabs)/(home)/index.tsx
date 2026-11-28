@@ -1,11 +1,8 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { toCentralTime } from '@ut-dining/core';
-import { drizzle } from 'drizzle-orm/expo-sqlite';
-import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
 import * as Network from 'expo-network';
 import { Link, router, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useSQLiteContext } from 'expo-sqlite';
 import { Heart } from 'lucide-react-native';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -34,9 +31,12 @@ import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
 import { Image } from '~/components/ui/Image';
 import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
+import { useCachedMenuData } from '~/hooks/useCachedMenuData';
+import { useDatabaseStudio } from '~/hooks/useDatabaseStudio';
+import { useLocationIdsWithMenus } from '~/hooks/useLocationIdsWithMenus';
 import { forceMenuSync, useMenuSync } from '~/hooks/useMenuSync';
 import { useNow } from '~/hooks/useNow';
-import type { DrizzleDB } from '~/services/database/database';
+import type * as schema from '~/services/database/schema';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -44,10 +44,9 @@ import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
 import { homeView, toSyncStatus } from '~/utils/homeView';
 import { displayLocationName } from '~/utils/locationName';
-import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
+import { isLocationOpenNow } from '~/utils/locationStatus';
 import { log } from '~/utils/log';
 import { PULL_TRIGGER, type RefreshResult, type RefreshStatus } from '~/utils/pullRefresh';
-import { readCachedMenuData } from '~/utils/queries';
 import { type Theme, useTheme } from '~/utils/theme';
 import {
   formatTimeSinceSync,
@@ -56,7 +55,6 @@ import {
   statusDotTone,
   timeOfDay,
 } from '~/utils/time';
-import * as schema from '../../../services/database/schema';
 
 const SPLASH_SCREEN_DURATION = 200;
 
@@ -82,7 +80,7 @@ const sortLocationsByStatus = (
   locations: schema.LocationWithType[],
   locationTypes: schema.LocationType[],
   filter: FilterType,
-  db: DrizzleDB,
+  locationIdsWithMenus: Set<string>,
   currentTime: Date,
 ) => {
   const targetType =
@@ -91,7 +89,6 @@ const sortLocationsByStatus = (
     ? locations.filter((location) => location.type_id === targetType.id)
     : locations;
 
-  const locationIdsWithMenus = getLocationIdsWithMenus(db, getTodayInCentralTime());
   const items: LocationEntry[] = filteredLocations.map((location) => {
     const isOpen = isLocationOpenNow(location, locationIdsWithMenus, currentTime);
     return {
@@ -247,18 +244,12 @@ export default function Home() {
   const chipScroll = useMemo(() => Gesture.Native(), []);
   const swipeBlockers = useMemo(() => [chipScroll], [chipScroll]);
 
-  const db = useSQLiteContext();
-  const drizzleDb: DrizzleDB = drizzle(db, { schema });
   const queryClient = useQueryClient();
 
-  useDrizzleStudio(db);
+  useDatabaseStudio();
 
-  const menuData = useQuery({
-    queryKey: ['menuData'],
-    queryFn: () => readCachedMenuData(drizzleDb),
-    staleTime: Infinity,
-    retry: false,
-  });
+  const menuData = useCachedMenuData();
+  const locationIdsWithMenus = useLocationIdsWithMenus(getTodayInCentralTime());
   const { data } = menuData;
   const menuSync = useMenuSync();
   const locations = data?.locations || [];
@@ -365,7 +356,7 @@ export default function Home() {
     locations,
     locationTypes,
     selectedFilter,
-    drizzleDb,
+    locationIdsWithMenus,
     currentTime,
   );
   const filters = [
