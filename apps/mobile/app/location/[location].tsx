@@ -330,6 +330,7 @@ const Location = () => {
             obscureBackground: false,
             hideNavigationBar: false,
             hideWhenScrolling: false,
+            barTintColor: theme.searchField,
             textColor: theme.label,
             tintColor: theme.tint,
             onChangeText: (event) => handleQueryChange(event.nativeEvent.text),
