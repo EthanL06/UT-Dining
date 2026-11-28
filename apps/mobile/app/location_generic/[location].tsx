@@ -146,7 +146,7 @@ export default function LocationGenericScreen() {
             </View>
           )}
           <Link.AppleZoomTarget>
-            <View>
+            <View collapsable={false}>
               <Text variant="title1">{displayName}</Text>
               <Text variant="subheadline" tone="secondary" className="mt-0.5">
                 <Text

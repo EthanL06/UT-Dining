@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { toCentralTime } from '@ut-dining/core';
 import * as Network from 'expo-network';
-import { Link, router, Stack } from 'expo-router';
+import { Link, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { Heart } from 'lucide-react-native';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -131,24 +131,30 @@ const QuickLink = ({
   href: '/favorites' | '/meal-plan';
   theme: Theme;
 }) => (
-  <View
-    className="flex-1 overflow-hidden"
-    style={{ backgroundColor: theme.card, borderRadius: 22, borderCurve: 'continuous' }}
-  >
-    <Pressable accessibilityRole="button" onPress={() => router.push(href)}>
-      {({ pressed }) => (
-        <View
-          className="flex-row items-center gap-x-2.5 px-4 py-3.5"
-          style={{ backgroundColor: pressed ? theme.fill : 'transparent' }}
-        >
-          {icon}
-          <Text variant="subheadline" emphasized>
-            {title}
-          </Text>
-        </View>
-      )}
-    </Pressable>
-  </View>
+  <Link href={href} asChild>
+    <Link.Trigger>
+      <Pressable accessibilityRole="button" className="flex-1">
+        {({ pressed }) => (
+          <Link.AppleZoom>
+            <View
+              className="overflow-hidden"
+              style={{ backgroundColor: theme.card, borderRadius: 22, borderCurve: 'continuous' }}
+            >
+              <View
+                className="flex-row items-center gap-x-2.5 px-4 py-3.5"
+                style={{ backgroundColor: pressed ? theme.fill : 'transparent' }}
+              >
+                {icon}
+                <Text variant="subheadline" emphasized>
+                  {title}
+                </Text>
+              </View>
+            </View>
+          </Link.AppleZoom>
+        )}
+      </Pressable>
+    </Link.Trigger>
+  </Link>
 );
 
 const TypeChip = ({

@@ -14,6 +14,7 @@ import {
   ThemeProvider,
 } from 'expo-router';
 import { SQLiteProvider } from 'expo-sqlite';
+import { setBackgroundColorAsync } from 'expo-system-ui';
 import { PostHogProvider } from 'posthog-react-native';
 import { Suspense, useEffect } from 'react';
 import { ActivityIndicator, Appearance, AppState } from 'react-native';
@@ -32,6 +33,7 @@ import * as Device from 'expo-device';
 import * as Network from 'expo-network';
 import { AppErrorScreen, MIGRATION_ERROR_COPY } from '~/components/AppErrorScreen';
 import { NearbyAlertsInitializer } from '~/components/nearby/NearbyAlertsInitializer';
+import { stackContainerProps } from '~/components/TabStack';
 import { VersionCheckProvider } from '~/components/VersionCheckProvider';
 import { usePostHogScreens } from '~/hooks/usePostHogScreens';
 import { POSTHOG_CONFIG, posthogClient } from '~/services/analytics/posthog';
@@ -41,7 +43,14 @@ import { useAppLaunchStore } from '~/store/useAppLaunchStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTheme } from '~/utils/theme';
 
-Appearance.setColorScheme(useSettingsStore.getState().isDarkMode ? 'dark' : 'light');
+const applyColorScheme = (isDarkMode: boolean) => {
+  Appearance.setColorScheme(isDarkMode ? 'dark' : 'light');
+  setBackgroundColorAsync(getTheme(isDarkMode).background).catch((error) =>
+    log.warn('Could not set the root background color', { error }),
+  );
+};
+
+applyColorScheme(useSettingsStore.getState().isDarkMode);
 
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
@@ -88,7 +97,7 @@ const AppContent = () => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
 
   useEffect(() => {
-    Appearance.setColorScheme(isDarkMode ? 'dark' : 'light');
+    applyColorScheme(isDarkMode);
   }, [isDarkMode]);
 
   const isTablet = Device.deviceType === Device.DeviceType.TABLET;
@@ -123,6 +132,7 @@ const AppContent = () => {
                   <PushNotificationsInitializer />
                   <NearbyAlertsInitializer />
                   <Stack
+                    unstable_nativeProps={stackContainerProps}
                     screenOptions={{
                       headerShown: false,
                       contentStyle: {
