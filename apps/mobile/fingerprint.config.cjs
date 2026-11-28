@@ -8,4 +8,5 @@ module.exports = {
     'AutolinkingConfigPaths',
     'ExpoConfigExtraSection',
   ],
+  extraSources: [{ type: 'dir', filePath: '../../patches', reasons: ['workspacePatches'] }],
 };

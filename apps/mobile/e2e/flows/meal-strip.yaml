@@ -14,7 +14,7 @@ name: The meal strip opens the dining hall and hides until the next meal
           visible: 'Maestro Grill(,.*)?'
           timeout: 20000
       - tapOn:
-          id: back-button
+          id: BackButton
       - tapOn:
           id: meal-strip-dismiss
       - extendedWaitUntil:

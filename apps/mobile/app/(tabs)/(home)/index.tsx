@@ -16,6 +16,7 @@ import Reanimated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { FilterType } from '~/components/FilterBar';
 import { HomeSkeleton } from '~/components/home/HomeSkeleton';
+import { QuickLink } from '~/components/home/QuickLink';
 import { RefreshDrop } from '~/components/home/RefreshDrop';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
 import OnboardingScreen from '~/components/onboarding/OnboardingScreen';
@@ -113,43 +114,6 @@ const greeting = (time: Date) => {
   if (hour < 18) return 'Good Afternoon!';
   return 'Good Evening!';
 };
-
-const QuickLink = ({
-  title,
-  icon,
-  href,
-  theme,
-}: {
-  title: string;
-  icon: React.ReactNode;
-  href: '/favorites' | '/meal-plan';
-  theme: Theme;
-}) => (
-  <Link href={href} asChild>
-    <Link.Trigger>
-      <Pressable accessibilityRole="button" className="flex-1">
-        {({ pressed }) => (
-          <Link.AppleZoom>
-            <View
-              className="overflow-hidden"
-              style={{ backgroundColor: theme.card, borderRadius: 22, borderCurve: 'continuous' }}
-            >
-              <View
-                className="flex-row items-center gap-x-2.5 px-4 py-3.5"
-                style={{ backgroundColor: pressed ? theme.fill : 'transparent' }}
-              >
-                {icon}
-                <Text variant="subheadline" emphasized>
-                  {title}
-                </Text>
-              </View>
-            </View>
-          </Link.AppleZoom>
-        )}
-      </Pressable>
-    </Link.Trigger>
-  </Link>
-);
 
 const TypeChip = ({
   title,

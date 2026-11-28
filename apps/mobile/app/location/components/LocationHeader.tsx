@@ -1,21 +1,18 @@
-import { Link, router } from 'expo-router';
-import { ChefHat, ChevronLeft, Heart, Info } from 'lucide-react-native';
-import React, { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Info } from 'lucide-react-native';
+import React, { type Ref } from 'react';
+import { Pressable, View } from 'react-native';
 import { SheetManager } from 'react-native-actions-sheet';
 import FilterBar from '~/components/FilterBar';
-import { GlassButton, GlassSurface } from '~/components/ui/Glass';
-import { Text } from '~/components/ui/Text';
+import { Text, type TextInputHandle } from '~/components/ui/Text';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { useLocationIdsWithMenus } from '~/hooks/useLocationIdsWithMenus';
 import { useNow } from '~/hooks/useNow';
-import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { isLocationOpenNow } from '~/utils/locationStatus';
-import { useLocationName, useMealTimes } from '~/utils/locations';
-import { type Theme, useTheme } from '~/utils/theme';
+import { useMealTimes } from '~/utils/locations';
+import { useTheme } from '~/utils/theme';
 import { getLocationStatusText } from '~/utils/time';
-import SearchBar from './SearchBar';
+import MenuSearchField from './MenuSearchField';
 import WeekStrip from './WeekStrip';
 
 interface LocationHeaderProps {
@@ -23,38 +20,62 @@ interface LocationHeaderProps {
   selectedMenu: string | null;
   setSelectedMenu: (menu: string) => void;
   filters: { title: string; id: string }[];
-  query: string;
-  setQuery: (query: string) => void;
   selectedDate: string;
   onDateChange: (date: string) => void;
-  selecting: boolean;
-  onDoneSelecting: () => void;
+  searching: boolean;
+  searchInputRef: Ref<TextInputHandle>;
+  query: string;
+  onQueryChange: (query: string) => void;
+  onSearchFocus: () => void;
+  onSearchCancel: () => void;
 }
 
-const CircleButton = ({
-  testID,
-  label,
-  onPress,
-  theme,
-  children,
+export const LocationHeaderButtons = ({
+  location,
+  selecting,
+  onDoneSelecting,
 }: {
-  testID: string;
-  label: string;
-  onPress: () => void;
-  theme: Theme;
-  children: React.ReactNode;
-}) => (
-  <GlassButton
-    testID={testID}
-    accessibilityLabel={label}
-    size={44}
-    hitSlop={6}
-    fallbackColor={theme.card}
-    onPress={onPress}
-  >
-    {children}
-  </GlassButton>
-);
+  location: string;
+  selecting: boolean;
+  onDoneSelecting: () => void;
+}) => {
+  const theme = useTheme();
+  const { locationData } = useLocationDetails(location);
+
+  if (selecting) {
+    return (
+      <Pressable
+        testID="select-done-button"
+        accessibilityRole="button"
+        onPress={onDoneSelecting}
+        hitSlop={8}
+        className="px-1.5"
+      >
+        <Text variant="callout" emphasized tone="tint">
+          Done
+        </Text>
+      </Pressable>
+    );
+  }
+
+  return (
+    <Pressable
+      testID="location-info-button"
+      accessibilityLabel="Hours and info"
+      accessibilityRole="button"
+      hitSlop={8}
+      onPress={() => {
+        if (!locationData) return;
+        void SheetManager.show('location-about', {
+          payload: { location: locationData },
+        });
+      }}
+      className="size-9 items-center justify-center"
+    >
+      <Info size={20} color={theme.label} />
+    </Pressable>
+  );
+};
 
 const LocationHeader = React.memo(
   ({
@@ -62,18 +83,17 @@ const LocationHeader = React.memo(
     selectedMenu,
     setSelectedMenu,
     filters,
-    query,
-    setQuery,
     selectedDate,
     onDateChange,
-    selecting,
-    onDoneSelecting,
+    searching,
+    searchInputRef,
+    query,
+    onQueryChange,
+    onSearchFocus,
+    onSearchCancel,
   }: LocationHeaderProps) => {
-    const [isSearchFocused, setIsSearchFocused] = useState(false);
     const theme = useTheme();
     const { locationData } = useLocationDetails(location);
-    const { useColloquialNames } = useSettingsStore();
-    const displayName = useLocationName(location, useColloquialNames);
     const mealTimes = useMealTimes(location);
 
     const now = useNow();
@@ -81,114 +101,52 @@ const LocationHeader = React.memo(
     const isOpen = locationData ? isLocationOpenNow(locationData, withMenus, now) : false;
     const status = locationData ? getLocationStatusText(locationData, isOpen, now) : '';
 
-    return (
-      <View className="mx-4 mt-2 mb-3 gap-y-4">
-        {!isSearchFocused && (
-          <>
-            <View className="flex-row items-center justify-between">
-              <CircleButton
-                testID="back-button"
-                label="Back"
-                theme={theme}
-                onPress={() => router.back()}
-              >
-                <ChevronLeft size={22} color={theme.label} />
-              </CircleButton>
+    const searchField = (
+      <MenuSearchField
+        inputRef={searchInputRef}
+        query={query}
+        onQueryChange={onQueryChange}
+        searching={searching}
+        onFocus={onSearchFocus}
+        onCancel={onSearchCancel}
+      />
+    );
 
-              {selecting ? (
-                <Pressable
-                  testID="select-done-button"
-                  accessibilityRole="button"
-                  onPress={onDoneSelecting}
-                  className="h-11 justify-center px-4"
-                >
-                  <GlassSurface
-                    isInteractive
-                    fallbackColor={theme.card}
-                    pointerEvents="none"
-                    style={[StyleSheet.absoluteFill, { borderRadius: 22 }]}
-                  />
-                  <Text variant="callout" emphasized tone="tint">
-                    Done
+    if (searching) return <View className="mx-4 mt-1 mb-3">{searchField}</View>;
+
+    return (
+      <View className="mx-4 mt-1 mb-3 gap-y-4">
+        {searchField}
+        <View className="gap-y-4">
+          {(status !== '' || locationData?.force_close) && (
+            <View className="mx-1 gap-y-3">
+              {status !== '' && (
+                <Text variant="subheadline" tone="secondary">
+                  <Text
+                    variant="subheadline"
+                    emphasized
+                    color={isOpen ? theme.tint : theme.secondaryLabel}
+                  >
+                    {isOpen ? 'Open' : status}
                   </Text>
-                </Pressable>
-              ) : (
-                <View className="flex-row gap-x-2">
-                  <CircleButton
-                    testID="location-favorites-button"
-                    label="Favorites"
-                    theme={theme}
-                    onPress={() => router.push('/favorites')}
-                  >
-                    <Heart size={19} color={theme.label} />
-                  </CircleButton>
-                  <CircleButton
-                    testID="location-meal-plan-button"
-                    label="Meal Plan"
-                    theme={theme}
-                    onPress={() => router.push('/meal-plan')}
-                  >
-                    <ChefHat size={19} color={theme.label} />
-                  </CircleButton>
-                  <CircleButton
-                    testID="location-info-button"
-                    label="Hours and info"
-                    theme={theme}
-                    onPress={() => {
-                      if (!locationData) return;
-                      void SheetManager.show('location-about', {
-                        payload: { location: locationData },
-                      });
-                    }}
-                  >
-                    <Info size={19} color={theme.label} />
-                  </CircleButton>
+                  {isOpen ? status.replace(/^Open/, '') : ''}
+                  {locationData?.type ? ` · ${locationData.type}` : ''}
+                </Text>
+              )}
+              {locationData?.force_close && (
+                <View className="rounded-2xl bg-red-600 px-4 py-2.5">
+                  <Text variant="subheadline" emphasized tone="onTint" className="text-center">
+                    Temporarily closed
+                  </Text>
                 </View>
               )}
             </View>
+          )}
 
-            {locationData?.force_close && (
-              <View className="rounded-2xl bg-red-600 px-4 py-2.5">
-                <Text variant="subheadline" emphasized tone="onTint" className="text-center">
-                  Temporarily closed
-                </Text>
-              </View>
-            )}
-
-            <Link.AppleZoomTarget>
-              <View collapsable={false}>
-                <Text variant="largeTitle">{displayName}</Text>
-                {status !== '' && (
-                  <Text variant="subheadline" tone="secondary">
-                    <Text
-                      variant="subheadline"
-                      emphasized
-                      color={isOpen ? theme.tint : theme.secondaryLabel}
-                    >
-                      {isOpen ? 'Open' : status}
-                    </Text>
-                    {isOpen ? status.replace(/^Open/, '') : ''}
-                    {locationData?.type ? ` · ${locationData.type}` : ''}
-                  </Text>
-                )}
-              </View>
-            </Link.AppleZoomTarget>
-
-            <WeekStrip selectedDate={selectedDate} onDateChange={onDateChange} />
-          </>
-        )}
+          <WeekStrip selectedDate={selectedDate} onDateChange={onDateChange} />
+        </View>
 
         {filters && filters.length >= 1 && (
-          <SearchBar
-            query={query}
-            setQuery={setQuery}
-            onFocus={() => setIsSearchFocused(true)}
-            onBlur={() => setIsSearchFocused(false)}
-            isSearchFocused={isSearchFocused}
-          />
-        )}
-
-        {!isSearchFocused && filters && filters.length >= 1 && (
           <FilterBar
             selectedItem={selectedMenu as string}
             setSelectedItem={setSelectedMenu}

@@ -29,6 +29,12 @@ name: Favorites can be added from a food or a hold and removed with a hold
     timeout: 5000
 - tapOn: Add to Favorites
 - waitForAnimationToEnd
+- tapOn:
+    id: BackButton
+- scrollUntilVisible:
+    element:
+      id: home-favorites-button
+    direction: UP
 - repeat:
     while:
       notVisible:
@@ -36,7 +42,7 @@ name: Favorites can be added from a food or a hold and removed with a hold
     times: 3
     commands:
       - tapOn:
-          id: location-favorites-button
+          id: home-favorites-button
       - waitForAnimationToEnd
 - assertVisible:
     id: favorites-screen

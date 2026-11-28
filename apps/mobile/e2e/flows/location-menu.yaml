@@ -17,7 +17,7 @@ tags:
     element: 'Maestro Tofu Bowl(,.*)?'
     direction: DOWN
 - tapOn:
-    id: back-button
+    id: BackButton
 - extendedWaitUntil:
     visible: 'J2 Dining(,.*)?'
     timeout: 5000

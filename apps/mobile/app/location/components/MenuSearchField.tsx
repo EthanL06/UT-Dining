@@ -1,28 +1,27 @@
 import { Search, X } from 'lucide-react-native';
-import { useRef } from 'react';
+import type { Ref } from 'react';
 import { Keyboard, Pressable, View } from 'react-native';
 import { Text, TextInput, type TextInputHandle } from '~/components/ui/Text';
-
 import { useTheme } from '~/utils/theme';
 
 type Props = {
+  inputRef: Ref<TextInputHandle>;
   query: string;
-  setQuery: (query: string) => void;
-  onFocus?: () => void;
-  onBlur?: () => void;
-  isSearchFocused: boolean;
+  onQueryChange: (query: string) => void;
+  searching: boolean;
+  onFocus: () => void;
+  onCancel: () => void;
 };
 
-const SearchBar = ({ query, setQuery, onFocus, onBlur, isSearchFocused }: Props) => {
+const MenuSearchField = ({
+  inputRef,
+  query,
+  onQueryChange,
+  searching,
+  onFocus,
+  onCancel,
+}: Props) => {
   const theme = useTheme();
-  const inputRef = useRef<TextInputHandle>(null);
-
-  const handleCancel = () => {
-    Keyboard.dismiss();
-    inputRef.current?.blur();
-    setQuery('');
-    onBlur?.();
-  };
 
   return (
     <View className="flex-row items-center gap-x-3">
@@ -34,25 +33,39 @@ const SearchBar = ({ query, setQuery, onFocus, onBlur, isSearchFocused }: Props)
         <TextInput
           testID="menu-search-input"
           ref={inputRef}
-          variant="callout"
+          variant="body"
           className="flex-1"
           placeholder="Search this menu"
+          autoCapitalize="none"
           autoCorrect={false}
           value={query}
-          onChangeText={setQuery}
+          onChangeText={onQueryChange}
           onFocus={onFocus}
           returnKeyType="search"
           clearButtonMode="never"
         />
         {query.length > 0 && (
-          <Pressable accessibilityLabel="Clear search" hitSlop={8} onPress={() => setQuery('')}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Clear search"
+            hitSlop={8}
+            onPress={() => onQueryChange('')}
+          >
             <X size={16} color={theme.secondaryLabel} />
           </Pressable>
         )}
       </View>
-      {isSearchFocused && (
-        <Pressable accessibilityRole="button" onPress={handleCancel}>
-          <Text variant="callout" tone="tint">
+      {searching && (
+        <Pressable
+          testID="menu-search-cancel"
+          accessibilityRole="button"
+          hitSlop={8}
+          onPress={() => {
+            Keyboard.dismiss();
+            onCancel();
+          }}
+        >
+          <Text variant="body" tone="tint">
             Cancel
           </Text>
         </Pressable>
@@ -61,4 +74,4 @@ const SearchBar = ({ query, setQuery, onFocus, onBlur, isSearchFocused }: Props)
   );
 };
 
-export default SearchBar;
+export default MenuSearchField;

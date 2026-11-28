@@ -23,7 +23,8 @@
         "react-native-css-interop",
         "@expo/ngrok",
         "@expo/vector-icons",
-        "expo-status-bar"
+        "expo-status-bar",
+        "@shopify/flash-list"
       ]
     },
     "apps/dashboard": {

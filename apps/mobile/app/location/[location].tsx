@@ -1,12 +1,13 @@
-import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { useIsFetching } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import { View } from 'react-native';
+import { FlatList, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { EdgeSwipeDismissal } from '~/components/EdgeSwipeDismissal';
 import type { RowPosition } from '~/components/FoodComponent';
 import { StaggerIn } from '~/components/motion/StaggerIn';
-import { Text } from '~/components/ui/Text';
+import { pushedScreenHeaderOptions } from '~/components/TabStack';
+import { Text, type TextInputHandle } from '~/components/ui/Text';
 import type { ListItem } from '~/hooks/useCategoryExpansion';
 import { useCategoryExpansion } from '~/hooks/useCategoryExpansion';
 import { useDebounce } from '~/hooks/useDebounce';
@@ -15,24 +16,26 @@ import { useMenuData } from '~/hooks/useMenuData';
 import { MENU_SYNC_QUERY_KEY } from '~/hooks/useMenuSync';
 import { useMultiSelect } from '~/hooks/useMultiSelect';
 import { useRatingPromptOnMenuView } from '~/hooks/useRatingPromptOnMenuView';
-import { useScrollToTop } from '~/hooks/useScrollToTop';
+import { SCROLL_TO_TOP_CLEARANCE, useScrollToTop } from '~/hooks/useScrollToTop';
 import { analytics } from '~/services/analytics/posthog';
 import type { FoodItem } from '~/services/database/database';
 import { useFiltersStore } from '~/store/useFiltersStore';
 import { mealPlanItemId, useMealPlanItems } from '~/store/useMealPlanStore';
 import { useMealStripStore } from '~/store/useMealStripStore';
+import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { hasActiveFilters } from '~/utils/filter';
 import { addFoodsToMealPlan } from '~/utils/foodActions';
 import { haptics } from '~/utils/haptics';
+import { useLocationName } from '~/utils/locations';
 import { log } from '~/utils/log';
 import { menuEmptyState } from '~/utils/menuList';
 import { buildMenuRows, foodMatcher } from '~/utils/menuRows';
 import { useTheme } from '~/utils/theme';
 import CategoryHeader from './components/CategoryHeader';
+import FloatingButtons from './components/FloatingButtons';
 import FoodItemRow from './components/FoodItemRow';
-import LocationHeader from './components/LocationHeader';
-import ScrollToTopButton from './components/ScrollToTopButton';
+import LocationHeader, { LocationHeaderButtons } from './components/LocationHeader';
 import SelectionBar from './components/SelectionBar';
 import SkeletonItem from './components/SkeletonItem';
 
@@ -98,6 +101,10 @@ const Location = () => {
   const activeFilters = useDeferredValue(useFiltersStore((state) => state.filters));
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [searching, setSearching] = useState(false);
+  const searchInputRef = useRef<TextInputHandle>(null);
+  const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
+  const displayName = useLocationName(location, useColloquialNames);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   const favoriteNames = useMemo(
@@ -125,9 +132,15 @@ const Location = () => {
   );
   const skeletonItems = useSkeletonItems();
 
-  const listRef = useRef<FlashListRef<ListItem>>(null);
-  const { showScrollToTop, scrollButtonAnimation, handleScroll, scrollToTop } =
-    useScrollToTop(listRef);
+  const listRef = useRef<FlatList<ListItem>>(null);
+  const {
+    showScrollToTop,
+    scrollButtonAnimation,
+    handleScroll,
+    handleScrollBeginDrag,
+    handleMomentumScrollEnd,
+    scrollToTop,
+  } = useScrollToTop(listRef);
 
   const handleDateChange = (date: string) => {
     stopSelecting();
@@ -189,6 +202,17 @@ const Location = () => {
     },
     [resetExpandedCategories],
   );
+
+  const handleSearchFocus = useCallback(() => {
+    stopSelecting();
+    setSearching(true);
+  }, [stopSelecting]);
+
+  const handleSearchCancel = useCallback(() => {
+    searchInputRef.current?.blur();
+    setSearching(false);
+    handleQueryChange('');
+  }, [handleQueryChange]);
 
   const renderItem = useCallback(
     ({ item, index }: { item: ListItem; index: number }) => {
@@ -279,35 +303,57 @@ const Location = () => {
   }, [menuStatus, isSyncing, debouncedSearchQuery, activeFilters]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: insets.top }}>
-      <Stack.Screen options={{ title: 'Location' }} />
-      <FlashList
+    <>
+      <EdgeSwipeDismissal />
+      <Stack.Screen
+        options={{
+          title: displayName,
+          ...pushedScreenHeaderOptions(theme),
+          headerRight: () => (
+            <LocationHeaderButtons
+              location={location}
+              selecting={selecting}
+              onDoneSelecting={stopSelecting}
+            />
+          ),
+        }}
+      />
+      <FlatList
         alwaysBounceVertical={false}
+        contentInsetAdjustmentBehavior="automatic"
+        scrollToOverflowEnabled
+        keyboardDismissMode="on-drag"
         extraData={[favoriteNames, canMealPlan, selecting, selectedIds]}
         ref={listRef}
         onScroll={handleScroll}
+        onScrollBeginDrag={handleScrollBeginDrag}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator
         data={displayedItems}
         keyExtractor={(item) => `${item.type}|${item.id}`}
         removeClippedSubviews
-        contentContainerStyle={{ paddingBottom: insets.bottom + (selecting ? 96 : 32) }}
+        contentContainerStyle={{
+          paddingBottom: insets.bottom + (selecting ? 96 : SCROLL_TO_TOP_CLEARANCE),
+        }}
         ListHeaderComponent=<LocationHeader
           location={location}
           selectedMenu={selectedMenu ?? null}
           setSelectedMenu={handleMenuChange}
           filters={menuFilters}
-          query={searchQuery}
-          setQuery={handleQueryChange}
           selectedDate={selectedDate}
           onDateChange={handleDateChange}
-          selecting={selecting}
-          onDoneSelecting={stopSelecting}
+          searching={searching}
+          searchInputRef={searchInputRef}
+          query={searchQuery}
+          onQueryChange={handleQueryChange}
+          onSearchFocus={handleSearchFocus}
+          onSearchCancel={handleSearchCancel}
         />
         ListEmptyComponent={<EmptyState />}
         renderItem={renderItem}
-        getItemType={(item) => ('type' in item ? item.type : 'unknown')}
         keyboardShouldPersistTaps="always"
+        style={{ flex: 1, backgroundColor: theme.background }}
       />
 
       {selecting ? (
@@ -337,16 +383,20 @@ const Location = () => {
           }}
         />
       ) : (
-        <ScrollToTopButton
+        <FloatingButtons
           visible={showScrollToTop}
           animationValue={scrollButtonAnimation}
-          onPress={() => {
+          onScrollToTop={() => {
             scrollToTop();
             haptics.tap();
           }}
+          onSearch={() => {
+            scrollToTop();
+            searchInputRef.current?.focus();
+          }}
         />
       )}
-    </View>
+    </>
   );
 };
 
