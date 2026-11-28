@@ -20,13 +20,16 @@ export const homeView = ({
   cache,
   locationCount,
   sync,
+  forceSkeletons = false,
 }: {
   cache: 'pending' | 'error' | 'success';
   locationCount: number;
   sync: SyncStatus;
+  forceSkeletons?: boolean;
 }): HomeView => {
   if (cache === 'pending') return { kind: 'loading' };
   if (cache === 'error') return { kind: 'cache-error' };
+  if (forceSkeletons) return { kind: 'first-sync' };
   if (locationCount === 0 && sync === 'syncing') return { kind: 'first-sync' };
   if (locationCount === 0 && (sync === 'offline' || sync === 'failed')) {
     return { kind: 'first-sync-failed' };

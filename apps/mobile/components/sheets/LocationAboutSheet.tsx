@@ -1,9 +1,11 @@
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 import ActionSheet, { ScrollView, type SheetProps, useSheetRef } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import PlaceDetails from '~/components/PlaceDetails';
+import { PlaceDetailsSkeleton } from '~/components/PlaceDetailsSkeleton';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { PressableScale } from '~/components/ui/PressableScale';
+import { SkeletonPulse } from '~/components/ui/Skeleton';
 import { Text } from '~/components/ui/Text';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { useSettingsStore } from '~/store/useSettingsStore';
@@ -55,9 +57,13 @@ const LocationAboutSheet = ({ sheetId, payload }: SheetProps<'location-about'>) 
         style={{ maxHeight: 560 }}
       >
         {status === 'loading' ? (
-          <View className="items-center py-10">
-            <ActivityIndicator size="small" />
-          </View>
+          <SkeletonPulse
+            testID="location-about-loading"
+            label="Loading details"
+            style={{ paddingBottom: 16 }}
+          >
+            <PlaceDetailsSkeleton />
+          </SkeletonPulse>
         ) : !locationData ? (
           <Text variant="subheadline" tone="secondary" className="px-5 py-10 text-center">
             Unable to load details for this place.

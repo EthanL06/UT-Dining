@@ -108,8 +108,9 @@ cmd_up() {
 }
 
 cmd_ensure() {
-  local url
-  url="$(sed -n 's/^EXPO_PUBLIC_SUPABASE_URL="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' apps/mobile/.env.local 2>/dev/null | tail -1)"
+  local url env_file=apps/mobile/.env.local
+  [[ -f "$env_file" ]] || die "$env_file is missing, so there is no database to use. Run: make env-local (local Supabase) or make env-dev (hosted dev). In a worktree, create the file in the main checkout first, then run make worktree again."
+  url="$(sed -n 's/^EXPO_PUBLIC_SUPABASE_URL="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' "$env_file" | tail -1 || true)"
   case "$url" in
     *"$PROD_REF"*) die "apps/mobile/.env.local points at PRODUCTION Supabase. Run: make env-local" ;;
     https://*) step "Database"; ok "apps use $url, not starting local Supabase" ;;

@@ -1,10 +1,12 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
+import { SkeletonGroupedSection, SkeletonPulse } from '~/components/ui/Skeleton';
 import { Text } from '~/components/ui/Text';
 import { useCachedMenuData } from '~/hooks/useCachedMenuData';
 import { useLocationIdsWithMenus } from '~/hooks/useLocationIdsWithMenus';
 import { useNow } from '~/hooks/useNow';
+import { useForcedSkeletons } from '~/store/useQaSkeletonStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { displayLocationName } from '~/utils/locationName';
@@ -20,7 +22,11 @@ export default function NearbyScreen() {
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
   const { data } = useCachedMenuData();
   const withMenus = useLocationIdsWithMenus(getTodayInCentralTime());
-  const view = nearbyPickerView(data?.locations, parseNearbyRoute(halls));
+  const forceSkeletons = useForcedSkeletons();
+  const view = nearbyPickerView(
+    forceSkeletons ? undefined : data?.locations,
+    parseNearbyRoute(halls),
+  );
 
   const openMenu = (name: string) => {
     router.back();
@@ -31,9 +37,9 @@ export default function NearbyScreen() {
     switch (view.kind) {
       case 'loading':
         return (
-          <View className="items-center py-10">
-            <ActivityIndicator />
-          </View>
+          <SkeletonPulse testID="nearby-loading" label="Loading dining halls">
+            <SkeletonGroupedSection rows={2} header={false} leading="dot" />
+          </SkeletonPulse>
         );
       case 'missing':
         return (

@@ -21,7 +21,7 @@ export DB SEED DAYS SIM FORCE METRO_PORT SUPABASE_EXCLUDE
 	db-up db-down db-status db-reset db-migrate db-new db-types db-check db-seed db-fixtures db-sample db-fresh db-psql db-studio \
 	env-local env-dev \
 	check verify pre-push check-staged check-comments check-size check-state check-unused functions fix lint typecheck test build \
-	sim sims sim-lease sim-release sim-leases sims-idle sim-sweep sim-sweeper test-sims e2e e2e-fixtures qa screenshots pr-screenshots ios-app perf-build size-report \
+	sim sims sim-lease sim-release sim-leases sims-idle sim-sweep sim-sweeper test-sims e2e e2e-fixtures qa screenshots check-screenshots pr-screenshots ios-app perf-build size-report \
 	merge-pr agent-permissions \
 	worktree worktree-rm worktrees \
 	clean clean-metro clean-sims clean-worktrees clean-caches clean-deps stop
@@ -97,6 +97,7 @@ help:
 	'  e2e-fixtures    Maestro flows against the fixture server, no Docker needed' \
 	'  qa              Regression flows in apps/mobile/e2e/qa on the sample data at fixed Central times' \
 	'  screenshots     Every screen in apps/mobile/e2e/screenshots.txt, light and dark, into .context/screenshots' \
+	'  check-screenshots Fail when a screenshot shows only the launch splash or one flat color. DIR=<dir or .png>' \
 	'  pr-screenshots  Light and dark shots on a leased simulator, pushed and embedded in the PR body. Falls back' \
 	'                  to the CI workflow when every slot is busy or not on a Mac. PR=<n> SCREENS="home map" ARGS=--ci' \
 	'  ios-app         Release simulator app into .context/app; reuses the native build unless native code changed' \
@@ -299,6 +300,9 @@ test-sims:
 
 sim-sweeper:
 	@$(DEV)/sim-sweep.sh sweeper $(if $(ARGS),$(ARGS),install)
+
+check-screenshots:
+	@node scripts/qa/screenshot-splash-check.ts $(or $(DIR),.context/screenshots)
 
 pr-screenshots:
 	@scripts/qa/pr-screenshots.sh $(PR) $(SCREENS) $(ARGS)

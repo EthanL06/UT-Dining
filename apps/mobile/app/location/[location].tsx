@@ -1,7 +1,7 @@
 import { useIsFetching } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, View } from 'react-native';
+import { FlatList, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EdgeSwipeDismissal } from '~/components/EdgeSwipeDismissal';
 import type { RowPosition } from '~/components/FoodComponent';
@@ -285,8 +285,12 @@ const Location = () => {
     if (empty.kind === 'skeleton') return null;
     if (empty.kind === 'syncing') {
       return (
-        <View className="mt-12 flex-1 items-center justify-center">
-          <ActivityIndicator size="small" />
+        <View testID="menu-syncing">
+          <SkeletonItem isHeader />
+          <SkeletonItem position="first" />
+          <SkeletonItem />
+          <SkeletonItem />
+          <SkeletonItem position="last" />
         </View>
       );
     }

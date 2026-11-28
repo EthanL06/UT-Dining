@@ -27,6 +27,12 @@ describe('homeView', () => {
     });
   });
 
+  it('keeps the loading skeleton when QA forces it', () => {
+    expect(
+      homeView({ cache: 'success', locationCount: 5, sync: 'idle', forceSkeletons: true }),
+    ).toEqual({ kind: 'first-sync' });
+  });
+
   it('shows the first sync on an empty cache', () => {
     expect(homeView({ cache: 'success', locationCount: 0, sync: 'syncing' })).toEqual({
       kind: 'first-sync',

@@ -5,14 +5,7 @@ import { Link, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { Heart } from 'lucide-react-native';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Pressable, RefreshControl, ScrollView, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Reanimated, {
   runOnJS,
@@ -22,6 +15,7 @@ import Reanimated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { FilterType } from '~/components/FilterBar';
+import { HomeSkeleton } from '~/components/home/HomeSkeleton';
 import { QuickLink } from '~/components/home/QuickLink';
 import { RefreshDrop } from '~/components/home/RefreshDrop';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
@@ -40,6 +34,7 @@ import { useNow } from '~/hooks/useNow';
 import type * as schema from '~/services/database/schema';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
+import { useForcedSkeletons } from '~/store/useQaSkeletonStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
@@ -230,10 +225,12 @@ export default function Home() {
   const menuSync = useMenuSync();
   const locations = data?.locations || [];
   const locationTypes = data?.locationTypes || [];
+  const forceSkeletons = useForcedSkeletons();
   const view = homeView({
     cache: menuData.status,
     locationCount: locations.length,
     sync: toSyncStatus(menuSync),
+    forceSkeletons,
   });
   const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
 
@@ -302,9 +299,9 @@ export default function Home() {
 
   if (view.kind === 'loading') {
     return (
-      <CenteredMessage>
-        <ActivityIndicator size="small" />
-      </CenteredMessage>
+      <View style={{ flex: 1, backgroundColor: theme.background, paddingTop: safeTop + 8 }}>
+        <HomeSkeleton withHeader />
+      </View>
     );
   }
 
@@ -348,11 +345,7 @@ export default function Home() {
         <Stack.Screen options={{ title: 'Home', headerShown: false }} />
         <OnboardingScreen isOnboardingComplete={isOnboardingComplete} />
 
-        {view.kind === 'first-sync' ? (
-          <CenteredMessage>
-            <ActivityIndicator size="small" />
-          </CenteredMessage>
-        ) : view.kind === 'first-sync-failed' ? (
+        {view.kind === 'first-sync-failed' ? (
           <CenteredMessage>
             <Text variant="title3" className="mb-1">
               Can't load menus yet
@@ -397,7 +390,8 @@ export default function Home() {
             </Text>
             <Text variant="subheadline" tone="secondary" className="mx-5 mb-4">
               {MEAL_MESSAGE[timeOfDay(currentTime)]}
-              {view.syncProblem &&
+              {view.kind === 'ready' &&
+                view.syncProblem &&
                 ` · ${view.syncProblem === 'failed' ? "Couldn't update" : 'Offline'}${
                   lastSyncedAt !== null
                     ? `, menus from ${formatTimeSinceSync(Date.now() - lastSyncedAt).toLowerCase()}`
@@ -422,33 +416,39 @@ export default function Home() {
               />
             </View>
 
-            <GestureDetector gesture={chipScroll}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerClassName="gap-x-2 px-4 pb-4"
-              >
-                {filters.map((filter) => (
-                  <TypeChip
-                    key={filter.id}
-                    title={filter.title}
-                    selected={selectedFilter === filter.id}
-                    onPress={() => setSelectedFilter(filter.id)}
-                    theme={theme}
-                  />
-                ))}
-              </ScrollView>
-            </GestureDetector>
+            {view.kind === 'first-sync' ? (
+              <HomeSkeleton />
+            ) : (
+              <>
+                <GestureDetector gesture={chipScroll}>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerClassName="gap-x-2 px-4 pb-4"
+                  >
+                    {filters.map((filter) => (
+                      <TypeChip
+                        key={filter.id}
+                        title={filter.title}
+                        selected={selectedFilter === filter.id}
+                        onPress={() => setSelectedFilter(filter.id)}
+                        theme={theme}
+                      />
+                    ))}
+                  </ScrollView>
+                </GestureDetector>
 
-            {open.length > 0 && (
-              <GroupedSection header="Open now">
-                <LocationRows entries={open} />
-              </GroupedSection>
-            )}
-            {closed.length > 0 && (
-              <GroupedSection header="Closed">
-                <LocationRows entries={closed} />
-              </GroupedSection>
+                {open.length > 0 && (
+                  <GroupedSection header="Open now">
+                    <LocationRows entries={open} />
+                  </GroupedSection>
+                )}
+                {closed.length > 0 && (
+                  <GroupedSection header="Closed">
+                    <LocationRows entries={closed} />
+                  </GroupedSection>
+                )}
+              </>
             )}
           </Reanimated.ScrollView>
         )}

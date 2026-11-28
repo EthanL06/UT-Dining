@@ -41,6 +41,7 @@ cmd_new() {
   fi
   copy_env "$path"
   ok "copied env files"
+  [[ -f "$path/apps/mobile/.env.local" ]] || warn "no apps/mobile/.env.local to copy. Run make env-local or make env-dev in .worktrees/$branch before make dev."
   step "Installing dependencies"
   (cd "$path" && pnpm install --frozen-lockfile --prefer-offline >/dev/null)
   ok "ready: $path"
