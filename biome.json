@@ -26,6 +26,16 @@
     {
       "path": "./biome-plugins/no-icon-barrel.grit",
       "includes": ["apps/**/*.ts", "apps/**/*.tsx", "packages/**/*.ts", "packages/**/*.tsx"]
+    },
+    {
+      "path": "./biome-plugins/no-db-in-ui.grit",
+      "includes": [
+        "apps/mobile/app/**/*.ts",
+        "apps/mobile/app/**/*.tsx",
+        "apps/mobile/components/**/*.ts",
+        "apps/mobile/components/**/*.tsx",
+        "!apps/mobile/app/_layout.tsx"
+      ]
     }
   ],
   "formatter": {
