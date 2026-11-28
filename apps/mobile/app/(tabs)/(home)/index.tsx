@@ -20,7 +20,6 @@ import { QuickLink } from '~/components/home/QuickLink';
 import { RefreshDrop } from '~/components/home/RefreshDrop';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
 import OnboardingScreen from '~/components/onboarding/OnboardingScreen';
-import { ServiceStatusBanner } from '~/components/ServiceStatusBanner';
 import { TabSwipe } from '~/components/TabSwipe';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
 import { Image } from '~/components/ui/Image';
@@ -398,8 +397,6 @@ export default function Home() {
                     : ''
                 }`}
             </Text>
-
-            <ServiceStatusBanner />
 
             <View className="mx-4 mb-3 flex-row gap-x-2">
               <QuickLink
