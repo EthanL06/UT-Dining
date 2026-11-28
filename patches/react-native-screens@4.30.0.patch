@@ -1,29 +1,32 @@
 diff --git a/ios/RNSScreen.mm b/ios/RNSScreen.mm
-index 049fd22427b2bde17fd7ca59b8de65d0ee07b4b5..fbe3fa670578ffc044ad17734999d20018ee0ee1 100644
+index 049fd22427b2bde17fd7ca59b8de65d0ee07b4b5..acacb7f3e752ab71a259ab004266cb9071198c85 100644
 --- a/ios/RNSScreen.mm
 +++ b/ios/RNSScreen.mm
-@@ -1546,6 +1546,20 @@ Class<RCTComponentViewProtocol> RNSScreenCls(void)
+@@ -1546,6 +1546,23 @@ Class<RCTComponentViewProtocol> RNSScreenCls(void)
    }
  }
  
 +- (void)restoreNavigationBarAlphaAfterCancelledTransition
 +{
 +#if !TARGET_OS_TV
-+  UINavigationController *navigationController = self.navigationController;
-+  if (navigationController == nil || navigationController.navigationBarHidden) {
-+    return;
-+  }
-+  UINavigationBar *navigationBar = navigationController.navigationBar;
-+  if (navigationBar.alpha < 1.0) {
-+    navigationBar.alpha = 1.0;
-+  }
++  __weak UINavigationController *weakNavigationController = self.navigationController;
++  dispatch_async(dispatch_get_main_queue(), ^{
++    UINavigationController *navigationController = weakNavigationController;
++    if (navigationController == nil || navigationController.navigationBarHidden) {
++      return;
++    }
++    UINavigationBar *navigationBar = navigationController.navigationBar;
++    if (navigationBar.alpha < 1.0) {
++      navigationBar.alpha = 1.0;
++    }
++  });
 +#endif
 +}
 +
  - (void)viewDidAppear:(BOOL)animated
  {
    [super viewDidAppear:animated];
-@@ -1555,6 +1569,7 @@ Class<RCTComponentViewProtocol> RNSScreenCls(void)
+@@ -1555,6 +1572,7 @@ Class<RCTComponentViewProtocol> RNSScreenCls(void)
      [self.screenView notifyAppear];
      [self notifyTransitionProgress:1.0 closing:NO goingForward:_goingForward];
    } else {
