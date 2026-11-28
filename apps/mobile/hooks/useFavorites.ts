@@ -35,9 +35,10 @@ export const useFavoriteActions = () => {
   );
 };
 
-export const useAllFavorites = () => {
+export const useFavoritesList = () => {
   const db = useDatabase();
-  return useLiveQuery(db.select().from(schema.favorites)).data;
+  const { data, updatedAt } = useLiveQuery(db.select().from(schema.favorites));
+  return { favorites: data, loadedAt: updatedAt };
 };
 
 export const useLocationFavorites = (location: string) => {

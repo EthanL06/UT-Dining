@@ -14,3 +14,6 @@ overrides:
   esbuild: ^0.25.6
   tanstack-query-dev-tools-expo-plugin>@expo/metro-runtime: ~58.0.15
   tanstack-query-dev-tools-expo-plugin>expo-device: ~58.0.5
+
+patchedDependencies:
+  expo-router@58.0.26: patches/expo-router@58.0.26.patch
