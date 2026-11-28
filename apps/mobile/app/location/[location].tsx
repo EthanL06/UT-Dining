@@ -16,6 +16,7 @@ import { useMenuData } from '~/hooks/useMenuData';
 import { MENU_SYNC_QUERY_KEY } from '~/hooks/useMenuSync';
 import { useMultiSelect } from '~/hooks/useMultiSelect';
 import { useRatingPromptOnMenuView } from '~/hooks/useRatingPromptOnMenuView';
+import { useRestoreHeaderOnSwipeCancel } from '~/hooks/useRestoreHeaderOnSwipeCancel';
 import { SCROLL_TO_TOP_CLEARANCE, useScrollToTop } from '~/hooks/useScrollToTop';
 import { analytics } from '~/services/analytics/posthog';
 import type { FoodItem } from '~/services/database/database';
@@ -104,6 +105,7 @@ const Location = () => {
   const [searching, setSearching] = useState(false);
   const searchInputRef = useRef<TextInputHandle>(null);
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
+  const headerBackTitle = useRestoreHeaderOnSwipeCancel();
   const displayName = useLocationName(location, useColloquialNames);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
@@ -309,6 +311,7 @@ const Location = () => {
         options={{
           title: displayName,
           ...pushedScreenHeaderOptions(theme),
+          headerBackTitle,
           headerRight: () => (
             <LocationHeaderButtons
               location={location}
