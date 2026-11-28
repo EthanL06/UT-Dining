@@ -4,7 +4,7 @@ import * as Network from 'expo-network';
 import { Link, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { Heart } from 'lucide-react-native';
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Reanimated, {
   runOnJS,
   useAnimatedReaction,
@@ -25,6 +26,7 @@ import { RefreshDrop } from '~/components/home/RefreshDrop';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
 import OnboardingScreen from '~/components/onboarding/OnboardingScreen';
 import { ServiceStatusBanner } from '~/components/ServiceStatusBanner';
+import { TabSwipe } from '~/components/TabSwipe';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
 import { Image } from '~/components/ui/Image';
 import { PressableScale } from '~/components/ui/PressableScale';
@@ -244,6 +246,8 @@ export default function Home() {
   const refreshInFlight = useRef(false);
   const isOnboardingComplete = useOnboardingStore((state) => state.isOnboardingComplete);
   const theme = useTheme();
+  const chipScroll = useMemo(() => Gesture.Native(), []);
+  const swipeBlockers = useMemo(() => [chipScroll], [chipScroll]);
 
   const queryClient = useQueryClient();
 
@@ -368,115 +372,119 @@ export default function Home() {
   ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background }}>
-      <Stack.Screen options={{ title: 'Home', headerShown: false }} />
-      <OnboardingScreen isOnboardingComplete={isOnboardingComplete} />
+    <TabSwipe tab="(home)" blockedBy={swipeBlockers}>
+      <View style={{ flex: 1, backgroundColor: theme.background }}>
+        <Stack.Screen options={{ title: 'Home', headerShown: false }} />
+        <OnboardingScreen isOnboardingComplete={isOnboardingComplete} />
 
-      {view.kind === 'first-sync' ? (
-        <CenteredMessage>
-          <ActivityIndicator size="small" />
-        </CenteredMessage>
-      ) : view.kind === 'first-sync-failed' ? (
-        <CenteredMessage>
-          <Text variant="title3" className="mb-1">
-            Can't load menus yet
-          </Text>
-          <Text variant="subheadline" tone="secondary" className="mb-4 text-center">
-            UT Dining needs a connection the first time you open it.
-          </Text>
-          <TouchableOpacity
-            onPress={() => menuSync.refetch()}
-            className="rounded-full px-4 py-2"
-            style={{ backgroundColor: theme.tint }}
-          >
-            <Text variant="subheadline" emphasized tone="onTint">
-              Try again
+        {view.kind === 'first-sync' ? (
+          <CenteredMessage>
+            <ActivityIndicator size="small" />
+          </CenteredMessage>
+        ) : view.kind === 'first-sync-failed' ? (
+          <CenteredMessage>
+            <Text variant="title3" className="mb-1">
+              Can't load menus yet
             </Text>
-          </TouchableOpacity>
-        </CenteredMessage>
-      ) : (
-        <Reanimated.ScrollView
-          testID="home-scroll"
-          contentInsetAdjustmentBehavior="automatic"
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
-          onScroll={onScroll}
-          scrollEventThrottle={16}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshStatus.kind === 'refreshing'}
-              onRefresh={handleRefresh}
-              tintColor="transparent"
-            />
-          }
-        >
-          <Image
-            source={appIcon}
-            accessibilityLabel="UT Dining"
-            className="mx-4 mb-4 size-12"
-            contentFit="contain"
-          />
-          <Text variant="largeTitle" accessibilityRole="header" className="mx-5">
-            {greeting(currentTime)}
-          </Text>
-          <Text variant="subheadline" tone="secondary" className="mx-5 mb-4">
-            {MEAL_MESSAGE[timeOfDay(currentTime)]}
-            {view.syncProblem &&
-              ` · ${view.syncProblem === 'failed' ? "Couldn't update" : 'Offline'}${
-                lastSyncedAt !== null
-                  ? `, menus from ${formatTimeSinceSync(Date.now() - lastSyncedAt).toLowerCase()}`
-                  : ''
-              }`}
-          </Text>
-
-          <ServiceStatusBanner />
-
-          <View className="mx-4 mb-3 flex-row gap-x-2">
-            <QuickLink
-              title="Favorites"
-              href="/favorites"
-              theme={theme}
-              icon={<Heart size={20} color={theme.tint} fill={theme.tint} />}
-            />
-            <QuickLink
-              title="Meal Plan"
-              href="/meal-plan"
-              theme={theme}
-              icon={<MealPlanIcon size={20} color={theme.tint} filled />}
-            />
-          </View>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerClassName="gap-x-2 px-4 pb-4"
-          >
-            {filters.map((filter) => (
-              <TypeChip
-                key={filter.id}
-                title={filter.title}
-                selected={selectedFilter === filter.id}
-                onPress={() => setSelectedFilter(filter.id)}
-                theme={theme}
+            <Text variant="subheadline" tone="secondary" className="mb-4 text-center">
+              UT Dining needs a connection the first time you open it.
+            </Text>
+            <TouchableOpacity
+              onPress={() => menuSync.refetch()}
+              className="rounded-full px-4 py-2"
+              style={{ backgroundColor: theme.tint }}
+            >
+              <Text variant="subheadline" emphasized tone="onTint">
+                Try again
+              </Text>
+            </TouchableOpacity>
+          </CenteredMessage>
+        ) : (
+          <Reanimated.ScrollView
+            testID="home-scroll"
+            contentInsetAdjustmentBehavior="automatic"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingTop: 8, paddingBottom: 32 }}
+            onScroll={onScroll}
+            scrollEventThrottle={16}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshStatus.kind === 'refreshing'}
+                onRefresh={handleRefresh}
+                tintColor="transparent"
               />
-            ))}
-          </ScrollView>
+            }
+          >
+            <Image
+              source={appIcon}
+              accessibilityLabel="UT Dining"
+              className="mx-4 mb-4 size-12"
+              contentFit="contain"
+            />
+            <Text variant="largeTitle" accessibilityRole="header" className="mx-5">
+              {greeting(currentTime)}
+            </Text>
+            <Text variant="subheadline" tone="secondary" className="mx-5 mb-4">
+              {MEAL_MESSAGE[timeOfDay(currentTime)]}
+              {view.syncProblem &&
+                ` · ${view.syncProblem === 'failed' ? "Couldn't update" : 'Offline'}${
+                  lastSyncedAt !== null
+                    ? `, menus from ${formatTimeSinceSync(Date.now() - lastSyncedAt).toLowerCase()}`
+                    : ''
+                }`}
+            </Text>
 
-          {open.length > 0 && (
-            <GroupedSection header="Open now">
-              <LocationRows entries={open} />
-            </GroupedSection>
-          )}
-          {closed.length > 0 && (
-            <GroupedSection header="Closed">
-              <LocationRows entries={closed} />
-            </GroupedSection>
-          )}
-        </Reanimated.ScrollView>
-      )}
-      {view.kind === 'ready' && (
-        <RefreshDrop pull={pull} status={refreshStatus} onFinished={finishRefresh} />
-      )}
-    </View>
+            <ServiceStatusBanner />
+
+            <View className="mx-4 mb-3 flex-row gap-x-2">
+              <QuickLink
+                title="Favorites"
+                href="/favorites"
+                theme={theme}
+                icon={<Heart size={20} color={theme.tint} fill={theme.tint} />}
+              />
+              <QuickLink
+                title="Meal Plan"
+                href="/meal-plan"
+                theme={theme}
+                icon={<MealPlanIcon size={20} color={theme.tint} filled />}
+              />
+            </View>
+
+            <GestureDetector gesture={chipScroll}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerClassName="gap-x-2 px-4 pb-4"
+              >
+                {filters.map((filter) => (
+                  <TypeChip
+                    key={filter.id}
+                    title={filter.title}
+                    selected={selectedFilter === filter.id}
+                    onPress={() => setSelectedFilter(filter.id)}
+                    theme={theme}
+                  />
+                ))}
+              </ScrollView>
+            </GestureDetector>
+
+            {open.length > 0 && (
+              <GroupedSection header="Open now">
+                <LocationRows entries={open} />
+              </GroupedSection>
+            )}
+            {closed.length > 0 && (
+              <GroupedSection header="Closed">
+                <LocationRows entries={closed} />
+              </GroupedSection>
+            )}
+          </Reanimated.ScrollView>
+        )}
+        {view.kind === 'ready' && (
+          <RefreshDrop pull={pull} status={refreshStatus} onFinished={finishRefresh} />
+        )}
+      </View>
+    </TabSwipe>
   );
 }
