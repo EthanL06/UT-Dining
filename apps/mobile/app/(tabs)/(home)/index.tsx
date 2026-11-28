@@ -198,17 +198,23 @@ const LocationRow = memo(
         }}
         asChild
       >
-        <Link.Trigger withAppleZoom>
-          <GroupedRow
-            accessibilityRole="button"
-            isFirst={isFirst}
-            separatorInset={37}
-            leading={<StatusDot open={isOpen} closesInMinutes={closingInMinutes} />}
-            title={displayLocationName(location, useColloquialNames)}
-            titleColor={isOpen ? theme.label : theme.secondaryLabel}
-            subtitle={subtitle}
-            showChevron
-          />
+        <Link.Trigger>
+          <Pressable accessibilityRole="button">
+            {({ pressed }) => (
+              <Link.AppleZoom>
+                <GroupedRow
+                  pressed={pressed}
+                  isFirst={isFirst}
+                  separatorInset={37}
+                  leading={<StatusDot open={isOpen} closesInMinutes={closingInMinutes} />}
+                  title={displayLocationName(location, useColloquialNames)}
+                  titleColor={isOpen ? theme.label : theme.secondaryLabel}
+                  subtitle={subtitle}
+                  showChevron
+                />
+              </Link.AppleZoom>
+            )}
+          </Pressable>
         </Link.Trigger>
       </Link>
     );
