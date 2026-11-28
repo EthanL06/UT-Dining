@@ -10,6 +10,7 @@ Screenshots every screen in apps/mobile/e2e/screenshots.txt, once per theme, on 
 Each line of the list is "<name> [deep link path] [text to wait for]". The path is opened as
 ut-dining://<path> once Home has mounted (the splash only hides then); no path means Home. The text is a Maestro regex that only that screen shows; the
 screenshot waits for it, so a deep link that lands late never captures the previous screen. Files are <out>/<name>-<theme>.png. Default out: .context/screenshots.
+The run fails when a screenshot shows only the launch splash or one flat color (make check-screenshots DIR=<dir>).
 With --sim <UDID>,<UDID> each theme is its own flow, so the themes run on two simulators at once
 (worth it on a Mac with spare cores; a 3-core CI runner gets slower).
 System alerts are dismissed once per theme, after the first launch; permissions are granted at
@@ -126,11 +127,16 @@ fi
 
 RUN_DIR="$ROOT/.context/maestro/screenshots-$(date +%Y%m%d-%H%M%S)-$$"
 E2E_OUT="$RUN_DIR" "$ROOT/scripts/qa/mobile-e2e.sh" --status-bar ${PASS[@]+"${PASS[@]}"} "$FLOWS"
+TAKEN="$RUN_DIR/taken.txt"
+: >"$TAKEN"
 find "$RUN_DIR" -name '*.png' | while read -r png; do
   base="$(basename "$png")"
   for theme in $THEMES; do
-    case "$base" in *-"$theme".png) cp "$png" "$OUT/$base" ;; esac
+    case "$base" in *-"$theme".png) cp "$png" "$OUT/$base"; echo "$OUT/$base" >>"$TAKEN" ;; esac
   done
 done
+if [[ -s "$TAKEN" ]]; then
+  xargs node "$ROOT/scripts/qa/screenshot-splash-check.ts" <"$TAKEN"
+fi
 echo "Screenshots: $OUT"
 ls "$OUT"/*.png
