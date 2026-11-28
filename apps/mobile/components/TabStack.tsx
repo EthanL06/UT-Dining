@@ -1,6 +1,11 @@
 import { Stack } from 'expo-router';
+import { PlatformColor } from 'react-native';
 
 import { type Theme, useTheme } from '~/utils/theme';
+
+export const stackContainerProps = {
+  nativeContainerStyle: { backgroundColor: PlatformColor('systemGroupedBackground') },
+};
 
 type TabStackProps = { title: string; headerShown?: boolean };
 
@@ -27,6 +32,7 @@ export const TabStack = ({ title, headerShown = true }: TabStackProps) => {
 
   return (
     <Stack
+      unstable_nativeProps={stackContainerProps}
       screenOptions={{
         ...largeTitleHeaderOptions(theme),
         contentStyle: { backgroundColor: theme.background },

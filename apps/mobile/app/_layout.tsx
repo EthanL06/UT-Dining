@@ -32,6 +32,7 @@ import * as Device from 'expo-device';
 import * as Network from 'expo-network';
 import { AppErrorScreen, MIGRATION_ERROR_COPY } from '~/components/AppErrorScreen';
 import { NearbyAlertsInitializer } from '~/components/nearby/NearbyAlertsInitializer';
+import { stackContainerProps } from '~/components/TabStack';
 import { VersionCheckProvider } from '~/components/VersionCheckProvider';
 import { usePostHogScreens } from '~/hooks/usePostHogScreens';
 import { POSTHOG_CONFIG, posthogClient } from '~/services/analytics/posthog';
@@ -130,6 +131,7 @@ const AppContent = () => {
                   <PushNotificationsInitializer />
                   <NearbyAlertsInitializer />
                   <Stack
+                    unstable_nativeProps={stackContainerProps}
                     screenOptions={{
                       headerShown: false,
                       contentStyle: {
