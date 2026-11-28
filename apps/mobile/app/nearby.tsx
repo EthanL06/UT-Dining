@@ -6,6 +6,7 @@ import { Text } from '~/components/ui/Text';
 import { useCachedMenuData } from '~/hooks/useCachedMenuData';
 import { useLocationIdsWithMenus } from '~/hooks/useLocationIdsWithMenus';
 import { useNow } from '~/hooks/useNow';
+import { useForcedSkeletons } from '~/store/useQaSkeletonStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { displayLocationName } from '~/utils/locationName';
@@ -21,7 +22,11 @@ export default function NearbyScreen() {
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
   const { data } = useCachedMenuData();
   const withMenus = useLocationIdsWithMenus(getTodayInCentralTime());
-  const view = nearbyPickerView(data?.locations, parseNearbyRoute(halls));
+  const forceSkeletons = useForcedSkeletons();
+  const view = nearbyPickerView(
+    forceSkeletons ? undefined : data?.locations,
+    parseNearbyRoute(halls),
+  );
 
   const openMenu = (name: string) => {
     router.back();

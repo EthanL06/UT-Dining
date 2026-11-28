@@ -9,6 +9,7 @@ import {
   getFoodItem,
 } from '~/services/database/database';
 import type { Favorite } from '~/services/database/schema';
+import { useForcedSkeletons } from '~/store/useQaSkeletonStore';
 import { useDatabase } from './useDatabase';
 
 const formatNutritionKey = (key: string) =>
@@ -49,14 +50,16 @@ export function useFoodData(lookup: FoodLookup) {
     retry: false,
   });
 
-  const foodItem = query.data ?? null;
-  const status: FoodStatus = query.isPending
-    ? 'loading'
-    : query.isError
-      ? 'error'
-      : foodItem
-        ? 'ready'
-        : 'missing';
+  const forced = useForcedSkeletons();
+  const foodItem = forced ? null : (query.data ?? null);
+  const status: FoodStatus =
+    forced || query.isPending
+      ? 'loading'
+      : query.isError
+        ? 'error'
+        : foodItem
+          ? 'ready'
+          : 'missing';
 
   const nutritionData = useMemo(() => {
     if (!foodItem?.nutrition) return [];

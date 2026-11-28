@@ -33,6 +33,7 @@ import { useNow } from '~/hooks/useNow';
 import type * as schema from '~/services/database/schema';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useOnboardingStore } from '~/store/useOnboardingStore';
+import { useForcedSkeletons } from '~/store/useQaSkeletonStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
@@ -254,10 +255,12 @@ export default function Home() {
   const menuSync = useMenuSync();
   const locations = data?.locations || [];
   const locationTypes = data?.locationTypes || [];
+  const forceSkeletons = useForcedSkeletons();
   const view = homeView({
     cache: menuData.status,
     locationCount: locations.length,
     sync: toSyncStatus(menuSync),
+    forceSkeletons,
   });
   const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
 

@@ -1,6 +1,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { getLocationDetails } from '~/services/database/database';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
+import { useForcedSkeletons } from '~/store/useQaSkeletonStore';
 import { useDatabase } from './useDatabase';
 
 export type LocationDetailsStatus = 'loading' | 'ready' | 'missing' | 'error';
@@ -16,16 +17,19 @@ export function useLocationDetails(locationName: string) {
     placeholderData: keepPreviousData,
   });
 
-  const locationData = query.data ?? null;
-  const status: LocationDetailsStatus = !locationName
-    ? 'missing'
-    : query.isPending
-      ? 'loading'
-      : query.isError
-        ? 'error'
-        : locationData
-          ? 'ready'
-          : 'missing';
+  const forced = useForcedSkeletons();
+  const locationData = forced ? null : (query.data ?? null);
+  const status: LocationDetailsStatus = forced
+    ? 'loading'
+    : !locationName
+      ? 'missing'
+      : query.isPending
+        ? 'loading'
+        : query.isError
+          ? 'error'
+          : locationData
+            ? 'ready'
+            : 'missing';
 
   return { status, locationData };
 }

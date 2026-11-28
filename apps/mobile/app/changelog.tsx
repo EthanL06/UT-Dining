@@ -6,11 +6,14 @@ import { pushedScreenHeaderOptions } from '~/components/TabStack';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { refreshChangelog, useChangelogStore } from '~/store/useChangelogStore';
+import { useForcedSkeletons } from '~/store/useQaSkeletonStore';
 import { useTheme } from '~/utils/theme';
 
 const Changelog = () => {
   const theme = useTheme();
-  const entries = useChangelogStore((state) => state.entries);
+  const forceSkeletons = useForcedSkeletons();
+  const storedEntries = useChangelogStore((state) => state.entries);
+  const entries = forceSkeletons ? [] : storedEntries;
   const [status, setStatus] = useState<'loading' | 'loaded' | 'failed'>('loading');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
@@ -51,7 +54,7 @@ const Changelog = () => {
           />
         ))}
         {entries.length === 0 &&
-          (status === 'loading' ? (
+          (status === 'loading' || forceSkeletons ? (
             <ChangelogSkeleton />
           ) : (
             <Text variant="callout" tone="secondary" className="py-8 text-center">
