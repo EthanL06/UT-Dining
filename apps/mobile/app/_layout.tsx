@@ -13,6 +13,7 @@ import {
   ThemeProvider,
 } from 'expo-router';
 import { SQLiteProvider } from 'expo-sqlite';
+import { setBackgroundColorAsync } from 'expo-system-ui';
 import { PostHogProvider } from 'posthog-react-native';
 import { Suspense, useEffect } from 'react';
 import { ActivityIndicator, Appearance, AppState } from 'react-native';
@@ -40,7 +41,14 @@ import { useAppLaunchStore } from '~/store/useAppLaunchStore';
 import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTheme } from '~/utils/theme';
 
-Appearance.setColorScheme(useSettingsStore.getState().isDarkMode ? 'dark' : 'light');
+const applyColorScheme = (isDarkMode: boolean) => {
+  Appearance.setColorScheme(isDarkMode ? 'dark' : 'light');
+  setBackgroundColorAsync(getTheme(isDarkMode).background).catch((error) =>
+    log.warn('Could not set the root background color', { error }),
+  );
+};
+
+applyColorScheme(useSettingsStore.getState().isDarkMode);
 
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
@@ -87,7 +95,7 @@ const AppContent = () => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
 
   useEffect(() => {
-    Appearance.setColorScheme(isDarkMode ? 'dark' : 'light');
+    applyColorScheme(isDarkMode);
   }, [isDarkMode]);
 
   const isTablet = Device.deviceType === Device.DeviceType.TABLET;
