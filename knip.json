@@ -7,9 +7,11 @@
       "project": ["scripts/**/*.{ts,mjs,js}"]
     },
     "apps/cli": {
+      "entry": ["src/index.ts", "src/release/main.ts"],
       "project": ["src/**/*.ts"]
     },
     "apps/scraper": {
+      "entry": ["src/index.ts", "src/places.ts", "src/export.ts"],
       "project": ["src/**/*.ts"]
     },
     "apps/mobile": {

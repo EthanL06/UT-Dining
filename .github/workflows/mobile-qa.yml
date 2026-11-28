@@ -1,0 +1,80 @@
+name: Mobile QA
+
+on:
+  pull_request:
+    branches: [staging, main]
+    types: [labeled, synchronize]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qa:
+    name: QA flows on iOS
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'qa')
+    runs-on: macos-26
+    timeout-minutes: 150
+    env:
+      APP_VARIANT: development
+      EXPO_PUBLIC_SUPABASE_URL: http://127.0.0.1:54331
+      EXPO_PUBLIC_STATUS_API_URL: http://127.0.0.1:54331/api/status
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: fixture
+      MAESTRO_DRIVER_STARTUP_TIMEOUT: 240000
+      MAESTRO_VERSION: 2.12.1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - id: app
+        uses: ./.github/actions/ios-sim-app
+
+      - name: Restore the built app
+        if: steps.app.outputs.cached == 'true'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: .context/app
+          key: ${{ steps.app.outputs.key }}
+          fail-on-cache-miss: true
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .node-version
+
+      - name: Restore Maestro
+        id: maestro-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ~/.maestro
+          key: maestro-${{ runner.os }}-${{ runner.arch }}-${{ env.MAESTRO_VERSION }}
+
+      - name: Install Maestro
+        if: steps.maestro-cache.outputs.cache-hit != 'true'
+        run: curl -fsSL https://get.maestro.mobile.dev | bash
+
+      - run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Create a simulator and install the app
+        run: |
+          RUNTIME_JSON="$(xcrun simctl list runtimes -j | jq '[.runtimes[] | select(.platform == "iOS" and .isAvailable)] | last')"
+          RUNTIME="$(jq -r '.identifier' <<<"$RUNTIME_JSON")"
+          DEVICE_TYPE="$(jq -r '[.supportedDeviceTypes[] | select(.name | test("^iPhone [0-9]+$"))] | sort_by(.name | ltrimstr("iPhone ") | tonumber) | last | .identifier' <<<"$RUNTIME_JSON")"
+          SIM="$(xcrun simctl create qa "$DEVICE_TYPE" "$RUNTIME")"
+          xcrun simctl boot "$SIM"
+          xcrun simctl bootstatus "$SIM" -b
+          xcrun simctl install "$SIM" .context/app/*.app
+          echo "SIM=$SIM" >> "$GITHUB_ENV"
+
+      - name: Run the QA flows
+        run: ./scripts/qa/mobile-e2e.sh --sim "$SIM" --release --fixture-server --suite qa --retry-failed
+
+      - name: Upload Maestro output
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: maestro-qa
+          path: .context/maestro
+          if-no-files-found: ignore

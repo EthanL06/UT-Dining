@@ -159,7 +159,7 @@ build_native() {
   export EXPO_USE_PRECOMPILED_MODULES="${EXPO_USE_PRECOMPILED_MODULES:-1}"
   export EXPO_PRECOMPILED_FLAVOR="${EXPO_PRECOMPILED_FLAVOR:-release}"
   step "Generating the iOS project (precompiled Expo modules: $EXPO_USE_PRECOMPILED_MODULES)"
-  (cd "$MOBILE" && npx expo prebuild --platform ios)
+  (cd "$MOBILE" && LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 npx expo prebuild --platform ios)
   if [[ "${USE_CCACHE:-}" == 1 ]] && command -v ccache >/dev/null; then
     wrappers="$MOBILE/ios/build/ccache-bin"
     ccache_wrappers "$wrappers"
@@ -171,7 +171,8 @@ build_native() {
   export EXPO_METRO_CACHE_OUTPUT_DIR
   mkdir -p "$EXPO_METRO_CACHE_OUTPUT_DIR"
   cd "$MOBILE/ios"
-  workspace="$(ls -d ./*.xcworkspace | head -1)"
+  workspace="$(ls -d ./*.xcworkspace 2>/dev/null | head -1)"
+  [[ -n "$workspace" ]] || fail "expo prebuild made no Xcode workspace, so pod install failed. See its output above."
   workspace="${workspace#./}"
   scheme="${workspace%.xcworkspace}"
   step "Building $scheme for the simulator (arm64). Log: apps/mobile/ios/build.log"

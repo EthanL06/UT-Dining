@@ -124,10 +124,85 @@ export const buildMenuDays = (today = todayInCentral()): LocationDay[] => {
 
 const toSnakeCase = (key: string) => key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
 
-export const buildRestTables = (today = todayInCentral()): Record<string, Row[]> => {
+type SampleFood = {
+  name: string;
+  calories: string;
+  protein: string;
+  carbs: string;
+  flags: string[];
+  meals?: string[];
+  days?: number[];
+  blankNutrition?: boolean;
+};
+
+type SampleData = {
+  menus: {
+    location: string;
+    days: number[];
+    meals: string[];
+    emptyMeals?: { day: number; meal: string }[];
+    categories: { name: string; foods: SampleFood[] }[];
+  }[];
+  places: { name: string; set: Row }[];
+};
+
+const readSample = (): SampleData =>
+  JSON.parse(readFileSync(join(import.meta.dirname, '../dev/sample/data.json'), 'utf8'));
+
+const sampleNutrition = (food: SampleFood): Record<string, string> =>
+  food.blankNutrition
+    ? { servingSize: '', calories: '', protein: '', totalCarbohydrates: '' }
+    : {
+        ...nutritionOf({ ...food, allergens: {} }),
+        ingredients: `Sample ingredients for ${food.name}`,
+      };
+
+export const buildSampleMenuDays = (today = todayInCentral()): LocationDay[] =>
+  readSample().menus.flatMap((menu) =>
+    menu.days.map((offset) => ({
+      locationName: menu.location,
+      date: addDays(today, offset),
+      menus: menu.meals.map((meal) => ({
+        type: meal,
+        menuCategories: menu.emptyMeals?.some(
+          (entry) => entry.day === offset && entry.meal === meal,
+        )
+          ? []
+          : menu.categories
+              .map((category) => ({
+                categoryName: category.name,
+                foods: category.foods
+                  .filter((food) => !food.meals || food.meals.includes(meal))
+                  .filter((food) => !food.days || food.days.includes(offset))
+                  .map((food) => ({
+                    name: food.name,
+                    link: '',
+                    nutrition: sampleNutrition(food),
+                    allergens: Object.fromEntries(
+                      FLAG_KEYS.map((key) => [key, food.flags.includes(key)]),
+                    ) as Record<FlagKey, boolean>,
+                  })),
+              }))
+              .filter((category) => category.foods.length > 0),
+      })),
+    })),
+  );
+
+export type FixtureData = 'e2e' | 'sample';
+
+export const buildRestTables = (
+  today = todayInCentral(),
+  data: FixtureData = 'e2e',
+): Record<string, Row[]> => {
   const base = readJson<Record<string, Row[]>>('base.json');
+  const places = data === 'sample' ? readSample().places : [];
+  const updatedAt = new Date().toISOString();
   const tables: Record<string, Row[]> = {
     ...base,
+    location: base.location.map((row) => {
+      const place = places.find((entry) => entry.name === row.name);
+      return place ? { ...row, ...place.set, updated_at: updatedAt } : row;
+    }),
     changelog: readJson<Row[]>('changelog.json'),
     menu: [],
     menu_category: [],
@@ -135,13 +210,13 @@ export const buildRestTables = (today = todayInCentral()): Record<string, Row[]>
     nutrition: [],
     allergens: [],
   };
-  const updatedAt = new Date().toISOString();
   let menuId = 0;
   let categoryId = 0;
   let foodId = 0;
 
-  for (const day of buildMenuDays(today)) {
-    const location = base.location.find((row) => row.name === day.locationName);
+  const days = data === 'sample' ? buildSampleMenuDays(today) : buildMenuDays(today);
+  for (const day of days) {
+    const location = tables.location.find((row) => row.name === day.locationName);
     if (!location) throw new Error(`${day.locationName} is not in base.json`);
     for (const menu of day.menus) {
       menuId += 1;

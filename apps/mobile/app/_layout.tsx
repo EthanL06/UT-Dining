@@ -1,3 +1,4 @@
+import '~/utils/qaClock';
 import {
   focusManager,
   onlineManager,

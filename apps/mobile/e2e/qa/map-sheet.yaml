@@ -1,0 +1,37 @@
+appId: com.ethanl06.ut-dining.dev
+name: The map sheet never shows the empty state while loading, lists pinless places, and hides the locate button when tall
+tags:
+  - qa
+---
+- runFlow: subflows/start-at.yaml
+- tapOn:
+    id: map-tab
+- assertNotVisible: No places match.*
+- extendedWaitUntil:
+    visible:
+      id: map-search-input
+    timeout: 10000
+- assertNotVisible: No places match.*
+- assertVisible:
+    id: map-locate-button
+- swipe:
+    start: 50%, 60%
+    end: 50%, 5%
+    duration: 600
+- waitForAnimationToEnd
+- assertNotVisible:
+    id: map-locate-button
+- takeScreenshot: map-sheet-full
+- tapOn:
+    id: map-search-input
+- inputText: Papua
+- extendedWaitUntil:
+    visible: 'Papua Coffee(,.*)?'
+    timeout: 10000
+- tapOn:
+    id: map-search-input
+- eraseText
+- inputText: zzzz
+- extendedWaitUntil:
+    visible: No places match.*|No results.*
+    timeout: 10000

@@ -1,0 +1,38 @@
+appId: com.ethanl06.ut-dining.dev
+name: Midnight-split and 11:59 PM hours, and the greeting at its boundaries
+tags:
+  - qa
+---
+- runFlow:
+    file: subflows/start-at.yaml
+    env:
+      CLOCK: '02:00'
+- assertVisible: Good Morning.*
+- scrollUntilVisible:
+    element: '.*Open until 4:00 AM.*'
+    direction: DOWN
+    timeout: 60000
+- runFlow:
+    file: subflows/set-clock.yaml
+    env:
+      CLOCK: '11:59'
+- assertVisible: Good Morning.*
+- runFlow:
+    file: subflows/set-clock.yaml
+    env:
+      CLOCK: '12:00'
+- assertVisible: Good Afternoon.*
+- runFlow:
+    file: subflows/set-clock.yaml
+    env:
+      CLOCK: '18:00'
+- assertVisible: Good Evening.*
+- runFlow:
+    file: subflows/set-clock.yaml
+    env:
+      CLOCK: '23:30'
+- scrollUntilVisible:
+    element: '.*Open until 11:59 PM.*'
+    direction: DOWN
+    timeout: 60000
+- takeScreenshot: late-night-home

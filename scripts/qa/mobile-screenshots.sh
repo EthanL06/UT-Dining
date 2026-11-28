@@ -52,7 +52,7 @@ open_app() {
     when:
       true: \${DEV_CLIENT == 'true'}
     commands:
-      - openLink: exp+ut-dining://expo-development-client/?url=\${encodeURIComponent(METRO_URL)}&disableOnboarding=1
+      - openLink: exp+ut-dining://expo-development-client/?url=\${encodeURIComponent(METRO_URL)}&disableOnboarding=1&__expo_disable_auto_launch=1&__expo_disable_fab=1
 YAML
 }
 

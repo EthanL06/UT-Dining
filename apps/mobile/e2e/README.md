@@ -58,6 +58,46 @@ It refuses to run unless `supabase status` reports a `http://127.0.0.1:` API URL
 
 Every flow except `onboarding.yaml` starts from a clean install on Home (`subflows/start.yaml`: clear state, open Metro, skip onboarding). It opens `ut-dining://e2e-setup`, which marks onboarding done only in the dev bundle id (`com.ethanl06.ut-dining.dev`) and then goes Home. Flows tagged `smoke` are the short set.
 
+## Regression QA (`make qa`)
+
+`apps/mobile/e2e/qa` holds flows for bugs agents fixed by hand in the Simulator, so they stay fixed. They run on the sample data from `scripts/dev/sample/data.json` (the same as `make db-fresh`) at fixed Central times, so the result does not depend on the hour or the Mac's time zone.
+
+```sh
+make qa SIM=<UDID>
+make qa SIM=<UDID> ARGS=apps/mobile/e2e/qa/central-time.yaml
+make qa SIM=<UDID> ARGS=--fixture-server
+make qa SIM=<UDID> ARGS=--affected
+make qa SIM=<UDID> ARGS="--build-app --affected"
+```
+
+`make qa` is `scripts/qa/mobile-e2e.sh --suite qa`: it loads the sample data into local Supabase (`scripts/dev/sample/load.ts`), or, with `--fixture-server`, serves it from `scripts/qa/e2e-fixture-server.ts <port> sample` and starts its own Metro with `EXPO_PUBLIC_SUPABASE_URL` pointed there (pass a `--port` no other Metro uses). A development bundle reads `apps/mobile/.env*` files over the shell environment, so while that Metro runs the script writes the fixture values to `apps/mobile/.env.development.local` (the file that wins) and deletes it on exit. It refuses to start when that file already exists. A Metro on port 8081 in the same worktree also picks it up until the run ends.
+
+`--affected` (or `--affected=<base>`) runs only the flows that cover the files changed since `origin/staging`. `scripts/qa/qa-affected.ts` holds the map from paths to flows: a changed flow runs itself, `utils/date.ts` runs the Central time, hours and no-menu flows, `components/map/` the map flows, and so on. A file under `apps/mobile`, `packages/core`, `scripts/qa` or the sample data that no rule covers runs the whole suite; tests, docs and other apps run nothing, and the script exits before it touches a simulator. When you add a flow, add a rule for the files it covers.
+
+`--build-app` is the fast path. It builds a release app of the worktree with `scripts/qa/ios-sim-app.sh` (the native build and Metro cache are reused, so a JS change rebuilds in a couple of minutes), installs it, and runs without Metro or the dev client, so no launch waits on a bundle. The app is built pointed at a fixed fixture port (54339 for `qa`, 54338 for `e2e`), and every run of that suite on the Mac shares one fixture server there. The server rebuilds its data when the Central date changes and exits after 20 minutes without requests. The first run on a new native key does a full Xcode build. Every run also turns on Reduce Motion on its simulators, so flows don't wait on animations.
+
+Dev client launches go through `subflows/dev-client.yaml`: the launch link turns off the Expo dev menu and its floating Tools button (`__expo_disable_auto_launch=1&__expo_disable_fab=1`), and the subflow taps Reload or opens the link again when a slow Mac drops the bundle load. That mode leaves the shared local Supabase untouched.
+
+The clock: `subflows/start-at.yaml` opens `ut-dining://e2e-setup?clock=HH:MM`, which sets the dev app's clock to that Central time on today's Central date (`days=N` moves the date). It patches `Date` in the dev bundle only (`apps/mobile/utils/qaClock.ts`), keeps running from there, and survives a relaunch, so a flow can step through times with `subflows/set-clock.yaml`. Start flows with `PERMISSIONS: unset` to see the iOS permission prompts, and `RATING: 'on'` to keep the rating prompt armed.
+
+| Flow | Guards |
+| --- | --- |
+| `central-time.yaml` | At 8:30 PM Central (already the next day in UTC): Good Evening, J2 open until 9:00 PM, JCL opens tomorrow at 11:00 AM, Kins temporarily closed, Today and Tomorrow show their own Chef's Table dish, Yesterday label (PRs 98, 104) |
+| `hours-and-greeting.yaml` | Wendy's 00:00 to 04:00 range at 2 AM, Gabriel's open until 11:59 PM, Good Morning until noon (PRs 98, 118) |
+| `permissions-onboarding.yaml` | Onboarding asks for location and notifications only on its Permissions page (PR 98) |
+| `permissions-map.yaml` | Home asks for nothing; the Map tab asks for location when opened (PR 98) |
+| `settings-permissions.yaml` | Settings shows Off, asks, and refreshes to On (PR 98) |
+| `colloquial-names.yaml` | With colloquial names on, the map opens Jarket's Details, map search finds Wendy's by its location name, and search finds Jendy's (PRs 98, 106) |
+| `past-day-and-selection.yaml` | Changing the day or the meal ends Select Multiple; a past day offers favorites only (PR 98) |
+| `no-menu-days.yaml` | A day UT never posted and a hall on break show No menu for this day instead of another day's food (PR 105) |
+| `missing-screens.yaml` | A missing place or food shows a message, not a blank screen or an endless spinner (PRs 98, 99) |
+| `map-sheet.yaml` | The map sheet never shows No places match while loading, lists places without a pin, and hides the locate button when tall (PRs 118, 127 rule) |
+| `rating-prompt.yaml` | The rating prompt waits for a third launch at least three days after the first (PR 118) |
+
+Not covered by Maestro: a notification tapped while the app was closed (needs a real push), and "scroll only on overflow" (Maestro cannot see bounce). Both stay with manual QA.
+
+CI: add the `qa` label to a pull request, or run Mobile QA from the Actions tab. `.github/workflows/mobile-qa.yml` builds the release app, serves the sample data from the fixture server and runs the suite with `--retry-failed`. It is optional, never a required check. The runner's time zone is UTC, so the Central time flows also catch device time zone bugs there.
+
 ## Writing flows
 
 - Match on visible text when it is stable. For icon buttons, use the `testID` on the component (`back-button`, `location-favorites-button`, `food-favorite-button`, `food-meal-plan-button`, `menu-day-1`, `select-done-button`, `select-add-meal-plan-button`, `menu-search-input`, `settings-dark-mode-switch` and others).
