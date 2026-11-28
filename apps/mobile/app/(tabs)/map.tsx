@@ -12,6 +12,7 @@ import { MapSheet, type MapSheetHandle, SHEET_HALF_FRACTION } from '~/components
 import { PlaceCard } from '~/components/map/PlaceCard';
 import type { MapFilterId } from '~/components/map/placeStyle';
 import { SearchPanel } from '~/components/map/SearchPanel';
+import { TabSwipe } from '~/components/TabSwipe';
 import { GlassButton, useLiquidGlass } from '~/components/ui/Glass';
 import { MICROWAVE_LOCATIONS } from '~/data/MicrowaveLocations';
 import { useCachedMenuData } from '~/hooks/useCachedMenuData';
@@ -284,133 +285,138 @@ const MapPage = () => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background }}>
-      <SafeAreaProvider style={StyleSheet.absoluteFill} pointerEvents="none">
-        <NativeBottomInset onChange={setMapSafeAreaBottom} />
-      </SafeAreaProvider>
-      <MapView
-        ref={mapRef}
-        style={{ flex: 1 }}
-        provider={PROVIDER_DEFAULT}
-        initialRegion={INITIAL_REGION}
-        showsUserLocation={hasLocationPermission}
-        showsPointsOfInterests={false}
-        onRegionChangeComplete={setRegion}
-        userInterfaceStyle={isDarkMode ? 'dark' : 'light'}
-        mapPadding={{
-          top: insets.top,
-          right: 0,
-          bottom: Math.max(
-            0,
-            mapControlsHeight + bottomOffset + MAP_ATTRIBUTION_GAP - mapSafeAreaBottom,
-          ),
-          left: MAP_ATTRIBUTION_INSET,
-        }}
-        loadingEnabled
-        loadingBackgroundColor={theme.background}
-      >
-        {markers.map((marker) =>
-          marker.kind === 'place' ? (
-            renderPlace(marker.place, marker.coordinates)
-          ) : (
-            <Marker
-              key={`cluster-${marker.cluster.id}-${marker.cluster.places.length}`}
-              coordinate={marker.cluster.coordinates}
-              tracksViewChanges={false}
-              accessibilityLabel={`${marker.cluster.places.length} places`}
-              onPress={() => {
-                haptics.tap();
-                mapRef.current?.animateToRegion(
-                  regionAround(
-                    marker.cluster.places,
-                    zoom === 'labels' ? CLUSTER_ZOOM_DELTA : undefined,
-                  ),
-                  450,
-                );
-              }}
-            >
-              <ClusterPin cluster={marker.cluster} />
-            </Marker>
-          ),
-        )}
-      </MapView>
-
-      {hasLocationPermission && userCoordinates && !isSheetAboveHalf && (
-        <GlassButton
-          testID="map-locate-button"
-          accessibilityLabel="Show my location"
-          size={44}
-          fallbackColor={theme.card}
-          onPress={() => {
-            haptics.tap();
-            mapRef.current?.animateToRegion(
-              { ...userCoordinates, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-              450,
-            );
+    <TabSwipe
+      tab="map"
+      area={{ kind: 'edges', top: insets.top, bottom: sheetHeight + bottomOffset }}
+    >
+      <View style={{ flex: 1, backgroundColor: theme.background }}>
+        <SafeAreaProvider style={StyleSheet.absoluteFill} pointerEvents="none">
+          <NativeBottomInset onChange={setMapSafeAreaBottom} />
+        </SafeAreaProvider>
+        <MapView
+          ref={mapRef}
+          style={{ flex: 1 }}
+          provider={PROVIDER_DEFAULT}
+          initialRegion={INITIAL_REGION}
+          showsUserLocation={hasLocationPermission}
+          showsPointsOfInterests={false}
+          onRegionChangeComplete={setRegion}
+          userInterfaceStyle={isDarkMode ? 'dark' : 'light'}
+          mapPadding={{
+            top: insets.top,
+            right: 0,
+            bottom: Math.max(
+              0,
+              mapControlsHeight + bottomOffset + MAP_ATTRIBUTION_GAP - mapSafeAreaBottom,
+            ),
+            left: MAP_ATTRIBUTION_INSET,
           }}
-          style={[
-            { position: 'absolute', right: 16, bottom: bottomOffset + mapControlsHeight + 12 },
-            !hasGlass && {
-              shadowColor: '#000',
-              shadowOpacity: 0.18,
-              shadowRadius: 8,
-              shadowOffset: { width: 0, height: 2 },
-            },
-          ]}
+          loadingEnabled
+          loadingBackgroundColor={theme.background}
         >
-          <LocateFixed size={20} color={theme.tint} />
-        </GlassButton>
-      )}
+          {markers.map((marker) =>
+            marker.kind === 'place' ? (
+              renderPlace(marker.place, marker.coordinates)
+            ) : (
+              <Marker
+                key={`cluster-${marker.cluster.id}-${marker.cluster.places.length}`}
+                coordinate={marker.cluster.coordinates}
+                tracksViewChanges={false}
+                accessibilityLabel={`${marker.cluster.places.length} places`}
+                onPress={() => {
+                  haptics.tap();
+                  mapRef.current?.animateToRegion(
+                    regionAround(
+                      marker.cluster.places,
+                      zoom === 'labels' ? CLUSTER_ZOOM_DELTA : undefined,
+                    ),
+                    450,
+                  );
+                }}
+              >
+                <ClusterPin cluster={marker.cluster} />
+              </Marker>
+            ),
+          )}
+        </MapView>
 
-      <MapSheet
-        ref={sheetRef}
-        mode={selectedPlace ? 'place' : search.status === 'searching' ? 'search' : 'browse'}
-        placeKey={selectedPlace?.name ?? null}
-        query={mapSearch.query}
-        onQueryChange={mapSearch.setQuery}
-        onFocusSearch={mapSearch.focus}
-        onCancelSearch={mapSearch.cancel}
-        onSubmitSearch={() => runQuery(mapSearch.query)}
-        bottomOffset={bottomOffset}
-        onHeightChange={setSheetHeight}
-      >
-        {selectedPlace ? (
-          <View style={{ flex: 1 }}>
-            <PlaceCard
-              place={selectedPlace}
-              userCoordinates={userCoordinates}
-              foods={mapSearch.selectedFoods}
-              onClose={mapSearch.back}
-            />
-          </View>
-        ) : search.status === 'searching' ? (
-          <SearchPanel
-            query={mapSearch.query}
-            searchedQuery={mapSearch.searchedQuery}
-            isLoaded={isLoaded}
-            results={mapSearch.results}
-            buildings={mapSearch.buildings}
-            menuMatches={mapSearch.menuMatches}
-            recents={mapSearch.recents}
-            userCoordinates={userCoordinates}
-            onPickPlace={focusPlace}
-            onRunQuery={runQuery}
-            onClearQuery={() => mapSearch.setQuery('')}
-            onClearRecents={mapSearch.clearRecents}
-          />
-        ) : (
-          <BrowseList
-            places={filteredPlaces}
-            isLoaded={isLoaded}
-            filters={filters}
-            userCoordinates={userCoordinates}
-            onToggleFilter={toggleFilter}
-            onClearFilters={() => setFilters(new Set())}
-            onSelectPlace={focusPlace}
-          />
+        {hasLocationPermission && userCoordinates && !isSheetAboveHalf && (
+          <GlassButton
+            testID="map-locate-button"
+            accessibilityLabel="Show my location"
+            size={44}
+            fallbackColor={theme.card}
+            onPress={() => {
+              haptics.tap();
+              mapRef.current?.animateToRegion(
+                { ...userCoordinates, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+                450,
+              );
+            }}
+            style={[
+              { position: 'absolute', right: 16, bottom: bottomOffset + mapControlsHeight + 12 },
+              !hasGlass && {
+                shadowColor: '#000',
+                shadowOpacity: 0.18,
+                shadowRadius: 8,
+                shadowOffset: { width: 0, height: 2 },
+              },
+            ]}
+          >
+            <LocateFixed size={20} color={theme.tint} />
+          </GlassButton>
         )}
-      </MapSheet>
-    </View>
+
+        <MapSheet
+          ref={sheetRef}
+          mode={selectedPlace ? 'place' : search.status === 'searching' ? 'search' : 'browse'}
+          placeKey={selectedPlace?.name ?? null}
+          query={mapSearch.query}
+          onQueryChange={mapSearch.setQuery}
+          onFocusSearch={mapSearch.focus}
+          onCancelSearch={mapSearch.cancel}
+          onSubmitSearch={() => runQuery(mapSearch.query)}
+          bottomOffset={bottomOffset}
+          onHeightChange={setSheetHeight}
+        >
+          {selectedPlace ? (
+            <View style={{ flex: 1 }}>
+              <PlaceCard
+                place={selectedPlace}
+                userCoordinates={userCoordinates}
+                foods={mapSearch.selectedFoods}
+                onClose={mapSearch.back}
+              />
+            </View>
+          ) : search.status === 'searching' ? (
+            <SearchPanel
+              query={mapSearch.query}
+              searchedQuery={mapSearch.searchedQuery}
+              isLoaded={isLoaded}
+              results={mapSearch.results}
+              buildings={mapSearch.buildings}
+              menuMatches={mapSearch.menuMatches}
+              recents={mapSearch.recents}
+              userCoordinates={userCoordinates}
+              onPickPlace={focusPlace}
+              onRunQuery={runQuery}
+              onClearQuery={() => mapSearch.setQuery('')}
+              onClearRecents={mapSearch.clearRecents}
+            />
+          ) : (
+            <BrowseList
+              places={filteredPlaces}
+              isLoaded={isLoaded}
+              filters={filters}
+              userCoordinates={userCoordinates}
+              onToggleFilter={toggleFilter}
+              onClearFilters={() => setFilters(new Set())}
+              onSelectPlace={focusPlace}
+            />
+          )}
+        </MapSheet>
+      </View>
+    </TabSwipe>
   );
 };
 
