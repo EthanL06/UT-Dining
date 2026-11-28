@@ -11,6 +11,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PLACE_ICONS, usePlaceColor } from '~/components/map/MapSheet';
 import PlaceDetails, { openPlaceDirections } from '~/components/PlaceDetails';
+import { GlassButton, useLiquidGlass } from '~/components/ui/Glass';
 import { Image } from '~/components/ui/Image';
 import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
@@ -26,6 +27,7 @@ const COVER_HEIGHT = 240;
 export default function LocationGenericScreen() {
   const { location } = useLocalSearchParams<{ location: string }>();
   const theme = useTheme();
+  const hasGlass = useLiquidGlass();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
@@ -123,16 +125,15 @@ export default function LocationGenericScreen() {
             )}
           </Animated.View>
           <Animated.View className="absolute top-4 left-4" style={closeStyle}>
-            <PressableScale
+            <GlassButton
               testID="back-button"
               accessibilityLabel="Close"
-              accessibilityRole="button"
+              size={44}
+              fallbackColor="rgba(0,0,0,0.35)"
               onPress={() => router.back()}
-              className="size-11 items-center justify-center rounded-full"
-              style={{ backgroundColor: 'rgba(0,0,0,0.35)' }}
             >
-              <X size={20} color="#FFFFFF" />
-            </PressableScale>
+              <X size={20} color={hasGlass ? theme.label : '#FFFFFF'} />
+            </GlassButton>
           </Animated.View>
         </View>
 
@@ -145,7 +146,7 @@ export default function LocationGenericScreen() {
             </View>
           )}
           <Link.AppleZoomTarget>
-            <View>
+            <View collapsable={false}>
               <Text variant="title1">{displayName}</Text>
               <Text variant="subheadline" tone="secondary" className="mt-0.5">
                 <Text

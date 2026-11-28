@@ -1,8 +1,9 @@
 import { useIsFetching } from '@tanstack/react-query';
-import { Stack, useLocalSearchParams, usePreventZoomTransitionDismissal } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { EdgeSwipeDismissal } from '~/components/EdgeSwipeDismissal';
 import type { RowPosition } from '~/components/FoodComponent';
 import { StaggerIn } from '~/components/motion/StaggerIn';
 import { pushedScreenHeaderOptions } from '~/components/TabStack';
@@ -58,19 +59,6 @@ const useSkeletonItems = (): ListItem[] => {
     }
     return items;
   }, []);
-};
-
-const EDGE_SWIPE_DISMISSAL = { unstable_dismissalBoundsRect: { maxX: 24 } };
-
-const EdgeSwipeDismissalBounds = () => {
-  usePreventZoomTransitionDismissal(EDGE_SWIPE_DISMISSAL);
-  return null;
-};
-
-const EdgeSwipeDismissal = () => {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  return mounted ? <EdgeSwipeDismissalBounds /> : null;
 };
 
 const Location = () => {

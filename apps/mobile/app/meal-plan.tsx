@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AppState, Alert as NativeAlert, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DayStrip } from '~/components/DayStrip';
+import { EdgeSwipeDismissal } from '~/components/EdgeSwipeDismissal';
 import { formatGrams, formatNumber } from '~/components/mealPlan/format';
 import { PlanRow } from '~/components/mealPlan/PlanRow';
 import { UndoToast } from '~/components/mealPlan/UndoToast';
@@ -145,6 +146,7 @@ const MealPlan = () => {
 
   return (
     <>
+      <EdgeSwipeDismissal />
       <Stack.Screen
         options={{
           title: 'Meal Plan',

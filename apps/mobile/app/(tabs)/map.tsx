@@ -7,11 +7,13 @@ import type { Region } from 'react-native-maps';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BrowseList } from '~/components/map/BrowseList';
+import { MapCover, useMapCover } from '~/components/map/MapCover';
 import { ClosedDot, ClusterPin, IconPin, LabelPin } from '~/components/map/MapPins';
 import { MapSheet, type MapSheetHandle, SHEET_HALF_FRACTION } from '~/components/map/MapSheet';
 import { PlaceCard } from '~/components/map/PlaceCard';
 import type { MapFilterId } from '~/components/map/placeStyle';
 import { SearchPanel } from '~/components/map/SearchPanel';
+import { SheetLayer } from '~/components/map/SheetLayer';
 import { TabSwipe } from '~/components/TabSwipe';
 import { GlassButton, useLiquidGlass } from '~/components/ui/Glass';
 import { MICROWAVE_LOCATIONS } from '~/data/MicrowaveLocations';
@@ -75,6 +77,7 @@ const MapPage = () => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
   const mapRef = useRef<MapView>(null);
+  const mapCover = useMapCover();
   const [region, setRegion] = useState<Region>(INITIAL_REGION);
   const [locationAccess, setLocationAccess] = useState<LocationAccess>({ status: 'unknown' });
   const hasLocationPermission = locationAccess.status === 'granted';
@@ -301,6 +304,7 @@ const MapPage = () => {
           showsUserLocation={hasLocationPermission}
           showsPointsOfInterests={false}
           onRegionChangeComplete={setRegion}
+          onMapReady={mapCover.reveal}
           userInterfaceStyle={isDarkMode ? 'dark' : 'light'}
           mapPadding={{
             top: insets.top,
@@ -339,6 +343,7 @@ const MapPage = () => {
             ),
           )}
         </MapView>
+        <MapCover opacity={mapCover.opacity} />
 
         {hasLocationPermission && userCoordinates && !isSheetAboveHalf && (
           <GlassButton
@@ -379,41 +384,41 @@ const MapPage = () => {
           bottomOffset={bottomOffset}
           onHeightChange={setSheetHeight}
         >
-          {selectedPlace ? (
-            <View style={{ flex: 1 }}>
+          <SheetLayer layerKey={selectedPlace ? `place-${selectedPlace.name}` : 'list'}>
+            {selectedPlace ? (
               <PlaceCard
                 place={selectedPlace}
                 userCoordinates={userCoordinates}
                 foods={mapSearch.selectedFoods}
                 onClose={mapSearch.back}
               />
-            </View>
-          ) : search.status === 'searching' ? (
-            <SearchPanel
-              query={mapSearch.query}
-              searchedQuery={mapSearch.searchedQuery}
-              isLoaded={isLoaded}
-              results={mapSearch.results}
-              buildings={mapSearch.buildings}
-              menuMatches={mapSearch.menuMatches}
-              recents={mapSearch.recents}
-              userCoordinates={userCoordinates}
-              onPickPlace={focusPlace}
-              onRunQuery={runQuery}
-              onClearQuery={() => mapSearch.setQuery('')}
-              onClearRecents={mapSearch.clearRecents}
-            />
-          ) : (
-            <BrowseList
-              places={filteredPlaces}
-              isLoaded={isLoaded}
-              filters={filters}
-              userCoordinates={userCoordinates}
-              onToggleFilter={toggleFilter}
-              onClearFilters={() => setFilters(new Set())}
-              onSelectPlace={focusPlace}
-            />
-          )}
+            ) : search.status === 'searching' ? (
+              <SearchPanel
+                query={mapSearch.query}
+                searchedQuery={mapSearch.searchedQuery}
+                isLoaded={isLoaded}
+                results={mapSearch.results}
+                buildings={mapSearch.buildings}
+                menuMatches={mapSearch.menuMatches}
+                recents={mapSearch.recents}
+                userCoordinates={userCoordinates}
+                onPickPlace={focusPlace}
+                onRunQuery={runQuery}
+                onClearQuery={() => mapSearch.setQuery('')}
+                onClearRecents={mapSearch.clearRecents}
+              />
+            ) : (
+              <BrowseList
+                places={filteredPlaces}
+                isLoaded={isLoaded}
+                filters={filters}
+                userCoordinates={userCoordinates}
+                onToggleFilter={toggleFilter}
+                onClearFilters={() => setFilters(new Set())}
+                onSelectPlace={focusPlace}
+              />
+            )}
+          </SheetLayer>
         </MapSheet>
       </View>
     </TabSwipe>

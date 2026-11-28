@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { toCentralTime } from '@ut-dining/core';
 import * as Network from 'expo-network';
-import { Link, router, Stack } from 'expo-router';
+import { Link, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { Heart } from 'lucide-react-native';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -22,6 +22,7 @@ import Reanimated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { FilterType } from '~/components/FilterBar';
+import { QuickLink } from '~/components/home/QuickLink';
 import { RefreshDrop } from '~/components/home/RefreshDrop';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
 import OnboardingScreen from '~/components/onboarding/OnboardingScreen';
@@ -119,41 +120,6 @@ const greeting = (time: Date) => {
   if (hour < 18) return 'Good Afternoon!';
   return 'Good Evening!';
 };
-
-const QuickLink = ({
-  title,
-  icon,
-  href,
-  theme,
-}: {
-  title: string;
-  icon: React.ReactNode;
-  href: '/favorites' | '/meal-plan';
-  theme: Theme;
-}) => (
-  <View
-    className="flex-1 overflow-hidden"
-    style={{ backgroundColor: theme.card, borderRadius: 22, borderCurve: 'continuous' }}
-  >
-    <Pressable
-      testID={`home-${href.slice(1)}-button`}
-      accessibilityRole="button"
-      onPress={() => router.push(href)}
-    >
-      {({ pressed }) => (
-        <View
-          className="flex-row items-center gap-x-2.5 px-4 py-3.5"
-          style={{ backgroundColor: pressed ? theme.fill : 'transparent' }}
-        >
-          {icon}
-          <Text variant="subheadline" emphasized>
-            {title}
-          </Text>
-        </View>
-      )}
-    </Pressable>
-  </View>
-);
 
 const TypeChip = ({
   title,
