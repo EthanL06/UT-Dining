@@ -1,4 +1,4 @@
-import { and, count, eq } from 'drizzle-orm';
+import { and, count, eq, inArray } from 'drizzle-orm';
 import type { ExpoSQLiteDatabase } from 'drizzle-orm/expo-sqlite';
 import * as schema from './schema';
 import type { FoodItem } from './types';
@@ -123,3 +123,30 @@ export const restoreFavoriteRow = async (
 
 export const countFavorites = (db: ExpoSQLiteDatabase<typeof schema>) =>
   db.select({ value: count() }).from(schema.favorites).get()?.value ?? 0;
+
+export const clearFavorites = async (db: ExpoSQLiteDatabase<typeof schema>) => {
+  await db.delete(schema.favorites).execute();
+};
+
+export const todaysFavoriteMenuRows = (
+  db: ExpoSQLiteDatabase<typeof schema>,
+  names: string[],
+  date: string,
+) =>
+  names.length === 0
+    ? []
+    : db
+        .select({
+          name: schema.food_item.name,
+          location: schema.location.name,
+          menu: schema.menu.name,
+        })
+        .from(schema.food_item)
+        .innerJoin(
+          schema.menu_category,
+          eq(schema.food_item.menu_category_id, schema.menu_category.id),
+        )
+        .innerJoin(schema.menu, eq(schema.menu_category.menu_id, schema.menu.id))
+        .innerJoin(schema.location, eq(schema.menu.location_id, schema.location.id))
+        .where(and(eq(schema.menu.date, date), inArray(schema.food_item.name, names)))
+        .all();

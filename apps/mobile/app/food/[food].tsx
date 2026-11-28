@@ -1,5 +1,3 @@
-import { and, eq } from 'drizzle-orm';
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Flame, Info, X } from 'lucide-react-native';
 import { useEffect, useEffectEvent } from 'react';
@@ -20,13 +18,12 @@ import {
   DAILY_VALUES,
   INDENTED_NUTRITION,
 } from '~/data/AllergenInfo';
-import { useDatabase } from '~/hooks/useDatabase';
 import { useFavorite } from '~/hooks/useFavorite';
+import { useFavoriteActions, useIsFavoriteSaved } from '~/hooks/useFavorites';
 import { useFoodData } from '~/hooks/useFoodData';
 import { analytics } from '~/services/analytics/posthog';
-import * as schema from '~/services/database/schema';
 import { todayKey, useIsMealPlanItem } from '~/store/useMealPlanStore';
-import { toggleFavoriteForFood, toggleMealPlanForFood } from '~/utils/foodActions';
+import { toggleMealPlanForFood } from '~/utils/foodActions';
 import { haptics } from '~/utils/haptics';
 import { type Theme, useTheme } from '~/utils/theme';
 import { displayNutrient } from '~/utils/utils';
@@ -69,20 +66,9 @@ export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
   const { food, menu, category, location, favorite, date } = params;
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const db = useDatabase();
-  const { data: favoriteRows } = useLiveQuery(
-    db
-      .select({ id: schema.favorites.id })
-      .from(schema.favorites)
-      .where(
-        and(
-          eq(schema.favorites.name, food ?? ''),
-          eq(schema.favorites.location_name, location ?? ''),
-        ),
-      ),
-    [food, location],
-  );
-  const isFavorite = useFavorite(food ?? '', location ?? '', favoriteRows.length > 0);
+  const favoriteActions = useFavoriteActions();
+  const isFavoriteSaved = useIsFavoriteSaved(food ?? '', location ?? '');
+  const isFavorite = useFavorite(food ?? '', location ?? '', isFavoriteSaved);
   const planDate = date || todayKey();
   const canMealPlan = planDate >= todayKey();
   const isMealPlan = useIsMealPlanItem(
@@ -296,7 +282,7 @@ export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
               onPress={async () => {
                 if (isFavorite) haptics.remove();
                 else haptics.success();
-                await toggleFavoriteForFood(db, foodItem, context);
+                await favoriteActions.toggle(foodItem, context);
               }}
               containerStyle={{ flex: 1 }}
               className="h-12 flex-row items-center justify-center gap-x-2 rounded-full"

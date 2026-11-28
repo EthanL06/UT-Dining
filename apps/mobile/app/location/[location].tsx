@@ -1,7 +1,5 @@
 import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { useIsFetching } from '@tanstack/react-query';
-import { eq } from 'drizzle-orm';
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
@@ -11,8 +9,8 @@ import { StaggerIn } from '~/components/motion/StaggerIn';
 import { Text } from '~/components/ui/Text';
 import type { ListItem } from '~/hooks/useCategoryExpansion';
 import { useCategoryExpansion } from '~/hooks/useCategoryExpansion';
-import { useDatabase } from '~/hooks/useDatabase';
 import { useDebounce } from '~/hooks/useDebounce';
+import { useFavoriteActions, useLocationFavorites } from '~/hooks/useFavorites';
 import { useMenuData } from '~/hooks/useMenuData';
 import { MENU_SYNC_QUERY_KEY } from '~/hooks/useMenuSync';
 import { useMultiSelect } from '~/hooks/useMultiSelect';
@@ -20,13 +18,12 @@ import { useRatingPromptOnMenuView } from '~/hooks/useRatingPromptOnMenuView';
 import { useScrollToTop } from '~/hooks/useScrollToTop';
 import { analytics } from '~/services/analytics/posthog';
 import type { FoodItem } from '~/services/database/database';
-import * as schema from '~/services/database/schema';
 import { useFiltersStore } from '~/store/useFiltersStore';
 import { mealPlanItemId, useMealPlanItems } from '~/store/useMealPlanStore';
 import { useMealStripStore } from '~/store/useMealStripStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { hasActiveFilters } from '~/utils/filter';
-import { addFoodsToMealPlan, favoriteFoods } from '~/utils/foodActions';
+import { addFoodsToMealPlan } from '~/utils/foodActions';
 import { haptics } from '~/utils/haptics';
 import { log } from '~/utils/log';
 import { menuEmptyState } from '~/utils/menuList';
@@ -76,7 +73,7 @@ const Location = () => {
   const isSyncing = useIsFetching({ queryKey: MENU_SYNC_QUERY_KEY }) > 0;
   const { collapsed, toggleCategory, resetExpandedCategories, source, cache } =
     useCategoryExpansion(data);
-  const db = useDatabase();
+  const favoriteActions = useFavoriteActions();
   const {
     selecting,
     selectedIds,
@@ -90,10 +87,7 @@ const Location = () => {
     if (location) setLastOpenedLocation(location);
   }, [location, setLastOpenedLocation]);
 
-  const { data: favorites } = useLiveQuery(
-    db.select().from(schema.favorites).where(eq(schema.favorites.location_name, location)),
-    [location],
-  );
+  const favorites = useLocationFavorites(location);
 
   const foodNames = useMemo(
     () => source.flatMap((category) => category.foods.map((food) => food.data.name ?? null)),
@@ -220,7 +214,6 @@ const Location = () => {
                 selectedMenu={selectedMenu ?? ''}
                 location={location as string}
                 date={selectedDate}
-                db={db}
                 isFavorite={favoriteNames.has(item.data.name ?? '')}
                 canMealPlan={canMealPlan}
                 selecting={selecting}
@@ -248,7 +241,6 @@ const Location = () => {
       selectedDate,
       handleToggleCategory,
       favoriteNames,
-      db,
       canMealPlan,
       selecting,
       selectedIds,
@@ -321,8 +313,7 @@ const Location = () => {
           canMealPlan={canMealPlan}
           onFavorite={async () => {
             haptics.success();
-            await favoriteFoods(
-              db,
+            await favoriteActions.favoriteMany(
               selectedEntries.map((entry) => ({
                 ...entry,
                 isFavorite: favoriteNames.has(entry.food.name ?? ''),

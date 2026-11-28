@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { formatHhmm } from '@ut-dining/core';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
@@ -7,7 +6,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { StatusDot } from '~/components/ui/Grouped';
 import { Text } from '~/components/ui/Text';
-import { useDatabase } from '~/hooks/useDatabase';
+import { useCachedMenuData } from '~/hooks/useCachedMenuData';
+import { useLocationIdsWithMenus } from '~/hooks/useLocationIdsWithMenus';
 import { useNow } from '~/hooks/useNow';
 import type { Location as LocationRow } from '~/services/database/schema';
 import { useMealStripStore } from '~/store/useMealStripStore';
@@ -15,8 +15,7 @@ import { useSettingsStore } from '~/store/useSettingsStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { haptics } from '~/utils/haptics';
 import { displayLocationName } from '~/utils/locationName';
-import { getLocationIdsWithMenus, isLocationOpenNow } from '~/utils/locationStatus';
-import { readCachedMenuData } from '~/utils/queries';
+import { isLocationOpenNow } from '~/utils/locationStatus';
 import { useTheme } from '~/utils/theme';
 import { getCurrentMeal } from '~/utils/time';
 
@@ -39,22 +38,16 @@ const useLastKnownCoords = () => {
 };
 
 export const useCurrentMealStrip = () => {
-  const db = useDatabase();
   const now = useNow();
   const coords = useLastKnownCoords();
   const lastOpenedLocation = useMealStripStore((state) => state.lastOpenedLocation);
   const dismissedMeal = useMealStripStore((state) => state.dismissedMeal);
-  const { data } = useQuery({
-    queryKey: ['menuData'],
-    queryFn: () => readCachedMenuData(db),
-    staleTime: Number.POSITIVE_INFINITY,
-    retry: false,
-  });
+  const { data } = useCachedMenuData();
+  const today = getTodayInCentralTime();
+  const withMenus = useLocationIdsWithMenus(today);
 
   return useMemo(() => {
     if (!data) return null;
-    const today = getTodayInCentralTime();
-    const withMenus = getLocationIdsWithMenus(db, today);
     const candidates = data.locations.flatMap((location) => {
       if (location.type !== 'Dining Hall' || !isLocationOpenNow(location, withMenus, now)) {
         return [];
@@ -76,7 +69,7 @@ export const useCurrentMealStrip = () => {
     if (mealKey === dismissedMeal) return null;
 
     return { location: chosen.location, meal: chosen.meal, mealKey };
-  }, [data, db, now, coords, lastOpenedLocation, dismissedMeal]);
+  }, [data, withMenus, today, now, coords, lastOpenedLocation, dismissedMeal]);
 };
 
 export const MealStrip = ({
