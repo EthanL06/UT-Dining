@@ -1,0 +1,7 @@
+language js
+
+`import $clause from $source` as $import where {
+  $source <: r"['\"](?:drizzle-orm(?:/.*)?|expo-sqlite(?:/.*)?|~/hooks/useDatabase|.*services/database/(?:database|schema|connection|favorites|locations))['\"]",
+  not $import <: r"^import\s+type\s[\s\S]*",
+  register_diagnostic(span=$import, message="Screens and components don't query SQLite. Read through a hook in ~/hooks (for example useLocationIdsWithMenus or useCachedMenuData) and import only types from services/database.", severity="error")
+}

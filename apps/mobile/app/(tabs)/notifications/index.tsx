@@ -1,6 +1,4 @@
 import { daysBetweenDateKeys, formatCentral, toCentralTime } from '@ut-dining/core';
-import { eq, sql } from 'drizzle-orm';
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { type Href, router, Stack, useFocusEffect } from 'expo-router';
 import { Bell, ChefHat, type LucideIcon, MapPin, Megaphone, Star } from 'lucide-react-native';
 import { useCallback, useMemo } from 'react';
@@ -8,9 +6,7 @@ import { Pressable, View } from 'react-native';
 import { GroupedSection } from '~/components/ui/Grouped';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
-import { useDatabase } from '~/hooks/useDatabase';
-import * as schema from '~/services/database/schema';
-import { useDataSyncStore } from '~/store/useDataSyncStore';
+import { useNotificationRows } from '~/hooks/useNotificationRows';
 import { useNotificationsStore } from '~/store/useNotificationsStore';
 import { haptics } from '~/utils/haptics';
 import { isNotificationVisible } from '~/utils/notificationVisibility';
@@ -116,7 +112,6 @@ const NotificationRow = ({
 
 const Notifications = () => {
   const theme = useTheme();
-  const db = useDatabase();
   const { lastVisited, setLastVisited, visibleSince } = useNotificationsStore();
 
   useFocusEffect(
@@ -127,26 +122,7 @@ const Notifications = () => {
     }, [setLastVisited]),
   );
 
-  const lastSyncTime = useDataSyncStore((state) => state.lastSupabaseQueryTime);
-  const { data: dbNotifications = [] } = useLiveQuery(
-    db
-      ?.select({
-        id: schema.notifications.id,
-        title: schema.notifications.title,
-        body: schema.notifications.body,
-        redirect_url: schema.notifications.redirect_url,
-        type: schema.notifications.type,
-        sent_at: schema.notifications.sent_at,
-        type_name: schema.notification_types.name,
-      })
-      .from(schema.notifications)
-      .leftJoin(
-        schema.notification_types,
-        eq(schema.notifications.type, schema.notification_types.id),
-      )
-      .orderBy(sql`datetime(${schema.notifications.sent_at}) DESC`),
-    [lastSyncTime],
-  );
+  const dbNotifications = useNotificationRows();
 
   const groups = useMemo(() => {
     const today = new Date();

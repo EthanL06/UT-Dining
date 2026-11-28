@@ -2,9 +2,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Download, Filter, Heart, Inbox, Palette, RefreshCcw, Trash2 } from 'lucide-react-native';
 
 import { GroupedSection } from '~/components/ui/Grouped';
-import { useDatabase } from '~/hooks/useDatabase';
+import { useFavoriteActions } from '~/hooks/useFavorites';
 import { forceMenuSync } from '~/hooks/useMenuSync';
-import * as schema from '~/services/database/schema';
 import { useDataSyncStore } from '~/store/useDataSyncStore';
 import { useFiltersStore } from '~/store/useFiltersStore';
 import { useMealPlanStore } from '~/store/useMealPlanStore';
@@ -13,7 +12,7 @@ import { useSettingsStore } from '~/store/useSettingsStore';
 import { ActionRow, COLORS, confirm, useActionStatus } from './shared';
 
 export const DataSection = () => {
-  const db = useDatabase();
+  const favoriteActions = useFavoriteActions();
   const queryClient = useQueryClient();
   const setMenuDayVersions = useDataSyncStore((state) => state.setMenuDayVersions);
   const setSharedTablesVersion = useDataSyncStore((state) => state.setSharedTablesVersion);
@@ -41,7 +40,7 @@ export const DataSection = () => {
   const clearFavorites = () =>
     confirm('Clear favorites?', 'Removes every favorite on this phone.', () =>
       run('favorites', async () => {
-        await db.delete(schema.favorites).execute();
+        await favoriteActions.clearAll();
         await refreshScreens();
       }),
     );

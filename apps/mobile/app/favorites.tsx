@@ -1,5 +1,3 @@
-import { and, eq, inArray } from 'drizzle-orm';
-import { useLiveQuery } from 'drizzle-orm/expo-sqlite';
 import { router, Stack } from 'expo-router';
 import { Heart } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
@@ -13,15 +11,16 @@ import { pushedScreenHeaderOptions } from '~/components/TabStack';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { PressableScale } from '~/components/ui/PressableScale';
 import { Text } from '~/components/ui/Text';
-import { useDatabase } from '~/hooks/useDatabase';
-import type { DrizzleDB } from '~/services/database/database';
-import * as schema from '~/services/database/schema';
-import { useDataSyncStore } from '~/store/useDataSyncStore';
+import {
+  useFavoriteActions,
+  useFavoritesList,
+  useTodaysFavoriteMenuRows,
+} from '~/hooks/useFavorites';
+import type * as schema from '~/services/database/schema';
 import { useFavoriteOverridesStore } from '~/store/useFavoriteOverridesStore';
 import { getTodayInCentralTime } from '~/utils/date';
 import { favoriteKey, shownFavorite } from '~/utils/favoriteOverride';
 import { favoritesView } from '~/utils/favoritesView';
-import { restoreFavorite, setFavoriteForFood } from '~/utils/foodActions';
 import { haptics } from '~/utils/haptics';
 import { useTheme } from '~/utils/theme';
 import { timeOfDay } from '~/utils/time';
@@ -44,22 +43,9 @@ const positionOf = (index: number, count: number): RowPosition => {
 
 const matchKey = (name: string, location: string) => `${location}\u001f${name}`;
 
-const todaysMatches = (db: DrizzleDB, names: string[]) => {
-  if (names.length === 0) return new Map<string, TodayMatch>();
-  const rows = db
-    .select({
-      name: schema.food_item.name,
-      location: schema.location.name,
-      menu: schema.menu.name,
-    })
-    .from(schema.food_item)
-    .innerJoin(schema.menu_category, eq(schema.food_item.menu_category_id, schema.menu_category.id))
-    .innerJoin(schema.menu, eq(schema.menu_category.menu_id, schema.menu.id))
-    .innerJoin(schema.location, eq(schema.menu.location_id, schema.location.id))
-    .where(
-      and(eq(schema.menu.date, getTodayInCentralTime()), inArray(schema.food_item.name, names)),
-    )
-    .all();
+type MenuRow = { name: string | null; location: string | null; menu: string | null };
+
+const todaysMatches = (rows: MenuRow[]) => {
   const currentMeal = CURRENT_MEAL[timeOfDay(new Date())];
   const matches = new Map<string, TodayMatch>();
   const ordered = [...rows].sort(
@@ -124,11 +110,10 @@ const FavoriteSection = ({
 };
 
 const Favorites = () => {
-  const db = useDatabase();
   const theme = useTheme();
-  const lastSyncedAt = useDataSyncStore((state) => state.lastSupabaseQueryTime);
   const insets = useSafeAreaInsets();
-  const { data: favorites, updatedAt } = useLiveQuery(db.select().from(schema.favorites));
+  const { favorites, loadedAt } = useFavoritesList();
+  const favoriteActions = useFavoriteActions();
   const overrides = useFavoriteOverridesStore((state) => state.overrides);
   const [undo, setUndo] = useState<Undo>({ status: 'idle' });
 
@@ -141,8 +126,7 @@ const Favorites = () => {
   const removeFavorite = (item: Favorite) => {
     haptics.remove();
     setUndo({ status: 'removed', item });
-    void setFavoriteForFood(
-      db,
+    void favoriteActions.set(
       { name: item.name, link: item.link ?? '', nutrition: undefined, allergens: undefined },
       { location: item.location_name, menu: item.menu_name, category: item.category_name },
       false,
@@ -152,7 +136,7 @@ const Favorites = () => {
   const undoRemove = () => {
     if (undo.status !== 'removed') return;
     haptics.success();
-    void restoreFavorite(db, undo.item);
+    void favoriteActions.restore(undo.item);
     setUndo({ status: 'idle' });
   };
 
@@ -165,16 +149,10 @@ const Favorites = () => {
         .sort((a, b) => new Date(b.date_added).getTime() - new Date(a.date_added).getTime()),
     [favorites, overrides],
   );
-  // biome-ignore lint/correctness/useExhaustiveDependencies: today's menus change after a sync
-  const matches = useMemo(
-    () =>
-      todaysMatches(
-        db,
-        sorted.map((item) => item.name),
-      ),
-    [db, sorted, lastSyncedAt],
-  );
-  const view = favoritesView(updatedAt, sorted.length);
+  const names = useMemo(() => sorted.map((item) => item.name), [sorted]);
+  const menuRows = useTodaysFavoriteMenuRows(names, getTodayInCentralTime());
+  const matches = useMemo(() => todaysMatches(menuRows), [menuRows]);
+  const view = favoritesView(loadedAt, sorted.length);
   const onToday = sorted.filter((item) => matches.has(matchKey(item.name, item.location_name)));
   const notToday = sorted.filter((item) => !matches.has(matchKey(item.name, item.location_name)));
 
