@@ -1,0 +1,58 @@
+appId: com.ethanl06.ut-dining.dev
+name: Swiping switches between Home, Map, Notifications and Settings
+---
+- runFlow: ../subflows/start.yaml
+- swipe:
+    start: 85%, 45%
+    end: 15%, 45%
+- extendedWaitUntil:
+    visible: Places, foods or buildings
+    timeout: 5000
+- swipe:
+    start: 50%, 30%
+    end: 10%, 30%
+- assertVisible: Places, foods or buildings
+- assertNotVisible: Today|Yesterday|Earlier
+- swipe:
+    start: 99%, 30%
+    end: 30%, 30%
+- extendedWaitUntil:
+    visible: Today|Yesterday|Earlier
+    timeout: 5000
+- swipe:
+    start: 85%, 45%
+    end: 15%, 45%
+- extendedWaitUntil:
+    visible:
+      id: settings-dark-mode-switch
+    timeout: 5000
+- swipe:
+    start: 85%, 45%
+    end: 15%, 45%
+- assertVisible:
+    id: settings-dark-mode-switch
+- swipe:
+    start: 15%, 45%
+    end: 85%, 45%
+- extendedWaitUntil:
+    visible: Today|Yesterday|Earlier
+    timeout: 5000
+- swipe:
+    start: 15%, 45%
+    end: 85%, 45%
+- extendedWaitUntil:
+    visible: Places, foods or buildings
+    timeout: 5000
+- swipe:
+    start: 1%, 30%
+    end: 70%, 30%
+- extendedWaitUntil:
+    visible: '(Breakfast|Lunch|Dinner) is served.*'
+    timeout: 5000
+- runFlow: ../subflows/open-j2.yaml
+- swipe:
+    start: 1%, 50%
+    end: 80%, 50%
+- extendedWaitUntil:
+    visible: '(Breakfast|Lunch|Dinner) is served.*'
+    timeout: 5000

@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useIsFocused } from 'expo-router';
+import { useCallback, useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import Reanimated, {
   type SharedValue,
@@ -15,15 +16,33 @@ const FALLBACK_REVEAL_MS = 1500;
 
 export const useMapCover = () => {
   const opacity = useSharedValue(1);
-  const reveal = () => {
-    opacity.value = withDelay(REVEAL_DELAY_MS, withTiming(0, { duration: REVEAL_MS }));
-  };
+  const isFocused = useIsFocused();
+  const focused = useRef(isFocused);
+  const mapReady = useRef(false);
+
+  const fade = useCallback(
+    (delay: number) => {
+      opacity.value = withDelay(delay, withTiming(0, { duration: REVEAL_MS }));
+    },
+    [opacity],
+  );
+
+  const reveal = useCallback(() => {
+    mapReady.current = true;
+    if (focused.current) fade(REVEAL_DELAY_MS);
+  }, [fade]);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (opacity.value === 1) opacity.value = withTiming(0, { duration: REVEAL_MS });
-    }, FALLBACK_REVEAL_MS);
+    focused.current = isFocused;
+    if (!isFocused) return;
+    if (mapReady.current) {
+      fade(REVEAL_DELAY_MS);
+      return;
+    }
+    const timer = setTimeout(() => fade(0), FALLBACK_REVEAL_MS);
     return () => clearTimeout(timer);
-  }, [opacity]);
+  }, [isFocused, fade]);
+
   return { opacity, reveal };
 };
 
