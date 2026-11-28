@@ -1,5 +1,5 @@
 home
-home-status-degraded e2e-setup?serviceStatus=degraded .*Some things aren.t working right.*
+home-status-degraded e2e-setup?serviceStatus=degraded .*Menus are running behind.*
 map map .*Places, foods or buildings.*
 notifications notifications .*Read All.*
 settings settings .*Dark Mode.*
