@@ -21,7 +21,7 @@ tags:
     timeout: 60000
 - repeat:
     while:
-      notVisible: Enable Permissions
+      notVisible: 'Enable Permissions|.*Would Like to Send You Notifications.*|.*to use your location.*'
     times: 8
     commands:
       - assertNotVisible: '.*Would Like to Send You Notifications.*|.*to use your location.*'
@@ -33,6 +33,7 @@ tags:
     timeout: 10000
 - takeScreenshot: permissions-prompt
 - runFlow: ../subflows/dismiss-alerts.yaml
+- assertVisible: Enable Permissions
 - tapOn:
     id: onboarding-next-button
 - extendedWaitUntil:

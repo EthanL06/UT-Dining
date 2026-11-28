@@ -19,22 +19,21 @@ tags:
     id: map-search-input
 - inputText: Jarket
 - extendedWaitUntil:
-    visible: 'Jarket(,.*)?'
+    visible: 'Jarket, .*'
     timeout: 10000
-- tapOn:
-    text: 'Jarket(,.*)?'
-    index: 0
+- tapOn: 'Jarket, .*'
 - extendedWaitUntil:
     visible:
       id: map-view-place-button
     timeout: 5000
-- assertVisible: Details
+- assertVisible: View Menu
 - tapOn:
     id: map-view-place-button
 - extendedWaitUntil:
     visible:
-      id: generic-directions-button
+      id: back-button
     timeout: 10000
+- assertVisible: 'Jarket(,.*)?'
 - assertNotVisible:
     id: place-unavailable
 - tapOn:
@@ -48,6 +47,7 @@ tags:
 - extendedWaitUntil:
     visible: "Jendy's(,.*)?"
     timeout: 10000
+- tapOn: Cancel
 - tapOn:
     id: search-tab
 - inputText: Jendy

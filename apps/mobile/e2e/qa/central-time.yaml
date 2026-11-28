@@ -32,6 +32,11 @@ tags:
     direction: DOWN
     timeout: 20000
 - assertNotVisible: 'Central Tomorrow Special(,.*)?'
+- scrollUntilVisible:
+    element:
+      id: menu-day-1
+    direction: UP
+    timeout: 20000
 - tapOn:
     id: menu-day-1
 - extendedWaitUntil:
@@ -44,6 +49,11 @@ tags:
     direction: DOWN
     timeout: 20000
 - assertNotVisible: 'Central Today Special(,.*)?'
+- scrollUntilVisible:
+    element:
+      id: menu-day--1
+    direction: UP
+    timeout: 20000
 - tapOn:
     id: menu-day--1
 - extendedWaitUntil:
