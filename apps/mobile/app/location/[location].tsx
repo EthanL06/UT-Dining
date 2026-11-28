@@ -63,6 +63,8 @@ const useSkeletonItems = (): ListItem[] => {
   }, []);
 };
 
+const DARK_SEARCH_FIELD = '#2C2C2E';
+
 const EDGE_SWIPE_DISMISSAL = { unstable_dismissalBoundsRect: { maxX: 24 } };
 
 const EdgeSwipeDismissalBounds = () => {
@@ -123,6 +125,7 @@ const Location = () => {
   const [searching, setSearching] = useState(false);
   const searchBarRef = useRef<SearchBarCommands>(null);
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
+  const isDarkMode = useSettingsStore((state) => state.isDarkMode);
   const displayName = useLocationName(location, useColloquialNames);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
@@ -330,7 +333,7 @@ const Location = () => {
             obscureBackground: false,
             hideNavigationBar: false,
             hideWhenScrolling: false,
-            barTintColor: theme.searchField,
+            barTintColor: isDarkMode ? DARK_SEARCH_FIELD : undefined,
             textColor: theme.label,
             tintColor: theme.tint,
             onChangeText: (event) => handleQueryChange(event.nativeEvent.text),
