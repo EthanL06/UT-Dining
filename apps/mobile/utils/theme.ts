@@ -13,6 +13,10 @@ const LIGHT = {
   toast: '#FFFFFF',
   toastLabel: '#000000',
   toastBorder: 'rgba(60, 60, 67, 0.18)',
+  warning: '#945400',
+  warningSoft: '#FFF1D6',
+  danger: '#C4001A',
+  dangerSoft: '#FDE8E7',
 };
 
 const DARK: typeof LIGHT = {
@@ -28,6 +32,10 @@ const DARK: typeof LIGHT = {
   toast: '#3A3A3C',
   toastLabel: '#FFFFFF',
   toastBorder: 'rgba(84, 84, 88, 0.6)',
+  warning: '#F5BE6A',
+  warningSoft: 'rgba(245, 177, 74, 0.2)',
+  danger: '#FF8A80',
+  dangerSoft: 'rgba(255, 69, 58, 0.24)',
 };
 
 export type Theme = typeof LIGHT;

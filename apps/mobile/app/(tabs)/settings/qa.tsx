@@ -7,6 +7,7 @@ import { LoadingSection } from '~/components/qa/LoadingSection';
 import { NearbySection } from '~/components/qa/NearbySection';
 import { PromptsSection } from '~/components/qa/PromptsSection';
 import { PushSection } from '~/components/qa/PushSection';
+import { StatusToastSection } from '~/components/qa/StatusToastSection';
 import { UpdatesSection } from '~/components/qa/UpdatesSection';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
@@ -37,6 +38,7 @@ const QAScreen = () => {
         <PromptsSection />
         <DataSection />
         <LoadingSection />
+        <StatusToastSection />
         <PushSection />
         <NearbySection />
         <UpdatesSection />
