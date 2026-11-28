@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 import { GroupedRow, GroupedSection, StatusDot } from '~/components/ui/Grouped';
+import { SkeletonGroupedSection, SkeletonPulse } from '~/components/ui/Skeleton';
 import { Text } from '~/components/ui/Text';
 import { useCachedMenuData } from '~/hooks/useCachedMenuData';
 import { useLocationIdsWithMenus } from '~/hooks/useLocationIdsWithMenus';
@@ -31,9 +32,9 @@ export default function NearbyScreen() {
     switch (view.kind) {
       case 'loading':
         return (
-          <View className="items-center py-10">
-            <ActivityIndicator />
-          </View>
+          <SkeletonPulse testID="nearby-loading" label="Loading dining halls">
+            <SkeletonGroupedSection rows={2} header={false} leading="dot" />
+          </SkeletonPulse>
         );
       case 'missing':
         return (

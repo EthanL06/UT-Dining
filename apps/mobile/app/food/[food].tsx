@@ -1,9 +1,10 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Flame, Info, X } from 'lucide-react-native';
 import { useEffect, useEffectEvent } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 import { SheetManager, SheetProvider } from 'react-native-actions-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FoodSkeleton } from '~/components/food/FoodSkeleton';
 import { MealPlanIcon } from '~/components/MealPlanIcon';
 import { HeartPop } from '~/components/motion/HeartPop';
 import { GlassButton } from '~/components/ui/Glass';
@@ -138,11 +139,7 @@ export const FoodDetail = ({ pushed = false }: { pushed?: boolean }) => {
             </GlassButton>
           </View>
 
-          {status === 'loading' && (
-            <View className="mt-16 items-center">
-              <ActivityIndicator size="small" />
-            </View>
-          )}
+          {status === 'loading' && <FoodSkeleton />}
 
           {(status === 'missing' || status === 'error') && (
             <View className="mx-8 mt-16 items-center gap-y-1.5" testID="food-unavailable">

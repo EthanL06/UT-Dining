@@ -1,12 +1,11 @@
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator } from 'react-native';
 import { ChangelogEntryCard } from '~/components/changelog/ChangelogEntryView';
+import { ChangelogSkeleton } from '~/components/changelog/ChangelogSkeleton';
 import { pushedScreenHeaderOptions } from '~/components/TabStack';
 import { OverflowScrollView } from '~/components/ui/OverflowScrollView';
 import { Text } from '~/components/ui/Text';
 import { refreshChangelog, useChangelogStore } from '~/store/useChangelogStore';
-import { COLORS } from '~/utils/colors';
 import { useTheme } from '~/utils/theme';
 
 const Changelog = () => {
@@ -53,7 +52,7 @@ const Changelog = () => {
         ))}
         {entries.length === 0 &&
           (status === 'loading' ? (
-            <ActivityIndicator className="py-8" color={COLORS['ut-burnt-orange']} />
+            <ChangelogSkeleton />
           ) : (
             <Text variant="callout" tone="secondary" className="py-8 text-center">
               {status === 'failed'

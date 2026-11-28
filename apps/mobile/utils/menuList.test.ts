@@ -5,7 +5,7 @@ import { menuEmptyState } from './menuList';
 const base = { menu: 'ready' as const, syncing: false, searching: false, filtering: false };
 
 describe('menuEmptyState', () => {
-  it('shows the skeleton while the menu loads and a spinner while syncing', () => {
+  it('shows skeleton rows while the menu loads and while it syncs', () => {
     expect(menuEmptyState({ ...base, menu: 'loading', syncing: true })).toEqual({
       kind: 'skeleton',
     });

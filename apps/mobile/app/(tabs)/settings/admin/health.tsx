@@ -151,11 +151,7 @@ const HealthScreen = () => {
           {(() => {
             switch (view.status) {
               case 'loading':
-                return (
-                  <View className="h-40">
-                    <AdminLoading />
-                  </View>
-                );
+                return <AdminLoading rows={2} />;
               case 'error':
                 return (
                   <View className="h-48">

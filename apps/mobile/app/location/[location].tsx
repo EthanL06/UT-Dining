@@ -2,7 +2,7 @@ import { FlashList, type FlashListRef } from '@shopify/flash-list';
 import { useIsFetching } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RowPosition } from '~/components/FoodComponent';
 import { StaggerIn } from '~/components/motion/StaggerIn';
@@ -259,8 +259,12 @@ const Location = () => {
     if (empty.kind === 'skeleton') return null;
     if (empty.kind === 'syncing') {
       return (
-        <View className="mt-12 flex-1 items-center justify-center">
-          <ActivityIndicator size="small" />
+        <View testID="menu-syncing">
+          <SkeletonItem isHeader />
+          <SkeletonItem position="first" />
+          <SkeletonItem />
+          <SkeletonItem />
+          <SkeletonItem position="last" />
         </View>
       );
     }

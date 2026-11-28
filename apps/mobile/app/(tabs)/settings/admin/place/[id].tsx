@@ -55,11 +55,7 @@ const PlaceScreen = () => {
       {() => {
         switch (view.status) {
           case 'loading':
-            return (
-              <View className="h-64">
-                <AdminLoading />
-              </View>
-            );
+            return <AdminLoading />;
           case 'error':
             return (
               <View className="h-64">
