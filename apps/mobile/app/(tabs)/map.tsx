@@ -7,6 +7,7 @@ import type { Region } from 'react-native-maps';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BrowseList } from '~/components/map/BrowseList';
+import { MapCover, useMapCover } from '~/components/map/MapCover';
 import { ClosedDot, ClusterPin, IconPin, LabelPin } from '~/components/map/MapPins';
 import { MapSheet, type MapSheetHandle, SHEET_HALF_FRACTION } from '~/components/map/MapSheet';
 import { PlaceCard } from '~/components/map/PlaceCard';
@@ -75,6 +76,7 @@ const MapPage = () => {
   const isDarkMode = useSettingsStore((state) => state.isDarkMode);
   const useColloquialNames = useSettingsStore((state) => state.useColloquialNames);
   const mapRef = useRef<MapView>(null);
+  const mapCover = useMapCover();
   const [region, setRegion] = useState<Region>(INITIAL_REGION);
   const [locationAccess, setLocationAccess] = useState<LocationAccess>({ status: 'unknown' });
   const hasLocationPermission = locationAccess.status === 'granted';
@@ -301,6 +303,7 @@ const MapPage = () => {
           showsUserLocation={hasLocationPermission}
           showsPointsOfInterests={false}
           onRegionChangeComplete={setRegion}
+          onMapReady={mapCover.reveal}
           userInterfaceStyle={isDarkMode ? 'dark' : 'light'}
           mapPadding={{
             top: insets.top,
@@ -339,6 +342,7 @@ const MapPage = () => {
             ),
           )}
         </MapView>
+        <MapCover opacity={mapCover.opacity} />
 
         {hasLocationPermission && userCoordinates && !isSheetAboveHalf && (
           <GlassButton
