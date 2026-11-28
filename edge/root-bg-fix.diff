@@ -1,0 +1,20 @@
+diff --git a/apps/mobile/app/_layout.tsx b/apps/mobile/app/_layout.tsx
+index 2016a00..7a797c4 100644
+--- a/apps/mobile/app/_layout.tsx
++++ b/apps/mobile/app/_layout.tsx
+@@ -29,6 +29,7 @@ import migrations from '../drizzle/migrations';
+ import '../global.css';
+ import * as Device from 'expo-device';
+ import * as Network from 'expo-network';
++import * as SystemUI from 'expo-system-ui';
+ import { AppErrorScreen, MIGRATION_ERROR_COPY } from '~/components/AppErrorScreen';
+ import { NearbyAlertsInitializer } from '~/components/nearby/NearbyAlertsInitializer';
+ import { VersionCheckProvider } from '~/components/VersionCheckProvider';
+@@ -88,6 +89,7 @@ const AppContent = () => {
+ 
+   useEffect(() => {
+     Appearance.setColorScheme(isDarkMode ? 'dark' : 'light');
++    SystemUI.setBackgroundColorAsync(getTheme(isDarkMode).background).catch(() => {});
+   }, [isDarkMode]);
+ 
+   const isTablet = Device.deviceType === Device.DeviceType.TABLET;
