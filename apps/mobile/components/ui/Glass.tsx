@@ -85,6 +85,7 @@ export const GlassSurface = ({
 export const GlassButton = ({
   size,
   fallbackColor,
+  tintColor,
   onPress,
   testID,
   accessibilityLabel,
@@ -94,6 +95,7 @@ export const GlassButton = ({
 }: {
   size: number;
   fallbackColor: ColorValue;
+  tintColor?: ColorValue;
   onPress: () => void;
   testID: string;
   accessibilityLabel: string;
@@ -115,6 +117,7 @@ export const GlassButton = ({
       <GlassSurface
         isInteractive
         fallbackColor={fallbackColor}
+        tintColor={tintColor}
         style={[StyleSheet.absoluteFill, { borderRadius: radius }]}
       />
       <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.center]}>

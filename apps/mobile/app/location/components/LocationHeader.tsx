@@ -1,9 +1,10 @@
 import { Link, router } from 'expo-router';
 import { ChefHat, ChevronLeft, Heart, Info } from 'lucide-react-native';
 import React, { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { SheetManager } from 'react-native-actions-sheet';
 import FilterBar from '~/components/FilterBar';
+import { GlassButton, GlassSurface } from '~/components/ui/Glass';
 import { Text } from '~/components/ui/Text';
 import { useLocationDetails } from '~/hooks/useLocationDetails';
 import { useLocationIdsWithMenus } from '~/hooks/useLocationIdsWithMenus';
@@ -43,17 +44,16 @@ const CircleButton = ({
   theme: Theme;
   children: React.ReactNode;
 }) => (
-  <Pressable
+  <GlassButton
     testID={testID}
     accessibilityLabel={label}
-    accessibilityRole="button"
+    size={44}
     hitSlop={6}
+    fallbackColor={theme.card}
     onPress={onPress}
-    className="size-11 items-center justify-center rounded-full"
-    style={{ backgroundColor: theme.card }}
   >
     {children}
-  </Pressable>
+  </GlassButton>
 );
 
 const LocationHeader = React.memo(
@@ -100,9 +100,14 @@ const LocationHeader = React.memo(
                   testID="select-done-button"
                   accessibilityRole="button"
                   onPress={onDoneSelecting}
-                  className="h-11 justify-center rounded-full px-4"
-                  style={{ backgroundColor: theme.card }}
+                  className="h-11 justify-center px-4"
                 >
+                  <GlassSurface
+                    isInteractive
+                    fallbackColor={theme.card}
+                    pointerEvents="none"
+                    style={[StyleSheet.absoluteFill, { borderRadius: 22 }]}
+                  />
                   <Text variant="callout" emphasized tone="tint">
                     Done
                   </Text>
